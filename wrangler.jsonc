@@ -1,14 +1,20 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "10x-astro-starter",
+  "name": "10x-preschool",
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-05-08",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": ["nodejs_compat", "disable_nodejs_process_v2"],
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist",
     "not_found_handling": "404-page",
   },
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "b85f34f00ac9467884163d3b58cd20ad",
+    },
+  ],
   "observability": {
     "enabled": true,
   },
