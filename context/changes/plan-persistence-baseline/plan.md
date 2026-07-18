@@ -220,6 +220,16 @@ Derive from the generated types rather than restating column shapes, so a schema
 
 **Contract**: `createServerClient<Database>(…)` — a type-parameter addition only. The existing null-return behavior and cookie handling are unchanged.
 
+#### 4. ESLint exclusion for the generated file
+
+**File**: `eslint.config.js`
+
+*(Amended during Phase 3 — not in the original contract.)*
+
+**Intent**: Stop the linter from fighting the type generator.
+
+**Contract**: Add `{ ignores: ["src/db/database.types.ts"] }` to the exported config. The generated file fails `npm run lint` with 132 errors (130 Prettier formatting, plus 2 `@typescript-eslint/no-redundant-type-constituents` that `--fix` cannot repair), so success criteria 3.1 and 3.3 are unsatisfiable together without it. Formatting the file instead is not a fix: `--fix` leaves 2 errors standing, every `supabase gen types` run reintroduces all 132, and the husky/lint-staged pre-commit `eslint --fix` on `*.ts` would rewrite the file behind the generator's back — contradicting item #1's "never hand-edited".
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -354,26 +364,26 @@ Rollback: phases 1–3 revert by deleting files and running `npx supabase db res
 
 #### Automated
 
-- [x] 2.1 Full suite passes: `npx supabase test db`
-- [x] 2.2 Suite re-runnable against a fresh database
+- [x] 2.1 Full suite passes: `npx supabase test db` — 9487ece
+- [x] 2.2 Suite re-runnable against a fresh database — 9487ece
 
 #### Manual
 
-- [x] 2.3 Mutation check: dropping a policy makes the suite fail
+- [x] 2.3 Mutation check: dropping a policy makes the suite fail — 9487ece
 
 ### Phase 3: Typed contract
 
 #### Automated
 
-- [ ] 3.1 Types generate without error
-- [ ] 3.2 Type checking passes: `npx astro check`
-- [ ] 3.3 Linting passes: `npm run lint`
-- [ ] 3.4 Production build succeeds: `npm run build`
+- [x] 3.1 Types generate without error
+- [x] 3.2 Type checking passes: `npx astro check`
+- [x] 3.3 Linting passes: `npm run lint`
+- [x] 3.4 Production build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 3.5 `src/types.ts` reads as domain language
-- [ ] 3.6 Current-generation invariant is encoded in the read model
+- [x] 3.5 `src/types.ts` reads as domain language
+- [x] 3.6 Current-generation invariant is encoded in the read model
 
 ### Phase 4: Production push
 
