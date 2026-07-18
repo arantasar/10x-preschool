@@ -389,12 +389,12 @@ Rollback: phases 1–3 revert by deleting files and running `npx supabase db res
 
 #### Automated
 
-- [x] 4.1 Migration shows as applied remotely
-- [x] 4.2 Remote RLS enabled with 16 policies present
-- [x] 4.3 App still builds: `npm run build`
+- [x] 4.1 Migration shows as applied remotely — e9acf9e
+- [x] 4.2 Remote RLS enabled with 16 policies present — e9acf9e
+- [x] 4.3 App still builds: `npm run build` — e9acf9e
 
 #### Manual
 
-- [x] 4.4 Hosted Studio shows both tables RLS-enabled with expected policies
-- [x] 4.5 Live deployment regression check passes
-- [x] 4.6 Sign-in with a real account still works
+- [x] 4.4 Hosted Studio shows both tables RLS-enabled with expected policies — e9acf9e
+- [x] 4.5 Live deployment regression check passes — e9acf9e
+- [x] 4.6 Sign-in with a real account still works — e9acf9e
