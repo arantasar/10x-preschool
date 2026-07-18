@@ -354,12 +354,12 @@ Rollback: phases 1–3 revert by deleting files and running `npx supabase db res
 
 #### Automated
 
-- [ ] 2.1 Full suite passes: `npx supabase test db`
-- [ ] 2.2 Suite re-runnable against a fresh database
+- [x] 2.1 Full suite passes: `npx supabase test db`
+- [x] 2.2 Suite re-runnable against a fresh database
 
 #### Manual
 
-- [ ] 2.3 Mutation check: dropping a policy makes the suite fail
+- [x] 2.3 Mutation check: dropping a policy makes the suite fail
 
 ### Phase 3: Typed contract
 
