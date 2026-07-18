@@ -375,26 +375,26 @@ Rollback: phases 1–3 revert by deleting files and running `npx supabase db res
 
 #### Automated
 
-- [x] 3.1 Types generate without error
-- [x] 3.2 Type checking passes: `npx astro check`
-- [x] 3.3 Linting passes: `npm run lint`
-- [x] 3.4 Production build succeeds: `npm run build`
+- [x] 3.1 Types generate without error — 691dccd
+- [x] 3.2 Type checking passes: `npx astro check` — 691dccd
+- [x] 3.3 Linting passes: `npm run lint` — 691dccd
+- [x] 3.4 Production build succeeds: `npm run build` — 691dccd
 
 #### Manual
 
-- [x] 3.5 `src/types.ts` reads as domain language
-- [x] 3.6 Current-generation invariant is encoded in the read model
+- [x] 3.5 `src/types.ts` reads as domain language — 691dccd
+- [x] 3.6 Current-generation invariant is encoded in the read model — 691dccd
 
 ### Phase 4: Production push
 
 #### Automated
 
-- [ ] 4.1 Migration shows as applied remotely
-- [ ] 4.2 Remote RLS enabled with 16 policies present
-- [ ] 4.3 App still builds: `npm run build`
+- [x] 4.1 Migration shows as applied remotely
+- [x] 4.2 Remote RLS enabled with 16 policies present
+- [x] 4.3 App still builds: `npm run build`
 
 #### Manual
 
-- [ ] 4.4 Hosted Studio shows both tables RLS-enabled with expected policies
-- [ ] 4.5 Live deployment regression check passes
-- [ ] 4.6 Sign-in with a real account still works
+- [x] 4.4 Hosted Studio shows both tables RLS-enabled with expected policies
+- [x] 4.5 Live deployment regression check passes
+- [x] 4.6 Sign-in with a real account still works
