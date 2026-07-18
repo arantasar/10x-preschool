@@ -107,6 +107,8 @@ Trigger: a `set_updated_at()` trigger function maintaining `day_plans.updated_at
 
 RLS: `alter table … enable row level security` on both tables, then **sixteen** policies total — for each table, one policy per operation (`select`, `insert`, `update`, `delete`) for role `authenticated` using `auth.uid() = user_id` (with the matching `with check` on insert/update), and one per operation for role `anon` evaluating to `false`. The `anon` policies are written explicitly rather than omitted so that "no policy" is never ambiguous between a deliberate deny and an oversight.
 
+Grants: `revoke all on public.day_plans from anon` and the same for `public.activities`. *(Amended during Phase 1 in response to Supabase advisor warnings — not in the original contract.)* Supabase's default privileges grant the full DML set to `anon` and `authenticated` on every new table in `public`. The surviving `anon` grant makes both tables discoverable through pg_graphql introspection without signing in — table and column names only, since RLS still returns no rows — so it is revoked and the denial then holds on both layers. `authenticated` keeps its grants: it is the role every signed-in teacher's queries run as, and per-account isolation is RLS's job, not the grant layer's. The eight `anon` policies stay in place regardless, since grants and RLS are independent and a later migration or dashboard action that re-grants would otherwise silently reopen these tables.
+
 #### 2. Local stack availability
 
 **File**: none — operational step
@@ -160,7 +162,7 @@ Assertions, for each of the two tables:
 - UPDATE targeting B's row affects **zero** rows (RLS filters rather than raising)
 - DELETE targeting B's row affects **zero** rows
 - INSERT with `user_id` set to B's id raises a row-level-security violation — the `with check` path
-- SELECT as `anon` returns zero rows
+- SELECT as `anon` raises `insufficient_privilege` (SQLSTATE `42501`) — assert with `throws_ok`, not a row count. Phase 1 revoked anon's table grants, so the denial fires before RLS is ever consulted. *(Amended after Phase 1; originally specified as "returns zero rows", which was correct only while the default grants were still in place.)*
 
 Plus one structural assertion: inserting an `activities` row whose `user_id` does not match its parent plan's owner raises a foreign-key violation, proving the composite FK holds.
 
@@ -337,16 +339,16 @@ Rollback: phases 1–3 revert by deleting files and running `npx supabase db res
 
 #### Automated
 
-- [x] 1.1 Local stack starts: `npx supabase start`
-- [x] 1.2 Migration applies from scratch: `npx supabase db reset`
-- [x] 1.3 Both tables report `rowsecurity = true`
-- [x] 1.4 Exactly 16 policies exist in schema `public`
-- [x] 1.5 Linting passes: `npm run lint`
+- [x] 1.1 Local stack starts: `npx supabase start` — 2451d9c
+- [x] 1.2 Migration applies from scratch: `npx supabase db reset` — 2451d9c
+- [x] 1.3 Both tables report `rowsecurity = true` — 2451d9c
+- [x] 1.4 Exactly 16 policies exist in schema `public` — 2451d9c
+- [x] 1.5 Linting passes: `npm run lint` — 2451d9c
 
 #### Manual
 
-- [x] 1.6 Policy text reviewed line by line
-- [x] 1.7 Schema visible and correct in local Studio
+- [x] 1.6 Policy text reviewed line by line — 2451d9c
+- [x] 1.7 Schema visible and correct in local Studio — 2451d9c
 
 ### Phase 2: RLS isolation suite
 

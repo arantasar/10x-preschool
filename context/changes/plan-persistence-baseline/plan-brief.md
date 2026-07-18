@@ -35,7 +35,7 @@ Day plans and their activities live in Postgres, structurally invisible across a
 
 ## Architecture / Approach
 
-`day_plans` is the parent (one per `user_id` + `plan_date`, holding the prompt, `current_generation`, and `accepted_at`). `activities` is the child, carrying `title`, `description`, `ordinal`, a `generation`, and a denormalized `user_id` bound to the parent by a composite foreign key. Reading "current activities" means joining `activities.generation = day_plans.current_generation`; the previous batch stays resident so undo is a decrement. Every table gets four `authenticated` policies predicated on `auth.uid() = user_id` plus four explicit `anon` deny policies, so an absent policy is never ambiguous.
+`day_plans` is the parent (one per `user_id` + `plan_date`, holding the prompt, `current_generation`, and `accepted_at`). `activities` is the child, carrying `title`, `description`, `ordinal`, a `generation`, and a denormalized `user_id` bound to the parent by a composite foreign key. Reading "current activities" means joining `activities.generation = day_plans.current_generation`; the previous batch stays resident so undo is a decrement. Every table gets four `authenticated` policies predicated on `auth.uid() = user_id` plus four explicit `anon` deny policies, so an absent policy is never ambiguous. `anon` additionally has its table grants revoked, so anonymous access fails with `insufficient_privilege` (`42501`) before RLS is ever consulted — pgTAP must assert that with `throws_ok`, not a row count.
 
 ## Phases at a Glance
 
