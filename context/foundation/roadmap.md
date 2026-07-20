@@ -33,21 +33,21 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 
 ## At a glance
 
-| ID    | Change ID                  | Outcome (user can …)                                              | Prerequisites | PRD refs                                  | Status   |
-| ----- | -------------------------- | ---------------------------------------------------------------- | ------------- | ----------------------------------------- | -------- |
-| F-01  | plan-persistence-baseline  | (foundation) tabela planów z RLS izoluje dane per konto          | —             | Access Control, NFR prywatności           | ready    |
-| S-01  | first-day-generation       | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | ready    |
-| S-02  | edit-accept-day-plan       | edytować, zaakceptować i zapisać propozycję dla dnia             | S-01, F-01    | FR-008, FR-009, US-01                      | proposed |
-| S-03  | week-generation            | wygenerować propozycje dla całego tygodnia roboczego (US-01)     | S-01, F-01    | FR-004, US-01                              | proposed |
+| ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status   |
+| ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | -------- |
+| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | ready    |
+| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | ready    |
+| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | proposed |
+| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | proposed |
 
 ## Streams
 
 Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme                       | Chain                | Note                                                                      |
-| ------ | --------------------------- | -------------------- | ------------------------------------------------------------------------- |
-| A      | Rdzeń generowania           | `S-01` → `S-03`      | Gwiazda przewodnia najpierw; `S-03` rozszerza generowanie z dnia na tydzień i dołącza do `F-01`. |
-| B      | Zapis i zatwierdzanie planu | `F-01` → `S-02`      | `F-01` może iść równolegle do `S-01`; `S-02` dołącza do Stream A przy `S-01`. |
+| Stream | Theme                       | Chain           | Note                                                                                             |
+| ------ | --------------------------- | --------------- | ------------------------------------------------------------------------------------------------ |
+| A      | Rdzeń generowania           | `S-01` → `S-03` | Gwiazda przewodnia najpierw; `S-03` rozszerza generowanie z dnia na tydzień i dołącza do `F-01`. |
+| B      | Zapis i zatwierdzanie planu | `F-01` → `S-02` | `F-01` może iść równolegle do `S-01`; `S-02` dołącza do Stream A przy `S-01`.                    |
 
 ## Baseline
 
@@ -102,6 +102,10 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Domyka pętlę „keep" (od propozycji do zatwierdzonego planu) — bez tego generowanie jest demem, nie narzędziem. Sekwencjonowane po S-01 (musi istnieć propozycja do edycji) i F-01 (musi istnieć gdzie zapisać). Zagrożenie minimalne; główny haczyk to spójność stanu „roboczy vs zaakceptowany".
+- **Zobowiązania przeniesione z F-01 (przegląd implementacji, F5):** Schemat zamyka drogę *przejęcia* wiersza (kolumny `activities.generation` i `plan_id` są poza grantem UPDATE), ale **nie wymusza poprawności przy INSERT**. Nic w bazie nie sprawdza, że nowo zapisana partia ma `activities.generation = day_plans.current_generation` — polityka INSERT pyta tylko o własność (`auth.uid() = user_id`), a CHECK tylko o `generation >= 1`. Skutek błędu jest cichy: [selectCurrentGeneration](src/lib/day-plans.ts#L14) uczciwie zwróci pustą tablicę, brandowany typ `CurrentActivity` potwierdzi „to jest bieżące", nauczyciel zobaczy pusty plan — bez błędu, wyjątku ani wpisu w logu. To ten sam kształt awarii, dla którego istnieje licznik generacji, tylko przesunięty z odczytu na zapis. S-02 (jako pierwszy zapis do `activities`) musi:
+  - zdecydować protokół regeneracji — „podbij `current_generation`, potem wstaw partię" vs „wstaw, potem podbij" — i wykonać go **w jednej transakcji**;
+  - wymusić niezmiennik, najlepiej triggerem `BEFORE INSERT` walidującym `new.generation = (select current_generation from day_plans where id = new.plan_id)`, który przy okazji uniemożliwia wariant „wstaw, potem podbij";
+  - dotyczy każdego zapisu do `activities`, więc **S-03 (`week-generation`) dziedziczy to samo zobowiązanie**.
 - **Status:** proposed
 
 ### S-03: Generowanie dla całego tygodnia roboczego
@@ -119,12 +123,12 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                  | Suggested issue title                                  | Ready for `/10x-plan` | Notes                                   |
-| ---------- | -------------------------- | ------------------------------------------------------ | --------------------- | --------------------------------------- |
-| F-01       | plan-persistence-baseline  | Minimalny schemat planów + RLS izolacji per konto      | yes                   | Może iść równolegle do S-01             |
-| S-01       | first-day-generation       | Generowanie propozycji aktywności dla jednego dnia     | yes                   | Gwiazda przewodnia — `/10x-plan first-day-generation` |
-| S-02       | edit-accept-day-plan       | Edycja, akceptacja i zapis planu dnia                  | no                    | Czeka na S-01 + F-01                    |
-| S-03       | week-generation            | Generowanie planu dla całego tygodnia roboczego        | no                    | Czeka na S-01 + F-01                    |
+| Roadmap ID | Change ID                 | Suggested issue title                              | Ready for `/10x-plan` | Notes                                                 |
+| ---------- | ------------------------- | -------------------------------------------------- | --------------------- | ----------------------------------------------------- |
+| F-01       | plan-persistence-baseline | Minimalny schemat planów + RLS izolacji per konto  | yes                   | Może iść równolegle do S-01                           |
+| S-01       | first-day-generation      | Generowanie propozycji aktywności dla jednego dnia | yes                   | Gwiazda przewodnia — `/10x-plan first-day-generation` |
+| S-02       | edit-accept-day-plan      | Edycja, akceptacja i zapis planu dnia              | no                    | Czeka na S-01 + F-01                                  |
+| S-03       | week-generation           | Generowanie planu dla całego tygodnia roboczego    | no                    | Czeka na S-01 + F-01                                  |
 
 ## Open Roadmap Questions
 

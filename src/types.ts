@@ -24,22 +24,14 @@ export type ActivityInsert = Tables["activities"]["Insert"];
 // plain `where plan_id = …` returns both batches and shows stale proposals with
 // no error. Rather than documenting that and hoping, `CurrentActivity` is a
 // branded type that no literal can satisfy: the only way to obtain one is
-// `selectCurrentGeneration`, which does the comparison against the plan's own
-// counter. Reading the whole table stays possible — you just cannot pass the
-// result anywhere that expects the current batch.
+// `selectCurrentGeneration` in `@/lib/day-plans`, which does the comparison
+// against the plan's own counter. Reading the whole table stays possible — you
+// just cannot pass the result anywhere that expects the current batch.
 
 declare const currentGenerationBrand: unique symbol;
 
 /** An {@link Activity} proven to belong to its plan's live generation. */
 export type CurrentActivity = Activity & { readonly [currentGenerationBrand]: true };
-
-/**
- * The only constructor for {@link CurrentActivity}. Keeps the activities whose
- * `generation` matches the plan's `current_generation` and discards the rest.
- */
-export function selectCurrentGeneration(plan: DayPlan, activities: readonly Activity[]): CurrentActivity[] {
-  return activities.filter((activity): activity is CurrentActivity => activity.generation === plan.current_generation);
-}
 
 // ---------------------------------------------------------------------------
 // Read models
@@ -62,12 +54,6 @@ export interface DayPlanWithCurrentActivities {
 export type PlanAcceptance =
   | { readonly status: "draft"; readonly acceptedAt: null }
   | { readonly status: "accepted"; readonly acceptedAt: string };
-
-export function acceptanceOf(plan: DayPlan): PlanAcceptance {
-  return plan.accepted_at === null
-    ? { status: "draft", acceptedAt: null }
-    : { status: "accepted", acceptedAt: plan.accepted_at };
-}
 
 // ---------------------------------------------------------------------------
 // Commands

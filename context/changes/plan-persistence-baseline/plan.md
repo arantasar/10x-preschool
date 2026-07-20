@@ -80,6 +80,7 @@ Create the project's first migration: both tables, their constraints and indexes
 **Contract**:
 
 `public.day_plans`
+
 - `id uuid` primary key, default `gen_random_uuid()`
 - `user_id uuid not null` → `auth.users(id) on delete cascade`
 - `plan_date date not null`
@@ -91,6 +92,7 @@ Create the project's first migration: both tables, their constraints and indexes
 - `unique (id, user_id)` — **required** to support the composite FK from `activities`; comment it as such
 
 `public.activities`
+
 - `id uuid` primary key, default `gen_random_uuid()`
 - `plan_id uuid not null`
 - `user_id uuid not null` — denormalized owner, for a direct RLS predicate
@@ -107,7 +109,11 @@ Trigger: a `set_updated_at()` trigger function maintaining `day_plans.updated_at
 
 RLS: `alter table … enable row level security` on both tables, then **sixteen** policies total — for each table, one policy per operation (`select`, `insert`, `update`, `delete`) for role `authenticated` using `auth.uid() = user_id` (with the matching `with check` on insert/update), and one per operation for role `anon` evaluating to `false`. The `anon` policies are written explicitly rather than omitted so that "no policy" is never ambiguous between a deliberate deny and an oversight.
 
-Grants: `revoke all on public.day_plans from anon` and the same for `public.activities`. *(Amended during Phase 1 in response to Supabase advisor warnings — not in the original contract.)* Supabase's default privileges grant the full DML set to `anon` and `authenticated` on every new table in `public`. The surviving `anon` grant makes both tables discoverable through pg_graphql introspection without signing in — table and column names only, since RLS still returns no rows — so it is revoked and the denial then holds on both layers. `authenticated` keeps its grants: it is the role every signed-in teacher's queries run as, and per-account isolation is RLS's job, not the grant layer's. The eight `anon` policies stay in place regardless, since grants and RLS are independent and a later migration or dashboard action that re-grants would otherwise silently reopen these tables.
+Grants: `revoke all on public.day_plans from anon` and the same for `public.activities`. _(Amended during Phase 1 in response to Supabase advisor warnings — not in the original contract.)_ Supabase's default privileges grant the full DML set to `anon` and `authenticated` on every new table in `public`. The surviving `anon` grant makes both tables discoverable through pg_graphql introspection without signing in — table and column names only, since RLS still returns no rows — so it is revoked and the denial then holds on both layers. `authenticated` keeps its grants: it is the role every signed-in teacher's queries run as, and per-account isolation is RLS's job, not the grant layer's. _(Narrowed post-review — see F5 below: `authenticated` keeps INSERT/SELECT/DELETE but its UPDATE is now column-scoped.)_
+
+The eight `anon` policies stay in place for the reason given above — making "no policy" unambiguous between a deliberate deny and an oversight.
+
+_(Corrected during the implementation review — F10.)_ An earlier version of this paragraph also claimed they guard against "a later migration or dashboard action that re-grants". **They do not, and that claim was wrong.** Measured against the local stack: dropping all eight leaves behaviour identical, because RLS with no applicable policy already denies by default; and because they are `permissive`, they would not override a future permissive `anon` policy either — permissive policies OR together. Only `as restrictive` would provide the backstop described. The policies are kept for their documentary value, which is real; they are not a security control, and nothing should be built on the assumption that they are.
 
 #### 2. Local stack availability
 
@@ -158,11 +164,12 @@ set local "request.jwt.claims" to '{"sub":"<user-a-uuid>","role":"authenticated"
 ```
 
 Assertions, for each of the two tables:
+
 - SELECT as A returns only A's rows (count matches, and B's ids are absent)
 - UPDATE targeting B's row affects **zero** rows (RLS filters rather than raising)
 - DELETE targeting B's row affects **zero** rows
 - INSERT with `user_id` set to B's id raises a row-level-security violation — the `with check` path
-- SELECT as `anon` raises `insufficient_privilege` (SQLSTATE `42501`) — assert with `throws_ok`, not a row count. Phase 1 revoked anon's table grants, so the denial fires before RLS is ever consulted. *(Amended after Phase 1; originally specified as "returns zero rows", which was correct only while the default grants were still in place.)*
+- SELECT as `anon` raises `insufficient_privilege` (SQLSTATE `42501`) — assert with `throws_ok`, not a row count. Phase 1 revoked anon's table grants, so the denial fires before RLS is ever consulted. _(Amended after Phase 1; originally specified as "returns zero rows", which was correct only while the default grants were still in place.)_
 
 Plus one structural assertion: inserting an `activities` row whose `user_id` does not match its parent plan's owner raises a foreign-key violation, proving the composite FK holds.
 
@@ -206,6 +213,7 @@ Give S-02 and S-03 typed access to the schema: generated database types plus han
 **Intent**: Express the domain in the language the PRD uses, and encode the generation invariant so downstream code cannot read stale activities by accident.
 
 **Contract**: Entity aliases derived from the generated `Database` type (`DayPlan`, `Activity`), plus DTOs for the shapes S-02/S-03 will actually pass around:
+
 - A day-plan-with-current-activities read model whose activities are, by construction, the current generation only
 - A create/regenerate input carrying `plan_date`, `prompt`, and the activity batch
 - An acceptance state discriminated on `accepted_at` being null
@@ -224,7 +232,7 @@ Derive from the generated types rather than restating column shapes, so a schema
 
 **File**: `eslint.config.js`
 
-*(Amended during Phase 3 — not in the original contract.)*
+_(Amended during Phase 3 — not in the original contract.)_
 
 **Intent**: Stop the linter from fighting the type generator.
 
@@ -302,13 +310,14 @@ Promote the verified migration to the hosted project that serves the live deploy
 
 ### Unit Tests:
 
-None — this change adds no application code paths. The database *is* the unit under test, covered by pgTAP.
+None — this change adds no application code paths. The database _is_ the unit under test, covered by pgTAP.
 
 ### Integration Tests:
 
 The pgTAP suite in Phase 2 is the integration test: it exercises real policies against real rows under two distinct authenticated identities plus `anon`.
 
 Key edge cases covered:
+
 - Cross-account SELECT (the obvious leak)
 - Cross-account UPDATE and DELETE (RLS filters silently — zero rows affected, no error)
 - Cross-account INSERT via a forged `user_id` (the `with check` path — the leak that produces no symptom)

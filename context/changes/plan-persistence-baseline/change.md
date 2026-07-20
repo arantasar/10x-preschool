@@ -1,9 +1,9 @@
 ---
 change_id: plan-persistence-baseline
 title: Minimalny schemat przechowywania planów z izolacją RLS per konto
-status: implemented
+status: impl_reviewed
 created: 2026-07-18
-updated: 2026-07-19
+updated: 2026-07-20
 archived_at: null
 ---
 
