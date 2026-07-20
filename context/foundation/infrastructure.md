@@ -21,18 +21,19 @@ The project already ships `@astrojs/cloudflare` adapter and a `wrangler.jsonc` �
 
 ### Scoring Matrix
 
-| Platform | CLI-first | Managed | Agent Docs | Stable API | MCP | Notes |
-|---|---|---|---|---|---|---|
-| **Cloudflare Workers** | **Pass** | **Pass** | **Pass** | **Pass** | **Pass** | Native adapter; llms.txt GA; wrangler GA; MCP GA |
-| Vercel | Pass | Pass | Pass | Pass | Partial | MCP in Public Beta; Pro $20/mo required for commercial use |
-| Netlify | Partial | Pass | Pass | Pass | Pass | 10s function timeout blocks LLM calls; Astro 6 adapter unconfirmed |
-| Fly.io | Pass | Pass | Partial | Pass | Partial | No llms.txt; flymcp in active dev (no GA); $4-8/mo |
-| Render | Partial | Pass | Fail | Pass | Pass | Docs not on GitHub/markdown; rollback dashboard-only; $7/mo+ |
-| Railway | Partial | Pass | Fail | Partial | Partial | No markdown docs; no CLI rollback; streaming proxy buffering bug; MCP "work in progress" |
+| Platform               | CLI-first | Managed  | Agent Docs | Stable API | MCP      | Notes                                                                                    |
+| ---------------------- | --------- | -------- | ---------- | ---------- | -------- | ---------------------------------------------------------------------------------------- |
+| **Cloudflare Workers** | **Pass**  | **Pass** | **Pass**   | **Pass**   | **Pass** | Native adapter; llms.txt GA; wrangler GA; MCP GA                                         |
+| Vercel                 | Pass      | Pass     | Pass       | Pass       | Partial  | MCP in Public Beta; Pro $20/mo required for commercial use                               |
+| Netlify                | Partial   | Pass     | Pass       | Pass       | Pass     | 10s function timeout blocks LLM calls; Astro 6 adapter unconfirmed                       |
+| Fly.io                 | Pass      | Pass     | Partial    | Pass       | Partial  | No llms.txt; flymcp in active dev (no GA); $4-8/mo                                       |
+| Render                 | Partial   | Pass     | Fail       | Pass       | Pass     | Docs not on GitHub/markdown; rollback dashboard-only; $7/mo+                             |
+| Railway                | Partial   | Pass     | Fail       | Partial    | Partial  | No markdown docs; no CLI rollback; streaming proxy buffering bug; MCP "work in progress" |
 
 **Hard filters applied**: none triggered (Q1 = "Don't know" on persistent connections; all platforms support Astro 6).
 
 **Soft-weight adjustments**:
+
 - Cost (minimize) → Vercel penalized ($20/mo Pro); Netlify credit exhaustion risk at LLM scale
 - No familiarity advantage → no tie-breaking applied
 - Single region → edge-native advantage neutral; EU region available on all shortlisted platforms
@@ -94,37 +95,42 @@ The 10xPreschool app was deployed to Cloudflare Workers and worked perfectly dur
 
 ## Risk Register
 
-| Risk | Source | Likelihood | Impact | Mitigation |
-|---|---|---|---|---|
-| Free tier CPU limit (10ms) terminates LLM routes silently | Research finding | High (likely to be hit on first real deploy) | High (core feature broken) | Upgrade to Workers Paid ($5/mo) before any non-dev deploy |
-| `disable_nodejs_process_v2` flag missing breaks middleware | Devil's advocate | Medium (triggered on compatibility date update) | High (auth/login broken) | Add `"disable_nodejs_process_v2"` to `compatibility_flags` in `wrangler.jsonc` now |
-| 30s CPU ceiling terminates non-streaming LLM responses | Devil's advocate | Medium (depends on LLM latency) | High (generation fails silently) | Implement streaming for all LLM API routes before launch |
-| Auto Minify breaks React island hydration | Devil's advocate | Medium (easy to accidentally enable) | Medium (interactive UI broken) | Disable Auto Minify in Cloudflare dashboard immediately after connecting domain |
-| Workers vs Pages confusion wastes deploy effort | Unknown unknowns | Low-Medium (one-time, front-loaded) | Medium (hours of debugging) | Confirm `wrangler deploy` (Workers) is the correct command; ignore `deployment_target: cloudflare-pages` in tech-stack.md |
-| Wrangler local dev masks production compatibility bugs | Unknown unknowns | Low | Medium (hard to diagnose) | Always smoke-test auth flows and LLM routes against a real staging Workers deployment |
-| Cloudflare Images binding missing when `<Image>` added | Unknown unknowns | Low (only triggered when images introduced) | Low-Medium (500 on image routes) | Pre-configure Images binding in wrangler.jsonc before adding any `<Image>` component |
+| Risk                                                       | Source           | Likelihood                                      | Impact                           | Mitigation                                                                                                                |
+| ---------------------------------------------------------- | ---------------- | ----------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Free tier CPU limit (10ms) terminates LLM routes silently  | Research finding | High (likely to be hit on first real deploy)    | High (core feature broken)       | Upgrade to Workers Paid ($5/mo) before any non-dev deploy                                                                 |
+| `disable_nodejs_process_v2` flag missing breaks middleware | Devil's advocate | Medium (triggered on compatibility date update) | High (auth/login broken)         | Add `"disable_nodejs_process_v2"` to `compatibility_flags` in `wrangler.jsonc` now                                        |
+| 30s CPU ceiling terminates non-streaming LLM responses     | Devil's advocate | Medium (depends on LLM latency)                 | High (generation fails silently) | Implement streaming for all LLM API routes before launch                                                                  |
+| Auto Minify breaks React island hydration                  | Devil's advocate | Medium (easy to accidentally enable)            | Medium (interactive UI broken)   | Disable Auto Minify in Cloudflare dashboard immediately after connecting domain                                           |
+| Workers vs Pages confusion wastes deploy effort            | Unknown unknowns | Low-Medium (one-time, front-loaded)             | Medium (hours of debugging)      | Confirm `wrangler deploy` (Workers) is the correct command; ignore `deployment_target: cloudflare-pages` in tech-stack.md |
+| Wrangler local dev masks production compatibility bugs     | Unknown unknowns | Low                                             | Medium (hard to diagnose)        | Always smoke-test auth flows and LLM routes against a real staging Workers deployment                                     |
+| Cloudflare Images binding missing when `<Image>` added     | Unknown unknowns | Low (only triggered when images introduced)     | Low-Medium (500 on image routes) | Pre-configure Images binding in wrangler.jsonc before adding any `<Image>` component                                      |
 
 ## Getting Started
 
 1. **Upgrade to Workers Paid** (required before any real deploy): visit dash.cloudflare.com → Workers & Pages → Plans → upgrade to Workers Paid ($5/month). Without this, every LLM route returns a CPU exceeded error.
 
 2. **Add the compatibility flag workaround** to `wrangler.jsonc`:
+
    ```jsonc
    "compatibility_flags": ["nodejs_compat", "disable_nodejs_process_v2"]
    ```
+
    This prevents Astro middleware from breaking on 2025+ compatibility dates.
 
 3. **Set production secrets** via wrangler:
+
    ```bash
    npx wrangler secret put SUPABASE_URL
    npx wrangler secret put SUPABASE_KEY
    ```
 
 4. **Deploy**:
+
    ```bash
    npm run build
    npx wrangler deploy
    ```
+
    The `wrangler.jsonc` in the starter already has the correct worker name and entry point. The deploy URL will be `https://<worker-name>.<account-subdomain>.workers.dev`.
 
 5. **Verify the deploy** by tailing logs and triggering a test generation:
@@ -136,6 +142,7 @@ The 10xPreschool app was deployed to Cloudflare Workers and worked perfectly dur
 ## Out of Scope
 
 The following were not evaluated in this research:
+
 - Docker image configuration
 - CI/CD pipeline setup (GitHub Actions wiring for auto-deploy on merge)
 - Production-scale architecture (multi-region, HA, DR)

@@ -51,10 +51,10 @@ starter's default deployment target.
 
 ## Pre-scaffold verification
 
-| Signal      | Value                                      | Severity | Notes                                          |
-| ----------- | ------------------------------------------ | -------- | ---------------------------------------------- |
-| npm package | not checked (cmd_template uses git clone)  | n/a      | git-clone strategy; no npm create CLI to check |
-| GitHub repo | not run                                    | unknown  | `gh` CLI not installed; network check skipped  |
+| Signal      | Value                                     | Severity | Notes                                          |
+| ----------- | ----------------------------------------- | -------- | ---------------------------------------------- |
+| npm package | not checked (cmd_template uses git clone) | n/a      | git-clone strategy; no npm create CLI to check |
+| GitHub repo | not run                                   | unknown  | `gh` CLI not installed; network check skipped  |
 
 ## Scaffold log
 
@@ -101,27 +101,28 @@ None.
 
 ## Hints recorded but not acted on
 
-| Hint                    | Value              |
-| ----------------------- | ------------------ |
-| bootstrapper_confidence | first-class        |
-| quality_override        | false              |
-| path_taken              | standard           |
-| self_check_answers      | null               |
-| team_size               | solo               |
-| deployment_target       | cloudflare-pages   |
-| ci_provider             | github-actions     |
+| Hint                    | Value                |
+| ----------------------- | -------------------- |
+| bootstrapper_confidence | first-class          |
+| quality_override        | false                |
+| path_taken              | standard             |
+| self_check_answers      | null                 |
+| team_size               | solo                 |
+| deployment_target       | cloudflare-pages     |
+| ci_provider             | github-actions       |
 | ci_default_flow         | auto-deploy-on-merge |
-| has_auth                | true               |
-| has_payments            | false              |
-| has_realtime            | false              |
-| has_ai                  | true               |
-| has_background_jobs     | false              |
+| has_auth                | true                 |
+| has_payments            | false                |
+| has_realtime            | false                |
+| has_ai                  | true                 |
+| has_background_jobs     | false                |
 
 ## Next steps
 
 Next: a future skill will set up agent context (CLAUDE.md, AGENTS.md). For now, your project is scaffolded and verified — happy hacking.
 
 Useful manual steps in the meantime:
+
 - `git init` (if you have not already) to start your own repo history.
 - Review `CLAUDE.md.scaffold` (the starter's CLAUDE.md) and decide which sections to merge into your existing CLAUDE.md.
 - Address audit findings per your project's risk tolerance — the full breakdown is in this log.

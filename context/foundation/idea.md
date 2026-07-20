@@ -25,4 +25,4 @@ Aplikacja przyjmuje od uzytkownika hasło przewodnie lub krótkie wytyczne i na 
 
 ## Kryteria sukcesu
 
-- Uzytkownik akceptuje 75% sugestii zajec zaproponowanych przez aplikacje 
+- Uzytkownik akceptuje 75% sugestii zajec zaproponowanych przez aplikacje

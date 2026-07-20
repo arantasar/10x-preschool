@@ -32,12 +32,15 @@ LLM osiągnął jakość generowania treści wystarczającą, by proponować kon
 ## Success Criteria
 
 ### Primary
+
 - Nauczyciel może zalogować się, wybrać dzień lub tydzień, wpisać hasło/wytyczne, wygenerować propozycje zajęć, edytować je i zaakceptować — cały przepływ działa bez błędów.
 
 ### Secondary
+
 - Nauczyciel akceptuje bez edycji ≥ 75% wygenerowanych propozycji zajęć — miara jakości generowania.
 
 ### Guardrails
+
 - Żadna propozycja zajęć nie zawiera treści nieodpowiedniej dla dzieci w wieku 3–6 lat. Naruszenie tego guardrail dyskredytuje aplikację niezależnie od stanu pozostałych funkcji.
 
 ## User Stories
@@ -49,6 +52,7 @@ LLM osiągnął jakość generowania treści wystarczającą, by proponować kon
 - **Then** widzi propozycje konkretnych aktywności dla każdego dnia wybranego tygodnia
 
 #### Acceptance Criteria
+
 - Każdy dzień roboczy wybranego tygodnia otrzymuje co najmniej jedną propozycję aktywności
 - Propozycja zawiera nazwę zajęć i krótki opis aktywności
 - Nauczyciel może edytować lub ponownie wygenerować propozycję dla wybranego dnia bez wpływu na pozostałe dni
@@ -56,6 +60,7 @@ LLM osiągnął jakość generowania treści wystarczającą, by proponować kon
 ## Functional Requirements
 
 ### Konto użytkownika
+
 - FR-001: Nauczyciel może się zarejestrować używając adresu e-mail i hasła. Priority: must-have
   > Socrates: Kontr-argument rozważony: "rejestracja to bariera wejścia; lepiej prototyp bez konta." Utrzymano — persystencja i izolacja danych wymagają konta; bariera jest świadomym wyborem projektu.
 - FR-002: Nauczyciel może zalogować się do swojego konta. Priority: must-have
@@ -64,18 +69,21 @@ LLM osiągnął jakość generowania treści wystarczającą, by proponować kon
   > Socrates: Kontr-argument zaakceptowany: "to drobiazg — sesja wygasa automatycznie; wylogowanie można dodać w v2." Zdegradowano do nice-to-have.
 
 ### Kalendarz
+
 - FR-004: Nauczyciel może wybrać konkretny dzień lub tydzień w widoku kalendarza. Priority: must-have
   > Socrates: Kontr-argument rozważony: "widok tygodniowy to dużo pracy UI; zacznijmy od samych dni." Utrzymano — granulacja dnia/tygodnia jest sercem przepływu; widok można uprościć w implementacji bez zmiany FR.
 - FR-005: Nauczyciel może wpisać hasło lub krótkie wytyczne dla wybranego dnia lub tygodnia. Priority: must-have
   > Socrates: Kontr-argument rozważony: "hasło per dzień to za granularne; jedno hasło per miesiąc wystarczy." Utrzymano — hasło per okres jest celowe; pozwala nauczycielowi różnicować tematykę w ciągu miesiąca.
 
 ### Generowanie zajęć
+
 - FR-006: Nauczyciel może wygenerować propozycje zajęć dla wybranego okresu (dnia lub tygodnia) na podstawie wpisanego hasła. Priority: must-have
   > Socrates: Kontr-argument rozważony: "brak feedbacku podczas długiego call AI to błąd UX." Utrzymano FR; widoczny postęp podczas generowania trafia do NFR.
 - FR-007: Nauczyciel może ponownie wygenerować propozycje zajęć dla danego dnia. Priority: must-have
   > Socrates: Kontr-argument rozważony: "regeneracja bez limitu to ryzyko kosztów API." Utrzymano — limit nie jest wymaganiem MVP; ryzyko kosztów trafia do Open Questions.
 
 ### Zarządzanie planem
+
 - FR-008: Nauczyciel może edytować treść wygenerowanej propozycji zajęć. Priority: must-have
   > Socrates: Kontr-argument rozważony: "może wystarczy akceptuj lub regeneruj?" Utrzymano — edycja drobnych poprawek jest szybsza niż wielokrotna regeneracja.
 - FR-009: Nauczyciel może zaakceptować propozycję zajęć dla danego dnia. Priority: must-have
