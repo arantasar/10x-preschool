@@ -10,3 +10,9 @@ dist/
 
 # Supabase CLI scratch (link state) — machine-written, gitignored
 supabase/.temp/
+
+# Project docs (PRD, roadmap, plans, change records) — prose authored by humans
+# and agents, not code. Prettier's prose reflow and table re-alignment produce
+# large, meaningless diffs and once mangled a glob (`*` → `_`) in these files.
+# Excluded from both `npm run format` and the lint-staged pre-commit hook.
+context/
