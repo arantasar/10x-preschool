@@ -1,10 +1,10 @@
 ---
 change_id: first-day-generation
 title: First day generation
-status: impl_reviewed
+status: archived
 created: 2026-08-22
 updated: 2026-08-22
-archived_at: null
+archived_at: 2026-08-22T17:53:00Z
 ---
 
 ## Notes

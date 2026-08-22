@@ -36,7 +36,7 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 | ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status   |
 | ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | -------- |
 | F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done     |
-| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | in-progress |
+| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done        |
 | S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | proposed |
 | S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | proposed |
 
@@ -92,7 +92,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - **Dostawca LLM — OpenRouter.** Model wpisany na sztywno w pierwszej iteracji; lista modeli do wyboru przez użytkownika to możliwe późniejsze rozszerzenie, poza zakresem S-01. Wprowadza nowy sekret (`OPENROUTER_API_KEY`) do `.env.example`, `.dev.vars` i `wrangler secret put` — czyli pierwszy sekret w projekcie poza Supabase.
   - **Streaming NIE jest wymogiem platformy.** Pierwotna niewiadoma („czy 10–30 s wywołanie zmieści się w limicie CPU Workers", `infrastructure.md` Ryzyko 3) opierała się na pomyleniu czasu CPU z czasem ściennym. Dokumentacja Cloudflare: *„Waiting on network requests (such as `fetch()` calls, KV reads, or database queries) does not count toward CPU time"* oraz *„There is no hard limit on duration for HTTP-triggered Workers. As long as the client remains connected, the Worker can continue processing, making subrequests, and streaming a response body."* Oczekiwanie na odpowiedź OpenRoutera to I/O, nie CPU — nie kumuluje się w kierunku limitu. Streaming zostaje **decyzją UX** (roadmapowy wymóg „z widocznym postępem operacji"), a nie mitygacją limitu; prostym MVP jest wywołanie bez streamingu ze wskaźnikiem postępu. ⚠️ `infrastructure.md` (Ryzyko 1, Ryzyko 3, rejestr ryzyk, „Immediate actions") wciąż niesie starą tezę i wymaga korekty.
 - **Risk:** To slice o najwyższej wadze — niesie rdzeń hipotezy produktu i jedyną nienegocjowalną inwestycję (bezpieczeństwo + trafność generowania). Auth jest już w baseline, więc zostaje tylko dodać trasy generowania do `PROTECTED_ROUTES`. Sekwencjonowane pierwsze, bo cała reszta roadmapy ma sens tylko, jeśli jakość generowania się broni. Główne zagrożenie: niska trafność/akceptacja propozycji lub treść nieodpowiednia dla wieku — oba widoczne dopiero na realnym wyjściu LLM.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-02: Edycja, akceptacja i zapis planu dnia
 
@@ -149,3 +149,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Done
 
 - **F-01: (foundation) istnieje minimalny schemat przechowywania planów (dzień → hasło, propozycje, stan zaakceptowania) z politykami RLS, które udostępniają wiersze wyłącznie właścicielowi konta.** — Archived 2026-08-22 → `context/archive/2026-07-18-plan-persistence-baseline/`. Lesson: —.
+- **S-01: Nauczyciel loguje się, wybiera dzień w kalendarzu, wpisuje hasło i otrzymuje wygenerowaną propozycję aktywności (z widocznym postępem operacji, po polsku, z treścią bezpieczną dla dzieci 3–6 lat); może ponownie wygenerować propozycję dla tego dnia.** — Archived 2026-08-22 → `context/archive/2026-08-22-first-day-generation/`. Lesson: —.
