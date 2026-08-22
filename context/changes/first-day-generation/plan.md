@@ -625,28 +625,28 @@ Sekret w CI **nie jest wymagany**, bo pola są opcjonalne w `env.schema` — bui
 
 #### Automated
 
-- [x] 1.1 `zod` jest zależnością najwyższego poziomu: `npm ls zod --depth=0`
-- [x] 1.2 Lint przechodzi: `npm run lint`
-- [x] 1.3 Build przechodzi z nowym `env.schema`: `npm run build`
-- [x] 1.4 Build przechodzi również bez ustawionego `OPENROUTER_API_KEY`
+- [x] 1.1 `zod` jest zależnością najwyższego poziomu: `npm ls zod --depth=0` — e0ac1a0
+- [x] 1.2 Lint przechodzi: `npm run lint` — e0ac1a0
+- [x] 1.3 Build przechodzi z nowym `env.schema`: `npm run build` — e0ac1a0
+- [x] 1.4 Build przechodzi również bez ustawionego `OPENROUTER_API_KEY` — e0ac1a0
 
 #### Manual
 
-- [x] 1.5 Przy pustym kluczu aplikacja pokazuje komunikat z `config-status`, nie wyjątek
-- [x] 1.6 Prompt systemowy czyta się samodzielnie i zawiera wszystkie sześć wymagań
+- [x] 1.5 Przy pustym kluczu aplikacja pokazuje komunikat z `config-status`, nie wyjątek — e0ac1a0
+- [x] 1.6 Prompt systemowy czyta się samodzielnie i zawiera wszystkie sześć wymagań — e0ac1a0
 
 ### Faza 2: Serwis generowania
 
 #### Automated
 
-- [ ] 2.1 Lint przechodzi: `npm run lint`
-- [ ] 2.2 Build przechodzi: `npm run build`
+- [x] 2.1 Lint przechodzi: `npm run lint`
+- [x] 2.2 Build przechodzi: `npm run build`
 
 #### Manual
 
-- [ ] 2.3 Wywołanie z prawidłowym kluczem zwraca trzy propozycje po polsku, zgodne ze schematem
-- [ ] 2.4 Celowo błędny klucz daje kategorię `config` i nie wykonuje ponownej próby
-- [ ] 2.5 `usage.cost` i `data.model` pojawiają się w logu
+- [x] 2.3 Wywołanie z prawidłowym kluczem zwraca trzy propozycje po polsku, zgodne ze schematem
+- [x] 2.4 Celowo błędny klucz daje kategorię `config` i nie wykonuje ponownej próby
+- [x] 2.5 `usage.cost` i `data.model` pojawiają się w logu
 
 ### Faza 3: Trasa API
 
