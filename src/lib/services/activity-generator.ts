@@ -1,5 +1,6 @@
 import { OPENROUTER_API_KEY, OPENROUTER_MODEL } from "astro:env/server";
 import type { ActivityDraft } from "@/types";
+import { ATTEMPT_TIMEOUT_MS, MIN_RETRY_BUDGET_MS, RETRY_BACKOFF_MS, TOTAL_BUDGET_MS } from "@/lib/day-plan-limits";
 import { dayPlanProposalSchema, toActivityDrafts } from "./day-plan-contract";
 import responseJsonSchema from "./prompts/day-plan.schema.json";
 import systemPrompt from "./prompts/day-plan.pl.md?raw";
@@ -22,15 +23,10 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
  */
 const DEFAULT_MODEL = "openai/gpt-5.6-luna";
 
-// The NFR allows a generation to legitimately take 10-30s, so a single attempt is
-// given headroom above that. TOTAL_BUDGET_MS then caps the retry path: the plan
-// commits to a worst case of roughly 60s, and a naive "retry after a 45s timeout"
-// would silently make it 90s. Before retrying we spend only what is left of the
-// budget, and skip the retry entirely if too little remains to be worth it.
-const ATTEMPT_TIMEOUT_MS = 45_000;
-const TOTAL_BUDGET_MS = 60_000;
-const MIN_RETRY_BUDGET_MS = 5_000;
-const RETRY_BACKOFF_MS = 1_000;
+// The attempt timeout and the total budget come from `@/lib/day-plan-limits`,
+// which the progress indicator reads as well: it derives the moment a retry can
+// be announced from the same two numbers. Before retrying we spend only what is
+// left of the budget, and skip the retry entirely if too little remains.
 
 const TEMPERATURE = 0.8;
 const MAX_TOKENS = 1200;

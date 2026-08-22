@@ -652,32 +652,32 @@ Sekret w CI **nie jest wymagany**, bo pola są opcjonalne w `env.schema` — bui
 
 #### Automated
 
-- [x] 3.1 Lint przechodzi: `npm run lint`
-- [x] 3.2 Build przechodzi: `npm run build`
-- [x] 3.3 `curl` bez sesji zwraca 401 i `Content-Type: application/json`
-- [x] 3.4 `curl` z hasłem dłuższym niż 2000 znaków zwraca 400
+- [x] 3.1 Lint przechodzi: `npm run lint` — 07bbb73
+- [x] 3.2 Build przechodzi: `npm run build` — 07bbb73
+- [x] 3.3 `curl` bez sesji zwraca 401 i `Content-Type: application/json` — 07bbb73
+- [x] 3.4 `curl` z hasłem dłuższym niż 2000 znaków zwraca 400 — 07bbb73
 
 #### Manual
 
-- [x] 3.5 `curl` z ważną sesją zwraca trzy propozycje po polsku
-- [x] 3.6 Odpowiedź błędu niesie `retryable` zgodne z kategorią awarii
+- [x] 3.5 `curl` z ważną sesją zwraca trzy propozycje po polsku — 07bbb73
+- [x] 3.6 Odpowiedź błędu niesie `retryable` zgodne z kategorią awarii — 07bbb73
 
 ### Faza 4: Interfejs `/plan`
 
 #### Automated
 
-- [ ] 4.1 Lint przechodzi: `npm run lint`
-- [ ] 4.2 Build przechodzi: `npm run build`
-- [ ] 4.3 Wejście na `/plan` bez sesji przekierowuje na `/auth/signin`
+- [x] 4.1 Lint przechodzi: `npm run lint`
+- [x] 4.2 Build przechodzi: `npm run build`
+- [x] 4.3 Wejście na `/plan` bez sesji przekierowuje na `/auth/signin`
 
 #### Manual
 
-- [ ] 4.4 Pełny przepływ: logowanie → `/plan` → data + hasło → trzy propozycje po polsku
-- [ ] 4.5 Wskaźnik postępu zmienia się przez całą operację; ponowna próba ma osobny etap
-- [ ] 4.6 „Generuj ponownie" daje nowy zestaw propozycji dla tego samego hasła
-- [ ] 4.7 Brak klucza OpenRoutera daje komunikat bez przycisku ponowienia
-- [ ] 4.8 Cały tekst na `/plan` jest po polsku
-- [ ] 4.9 Podwójne kliknięcie „Generuj" nie wysyła dwóch żądań
+- [x] 4.4 Pełny przepływ: logowanie → `/plan` → data + hasło → trzy propozycje po polsku
+- [x] 4.5 Wskaźnik postępu zmienia się przez całą operację; ponowna próba ma osobny etap
+- [x] 4.6 „Generuj ponownie" daje nowy zestaw propozycji dla tego samego hasła
+- [x] 4.7 Brak klucza OpenRoutera daje komunikat bez przycisku ponowienia
+- [x] 4.8 Cały tekst na `/plan` jest po polsku
+- [x] 4.9 Podwójne kliknięcie „Generuj" nie wysyła dwóch żądań
 
 ### Faza 5: Bramka jakości — odbiór promptu i wybór modelu
 

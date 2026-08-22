@@ -1,25 +1,12 @@
 import { z } from "zod";
 import type { ActivityDraft } from "@/types";
+import { ACTIVITY_COUNT, DESCRIPTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
 
-// ---------------------------------------------------------------------------
-// Bounds
-// ---------------------------------------------------------------------------
-// These mirror the CHECK constraints from
-// `supabase/migrations/20260720162247_bound_plan_and_activity_input.sql`.
-// S-01 writes nothing to the database, so nothing here is enforced by Postgres
-// yet - which is exactly why the bounds have to live in the contract. A model
-// that returns a 300-character title would otherwise pass S-01 and only fail on
-// the CHECK in S-02: a different slice, a different commit, a different
-// debugging context. Keeping them aligned costs one line per field now.
-//
-// If the migration changes, these change with it. They are the same knob.
+// The bounds live in `@/lib/day-plan-limits` because the React island needs them
+// too and must not pull zod into the client bundle. See that module for why they
+// are what they are.
 
-const TITLE_MAX = 200;
-const DESCRIPTION_MAX = 4000;
-const PROMPT_MAX = 2000;
-
-/** How many proposals one generation returns. Mirrors `day-plan.schema.json`. */
-export const ACTIVITY_COUNT = 3;
+export { ACTIVITY_COUNT };
 
 // ---------------------------------------------------------------------------
 // Model output
