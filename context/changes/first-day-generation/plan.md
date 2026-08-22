@@ -639,28 +639,28 @@ Sekret w CI **nie jest wymagany**, bo pola są opcjonalne w `env.schema` — bui
 
 #### Automated
 
-- [x] 2.1 Lint przechodzi: `npm run lint`
-- [x] 2.2 Build przechodzi: `npm run build`
+- [x] 2.1 Lint przechodzi: `npm run lint` — 255a9a4
+- [x] 2.2 Build przechodzi: `npm run build` — 255a9a4
 
 #### Manual
 
-- [x] 2.3 Wywołanie z prawidłowym kluczem zwraca trzy propozycje po polsku, zgodne ze schematem
-- [x] 2.4 Celowo błędny klucz daje kategorię `config` i nie wykonuje ponownej próby
-- [x] 2.5 `usage.cost` i `data.model` pojawiają się w logu
+- [x] 2.3 Wywołanie z prawidłowym kluczem zwraca trzy propozycje po polsku, zgodne ze schematem — 255a9a4
+- [x] 2.4 Celowo błędny klucz daje kategorię `config` i nie wykonuje ponownej próby — 255a9a4
+- [x] 2.5 `usage.cost` i `data.model` pojawiają się w logu — 255a9a4
 
 ### Faza 3: Trasa API
 
 #### Automated
 
-- [ ] 3.1 Lint przechodzi: `npm run lint`
-- [ ] 3.2 Build przechodzi: `npm run build`
-- [ ] 3.3 `curl` bez sesji zwraca 401 i `Content-Type: application/json`
-- [ ] 3.4 `curl` z hasłem dłuższym niż 2000 znaków zwraca 400
+- [x] 3.1 Lint przechodzi: `npm run lint`
+- [x] 3.2 Build przechodzi: `npm run build`
+- [x] 3.3 `curl` bez sesji zwraca 401 i `Content-Type: application/json`
+- [x] 3.4 `curl` z hasłem dłuższym niż 2000 znaków zwraca 400
 
 #### Manual
 
-- [ ] 3.5 `curl` z ważną sesją zwraca trzy propozycje po polsku
-- [ ] 3.6 Odpowiedź błędu niesie `retryable` zgodne z kategorią awarii
+- [x] 3.5 `curl` z ważną sesją zwraca trzy propozycje po polsku
+- [x] 3.6 Odpowiedź błędu niesie `retryable` zgodne z kategorią awarii
 
 ### Faza 4: Interfejs `/plan`
 
