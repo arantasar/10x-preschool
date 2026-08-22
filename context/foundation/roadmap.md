@@ -120,6 +120,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:**
   - Czy tydzień to N niezależnych wywołań LLM (per dzień) czy jedno wywołanie wsadowe — wpływa na koszt, postęp i izolację regeneracji — Owner: TBD. Block: no.
+  - Jak odróżnić pięć dni od siebie: S-01 waliduje `plan_date`, ale **nie przekazuje jej do modelu** (`src/pages/api/day-plan/generate.ts` — „S-01 stores nothing, so the date only labels the request"). Przy jednym dniu to bez znaczenia; przy pięciu dniach z jednego hasła brak dnia w promptcie zamienia „tydzień zajęć" w „pięć razy to samo". Do rozstrzygnięcia razem z pytaniem o wsadowość: dzień w promptcie, wiedza o już wygenerowanych dniach, czy jedno wywołanie na cały tydzień — Owner: TBD. Block: no. (źródło: `/10x-impl-review` S-01, F4)
 - **Risk:** Rozszerza udowodniony przepływ dzienny na skalę tygodnia — realna jednostka pracy nauczyciela. Sekwencjonowane po S-01 (ten sam mechanizm generowania) i F-01 (zapis wielu dni). Zagrożenie: koszt API i czas operacji rosną liniowo z dniami; przy granulacji per-dzień postęp i regeneracja zostają izolowane zgodnie z AC US-01.
 - **Status:** proposed
 

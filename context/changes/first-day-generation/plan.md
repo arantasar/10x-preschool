@@ -312,6 +312,23 @@ traktowane jako awaria **przed** `JSON.parse`. Jedna ponowna próba z backoffem 
 kategorii `transient`; `config` i `invalid` wracają natychmiast. Log przy każdym zakończeniu:
 `usage.cost` i `data.model` (zasila Otwarte Pytanie Roadmapowe nr 2 o limit regeneracji).
 
+### Addendum (2026-08-22, z `/10x-impl-review`)
+
+Kontrakt powyżej wymaga `provider: { require_parameters: true, data_collection: "deny" }`.
+Implementacja wysyła **wyłącznie** `data_collection: "deny"`; `require_parameters` został świadomie
+pominięty. Powód: z tym parametrem każdy endpoint domyślnego modelu wypadał z routingu
+(„No endpoints found that can handle the requested parameters") — czyli dokładnie zawężenie
+routingu, przed którym ostrzega `context/foundation/openrouter-api.md` § 3.
+
+Co to kosztuje: dostawca może przyjąć `response_format` i po cichu je zignorować, a żądanie tego
+nie wykryje. Łapie to dopiero `dayPlanProposalSchema` — proza albo kształt spoza kontraktu nie
+przechodzi walidacji i wraca jako `invalid`, czyli kategoria ponawialna. Awaria pozostaje więc
+widoczna i odwracalna, przenosi się tylko z czasu routingu na czas parsowania i kosztuje jedno
+zmarnowane wywołanie.
+
+Pełne uzasadnienie stoi przy kodzie: `src/lib/services/activity-generator.ts` → `buildRequestBody`.
+Przy zmianie modelu (S-03) warto sprawdzić ponownie, czy `require_parameters` da się włączyć.
+
 ### Success Criteria
 
 #### Automated Verification
