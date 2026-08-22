@@ -1,0 +1,19 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787410524-UegoLBbRt4AUBg6UqPp6","object":"chat.completion","created":1787410524,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Jesienny las malowany gąbką\",\"opis\":\"Nauczyciel przygotowuje kartki, farby w jesiennych kolorach i kawałki gąbki. Dzieci malują pnie drzew pędzlem, a następnie odbijają gąbką kolorowe liście i leśne ścieżki. Nauczyciel rozmawia z dziećmi o barwach jesieni i zachęca do dodawania szczegółów, takich jak grzyby, szyszki lub kasztany.\"},{\"tytul\":\"Spacer zwierząt po leśnej ścieżce\",\"opis\":\"Nauczyciel układa z obręczy i szarf leśną ścieżkę, a w kilku miejscach kładzie papierowe liście lub obrazki zwierząt. Dzieci poruszają się po trasie jak leśne zwierzęta: chodzą cicho jak lisy, skaczą jak żabki i maszerują jak jeże, omijając przeszkody. Na sygnał instrumentu zatrzymują się i naśladują ruch wybranego zwierzęcia.\"},{\"tytul\":\"Leśna orkiestra jesieni\",\"opis\":\"Nauczyciel rozdaje dzieciom proste instrumenty perkusyjne, a chętne dzieci mogą wykorzystać szeleszczące papierowe liście. Dzieci tworzą odgłosy jesiennego lasu: delikatne stukanie oznacza spadające liście, potrząsanie instrumentem szum wiatru, a ciche uderzenia kroki zwierząt. Nauczyciel prowadzi krótką opowieść muzyczną, pokazując gestem, kiedy grać ciszej, głośniej, szybciej lub wolniej.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1234,"completion_tokens":420,"total_tokens":1654,"cost":0.00053129,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1222,"cache_write_tokens":9,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00053129,"upstream_inference_prompt_cost":0.00002729,"upstream_inference_completions_cost":0.000504},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

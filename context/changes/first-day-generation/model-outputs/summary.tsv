@@ -1,0 +1,21 @@
+model	keyword_id	keyword	http	finish_reason	elapsed_s	cost	model_used	activities	reasoning_dropped	status
+google/gemini-3.7-flash	neutralne	Kolory	200	length	10	0.002688375	google/gemini-3.7-flash	-	yes	unparsable
+google/gemini-3.7-flash	kulturowe	Andrzejki	200	length	10	0.00268875	google/gemini-3.7-flash	-	yes	unparsable
+google/gemini-3.7-flash	sezonowe	Jesień w lesie	200	length	9	0.0026895	google/gemini-3.7-flash	-	yes	unparsable
+google/gemini-3.7-flash	trudne	Dzień Matki	200	stop	6	0.001716	google/gemini-3.7-flash	3	yes	ok
+google/gemini-3.7-flash	abstrakcyjne	Cisza	200	length	10	0.00268875	google/gemini-3.7-flash	-	yes	unparsable
+openai/gpt-5.6-luna	neutralne	Kolory	200	stop	4	0.0008044	openai/gpt-5.6-luna	3	no	ok
+openai/gpt-5.6-luna	kulturowe	Andrzejki	200	stop	4	0.00051064	openai/gpt-5.6-luna	3	no	ok
+openai/gpt-5.6-luna	sezonowe	Jesień w lesie	200	stop	4	0.00053129	openai/gpt-5.6-luna	3	no	ok
+openai/gpt-5.6-luna	trudne	Dzień Matki	200	stop	4	0.00052289	openai/gpt-5.6-luna	3	no	ok
+openai/gpt-5.6-luna	abstrakcyjne	Cisza	200	stop	5	0.00051279	openai/gpt-5.6-luna	3	no	ok
+deepseek/deepseek-v4-flash	neutralne	Kolory	200	stop	11	0.00030142	deepseek/deepseek-v4-flash	3	no	ok
+deepseek/deepseek-v4-flash	kulturowe	Andrzejki	200	stop	4	0.0001299116	deepseek/deepseek-v4-flash	3	no	ok
+deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	200000		45			-	no	http_200000
+deepseek/deepseek-v4-flash	trudne	Dzień Matki	200	stop	31	0.000160111	deepseek/deepseek-v4-flash	3	no	ok
+deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	200	stop	6	0.00017478	deepseek/deepseek-v4-flash	3	no	ok
+google/gemini-3.7-flash	neutralne	Kolory	200	stop	12	0.003487125	google/gemini-3.7-flash	3	yes	ok
+google/gemini-3.7-flash	kulturowe	Andrzejki	200	stop	12	0.003125625	google/gemini-3.7-flash	3	yes	ok
+google/gemini-3.7-flash	sezonowe	Jesień w lesie	200	stop	10	0.002807625	google/gemini-3.7-flash	3	yes	ok
+google/gemini-3.7-flash	abstrakcyjne	Cisza	200	stop	9	0.00301125	google/gemini-3.7-flash	3	yes	ok
+deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	200	stop	4	0.00008625456	deepseek/deepseek-v4-flash	3	no	ok

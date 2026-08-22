@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "properties": {
+    "aktywnosci": {
+      "type": "array",
+      "description": "Dokładnie trzy propozycje aktywności dla polskiej grupy przedszkolnej, dzieci w wieku 3-6 lat. Propozycje różnią się formą (np. plastyczna, ruchowa, muzyczna, sensoryczna, poznawcza).",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "properties": {
+          "tytul": {
+            "type": "string",
+            "description": "Krótki, konkretny tytuł aktywności po polsku, maksymalnie 200 znaków. Nazywa to, co dzieci robią.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "opis": {
+            "type": "string",
+            "description": "Opis przebiegu aktywności po polsku, od 2 do 4 zdań, maksymalnie 4000 znaków. Treść bezpieczna i adekwatna rozwojowo dla dzieci 3-6 lat, wykonalna z wyposażeniem zwykłej sali przedszkolnej.",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": ["tytul", "opis"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["aktywnosci"],
+  "additionalProperties": false
+}

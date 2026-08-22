@@ -1,0 +1,17 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787410548-ra2kTnbWKnvWnHSnFUHw","object":"chat.completion","created":1787410548,"model":"deepseek/deepseek-v4-flash","provider":"Baidu","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\n  \"aktywnosci\": [\n    {\n      \"tytul\": \"Wróżby z butów – zabawa ruchowa\",\n      \"opis\": \"Dzieci ustawiają swoje buty w rzędzie od progu sali. Nauczyciel prowadzi zabawę w „wróżenie”, które buty dotrą do wyznaczonej linii. Następnie dzieci biegają po sali, a na sygnał ustawiają buty w nowej kolejności. Ćwiczy to orientację przestrzenną i spostrzegawczość.\"\n    },\n    {\n      \"tytul\": \"Lanie wosku – zabawa sensoryczna\",\n      \"opis\": \"Nauczyciel topi wosk w małym garnuszku (bez udziału dzieci), a następnie przelewa go przez sitko do miski z zimną wodą. Dzieci obserwują, jak wosk zastyga w fantazyjne kształty. Każde dziecko dostaje swój kawałek wosku i opowiada, co widzi – rozwija wyobraźnię i mowę.\"\n    },\n    {\n      \"tytul\": \"Andrzejkowe serca – praca plastyczna\",\n      \"opis\": \"Dzieci wycinają z czerwonego papieru duże serca. Na każde serce naklejają wycięte z gazet litery imion (lub rysują je kredkami). Nauczyciel pomaga odczytać imiona, a dzieci przyklejają serca na wspólny plakat. Zajęcie ćwiczy małą motorykę i współpracę.\"\n    }\n  ]\n}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1396,"completion_tokens":381,"total_tokens":1777,"cost":0.0001299116,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.0001299116,"upstream_inference_prompt_cost":0.0000840392,"upstream_inference_completions_cost":0.0000458724},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

@@ -1,0 +1,21 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787410528-weM7H30k4xAKbWspQe9i","object":"chat.completion","created":1787410528,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Kolorowe kwiaty dla mamy\",\"opis\":\"Nauczyciel przygotowuje kartki, farby, pędzle i kredki. Dzieci malują na kartkach kwiaty, a po wyschnięciu dorysowują łodygi, liście i wzory według własnego pomysłu. Nauczyciel pomaga w podpisaniu prac i zachęca dzieci do opowiedzenia, jaki kwiat chciałyby podarować mamie.\"},{\"tytul\":\"Spacer po ogrodzie dla mamy\",\"opis\":\"Nauczyciel układa w sali trasę z obręczy, szarf i klocków, a następnie wyjaśnia, że dzieci wykonują zadania, aby przygotować miły spacer dla mamy. Dzieci przechodzą po wyznaczonej ścieżce, omijają klocki, przenoszą lekką chustkę i na sygnał wykonują gesty pokazujące podlewanie kwiatów, wąchanie kwiatka i machanie na powitanie. Nauczyciel dostosowuje tempo do możliwości grupy i przypomina o bezpiecznym poruszaniu się.\"},{\"tytul\":\"Piosenka i rytm dla mamy\",\"opis\":\"Nauczyciel wybiera prostą, znaną dzieciom piosenkę o rodzinie lub wiośnie i dzieli grupę na małe zespoły z tamburynami, grzechotkami albo drewnianymi klockami. Dzieci wystukują spokojny rytm, klaszczą i wykonują proste gesty ilustrujące słowa piosenki. Na zakończenie wspólnie śpiewają utwór, a nauczyciel pomaga przygotować krótki występ dla mam.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1234,"completion_tokens":413,"total_tokens":1647,"cost":0.00052289,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1222,"cache_write_tokens":9,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00052289,"upstream_inference_prompt_cost":0.00002729,"upstream_inference_completions_cost":0.0004956},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}
