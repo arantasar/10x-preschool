@@ -35,7 +35,7 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 
 | ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status   |
 | ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | -------- |
-| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | ready    |
+| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done     |
 | S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | in-progress |
 | S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | proposed |
 | S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | proposed |
@@ -74,7 +74,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Sekwencjonowane jako minimalny enabler, nie „cała baza danych" — schemat obejmuje tylko to, czego potrzebują S-02 i S-03. Ryzyko: źle ustawione RLS wycieka plany między kontami (narusza NFR prywatności), dlatego polityki per-operacja są częścią kontraktu foundacji, a nie dodatkiem.
-- **Status:** ready
+- **Status:** done
 
 ## Slices
 
@@ -148,4 +148,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
-(Empty on first generation — `/10x-archive` appends here when a matching change is archived.)
+- **F-01: (foundation) istnieje minimalny schemat przechowywania planów (dzień → hasło, propozycje, stan zaakceptowania) z politykami RLS, które udostępniają wiersze wyłącznie właścicielowi konta.** — Archived 2026-08-22 → `context/archive/2026-07-18-plan-persistence-baseline/`. Lesson: —.
