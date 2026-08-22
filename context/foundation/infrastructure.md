@@ -1,6 +1,8 @@
 ---
 project: 10xPreschool
 researched_at: 2026-05-31
+corrected_at: 2026-08-22
+correction_note: Risk 1 revised and Risk 3 withdrawn — both rested on conflating Workers CPU time with wall-clock time; verified against Cloudflare limits docs.
 recommended_platform: Cloudflare Workers
 runner_up: Fly.io
 context_type: mvp
@@ -15,7 +17,7 @@ tech_stack:
 
 **Deploy on Cloudflare Workers.**
 
-The project already ships `@astrojs/cloudflare` adapter and a `wrangler.jsonc` — zero adapter migration cost. Cloudflare is the only candidate to score Pass on all five agent-friendly criteria: CLI-first ops via wrangler, fully managed edge runtime, docs published as `llms.txt` + markdown, deterministic one-command deploy, and a GA MCP server suite. At $5/month (Workers Paid, required for LLM routes — see Risk 1), it is the lowest-cost path. The three interview constraints — minimize cost, no familiarity advantage elsewhere, single region (EU) — all point the same direction.
+The project already ships `@astrojs/cloudflare` adapter and a `wrangler.jsonc` — zero adapter migration cost. Cloudflare is the only candidate to score Pass on all five agent-friendly criteria: CLI-first ops via wrangler, fully managed edge runtime, docs published as `llms.txt` + markdown, deterministic one-command deploy, and a GA MCP server suite. At $5/month (Workers Paid — recommended for headroom on LLM routes, though **not** the hard prerequisite this document originally claimed; see Risk 1), it is the lowest-cost path. The three interview constraints — minimize cost, no familiarity advantage elsewhere, single region (EU) — all point the same direction.
 
 ## Platform Comparison
 
@@ -43,7 +45,7 @@ The project already ships `@astrojs/cloudflare` adapter and a `wrangler.jsonc` �
 
 #### 1. Cloudflare Workers (Recommended)
 
-Native fit for the existing stack: `@astrojs/cloudflare` v13+ is the installed adapter, `wrangler.jsonc` is already present, and `astro dev` uses the real workerd runtime for production parity. Five-of-five criteria pass. Workers Paid at $5/month is the lowest absolute cost among viable options. `wrangler tail`, `wrangler rollback`, and `wrangler versions list` give the agent a full operational loop. The `llms.txt` + `llms-full.txt` endpoints and per-page Markdown delivery make the docs natively agent-readable. The GA Cloudflare MCP suite (mcp.cloudflare.com) and documented Claude Code integration are a differentiating signal. ReadableStream/SSE streaming is GA with no extra flags. The one required action before any deploy: upgrade from the free plan to Workers Paid.
+Native fit for the existing stack: `@astrojs/cloudflare` v13+ is the installed adapter, `wrangler.jsonc` is already present, and `astro dev` uses the real workerd runtime for production parity. Five-of-five criteria pass. Workers Paid at $5/month is the lowest absolute cost among viable options. `wrangler tail`, `wrangler rollback`, and `wrangler versions list` give the agent a full operational loop. The `llms.txt` + `llms-full.txt` endpoints and per-page Markdown delivery make the docs natively agent-readable. The GA Cloudflare MCP suite (mcp.cloudflare.com) and documented Claude Code integration are a differentiating signal. ReadableStream/SSE streaming is GA with no extra flags. Upgrading from the free plan to Workers Paid is advisable before a real deploy, for CPU headroom on SSR + response parsing — see the corrected Risk 1.
 
 #### 2. Fly.io
 
@@ -57,11 +59,11 @@ Simple Node.js PaaS with a 100-minute request timeout ceiling (irrelevant in pra
 
 ### Devil's Advocate — Weaknesses
 
-1. **Free tier CPU limit is a silent deploy-time trap**: the Workers free plan's 10ms CPU limit will terminate every LLM API route call before a response is returned. The app deploys and previews fine; the failure only appears at runtime. Workers Paid ($5/month) is a hard prerequisite, not an optional upgrade.
+1. **Free tier CPU budget is tight — but not for the reason first recorded**: *(corrected 2026-08-22 against Cloudflare docs.)* The original claim was that the free plan's 10ms CPU limit "will terminate every LLM API route call". That conflates CPU time with wall-clock time. Cloudflare's limits page is explicit: *"CPU time measures how long the CPU spends executing your Worker code. Waiting on network requests (such as `fetch()` calls, KV reads, or database queries) does not count toward CPU time."* A 25-second wait on an LLM provider costs approximately zero CPU. What **does** consume the 10ms budget is Astro's SSR render plus parsing a large JSON response body — genuinely tight, but a matter of headroom, not a guaranteed runtime failure. Workers Paid ($5/month, default 30s CPU, configurable to 5 minutes) remains the recommendation; it is not the pass/fail gate this document originally asserted.
 
 2. **`disable_nodejs_process_v2` compatibility flag is required but absent from the starter**: with `compatibility_date >= 2025-09-15` (needed for current security patches), Astro middleware breaks silently in production. Local `wrangler dev` uses a pinned workerd version that may not reproduce the bug. This flag must be added to `wrangler.jsonc` before the first deploy with a 2025+ compatibility date.
 
-3. **30-second CPU ceiling on Workers Paid bites long LLM calls**: a non-streaming LLM response that hits 30 seconds of CPU time will be terminated. The tech-stack hand-off already flags "the 10–30-second generation window approaches Cloudflare's edge wall-time limit." Streaming LLM responses is the mitigation and must be implemented intentionally — it is not the starter's default for API routes.
+3. **~~30-second CPU ceiling bites long LLM calls~~ — WITHDRAWN**: *(corrected 2026-08-22 against Cloudflare docs.)* This risk does not exist as described. A non-streaming LLM call does not accumulate CPU time while awaiting the provider's response, and Cloudflare states there is *"no hard limit on duration for HTTP-triggered Workers. As long as the client remains connected, the Worker can continue processing, making subrequests, and streaming a response body."* The tech-stack hand-off's phrase "approaches Cloudflare's edge wall-time limit" describes a limit that is not enforced for HTTP-triggered Workers. **Streaming is therefore a UX decision, not a platform mitigation** — it belongs to the roadmap's "widoczny postęp operacji" requirement for S-01, and a non-streaming call behind a progress indicator is a valid MVP. Do not treat it as a launch blocker.
 
 4. **Cloudflare Auto Minify silently breaks React island hydration**: enabling Auto Minify in the Cloudflare dashboard (a common "optimize" action when connecting a custom domain) causes client-side hydration mismatches. The calendar and plan editor would render visually but lose all interactivity. Must be disabled in the Cloudflare dashboard.
 
@@ -69,7 +71,7 @@ Simple Node.js PaaS with a 100-minute request timeout ceiling (irrelevant in pra
 
 ### Pre-Mortem — How This Could Fail
 
-The 10xPreschool app was deployed to Cloudflare Workers and worked perfectly during the developer's evening testing sessions. On launch day, the first teachers tried the AI generation feature — every call returned a 500. The developer hadn't upgraded from the Workers free plan; the 10ms CPU limit was killing the LLM route at runtime. After upgrading to Workers Paid, generation worked — but occasionally hung on a blank screen when the LLM took over 30 seconds, hitting the CPU ceiling. The developer adds streaming to fix this. Two months later, they update `compatibility_date` in wrangler.jsonc to get a critical security patch. Teachers can no longer log in — Astro middleware broke silently because `disable_nodejs_process_v2` was never added to the compatibility flags. The bug doesn't reproduce locally. Three evenings of debugging follow. Meanwhile, subtle React hydration failures appear in the calendar component — the developer had enabled Cloudflare Auto Minify when setting up the custom domain, not knowing it breaks client-side island hydration.
+The 10xPreschool app was deployed to Cloudflare Workers and worked perfectly during the developer's evening testing sessions. On launch day, the first teachers tried the AI generation feature — intermittent 500s on the heaviest pages. *(Corrected 2026-08-22: the original telling blamed the free plan's 10ms CPU limit for killing every LLM call, and a 30s CPU ceiling for hangs on slow generations. Neither mechanism is real — I/O wait is not CPU time, and HTTP Workers have no enforced duration limit. What the free tier can genuinely squeeze is SSR render plus large-JSON parsing, which is intermittent and load-dependent rather than total.)* Two months later, they update `compatibility_date` in wrangler.jsonc to get a critical security patch. Teachers can no longer log in — Astro middleware broke silently because `disable_nodejs_process_v2` was never added to the compatibility flags. The bug doesn't reproduce locally. Three evenings of debugging follow. Meanwhile, subtle React hydration failures appear in the calendar component — the developer had enabled Cloudflare Auto Minify when setting up the custom domain, not knowing it breaks client-side island hydration.
 
 ### Unknown Unknowns
 
@@ -97,9 +99,9 @@ The 10xPreschool app was deployed to Cloudflare Workers and worked perfectly dur
 
 | Risk                                                       | Source           | Likelihood                                      | Impact                           | Mitigation                                                                                                                |
 | ---------------------------------------------------------- | ---------------- | ----------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Free tier CPU limit (10ms) terminates LLM routes silently  | Research finding | High (likely to be hit on first real deploy)    | High (core feature broken)       | Upgrade to Workers Paid ($5/mo) before any non-dev deploy                                                                 |
+| Free tier CPU budget (10ms) is tight for SSR + JSON parsing (corrected: I/O wait is NOT CPU) | Research finding, corrected 2026-08-22 | Medium (load-dependent, not guaranteed)    | Medium (intermittent 500s, not total failure)       | Upgrade to Workers Paid ($5/mo) for headroom before any non-dev deploy                                                                 |
 | `disable_nodejs_process_v2` flag missing breaks middleware | Devil's advocate | Medium (triggered on compatibility date update) | High (auth/login broken)         | Add `"disable_nodejs_process_v2"` to `compatibility_flags` in `wrangler.jsonc` now                                        |
-| 30s CPU ceiling terminates non-streaming LLM responses     | Devil's advocate | Medium (depends on LLM latency)                 | High (generation fails silently) | Implement streaming for all LLM API routes before launch                                                                  |
+| ~~30s CPU ceiling terminates non-streaming LLM responses~~ WITHDRAWN — mechanism does not exist | Devil's advocate, withdrawn 2026-08-22 | None (not a real failure mode)                 | None | No platform mitigation needed. Streaming is a UX choice for progress feedback, not a launch blocker.                                                                  |
 | Auto Minify breaks React island hydration                  | Devil's advocate | Medium (easy to accidentally enable)            | Medium (interactive UI broken)   | Disable Auto Minify in Cloudflare dashboard immediately after connecting domain                                           |
 | Workers vs Pages confusion wastes deploy effort            | Unknown unknowns | Low-Medium (one-time, front-loaded)             | Medium (hours of debugging)      | Confirm `wrangler deploy` (Workers) is the correct command; ignore `deployment_target: cloudflare-pages` in tech-stack.md |
 | Wrangler local dev masks production compatibility bugs     | Unknown unknowns | Low                                             | Medium (hard to diagnose)        | Always smoke-test auth flows and LLM routes against a real staging Workers deployment                                     |
@@ -107,7 +109,7 @@ The 10xPreschool app was deployed to Cloudflare Workers and worked perfectly dur
 
 ## Getting Started
 
-1. **Upgrade to Workers Paid** (required before any real deploy): visit dash.cloudflare.com → Workers & Pages → Plans → upgrade to Workers Paid ($5/month). Without this, every LLM route returns a CPU exceeded error.
+1. **Upgrade to Workers Paid** (recommended before any real deploy, not a hard gate): visit dash.cloudflare.com → Workers & Pages → Plans → upgrade to Workers Paid ($5/month). *(Corrected 2026-08-22 — this step previously read "required", on the false premise that the free tier's 10ms CPU limit terminates every LLM route. Waiting on the provider is I/O, not CPU. The real reason to upgrade is headroom for Astro's SSR render plus parsing a large JSON response, which can exceed 10ms under load.)*
 
 2. **Add the compatibility flag workaround** to `wrangler.jsonc`:
 
@@ -137,7 +139,7 @@ The 10xPreschool app was deployed to Cloudflare Workers and worked perfectly dur
    ```bash
    npx wrangler tail --format json
    ```
-   Confirm the LLM API route completes without a CPU exceeded error and that auth cookie flow works end-to-end.
+   Confirm the LLM API route returns a complete response under realistic generation latency (a slow call is I/O wait, not CPU, so it should not trip any limit) and that the auth cookie flow works end-to-end.
 
 ## Out of Scope
 

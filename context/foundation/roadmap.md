@@ -58,7 +58,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Backend / API:** partial — trasy API Astro istnieją tylko dla auth (`src/pages/api/auth/{signin,signup,signout}.ts`); brak tras domenowych / generowania.
 - **Data:** absent — biblioteki Supabase zainstalowane, ale brak `supabase/migrations`, brak schematu i tabel.
 - **Auth:** present — klient SSR Supabase (`src/lib/supabase.ts`), middleware z `PROTECTED_ROUTES` (`src/middleware.ts`), endpointy + strony signin/signup/signout.
-- **Deploy / infra:** present — `wrangler.jsonc`, adapter `@astrojs/cloudflare`, `.github/workflows/ci.yml`. Akcje przed-deployowe wciąż otwarte wg `infrastructure.md` (Workers Paid, flagi kompatybilności, streaming dla tras LLM).
+- **Deploy / infra:** present — `wrangler.jsonc`, adapter `@astrojs/cloudflare`, `.github/workflows/ci.yml`. Akcje przed-deployowe wciąż otwarte wg `infrastructure.md` (Workers Paid — zalecane dla zapasu CPU, nie twardy wymóg; flagi kompatybilności). Streaming tras LLM **skreślony z tej listy 2026-08-22**: nie jest mitygacją limitu platformy, tylko decyzją UX — patrz S-01 § Decyzje.
 - **Observability:** absent — brak biblioteki logowania / śledzenia błędów w zależnościach.
 
 ## Foundations
@@ -86,9 +86,11 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** —
 - **Parallel with:** F-01
 - **Blockers:** —
-- **Unknowns:**
-  - Jak wymusić guardrail bezpieczeństwa treści (żadna propozycja nieodpowiednia dla 3–6 lat) — przez prompt, post-filtr czy oba? — Owner: user. Block: no.
-  - Czy długie wywołanie LLM (10–30 s) wymaga streamingu, by zmieścić się w limicie CPU Cloudflare Workers (patrz `infrastructure.md` Ryzyko 3) — Owner: TBD. Block: no.
+- **Unknowns:** — (wszystkie rozstrzygnięte, patrz niżej)
+- **Decyzje (2026-08-22, user):**
+  - **Guardrail bezpieczeństwa treści — na poziomie promptu.** Bez post-filtra w MVP. Wymóg wieku 3–6 lat i języka polskiego wchodzi do instrukcji systemowej. Świadomie przyjęte ryzyko, nie przeoczenie: nie ma drugiej warstwy, która złapie wpadkę modelu, więc jakość promptu jest jedynym zabezpieczeniem guardrailu, który PRD nazywa nienegocjowalnym. Jeśli akceptacja propozycji będzie niska albo pojawi się treść nieodpowiednia — post-filtr wraca na stół.
+  - **Dostawca LLM — OpenRouter.** Model wpisany na sztywno w pierwszej iteracji; lista modeli do wyboru przez użytkownika to możliwe późniejsze rozszerzenie, poza zakresem S-01. Wprowadza nowy sekret (`OPENROUTER_API_KEY`) do `.env.example`, `.dev.vars` i `wrangler secret put` — czyli pierwszy sekret w projekcie poza Supabase.
+  - **Streaming NIE jest wymogiem platformy.** Pierwotna niewiadoma („czy 10–30 s wywołanie zmieści się w limicie CPU Workers", `infrastructure.md` Ryzyko 3) opierała się na pomyleniu czasu CPU z czasem ściennym. Dokumentacja Cloudflare: *„Waiting on network requests (such as `fetch()` calls, KV reads, or database queries) does not count toward CPU time"* oraz *„There is no hard limit on duration for HTTP-triggered Workers. As long as the client remains connected, the Worker can continue processing, making subrequests, and streaming a response body."* Oczekiwanie na odpowiedź OpenRoutera to I/O, nie CPU — nie kumuluje się w kierunku limitu. Streaming zostaje **decyzją UX** (roadmapowy wymóg „z widocznym postępem operacji"), a nie mitygacją limitu; prostym MVP jest wywołanie bez streamingu ze wskaźnikiem postępu. ⚠️ `infrastructure.md` (Ryzyko 1, Ryzyko 3, rejestr ryzyk, „Immediate actions") wciąż niesie starą tezę i wymaga korekty.
 - **Risk:** To slice o najwyższej wadze — niesie rdzeń hipotezy produktu i jedyną nienegocjowalną inwestycję (bezpieczeństwo + trafność generowania). Auth jest już w baseline, więc zostaje tylko dodać trasy generowania do `PROTECTED_ROUTES`. Sekwencjonowane pierwsze, bo cała reszta roadmapy ma sens tylko, jeśli jakość generowania się broni. Główne zagrożenie: niska trafność/akceptacja propozycji lub treść nieodpowiednia dla wieku — oba widoczne dopiero na realnym wyjściu LLM.
 - **Status:** ready
 
