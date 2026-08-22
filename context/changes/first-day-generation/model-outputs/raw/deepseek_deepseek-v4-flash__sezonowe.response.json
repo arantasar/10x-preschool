@@ -1,0 +1,17 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787410754-OixHPbCruxXx2IRPRjTj","object":"chat.completion","created":1787410754,"model":"deepseek/deepseek-v4-flash","provider":"Baidu","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\n  \"aktywnosci\": [\n    {\n      \"tytul\": \"Leśne skarby – sensoryczne pudełko\",\n      \"opis\": \"Nauczyciel przygotowuje pudełko wypełnione darami jesieni: szyszkami, żołędziami, kasztanami, suchymi liśćmi i kawałkami kory. Dzieci po kolei wkładają rękę do pudełka, dotykają i odgadują, co znalazły. Potem wspólnie oglądają skarby, nazywają je i układają według wielkości lub koloru.\"\n    },\n    {\n      \"tytul\": \"Wiewiórka zbiera orzechy – zabawa ruchowa\",\n      \"opis\": \"Nauczyciel rozrzuca na dywanie orzechy włoskie (lub kasztany) i ustawia kilka obręczy jako „dziuple”. Dzieci wcielają się w wiewiórki i na sygnał zbierają po jednym orzechu, przenosząc go do dowolnej dziupli. Zabawa powtarza się kilka razy, a na koniec każde dziecko liczy, ile orzechów udało mu się zgromadzić.\"\n    },\n    {\n      \"tytul\": \"Jesienne drzewo – praca plastyczna\",\n      \"opis\": \"Na dużym arkuszu szarego papieru nauczyciel rysuje kontur drzewa bez liści. Dzieci odciskają na kartkach dłonie pomalowane farbą w odcieniach czerwieni, pomarańczu i żółci, a następnie wycinają odbite liście i przyklejają je do gałęzi. Powstaje wspólne, kolorowe jesienne drzewo.\"\n    }\n  ]\n}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1398,"completion_tokens":427,"total_tokens":1825,"cost":0.00008625456,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1024,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00008625456,"upstream_inference_prompt_cost":0.00003484376,"upstream_inference_completions_cost":0.0000514108},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

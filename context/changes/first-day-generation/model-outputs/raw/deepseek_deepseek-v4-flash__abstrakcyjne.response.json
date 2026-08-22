@@ -1,0 +1,27 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787410628-RhJ5bMr11njjXbxnj7Zx","object":"chat.completion","created":1787410628,"model":"deepseek/deepseek-v4-flash","provider":"DeepInfra","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\n  \"aktywnosci\": [\n    {\n      \"tytul\": \"Słuchamy ciszy – zabawa sensoryczna\",\n      \"opis\": \"Dzieci siadają w kole na dywanie. Nauczyciel mówi: „Za chwilę zrobimy się cicho jak myszki i posłuchamy, co słychać w ciszy”. Po minucie ciszy dzieci opowiadają, co usłyszały (np. tik-tak zegara, szum kaloryfera, oddech kolegi). Zabawę powtarzamy 2–3 razy, za każdym razem wydłużając czas nasłuchiwania. Można użyć małego dzwoneczka jako sygnału do rozpoczęcia i zakończenia ciszy.\"\n    },\n    {\n      \"tytul\": \"Ciche obrazki – praca plastyczna z watą\",\n      \"opis\": \"Nauczyciel rozdaje dzieciom niebieskie kartki, watę i klej. Zadaniem dzieci jest stworzenie „cichego obrazka” – np. chmur, śpiącego kota, gwiazd na niebie – bez rozmawiania. Po skończeniu prac dzieci w ciszy oglądają obrazki kolegów i pokazują gestem, który podoba im się najbardziej. Ćwiczy to skupienie i wyrażanie emocji bez słów.\"\n    },\n    {\n      \"tytul\": \"Głuchy telefon – zabawa ruchowa z przekazywaniem dźwięku\",\n      \"opis\": \"Dzieci stoją w rzędzie. Nauczyciel szepcze pierwszej osobie proste hasło (np. „pies”, „słońce”, „miś”). Dziecko przekazuje je szeptem następnemu, a ostatnie mówi na głos, co usłyszało. Potem wszyscy wspólnie sprawdzają, czy hasło się zmieniło. Zabawa uczy uważnego słuchania i kontrolowania własnego głosu. Można powtórzyć kilka razy z różnymi hasłami.\"\n    }\n  ]\n}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":968,"completion_tokens":487,"total_tokens":1455,"cost":0.00017478,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00017478,"upstream_inference_prompt_cost":0.00008712,"upstream_inference_completions_cost":0.00008766},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

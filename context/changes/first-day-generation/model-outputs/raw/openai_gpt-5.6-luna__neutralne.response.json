@@ -1,0 +1,19 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787410516-XTCLIKKVTKzab1zwkKMt","object":"chat.completion","created":1787410516,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Tęczowe malowanie gąbką\",\"opis\":\"Nauczyciel przygotowuje kartki, farby w kilku kolorach i kawałki gąbki. Dzieci odbijają gąbkę na papierze, tworząc kolorowe plamy, paski lub tęczę, a nauczyciel zachęca do nazywania używanych barw i mieszania dwóch kolorów. Po zakończeniu prace odkładają do wyschnięcia.\"},{\"tytul\":\"Kolorowe stacje ruchowe\",\"opis\":\"Nauczyciel rozkłada w sali obręcze lub kartki w kilku kolorach i ustala, że każdy kolor oznacza inny ruch, na przykład czerwony — podskok, niebieski — obrót, żółty — klaśnięcie, a zielony — przysiad. Dzieci poruszają się przy muzyce, a po jej zatrzymaniu stają przy najbliższym kolorze i wykonują przypisane ćwiczenie. Nauczyciel zmienia tempo oraz przypomina zasady bezpiecznego poruszania się.\"},{\"tytul\":\"Muzyczne kolory\",\"opis\":\"Nauczyciel pokazuje dzieciom kolorowe kartki i przyporządkowuje każdej z nich prosty dźwięk, na przykład czerwony — uderzenie w bębenek, niebieski — potrząśnięcie grzechotką, a żółty — klaśnięcie. Dzieci obserwują podnoszone kartki i wykonują odpowiednie dźwięki, najpierw pojedynczo, a później w krótkich sekwencjach. Na koniec dzieci mogą wspólnie stworzyć własny kolorowy rytm, który nauczyciel dyryguje kartkami.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1231,"completion_tokens":414,"total_tokens":1645,"cost":0.0008044,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":1228,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.0008044,"upstream_inference_prompt_cost":0.0003076,"upstream_inference_completions_cost":0.0004968},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

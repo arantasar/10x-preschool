@@ -666,30 +666,30 @@ Sekret w CI **nie jest wymagany**, bo pola są opcjonalne w `env.schema` — bui
 
 #### Automated
 
-- [x] 4.1 Lint przechodzi: `npm run lint`
-- [x] 4.2 Build przechodzi: `npm run build`
-- [x] 4.3 Wejście na `/plan` bez sesji przekierowuje na `/auth/signin`
+- [x] 4.1 Lint przechodzi: `npm run lint` — 8bd8c22
+- [x] 4.2 Build przechodzi: `npm run build` — 8bd8c22
+- [x] 4.3 Wejście na `/plan` bez sesji przekierowuje na `/auth/signin` — 8bd8c22
 
 #### Manual
 
-- [x] 4.4 Pełny przepływ: logowanie → `/plan` → data + hasło → trzy propozycje po polsku
-- [x] 4.5 Wskaźnik postępu zmienia się przez całą operację; ponowna próba ma osobny etap
-- [x] 4.6 „Generuj ponownie" daje nowy zestaw propozycji dla tego samego hasła
-- [x] 4.7 Brak klucza OpenRoutera daje komunikat bez przycisku ponowienia
-- [x] 4.8 Cały tekst na `/plan` jest po polsku
-- [x] 4.9 Podwójne kliknięcie „Generuj" nie wysyła dwóch żądań
+- [x] 4.4 Pełny przepływ: logowanie → `/plan` → data + hasło → trzy propozycje po polsku — 8bd8c22
+- [x] 4.5 Wskaźnik postępu zmienia się przez całą operację; ponowna próba ma osobny etap — 8bd8c22
+- [x] 4.6 „Generuj ponownie" daje nowy zestaw propozycji dla tego samego hasła — 8bd8c22
+- [x] 4.7 Brak klucza OpenRoutera daje komunikat bez przycisku ponowienia — 8bd8c22
+- [x] 4.8 Cały tekst na `/plan` jest po polsku — 8bd8c22
+- [x] 4.9 Podwójne kliknięcie „Generuj" nie wysyła dwóch żądań — 8bd8c22
 
 ### Faza 5: Bramka jakości — odbiór promptu i wybór modelu
 
 #### Automated
 
-- [ ] 5.1 Skrypt wykonuje 15 wywołań i zapisuje 15 wyjść bez błędu powłoki
-- [ ] 5.2 Każde wyjście parsuje się jako JSON ze schematu: `jq` po `aktywnosci | length == 3`
+- [x] 5.1 Skrypt wykonuje 15 wywołań i zapisuje 15 wyjść bez błędu powłoki
+- [x] 5.2 Każde wyjście parsuje się jako JSON ze schematu: `jq` po `aktywnosci | length == 3`
 
 #### Manual
 
-- [ ] 5.3 `model-comparison.md` zawiera ocenę wszystkich 15 propozycji
-- [ ] 5.4 Zero treści nieodpowiednich dla dzieci 3–6 lat u wybranego modelu
-- [ ] 5.5 Co najmniej 75% propozycji wybranego modelu akceptowalnych bez edycji
-- [ ] 5.6 Propozycje dla „Andrzejek" osadzone w polskich realiach przedszkolnych
-- [ ] 5.7 `OPENROUTER_MODEL` wskazuje wybrany model, a `/plan` działa z nim na 2–3 hasłach
+- [x] 5.3 `model-comparison.md` zawiera ocenę wszystkich 15 propozycji
+- [x] 5.4 Zero treści nieodpowiednich dla dzieci 3–6 lat u wybranego modelu
+- [x] 5.5 Co najmniej 75% propozycji wybranego modelu akceptowalnych bez edycji
+- [x] 5.6 Propozycje dla „Andrzejek" osadzone w polskich realiach przedszkolnych
+- [x] 5.7 `OPENROUTER_MODEL` wskazuje wybrany model, a `/plan` działa z nim na 2–3 hasłach

@@ -14,12 +14,17 @@ import systemPrompt from "./prompts/day-plan.pl.md?raw";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 /**
- * Overridden by `OPENROUTER_MODEL`; frozen for real by the phase-5 comparison.
+ * Overridden by `OPENROUTER_MODEL`. Frozen by the phase-5 comparison, which
+ * graded three candidates over five keywords: see
+ * `context/changes/first-day-generation/model-comparison.md`.
  *
- * Not the model the research recommended. `google/gemini-3.7-flash` rejects the
- * request outright - "Reasoning is mandatory for this endpoint and cannot be
- * disabled" - so keeping it would mean either paying for reasoning tokens the
- * research set out to avoid, or dropping to `effort: "minimal"`.
+ * Chosen over `google/gemini-3.7-flash` - which scored marginally better on
+ * Polish cultural competence - because it is 5x cheaper, 2.3x faster, and needs
+ * no operational workaround: Gemini rejects the request outright with
+ * "Reasoning is mandatory for this endpoint and cannot be disabled".
+ *
+ * `deepseek/deepseek-v4-flash` was disqualified outright: it proposed melting
+ * wax in a room of three-year-olds. It is not a fallback candidate either.
  */
 const DEFAULT_MODEL = "openai/gpt-5.6-luna";
 
@@ -29,7 +34,21 @@ const DEFAULT_MODEL = "openai/gpt-5.6-luna";
 // left of the budget, and skip the retry entirely if too little remains.
 
 const TEMPERATURE = 0.8;
-const MAX_TOKENS = 1200;
+
+/**
+ * Sized for the answer *plus* reasoning tokens, not just the answer.
+ *
+ * `OPENROUTER_MODEL` exists so the model can change without a deploy, and some
+ * endpoints refuse to disable reasoning - those tokens then bill against this
+ * same budget. The phase-5 comparison measured Gemini spending 728-972 tokens
+ * reasoning: at the previous ceiling of 1200 the JSON was truncated mid-string
+ * and came back as `finish_reason: "length"`, which reaches the teacher as a
+ * generic `invalid` after a full wait, with nothing in the log naming the cause.
+ *
+ * This is a ceiling, not a target. The default model stops around 700 tokens and
+ * pays nothing for the extra headroom.
+ */
+const MAX_TOKENS = 4000;
 
 // ---------------------------------------------------------------------------
 // Errors
