@@ -1,7 +1,7 @@
 ---
 change_id: first-day-generation
 title: First day generation
-status: implementing
+status: implemented
 created: 2026-08-22
 updated: 2026-08-22
 archived_at: null

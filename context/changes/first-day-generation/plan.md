@@ -683,13 +683,13 @@ Sekret w CI **nie jest wymagany**, bo pola są opcjonalne w `env.schema` — bui
 
 #### Automated
 
-- [x] 5.1 Skrypt wykonuje 15 wywołań i zapisuje 15 wyjść bez błędu powłoki
-- [x] 5.2 Każde wyjście parsuje się jako JSON ze schematu: `jq` po `aktywnosci | length == 3`
+- [x] 5.1 Skrypt wykonuje 15 wywołań i zapisuje 15 wyjść bez błędu powłoki — 77914da
+- [x] 5.2 Każde wyjście parsuje się jako JSON ze schematu: `jq` po `aktywnosci | length == 3` — 77914da
 
 #### Manual
 
-- [x] 5.3 `model-comparison.md` zawiera ocenę wszystkich 15 propozycji
-- [x] 5.4 Zero treści nieodpowiednich dla dzieci 3–6 lat u wybranego modelu
-- [x] 5.5 Co najmniej 75% propozycji wybranego modelu akceptowalnych bez edycji
-- [x] 5.6 Propozycje dla „Andrzejek" osadzone w polskich realiach przedszkolnych
-- [x] 5.7 `OPENROUTER_MODEL` wskazuje wybrany model, a `/plan` działa z nim na 2–3 hasłach
+- [x] 5.3 `model-comparison.md` zawiera ocenę wszystkich 15 propozycji — 77914da
+- [x] 5.4 Zero treści nieodpowiednich dla dzieci 3–6 lat u wybranego modelu — 77914da
+- [x] 5.5 Co najmniej 75% propozycji wybranego modelu akceptowalnych bez edycji — 77914da
+- [x] 5.6 Propozycje dla „Andrzejek" osadzone w polskich realiach przedszkolnych — 77914da
+- [x] 5.7 `OPENROUTER_MODEL` wskazuje wybrany model, a `/plan` działa z nim na 2–3 hasłach — 77914da
