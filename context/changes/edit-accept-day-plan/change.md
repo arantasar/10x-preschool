@@ -106,3 +106,42 @@ stamping it in an effect was rejected by `no cascading setState in effect`. A
 lazy state initialiser is the one place React sanctions reading the wall clock,
 so the component now settles its own origin when no `startedAt` is given.
 Behaviour with an explicit `startedAt` is unchanged.
+
+### 2026-08-23 — potwierdzenie regeneracji tylko na planie zaakceptowanym (poprawka)
+
+Pierwsza wersja `DayPlanEditor` pytała o potwierdzenie przy każdej regeneracji
+planu, który ma propozycje. `plan.md` mówi wprost: „Na planie roboczym
+potwierdzenie nie jest potrzebne" — autor planu to rozważył. Regeneracja zawsze
+usuwa poprzednią partię, ale na planie roboczym nauczyciel wciąż iteruje i nic
+w te propozycje nie zainwestował; pytanie jest wtedy tarciem bez decyzji za nim.
+Pyta się więc tylko wtedy, gdy jest akceptacja do stracenia.
+
+### 2026-08-23 — jak zamknięto pozycje Manual
+
+Aplikacja była sterowana w prawdziwej przeglądarce: `chrome-headless-shell`
+(już obecny w cache Playwrighta na tej maszynie) przez CDP, po natywnym
+WebSockecie Node'a — bez instalowania czegokolwiek i bez zmian w `package.json`.
+Skrypty pomocnicze zostały w katalogu tymczasowym sesji, nie w repo.
+
+Zamknięte bez wywołań modelu: 3.6, 3.7, 3.8, 4.8, 4.9, 4.10 (a wcześniej 2.9,
+4.6, 4.7, 4.11, 4.12). Warto odnotować dwie:
+
+- **4.8** — po wpisaniu tekstu i kliknięciu „Anuluj" poleciało **zero** żądań,
+  oba pola wróciły do poprzedniej treści, a wiersz w bazie pozostał nietknięty.
+- **4.10** — żądanie zostało zatrzymane w locie (`window.fetch` bez rozwiązania),
+  co pozwoliło obejrzeć cały harmonogram wskaźnika: 1 s, 6 s, 14 s, 32 s i 48 s
+  pokazały kolejno pięć etapów, z licznikiem sekund i bursztynowym etapem
+  ponowienia. Żaden token nie został wydany.
+
+Zamknięte dwoma realnymi generacjami (za zgodą, `openai/gpt-5.6-luna`):
+2.6, 2.7, 2.8, 4.5. Przebieg na pustym dniu `2026-11-05`:
+
+1. Generowanie (4 s) → trzy propozycje, plan roboczy → **2.6**
+2. Odświeżenie → te same trzy propozycje → **2.8**
+3. Edycja tytułu → zapis → akceptacja → odświeżenie → wszystko na miejscu → **4.5**
+4. Regeneracja z nowym hasłem, po potwierdzeniu ostrzeżenia → `current_generation`
+   = 2, **trzy** wiersze w `activities` (nie sześć), akceptacja cofnięta, `prompt`
+   podmieniony → **2.7**
+
+Dane testowe (`2026-09-14`, `2026-11-05`, konta `p3-a@` i `p3-b@test.local`)
+zostały w lokalnej bazie — mogą się przydać przy S-03.

@@ -120,14 +120,15 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
     }
     setPromptError(undefined);
 
-    // Only on a plan that already has something to lose. The previous batch is
-    // deleted by the write, not archived, so this click cannot be walked back -
-    // and on an accepted plan it also withdraws the acceptance. Saying so is the
-    // point; a generic "are you sure?" would not be worth interrupting for.
-    if (hasActivities) {
-      const consequence = accepted
-        ? "Wygenerowanie nowych propozycji usunie obecne i cofnie akceptację tego planu. Tej operacji nie można cofnąć."
-        : "Wygenerowanie nowych propozycji usunie obecne. Tej operacji nie można cofnąć.";
+    // Only on an accepted plan. Regeneration always deletes the batch it
+    // supersedes, but on a draft the teacher is still iterating and has invested
+    // nothing in what is there - interrupting that is friction without a
+    // decision behind it. An acceptance is the thing worth asking about, and the
+    // prompt names what it costs rather than asking a generic "are you sure?".
+    if (accepted) {
+      const consequence =
+        "Wygenerowanie nowych propozycji usunie obecne i cofnie akceptację tego planu. " +
+        "Tej operacji nie można cofnąć.";
       if (!window.confirm(consequence)) {
         return;
       }
