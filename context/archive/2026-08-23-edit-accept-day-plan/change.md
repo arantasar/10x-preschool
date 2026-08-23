@@ -1,10 +1,10 @@
 ---
 change_id: edit-accept-day-plan
 title: Edit accept day plan
-status: impl_reviewed
+status: archived
 created: 2026-08-23
 updated: 2026-08-23
-archived_at: null
+archived_at: 2026-08-23T20:42:57Z
 ---
 
 ## Notes
