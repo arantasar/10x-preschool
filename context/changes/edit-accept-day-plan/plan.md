@@ -575,6 +575,11 @@ wstecz. Wycofanie to `drop trigger` / `drop function` w odwrotnej kolejności.
 
 ## Progress
 
+> **Otwarte na 2026-08-23:** osiem pozycji Manual (2.6, 2.7, 2.8, 3.6, 4.5, 4.8, 4.9,
+> 4.10) czeka na przejście w przeglądarce — wszystkie wymagają albo realnego
+> wywołania modelu, albo interakcji, której nie da się sprawdzić z terminala.
+> Reszta planu jest zweryfikowana; szczegóły dowodów w `change.md`.
+
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
 ### Phase 1: Kontrakt zapisu w schemacie
@@ -607,7 +612,7 @@ wstecz. Wycofanie to `drop trigger` / `drop function` w odwrotnej kolejności.
 - [ ] 2.6 Generowanie tworzy wiersz w `day_plans` i trzy w `activities`
 - [ ] 2.7 Ponowna generacja: `current_generation` = 2, trzy wiersze w `activities`, nie sześć
 - [ ] 2.8 Odświeżenie strony po generowaniu nie gubi propozycji
-- [x] 2.9 Symulowana awaria zapisu daje czytelny polski komunikat z ponowieniem
+- [x] 2.9 Symulowana awaria zapisu daje czytelny polski komunikat z ponowieniem — f31d04e
 
 ### Phase 3: Trasy edycji i akceptacji
 
@@ -630,18 +635,18 @@ wstecz. Wycofanie to `drop trigger` / `drop function` w odwrotnej kolejności.
 
 #### Automated
 
-- [x] 4.1 Lint czysty: `npm run lint`
-- [x] 4.2 Kontrola typów bez błędów: `npx astro check`
-- [x] 4.3 Build przechodzi: `npm run build`
-- [x] 4.4 `GET /plan?date=…` bez sesji przekierowuje na `/auth/signin` (302)
+- [x] 4.1 Lint czysty: `npm run lint` — f31d04e
+- [x] 4.2 Kontrola typów bez błędów: `npx astro check` — f31d04e
+- [x] 4.3 Build przechodzi: `npm run build` — f31d04e
+- [x] 4.4 `GET /plan?date=…` bez sesji przekierowuje na `/auth/signin` (302) — f31d04e
 
 #### Manual
 
 - [ ] 4.5 Pełny przepływ generuj → edytuj → akceptuj → odśwież przeżywa każdy krok
-- [x] 4.6 Zmiana daty na dzień z planem pokazuje go w pierwszym renderze
-- [x] 4.7 Zmiana daty na pusty dzień pokazuje formularz generowania
+- [x] 4.6 Zmiana daty na dzień z planem pokazuje go w pierwszym renderze — f31d04e
+- [x] 4.7 Zmiana daty na pusty dzień pokazuje formularz generowania — f31d04e
 - [ ] 4.8 Anuluj w trybie edycji przywraca poprzedni tekst i nic nie zapisuje
 - [ ] 4.9 Regeneracja zaakceptowanego planu pyta o potwierdzenie i nazywa konsekwencje
 - [ ] 4.10 Wskaźnik postępu zachowuje się jak w S-01
-- [x] 4.11 Przycisk akceptacji nie pojawia się na dniu bez propozycji
-- [x] 4.12 Cały interfejs po polsku
+- [x] 4.11 Przycisk akceptacji nie pojawia się na dniu bez propozycji — f31d04e
+- [x] 4.12 Cały interfejs po polsku — f31d04e
