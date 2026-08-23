@@ -113,7 +113,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      save_day_plan_generation: {
+        Args: { p_activities: Json; p_plan_date: string; p_prompt: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
