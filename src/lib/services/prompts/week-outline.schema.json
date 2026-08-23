@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "properties": {
+    "tematy": {
+      "type": "array",
+      "description": "Dokładnie pięć tematów dziennych dla polskiej grupy przedszkolnej, dzieci w wieku 3-6 lat - po jednym na każdy dzień roboczy tygodnia. Tematy to pięć różnych ujęć jednego hasła, a nie pięć wariantów tej samej aktywności.",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "properties": {
+          "dzien": {
+            "type": "integer",
+            "description": "Numer dnia roboczego: 1 to poniedziałek, 5 to piątek. Każdy numer występuje dokładnie raz.",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "temat": {
+            "type": "string",
+            "description": "Krótkie zawężenie hasła po polsku, maksymalnie 200 znaków. Jedno ujęcie tematu, bez opisu przebiegu zajęć i bez listy materiałów.",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": ["dzien", "temat"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["tematy"],
+  "additionalProperties": false
+}

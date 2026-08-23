@@ -86,6 +86,20 @@ export type PlanAcceptance =
 export type ActivityDraft = Pick<ActivityInsert, "title" | "description">;
 
 /**
+ * One day's slice of a week outline: which day, and the narrowing of the hasło
+ * assigned to it.
+ *
+ * `plan_date` rather than an index, because the index only means anything next
+ * to the week it was generated for. Once the outline is split across five
+ * independent generation requests — which is how a week is generated — the date
+ * is the only thing tying a theme back to the day it belongs to.
+ */
+export interface DayTheme {
+  readonly plan_date: string;
+  readonly theme: string;
+}
+
+/**
  * Create a day plan, or replace its proposals with a fresh batch. Both are the
  * same shape: a hasło and the activities it produced.
  */
@@ -93,4 +107,20 @@ export type GenerateDayPlanCommand = Pick<DayPlanInsert, "plan_date" | "prompt">
   readonly activities: readonly ActivityDraft[];
   /** The teacher has agreed to lose the current batch and their acceptance. */
   readonly confirm_replace: boolean;
+  /**
+   * This day's slice of a week outline, when the generation came from one.
+   *
+   * Omitted rather than nulled by a single-day regeneration: the writer keeps
+   * whatever theme the day already carries when this is absent, so a day
+   * regenerated from `/plan?date=` stays pinned to its week.
+   */
+  readonly theme?: string;
+  /**
+   * Refuse rather than replace if this day already has a plan.
+   *
+   * The week generation's skip policy, enforced by the writer rather than by the
+   * caller. A week is generated from a view of which days were free, and that
+   * view can be stale by the time five parallel requests land.
+   */
+  readonly require_absent?: boolean;
 };

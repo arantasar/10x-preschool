@@ -554,29 +554,29 @@ implementacji.
 
 #### Automated
 
-- [x] 1.1 `npx supabase db reset` przechodzi czysto
-- [x] 1.2 `npm run test:db` zielony, z nowymi asercjami
-- [x] 1.3 Każda nowa asercja czerwienieje pod mutacją usuwającą swojego strażnika
-- [x] 1.4 `npx supabase gen types typescript --local` bajt w bajt zgodny z plikiem w repo
-- [x] 1.5 `npm run lint`, `npx astro check`, `npm run build` czyste
+- [x] 1.1 `npx supabase db reset` przechodzi czysto — 0c78d67
+- [x] 1.2 `npm run test:db` zielony, z nowymi asercjami — 0c78d67
+- [x] 1.3 Każda nowa asercja czerwienieje pod mutacją usuwającą swojego strażnika — 0c78d67
+- [x] 1.4 `npx supabase gen types typescript --local` bajt w bajt zgodny z plikiem w repo — 0c78d67
+- [x] 1.5 `npm run lint`, `npx astro check`, `npm run build` czyste — 0c78d67
 
 #### Manual
 
-- [x] 1.6 RPC z `p_require_absent := true` na dniu zajętym → `U0002`, plan nietknięty
-- [x] 1.7 Regeneracja dnia z UI zachowuje temat
+- [x] 1.6 RPC z `p_require_absent := true` na dniu zajętym → `U0002`, plan nietknięty — 0c78d67
+- [x] 1.7 Regeneracja dnia z UI zachowuje temat — 0c78d67
 
 ### Phase 2: Kontrakt szkicu tygodnia
 
 #### Automated
 
-- [ ] 2.1 `npm run lint`, `npx astro check`, `npm run build` czyste
-- [ ] 2.2 `npm run test:db` nadal zielony
+- [x] 2.1 `npm run lint`, `npx astro check`, `npm run build` czyste
+- [x] 2.2 `npm run test:db` nadal zielony
 
 #### Manual
 
-- [ ] 2.3 `generateWeekOutline("Dinozaury")` → pięć różnych tematów po polsku, każdy ≤ 200 znaków
-- [ ] 2.4 `generateDayActivities` bez kontekstu daje wynik nieodróżnialny od dzisiejszego
-- [ ] 2.5 `generateDayActivities` z kontekstem → propozycje osadzone w temacie
+- [x] 2.3 `generateWeekOutline("Dinozaury")` → pięć różnych tematów po polsku, każdy ≤ 200 znaków
+- [x] 2.4 `generateDayActivities` bez kontekstu daje wynik nieodróżnialny od dzisiejszego
+- [x] 2.5 `generateDayActivities` z kontekstem → propozycje osadzone w temacie
 
 ### Phase 3: Bramka jakości promptów
 

@@ -63,6 +63,22 @@ export function formatPlanDate(isoDate: string): string {
 }
 
 /**
+ * `2026-09-14` as `poniedziałek`. For the week board's headings and, more to the
+ * point, for the model: a day generation is told which day of the week it is
+ * planning, so five days from one hasło can differ by more than the roll of the
+ * temperature.
+ *
+ * Pinned to UTC like {@link formatPlanDate} and for the same reason — the input
+ * is a calendar date, not an instant, and reading it in the worker's zone would
+ * shift it.
+ */
+export function weekdayLabel(isoDate: string): string {
+  return new Intl.DateTimeFormat("pl-PL", { weekday: "long", timeZone: "UTC" }).format(
+    new Date(`${isoDate}T00:00:00Z`),
+  );
+}
+
+/**
  * When a plan was accepted, as `23 sierpnia, 11:31`.
  *
  * The time zone is pinned for the same reason as in {@link todayIsoDate}, but

@@ -1,11 +1,21 @@
 import { OPENROUTER_API_KEY, OPENROUTER_MODEL } from "astro:env/server";
-import type { ActivityDraft } from "@/types";
-import { ATTEMPT_TIMEOUT_MS, MIN_RETRY_BUDGET_MS, RETRY_BACKOFF_MS, TOTAL_BUDGET_MS } from "@/lib/day-plan-limits";
-import { dayPlanProposalSchema, toActivityDrafts } from "./day-plan-contract";
-import responseJsonSchema from "./prompts/day-plan.schema.json";
-import systemPrompt from "./prompts/day-plan.pl.md?raw";
+import type { ActivityDraft, DayTheme } from "@/types";
+import {
+  ATTEMPT_TIMEOUT_MS,
+  MIN_RETRY_BUDGET_MS,
+  OUTLINE_ATTEMPT_TIMEOUT_MS,
+  OUTLINE_TOTAL_BUDGET_MS,
+  RETRY_BACKOFF_MS,
+  TOTAL_BUDGET_MS,
+} from "@/lib/day-plan-limits";
+import { formatPlanDate, weekdayLabel } from "@/lib/day-plan-dates";
+import { dayPlanProposalSchema, toActivityDrafts, toDayThemes, weekOutlineSchema } from "./day-plan-contract";
+import dayResponseJsonSchema from "./prompts/day-plan.schema.json";
+import dayPrompt from "./prompts/day-plan.pl.md?raw";
+import outlineResponseJsonSchema from "./prompts/week-outline.schema.json";
+import outlinePrompt from "./prompts/week-outline.pl.md?raw";
 
-// Both imports above are resolved by Vite at build time: `?raw` becomes a string
+// The prompt and schema imports above are resolved by Vite at build time: `?raw` becomes a string
 // literal and the JSON becomes an object literal. Nothing reads the filesystem at
 // runtime, which is what makes them safe under workerd. The same two files are
 // read by `scripts/compare-models.sh` in phase 5, so the model comparison and
@@ -138,16 +148,42 @@ export interface GenerationResult {
   readonly modelUsed: string | null;
 }
 
-function buildRequestBody(keyword: string) {
+export interface WeekOutlineResult {
+  readonly themes: DayTheme[];
+  readonly cost: number | null;
+  readonly modelUsed: string | null;
+}
+
+/**
+ * The context a day generation is given when it is one day of a week (S-03).
+ *
+ * Optional as a whole, and that is load-bearing: with no context the user
+ * message is the bare hasło, byte for byte what S-01 sent. `/plan?date=` keeps
+ * behaving exactly as it did, and the quality gate has an unchanged baseline to
+ * measure the week variant against.
+ */
+export interface DayGenerationContext {
+  readonly planDate: string;
+  readonly theme?: string;
+}
+
+interface OpenRouterCall {
+  /** `JSON.parse` of the model's content. Shape is the caller's to validate. */
+  readonly parsed: unknown;
+  readonly cost: number | null;
+  readonly modelUsed: string | null;
+}
+
+function buildRequestBody(userMessage: string, systemMessage: string, schemaName: string, schema: unknown) {
   return {
     model: OPENROUTER_MODEL ?? DEFAULT_MODEL,
     messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: keyword },
+      { role: "system", content: systemMessage },
+      { role: "user", content: userMessage },
     ],
     response_format: {
       type: "json_schema",
-      json_schema: { name: "propozycja_dnia", strict: true, schema: responseJsonSchema },
+      json_schema: { name: schemaName, strict: true, schema },
     },
     provider: {
       // NFR: a teacher's content must not be available to operators.
@@ -161,10 +197,10 @@ function buildRequestBody(keyword: string) {
       //
       // What that costs us: a provider is now free to accept `response_format`
       // and quietly ignore it. Nothing here would notice. What catches it instead
-      // is `dayPlanProposalSchema` downstream - prose or an off-contract shape
-      // fails validation and surfaces as `invalid`, which is retryable. So the
-      // failure stays visible and recoverable; it just moves from routing time to
-      // parse time, and costs one wasted call when it happens.
+      // is the zod schema downstream - prose or an off-contract shape fails
+      // validation and surfaces as `invalid`, which is retryable. So the failure
+      // stays visible and recoverable; it just moves from routing time to parse
+      // time, and costs one wasted call when it happens.
     },
     // Reasoning tokens bill as output and add seconds of latency. This is a short
     // creative task, so they are cost without benefit.
@@ -174,8 +210,17 @@ function buildRequestBody(keyword: string) {
   };
 }
 
-/** One request. Throws {@link GenerationError}; never retries. */
-async function attemptGeneration(keyword: string, timeoutMs: number): Promise<GenerationResult> {
+/**
+ * One request to OpenRouter, parsed but not validated. Throws
+ * {@link GenerationError}; never retries.
+ *
+ * Everything above the contract lives here, because it is identical for both
+ * contracts: the transport failure, the nine upstream statuses, the 200 that
+ * carries a partial failure, the empty content and the unparseable body. What
+ * differs between a day and a week outline is only which zod schema the parsed
+ * value is then held to - and that stays with the caller.
+ */
+async function callOpenRouter(body: unknown, timeoutMs: number): Promise<OpenRouterCall> {
   let response: Response;
   try {
     response = await fetch(OPENROUTER_URL, {
@@ -186,7 +231,7 @@ async function attemptGeneration(keyword: string, timeoutMs: number): Promise<Ge
         "Content-Type": "application/json",
         "X-OpenRouter-Title": "10xPreschool",
       },
-      body: JSON.stringify(buildRequestBody(keyword)),
+      body: JSON.stringify(body),
     });
   } catch (cause) {
     // A timeout or a dropped connection. Both are worth another attempt.
@@ -194,8 +239,8 @@ async function attemptGeneration(keyword: string, timeoutMs: number): Promise<Ge
   }
 
   if (!response.ok) {
-    const body: unknown = await response.json().catch(() => null);
-    const errorType = extractErrorType(body);
+    const errorBody: unknown = await response.json().catch(() => null);
+    const errorType = extractErrorType(errorBody);
     throw new GenerationError(categorizeStatus(response.status), `OpenRouter zwrócił status ${response.status}.`, {
       status: response.status,
       errorType,
@@ -228,82 +273,180 @@ async function attemptGeneration(keyword: string, timeoutMs: number): Promise<Ge
     throw new GenerationError("invalid", "Odpowiedź modelu nie jest poprawnym JSON-em.", { cause });
   }
 
-  // The JSON Schema steers the model; this is what actually guarantees the shape.
-  const result = dayPlanProposalSchema.safeParse(parsed);
-  if (!result.success) {
-    throw new GenerationError("invalid", "Odpowiedź modelu nie spełnia kontraktu.", {
-      cause: result.error,
-    });
-  }
-
   const usage = extractUsage(data);
-  return {
-    activities: toActivityDrafts(result.data),
-    cost: usage.cost,
-    modelUsed: usage.model,
-  };
+  return { parsed, cost: usage.cost, modelUsed: usage.model };
 }
 
 /**
- * Generates activity proposals for one teacher-supplied keyword.
+ * The user message for one day.
  *
- * Retries once, and only for `transient` failures - the categories that a second
- * identical request can plausibly fix. The retry is bounded by the remaining
- * share of {@link TOTAL_BUDGET_MS} so that a slow first attempt cannot double the
- * teacher's wait.
+ * No context means the bare hasło - identical to what S-01 sent, so the
+ * single-day route's behaviour is unchanged. With context the model is told
+ * which weekday it is planning and, when the day belongs to a week outline,
+ * which slice of the hasło is its own. Without that, five calls carrying one
+ * hasło return five variants of the same idea (S-01 review, finding F4).
  */
-export async function generateDayActivities(keyword: string): Promise<GenerationResult> {
-  if (!OPENROUTER_API_KEY) {
-    // Mirrors `createClient` in `@/lib/supabase`: missing configuration is a
-    // named condition, not an exception thrown from module scope.
-    throw new GenerationError("config", "OpenRouter nie jest skonfigurowany.");
+function buildDayUserMessage(keyword: string, context?: DayGenerationContext): string {
+  if (!context) {
+    return keyword;
   }
+  const lines = [`Hasło: ${keyword}`, `Dzień tygodnia: ${weekdayLabel(context.planDate)}`];
+  if (context.theme) {
+    lines.push(`Temat dnia: ${context.theme}`);
+  }
+  return lines.join("\n");
+}
 
+function buildOutlineUserMessage(keyword: string, dates: readonly string[]): string {
+  const days = dates.map((date, index) => `${String(index + 1)}. ${formatPlanDate(date)}`).join("\n");
+  return `Hasło: ${keyword}\nDni robocze tygodnia:\n${days}`;
+}
+
+/**
+ * Runs one attempt, retries once, and logs both outcomes.
+ *
+ * Shared by both contracts because the policy is the same: retry only
+ * `transient` failures - the categories a second identical request can plausibly
+ * fix - and bound the retry by what is left of the total budget, so a slow first
+ * attempt cannot double the teacher's wait. Only the budgets differ, and they
+ * are arguments.
+ */
+async function runWithBudget<T>(
+  operation: string,
+  attemptTimeoutMs: number,
+  totalBudgetMs: number,
+  attempt: (timeoutMs: number) => Promise<T>,
+  fields: (result: T) => Record<string, unknown>,
+): Promise<T> {
   const startedAt = Date.now();
 
+  const runAndLog = async (timeoutMs: number, attemptNumber: number): Promise<T> => {
+    try {
+      const result = await attempt(timeoutMs);
+      logInfo(`${operation}.succeeded`, {
+        attempt: attemptNumber,
+        elapsedMs: Date.now() - startedAt,
+        ...fields(result),
+      });
+      return result;
+    } catch (error) {
+      const failure = asGenerationError(error);
+      logError(`${operation}.failed`, {
+        attempt: attemptNumber,
+        elapsedMs: Date.now() - startedAt,
+        category: failure.category,
+        status: failure.status,
+        errorType: failure.errorType,
+        message: failure.message,
+      });
+      throw failure;
+    }
+  };
+
   try {
-    return await runAndLog(keyword, ATTEMPT_TIMEOUT_MS, 1, startedAt);
+    return await runAndLog(attemptTimeoutMs, 1);
   } catch (error) {
     const failure = asGenerationError(error);
-    const elapsed = Date.now() - startedAt;
-    const remaining = TOTAL_BUDGET_MS - elapsed - RETRY_BACKOFF_MS;
+    const remaining = totalBudgetMs - (Date.now() - startedAt) - RETRY_BACKOFF_MS;
 
     if (failure.category !== "transient" || remaining < MIN_RETRY_BUDGET_MS) {
       throw failure;
     }
 
     await new Promise((resolve) => setTimeout(resolve, RETRY_BACKOFF_MS));
-    return runAndLog(keyword, remaining, 2, startedAt);
+    return runAndLog(remaining, 2);
   }
 }
 
-async function runAndLog(
-  keyword: string,
-  timeoutMs: number,
-  attempt: number,
-  startedAt: number,
-): Promise<GenerationResult> {
-  try {
-    const result = await attemptGeneration(keyword, timeoutMs);
-    logInfo("generation.succeeded", {
-      attempt,
-      elapsedMs: Date.now() - startedAt,
-      cost: result.cost,
-      model: result.modelUsed,
-    });
-    return result;
-  } catch (error) {
-    const failure = asGenerationError(error);
-    logError("generation.failed", {
-      attempt,
-      elapsedMs: Date.now() - startedAt,
-      category: failure.category,
-      status: failure.status,
-      errorType: failure.errorType,
-      message: failure.message,
-    });
-    throw failure;
+function requireConfigured(): void {
+  if (!OPENROUTER_API_KEY) {
+    // Mirrors `createClient` in `@/lib/supabase`: missing configuration is a
+    // named condition, not an exception thrown from module scope.
+    throw new GenerationError("config", "OpenRouter nie jest skonfigurowany.");
   }
+}
+
+/**
+ * Generates activity proposals for one teacher-supplied keyword.
+ *
+ * `context` is what makes this usable as one day of a week; omitting it gives
+ * exactly the S-01 request. See {@link buildDayUserMessage}.
+ */
+export async function generateDayActivities(
+  keyword: string,
+  context?: DayGenerationContext,
+): Promise<GenerationResult> {
+  requireConfigured();
+
+  return runWithBudget(
+    "generation",
+    ATTEMPT_TIMEOUT_MS,
+    TOTAL_BUDGET_MS,
+    async (timeoutMs) => {
+      const call = await callOpenRouter(
+        buildRequestBody(buildDayUserMessage(keyword, context), dayPrompt, "propozycja_dnia", dayResponseJsonSchema),
+        timeoutMs,
+      );
+
+      // The JSON Schema steers the model; this is what actually guarantees the shape.
+      const result = dayPlanProposalSchema.safeParse(call.parsed);
+      if (!result.success) {
+        throw new GenerationError("invalid", "Odpowiedź modelu nie spełnia kontraktu.", { cause: result.error });
+      }
+
+      return {
+        activities: toActivityDrafts(result.data),
+        cost: call.cost,
+        modelUsed: call.modelUsed,
+      };
+    },
+    (result) => ({ cost: result.cost, model: result.modelUsed }),
+  );
+}
+
+/**
+ * Splits one hasło into a theme per working day (S-03).
+ *
+ * Deliberately cheap and short: five clauses, not fifteen paragraphs. It runs
+ * before the five day generations and every second it takes is a second none of
+ * them has started, which is why it carries its own, tighter budget rather than
+ * the day's.
+ *
+ * Returns themes already pinned to dates - `dates` is the working week in
+ * calendar order and the model's day numbers index it, so nothing downstream has
+ * to know what "day 3" meant.
+ */
+export async function generateWeekOutline(keyword: string, dates: readonly string[]): Promise<WeekOutlineResult> {
+  requireConfigured();
+
+  return runWithBudget(
+    "outline",
+    OUTLINE_ATTEMPT_TIMEOUT_MS,
+    OUTLINE_TOTAL_BUDGET_MS,
+    async (timeoutMs) => {
+      const call = await callOpenRouter(
+        buildRequestBody(
+          buildOutlineUserMessage(keyword, dates),
+          outlinePrompt,
+          "szkic_tygodnia",
+          outlineResponseJsonSchema,
+        ),
+        timeoutMs,
+      );
+
+      const result = weekOutlineSchema.safeParse(call.parsed);
+      if (!result.success) {
+        throw new GenerationError("invalid", "Szkic tygodnia nie spełnia kontraktu.", { cause: result.error });
+      }
+
+      return {
+        themes: toDayThemes(result.data, dates),
+        cost: call.cost,
+        modelUsed: call.modelUsed,
+      };
+    },
+    (result) => ({ cost: result.cost, model: result.modelUsed, days: result.themes.length }),
+  );
 }
 
 function asGenerationError(error: unknown): GenerationError {

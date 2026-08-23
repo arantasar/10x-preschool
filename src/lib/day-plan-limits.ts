@@ -39,6 +39,15 @@ export const ACTIVITY_COUNT = 3;
  */
 export const THEME_MAX = 200;
 
+/**
+ * How many days one week generation covers: the working week, Monday to Friday.
+ *
+ * The same number bounds the week outline contract and the island's fan-out, so
+ * a model returning four themes and a board rendering five cannot disagree
+ * silently — `weekOutlineSchema` refuses the response before anything is drawn.
+ */
+export const WEEK_DAYS = 5;
+
 // ---------------------------------------------------------------------------
 // Generation timing
 // ---------------------------------------------------------------------------
@@ -51,6 +60,15 @@ export const ATTEMPT_TIMEOUT_MS = 45_000;
 export const TOTAL_BUDGET_MS = 60_000;
 export const MIN_RETRY_BUDGET_MS = 5_000;
 export const RETRY_BACKOFF_MS = 1_000;
+
+// The outline is a different shape of request from a day: five short strings
+// against fifteen paragraphs. Giving it the day's 45s attempt window would mean
+// a teacher waiting three quarters of a minute before the five day generations
+// have even started - and every second here is spent before any of them can.
+// Sized to fail fast and retry inside a budget the teacher does not feel.
+
+export const OUTLINE_ATTEMPT_TIMEOUT_MS = 20_000;
+export const OUTLINE_TOTAL_BUDGET_MS = 30_000;
 
 /**
  * When the progress indicator may state that a retry is under way.
