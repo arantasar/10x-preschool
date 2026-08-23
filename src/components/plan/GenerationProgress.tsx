@@ -35,24 +35,32 @@ const STAGES: readonly Stage[] = [
 const TICK_MS = 250;
 
 interface GenerationProgressProps {
-  /** `Date.now()` from the moment the request left the browser. */
-  startedAt: number;
+  /**
+   * `Date.now()` from the moment the request left the browser. Optional: when a
+   * caller has no honest timestamp to give, mount time is close enough, and it is
+   * better than making the caller read the wall clock during render to invent one.
+   */
+  startedAt?: number;
 }
 
 export function GenerationProgress({ startedAt }: GenerationProgressProps) {
-  // Seeded lazily rather than from the effect: the request may already have been
-  // in flight for a tick before this mounts, and a clock that starts at 0 s twice
-  // is exactly the "is it stuck?" impression the indicator exists to prevent.
-  const [elapsedMs, setElapsedMs] = useState(() => Date.now() - startedAt);
+  // Both of these are lazy initialisers rather than effects: the request may
+  // already have been in flight for a tick before this mounts, and a clock that
+  // starts at 0 s twice is exactly the "is it stuck?" impression the indicator
+  // exists to prevent. A lazy initialiser is also the one place React sanctions
+  // reading the wall clock, which is why the origin is settled here rather than
+  // handed down from the island.
+  const [origin] = useState(() => startedAt ?? Date.now());
+  const [elapsedMs, setElapsedMs] = useState(() => Date.now() - origin);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setElapsedMs(Date.now() - startedAt);
+      setElapsedMs(Date.now() - origin);
     }, TICK_MS);
     return () => {
       clearInterval(timer);
     };
-  }, [startedAt]);
+  }, [origin]);
 
   const stageIndex = lastStageIndexReached(elapsedMs);
   const stage = STAGES[stageIndex];

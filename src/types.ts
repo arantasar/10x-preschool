@@ -43,6 +43,22 @@ export interface DayPlanWithCurrentActivities {
   readonly activities: readonly CurrentActivity[];
 }
 
+/**
+ * The same read model, minus the brand - what a browser is allowed to hold.
+ *
+ * `CurrentActivity` is earned by passing through `selectCurrentGeneration`, and
+ * a client cannot earn it: JSON arriving from `fetch` has been through no such
+ * check, and a type predicate claiming otherwise would be a lie the compiler
+ * cannot catch. So the island reads this instead. Assignment goes one way -
+ * {@link DayPlanWithCurrentActivities} is a `DayPlanView`, not the reverse -
+ * which is what keeps the server from quietly accepting unbranded activities
+ * where it means the live batch.
+ */
+export interface DayPlanView {
+  readonly plan: DayPlan;
+  readonly activities: readonly Activity[];
+}
+
 // ---------------------------------------------------------------------------
 // Acceptance
 // ---------------------------------------------------------------------------

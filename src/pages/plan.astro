@@ -1,11 +1,32 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import GenerateDayPlanForm from "@/components/plan/GenerateDayPlanForm";
+import DayPlanEditor from "@/components/plan/DayPlanEditor";
+import { formatPlanDate, resolvePlanDate } from "@/lib/day-plan-dates";
+import { readDayPlan } from "@/lib/services/day-plan-store";
+import type { DayPlanView } from "@/types";
 
-const { user } = Astro.locals;
+const { user, supabase } = Astro.locals;
+
+// The day is read from the URL and resolved before anything renders, so the
+// saved plan is on screen in the first paint - no loading state, no flash of an
+// empty form on a day that has one. `?date=` is also what makes a refresh, a
+// bookmark and the back button all mean the same day.
+const planDate = resolvePlanDate(Astro.url.searchParams.get("date"));
+
+// A read failure is not worth an error page: the teacher gets the empty-day
+// state and can generate, which writes and reads again. The island surfaces
+// anything that goes wrong at that point with a message it can act on.
+let initialPlan: DayPlanView | null = null;
+if (supabase) {
+  try {
+    initialPlan = await readDayPlan(supabase, planDate);
+  } catch {
+    initialPlan = null;
+  }
+}
 ---
 
-<Layout title="Plan dnia">
+<Layout title={`Plan dnia — ${formatPlanDate(planDate)}`}>
   <div class="bg-cosmic min-h-screen p-4">
     <main class="mx-auto w-full max-w-2xl py-10">
       <header class="mb-8">
@@ -13,15 +34,16 @@ const { user } = Astro.locals;
         <h1 class="mt-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
           Plan dnia
         </h1>
+        <p class="mt-1 text-lg text-blue-100">{formatPlanDate(planDate)}</p>
         <p class="mt-2 text-blue-100/80">
-          Wybierz dzień i wpisz hasło — na przykład „Andrzejki”, „Jesień” albo „Dzień Pluszowego Misia”. Otrzymasz trzy
-          propozycje zajęć dla dzieci w wieku 3–6 lat.
+          Wpisz hasło — na przykład „Andrzejki”, „Jesień” albo „Dzień Pluszowego Misia” — i wygeneruj trzy propozycje
+          zajęć dla dzieci w wieku 3–6 lat. Możesz je poprawić i zaakceptować; wszystko zostaje zapisane.
         </p>
         {user?.email && <p class="mt-2 text-xs text-blue-100/50">Zalogowano jako {user.email}</p>}
       </header>
 
       <div class="rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-xl">
-        <GenerateDayPlanForm client:load />
+        <DayPlanEditor client:load planDate={planDate} initialPlan={initialPlan} />
       </div>
     </main>
   </div>

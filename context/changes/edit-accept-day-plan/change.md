@@ -75,3 +75,34 @@ for whichever route moved. Lifted into `src/lib/services/day-plan-http.ts`;
 `invalid` maps to 500 rather than 400 on purpose: by the time the store refuses
 a value, zod has already accepted it against the same bound the CHECK enforces,
 so the two disagreeing is our bug, not the caller's.
+
+### 2026-08-23 — `.dev.vars` left pointing at LOCAL Supabase
+
+Deliberate, on request, so manual verification can start without a hosted push.
+`.dev.vars` is gitignored, so nothing about this is committed.
+
+To go back to the hosted project, replace the two lines with:
+
+    SUPABASE_URL=https://tponbccoxczjyoqwliyx.supabase.co
+    SUPABASE_KEY=<the hosted anon key>
+
+and remember hosted still has none of the five migrations — see the 1.7 note.
+
+### 2026-08-23 — acceptance timestamp was rendering in two time zones (Phase 4 fix)
+
+`formatAcceptedAt` used an unpinned `Intl.DateTimeFormat`. Workers run in UTC and
+the teacher's browser does not, so SSR emitted `23 sierpnia 09:31` and hydration
+re-rendered `11:31`: a mismatch, and a wrong time on first paint. Moved into
+`day-plan-dates.ts` and pinned to `Europe/Warsaw`, alongside the same decision
+`todayIsoDate` already makes for resolving `?date=`.
+
+### 2026-08-23 — `GenerationProgress.startedAt` became optional (Phase 4 adaptation)
+
+`plan.md` says to keep `GenerationProgress` unchanged. It could not stay quite
+unchanged: the repo's `react-hooks/purity` rule rejects `Date.now()` anywhere in
+a component body, which is where the island used to stamp the start of a
+generation. Stamping it inside the async mutate was rejected the same way;
+stamping it in an effect was rejected by `no cascading setState in effect`. A
+lazy state initialiser is the one place React sanctions reading the wall clock,
+so the component now settles its own origin when no `startedAt` is given.
+Behaviour with an explicit `startedAt` is unchanged.
