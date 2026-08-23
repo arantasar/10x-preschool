@@ -65,13 +65,25 @@ export class StoreError extends Error {
   readonly retryable: boolean;
   /** The SQLSTATE or PostgREST code, when the failure carried one. For logs. */
   readonly code?: string;
+  /**
+   * What the teacher may read, when the category's default is too vague to be
+   * useful. Opt-in rather than automatic: `message` carries row ids and provider
+   * prose, which belong in a log and not on a screen, so a route never shows it
+   * unless a throw site has explicitly said this text is safe.
+   */
+  readonly userMessage?: string;
 
-  constructor(category: StoreErrorCategory, message: string, options: { code?: string; cause?: unknown } = {}) {
+  constructor(
+    category: StoreErrorCategory,
+    message: string,
+    options: { code?: string; cause?: unknown; userMessage?: string } = {},
+  ) {
     super(message, { cause: options.cause });
     this.name = "StoreError";
     this.category = category;
     this.retryable = RETRYABLE_BY_CATEGORY[category];
     this.code = options.code;
+    this.userMessage = options.userMessage;
   }
 }
 
@@ -202,7 +214,9 @@ export async function updateActivityText(
     throw toStoreError(error, "Nie udało się zapisać propozycji");
   }
   if (!data) {
-    throw new StoreError("not_found", "Propozycja nie istnieje.");
+    throw new StoreError("not_found", `Activity ${activityId} is not visible to the caller.`, {
+      userMessage: "Nie znaleziono tej propozycji.",
+    });
   }
   return data.plan_id;
 }
@@ -230,7 +244,9 @@ export async function setAcceptance(supabase: DayPlanClient, planId: string, acc
     throw toStoreError(error, "Nie udało się zmienić stanu planu");
   }
   if (!data) {
-    throw new StoreError("not_found", "Plan dnia nie istnieje.");
+    throw new StoreError("not_found", `Plan ${planId} is not visible to the caller.`, {
+      userMessage: "Nie znaleziono tego planu dnia.",
+    });
   }
 }
 

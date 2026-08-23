@@ -47,3 +47,31 @@ from PUBLIC does not touch. Confirmed by reading `pg_proc.proacl` after running
 exactly the plan's two statements. The migration carries an explicit
 `revoke all on function ... from anon` as well.
 
+
+### 2026-08-23 — `.dev.vars` points at the hosted project (blocks manual testing)
+
+`SUPABASE_URL` in `.dev.vars` is `https://tponbccoxczjyoqwliyx.supabase.co`, not
+the local stack. None of the five migrations have been applied there — the three
+F-01 ones deferred in step 1.7, plus this change's write-contract migration — so
+a dev server started as-is fails every write in this slice.
+
+Also found: the local stack itself was half-dead (kong, rest, studio and pg_meta
+had exited eight days ago while db and auth stayed up), which is why pgTAP
+worked all along and nothing else would have. Fixed with
+`npx supabase stop && npx supabase start`.
+
+Before manual verification, one of two things has to happen: point `.dev.vars` at
+`http://127.0.0.1:54321` with the local anon key, or run `npx supabase db push`
+so hosted catches up. `.dev.vars` was left holding its original hosted values.
+
+### 2026-08-23 — the wire envelope moved out of the routes (Phase 3 adaptation)
+
+`plan.md` gives each route its own error envelope. Three routes now answer with
+it, and the island has a single response handler — three copies of the
+status/message table would drift, and the drift would make that handler wrong
+for whichever route moved. Lifted into `src/lib/services/day-plan-http.ts`;
+`generate.ts` was folded onto it, which is why it appears in the Phase 3 diff.
+
+`invalid` maps to 500 rather than 400 on purpose: by the time the store refuses
+a value, zod has already accepted it against the same bound the CHECK enforces,
+so the two disagreeing is our bug, not the caller's.

@@ -68,3 +68,35 @@ export const generateDayPlanRequestSchema = z.object({
 });
 
 export type GenerateDayPlanRequest = z.infer<typeof generateDayPlanRequestSchema>;
+
+/**
+ * The edit route's request body (FR-008).
+ *
+ * The bounds are `activities_title_length` and `activities_description_length`
+ * read through `day-plan-limits`, not restated - a title this schema accepts and
+ * the CHECK refuses would reach the teacher as a 500 on text they were told was
+ * fine. Only the two columns F-01 grants `authenticated` an UPDATE on are here:
+ * `ordinal` is display order the teacher does not set by hand, and everything
+ * else is withheld by the column grant anyway.
+ */
+export const updateActivityRequestSchema = z.object({
+  title: z.string().min(1).max(TITLE_MAX),
+  description: z.string().min(1).max(DESCRIPTION_MAX),
+});
+
+export type UpdateActivityRequest = z.infer<typeof updateActivityRequestSchema>;
+
+/**
+ * The acceptance route's request body (FR-009).
+ *
+ * `accepted` is a boolean rather than two routes, because withdrawing an
+ * acceptance is the same fact with the other value - and because the teacher's
+ * own edit already withdraws it via trigger. One shape for both keeps those two
+ * paths writing the same column the same way.
+ */
+export const acceptPlanRequestSchema = z.object({
+  plan_id: z.uuid(),
+  accepted: z.boolean(),
+});
+
+export type AcceptPlanRequest = z.infer<typeof acceptPlanRequestSchema>;

@@ -596,11 +596,11 @@ wstecz. Wycofanie to `drop trigger` / `drop function` w odwrotnej kolejności.
 
 #### Automated
 
-- [x] 2.1 Lint czysty: `npm run lint`
-- [x] 2.2 Kontrola typów bez błędów: `npx astro check`
-- [x] 2.3 Build przechodzi: `npm run build`
-- [x] 2.4 Build bez `SUPABASE_URL` / `SUPABASE_KEY` nadal przechodzi
-- [x] 2.5 `POST /api/day-plan/generate` bez sesji odpowiada 401 z `content-type: application/json`
+- [x] 2.1 Lint czysty: `npm run lint` — 67b893e
+- [x] 2.2 Kontrola typów bez błędów: `npx astro check` — 67b893e
+- [x] 2.3 Build przechodzi: `npm run build` — 67b893e
+- [x] 2.4 Build bez `SUPABASE_URL` / `SUPABASE_KEY` nadal przechodzi — 67b893e
+- [x] 2.5 `POST /api/day-plan/generate` bez sesji odpowiada 401 z `content-type: application/json` — 67b893e
 
 #### Manual
 
@@ -613,18 +613,18 @@ wstecz. Wycofanie to `drop trigger` / `drop function` w odwrotnej kolejności.
 
 #### Automated
 
-- [ ] 3.1 Lint czysty: `npm run lint`
-- [ ] 3.2 Kontrola typów bez błędów: `npx astro check`
-- [ ] 3.3 Build przechodzi: `npm run build`
-- [ ] 3.4 Obie nowe trasy bez sesji odpowiadają 401 z `content-type: application/json`
-- [ ] 3.5 `PATCH` z tytułem dłuższym niż 200 znaków odpowiada 400
+- [x] 3.1 Lint czysty: `npm run lint`
+- [x] 3.2 Kontrola typów bez błędów: `npx astro check`
+- [x] 3.3 Build przechodzi: `npm run build`
+- [x] 3.4 Obie nowe trasy bez sesji odpowiadają 401 z `content-type: application/json`
+- [x] 3.5 `PATCH` z tytułem dłuższym niż 200 znaków odpowiada 400
 
 #### Manual
 
 - [ ] 3.6 Edycja tytułu zapisuje się i przeżywa odświeżenie
-- [ ] 3.7 Edycja zaakceptowanego planu wraca do stanu roboczego w tej samej odpowiedzi
-- [ ] 3.8 Akceptacja i cofnięcie akceptacji działają w obie strony
-- [ ] 3.9 `PATCH` na aktywność innego konta odpowiada 404 i nic nie modyfikuje
+- [x] 3.7 Edycja zaakceptowanego planu wraca do stanu roboczego w tej samej odpowiedzi
+- [x] 3.8 Akceptacja i cofnięcie akceptacji działają w obie strony
+- [x] 3.9 `PATCH` na aktywność innego konta odpowiada 404 i nic nie modyfikuje
 
 ### Phase 4: Ekran planu dnia
 

@@ -5,8 +5,16 @@ import {
   type GenerationErrorCategory,
 } from "@/lib/services/activity-generator";
 import { generateDayPlanRequestSchema } from "@/lib/services/day-plan-contract";
-import { readDayPlan, saveGeneration, StoreError, type StoreErrorCategory } from "@/lib/services/day-plan-store";
-import type { DayPlanWithCurrentActivities } from "@/types";
+import { readDayPlan, saveGeneration } from "@/lib/services/day-plan-store";
+import {
+  json,
+  requireSaved,
+  badRequest,
+  storeFailure,
+  unauthorized,
+  unconfigured,
+  type DayPlanErrorBody,
+} from "@/lib/services/day-plan-http";
 
 export const prerender = false;
 
@@ -15,24 +23,14 @@ export const prerender = false;
 // ---------------------------------------------------------------------------
 
 /**
- * The saved plan, not the proposals that were generated.
- *
- * S-01 answered with loose `ActivityDraft`s because nothing was stored. Now that
- * the database is the source of truth, there is no such thing as a proposal
- * without a row - so the response is a read of what was written, and the island
- * renders persisted state rather than the echo of its own request.
- */
-type GenerateSuccessBody = DayPlanWithCurrentActivities;
-
-/**
  * `retryable` is the whole point of this envelope. Without it, "out of credits"
  * and "rate limited for the next few seconds" look identical to a teacher, and
  * the island has to guess from a message string whether to keep the retry button.
+ *
+ * The envelope, the success body and the store-failure half of this table all
+ * live in `day-plan-http.ts` now - three routes answer with them. What stays
+ * here is what only this route can fail at: the model.
  */
-interface GenerateErrorBody {
-  readonly error: string;
-  readonly retryable: boolean;
-}
 
 /**
  * One status per category, so a server log can tell the three apart without
@@ -46,26 +44,6 @@ const STATUS_BY_CATEGORY: Record<GenerationErrorCategory, number> = {
 };
 
 /**
- * The same question asked of the persistence layer. A failed write is the
- * teacher's problem in a different way than a failed generation - they have
- * already paid the 10-30 seconds - so `transient` is the one that must survive
- * as 503 with `retryable: true`.
- */
-const STATUS_BY_STORE_CATEGORY: Record<StoreErrorCategory, number> = {
-  config: 500,
-  transient: 503,
-  invalid: 500,
-  not_found: 404,
-};
-
-const STORE_MESSAGE_BY_CATEGORY: Record<StoreErrorCategory, string> = {
-  config: "Zapisywanie planów jest teraz niedostępne. Skontaktuj się z administratorem.",
-  transient: "Nie udało się zapisać planu. Spróbuj ponownie za chwilę.",
-  invalid: "Nie udało się zapisać planu. Spróbuj wygenerować propozycje ponownie.",
-  not_found: "Nie znaleziono planu dnia.",
-};
-
-/**
  * What the teacher reads. Deliberately not `GenerationError.message`: that one
  * carries upstream status codes and provider wording, which belongs in the log,
  * not on a preschool teacher's screen.
@@ -76,11 +54,18 @@ const MESSAGE_BY_CATEGORY: Record<GenerationErrorCategory, string> = {
   invalid: "Coś poszło nie tak podczas generowania. Spróbuj ponownie.",
 };
 
-function json(body: GenerateSuccessBody | GenerateErrorBody, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
+function generationFailure(error: unknown): Response {
+  // The service already logged the failure with its status and error_type.
+  const failure =
+    error instanceof GenerationError
+      ? error
+      : new GenerationError("invalid", "Nieoczekiwany błąd trasy generowania.", { cause: error });
+
+  const body: DayPlanErrorBody = {
+    error: MESSAGE_BY_CATEGORY[failure.category],
+    retryable: failure.retryable,
+  };
+  return json(body, STATUS_BY_CATEGORY[failure.category]);
 }
 
 // ---------------------------------------------------------------------------
@@ -99,7 +84,7 @@ function json(body: GenerateSuccessBody | GenerateErrorBody, status: number): Re
  */
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
-    return json({ error: "Twoja sesja wygasła. Zaloguj się ponownie.", retryable: false }, 401);
+    return unauthorized();
   }
 
   // JSON rather than `formData`, because the caller is a React island.
@@ -107,7 +92,7 @@ export const POST: APIRoute = async (context) => {
   try {
     payload = await context.request.json();
   } catch {
-    return json({ error: "Nieprawidłowe żądanie.", retryable: false }, 400);
+    return badRequest("Nieprawidłowe żądanie.");
   }
 
   // First use of zod in the project; the auth routes still read `form.get(...)
@@ -117,34 +102,19 @@ export const POST: APIRoute = async (context) => {
   // gets a written message instead of an issue tree.
   const parsed = generateDayPlanRequestSchema.safeParse(payload);
   if (!parsed.success) {
-    return json(
-      {
-        error: "Podaj poprawną datę oraz hasło o długości od 1 do 2000 znaków.",
-        retryable: false,
-      },
-      400,
-    );
+    return badRequest("Podaj poprawną datę oraz hasło o długości od 1 do 2000 znaków.");
   }
 
   const supabase = context.locals.supabase;
   if (!supabase) {
-    return json({ error: MESSAGE_BY_CATEGORY.config, retryable: false }, 500);
+    return unconfigured();
   }
 
   let generated;
   try {
     generated = await generateDayActivities(parsed.data.prompt);
   } catch (error) {
-    // The service already logged the failure with its status and error_type.
-    const failure =
-      error instanceof GenerationError
-        ? error
-        : new GenerationError("invalid", "Nieoczekiwany błąd trasy generowania.", { cause: error });
-
-    return json(
-      { error: MESSAGE_BY_CATEGORY[failure.category], retryable: failure.retryable },
-      STATUS_BY_CATEGORY[failure.category],
-    );
+    return generationFailure(error);
   }
 
   // From here the proposals exist but have no home yet, and this is the one
@@ -160,21 +130,8 @@ export const POST: APIRoute = async (context) => {
       activities: generated.activities,
     });
 
-    const saved = await readDayPlan(supabase, parsed.data.plan_date);
-    if (!saved) {
-      // The write reported success and the read found nothing. Not a 404 - the
-      // plan id is in hand - so it is reported as the inconsistency it is.
-      throw new StoreError("transient", `Zapisany plan ${planId} nie jest widoczny po zapisie.`);
-    }
-
-    return json(saved, 200);
+    return json(requireSaved(await readDayPlan(supabase, parsed.data.plan_date), planId), 200);
   } catch (error) {
-    const failure =
-      error instanceof StoreError ? error : new StoreError("transient", "Nieoczekiwany błąd zapisu.", { cause: error });
-
-    return json(
-      { error: STORE_MESSAGE_BY_CATEGORY[failure.category], retryable: failure.retryable },
-      STATUS_BY_STORE_CATEGORY[failure.category],
-    );
+    return storeFailure(error);
   }
 };
