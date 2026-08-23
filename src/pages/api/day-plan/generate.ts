@@ -5,7 +5,8 @@ import {
   type GenerationErrorCategory,
 } from "@/lib/services/activity-generator";
 import { generateDayPlanRequestSchema } from "@/lib/services/day-plan-contract";
-import type { ActivityDraft } from "@/types";
+import { readDayPlan, saveGeneration, StoreError, type StoreErrorCategory } from "@/lib/services/day-plan-store";
+import type { DayPlanWithCurrentActivities } from "@/types";
 
 export const prerender = false;
 
@@ -13,9 +14,15 @@ export const prerender = false;
 // Wire contract
 // ---------------------------------------------------------------------------
 
-interface GenerateSuccessBody {
-  readonly activities: readonly ActivityDraft[];
-}
+/**
+ * The saved plan, not the proposals that were generated.
+ *
+ * S-01 answered with loose `ActivityDraft`s because nothing was stored. Now that
+ * the database is the source of truth, there is no such thing as a proposal
+ * without a row - so the response is a read of what was written, and the island
+ * renders persisted state rather than the echo of its own request.
+ */
+type GenerateSuccessBody = DayPlanWithCurrentActivities;
 
 /**
  * `retryable` is the whole point of this envelope. Without it, "out of credits"
@@ -36,6 +43,26 @@ const STATUS_BY_CATEGORY: Record<GenerationErrorCategory, number> = {
   config: 500,
   transient: 503,
   invalid: 502,
+};
+
+/**
+ * The same question asked of the persistence layer. A failed write is the
+ * teacher's problem in a different way than a failed generation - they have
+ * already paid the 10-30 seconds - so `transient` is the one that must survive
+ * as 503 with `retryable: true`.
+ */
+const STATUS_BY_STORE_CATEGORY: Record<StoreErrorCategory, number> = {
+  config: 500,
+  transient: 503,
+  invalid: 500,
+  not_found: 404,
+};
+
+const STORE_MESSAGE_BY_CATEGORY: Record<StoreErrorCategory, string> = {
+  config: "Zapisywanie planów jest teraz niedostępne. Skontaktuj się z administratorem.",
+  transient: "Nie udało się zapisać planu. Spróbuj ponownie za chwilę.",
+  invalid: "Nie udało się zapisać planu. Spróbuj wygenerować propozycje ponownie.",
+  not_found: "Nie znaleziono planu dnia.",
 };
 
 /**
@@ -61,7 +88,7 @@ function json(body: GenerateSuccessBody | GenerateErrorBody, status: number): Re
 // ---------------------------------------------------------------------------
 
 /**
- * Generates three activity proposals for one day.
+ * Generates three activity proposals for one day and stores them.
  *
  * Authentication is checked here rather than left to `src/middleware.ts`, which
  * answers a missing session with `context.redirect("/auth/signin")`. That is
@@ -99,12 +126,14 @@ export const POST: APIRoute = async (context) => {
     );
   }
 
-  // `plan_date` is validated but not used: S-01 stores nothing, so the date only
-  // labels the request. Validating it now keeps the wire contract stable for
-  // S-02, which will persist it, instead of widening the endpoint later.
+  const supabase = context.locals.supabase;
+  if (!supabase) {
+    return json({ error: MESSAGE_BY_CATEGORY.config, retryable: false }, 500);
+  }
+
+  let generated;
   try {
-    const result = await generateDayActivities(parsed.data.prompt);
-    return json({ activities: result.activities }, 200);
+    generated = await generateDayActivities(parsed.data.prompt);
   } catch (error) {
     // The service already logged the failure with its status and error_type.
     const failure =
@@ -115,6 +144,37 @@ export const POST: APIRoute = async (context) => {
     return json(
       { error: MESSAGE_BY_CATEGORY[failure.category], retryable: failure.retryable },
       STATUS_BY_CATEGORY[failure.category],
+    );
+  }
+
+  // From here the proposals exist but have no home yet, and this is the one
+  // place in the request where that is true. If the write fails, the teacher is
+  // told so - the proposals are *not* handed back unsaved. "A proposal without a
+  // row" is a state this slice deliberately has no representation for; offering
+  // one would put the island back in the business of owning plan state, which is
+  // exactly what S-02 takes away from it.
+  try {
+    const planId = await saveGeneration(supabase, {
+      plan_date: parsed.data.plan_date,
+      prompt: parsed.data.prompt,
+      activities: generated.activities,
+    });
+
+    const saved = await readDayPlan(supabase, parsed.data.plan_date);
+    if (!saved) {
+      // The write reported success and the read found nothing. Not a 404 - the
+      // plan id is in hand - so it is reported as the inconsistency it is.
+      throw new StoreError("transient", `Zapisany plan ${planId} nie jest widoczny po zapisie.`);
+    }
+
+    return json(saved, 200);
+  } catch (error) {
+    const failure =
+      error instanceof StoreError ? error : new StoreError("transient", "Nieoczekiwany błąd zapisu.", { cause: error });
+
+    return json(
+      { error: STORE_MESSAGE_BY_CATEGORY[failure.category], retryable: failure.retryable },
+      STATUS_BY_STORE_CATEGORY[failure.category],
     );
   }
 };

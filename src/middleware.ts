@@ -10,6 +10,12 @@ const PROTECTED_ROUTES = ["/dashboard", "/plan"];
 export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createClient(context.request.headers, context.cookies);
 
+  // Handed to the routes as well as used here. It is already built and already
+  // bound to this request's cookies; constructing a second one per route would
+  // duplicate the cookie plumbing and invite the two to disagree about which
+  // session is current.
+  context.locals.supabase = supabase;
+
   if (supabase) {
     const {
       data: { user },

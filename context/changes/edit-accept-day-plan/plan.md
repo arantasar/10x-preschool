@@ -581,26 +581,26 @@ wstecz. Wycofanie to `drop trigger` / `drop function` w odwrotnej kolejności.
 
 #### Automated
 
-- [x] 1.1 Migracje aplikują się od zera: `npx supabase db reset`
-- [x] 1.2 Cały pakiet pgTAP przechodzi, łącznie z pakietem F-01: `npm run test:db`
-- [x] 1.3 Typy regenerują się bez błędu: `npx supabase gen types typescript --local`
-- [x] 1.4 Lint czysty: `npm run lint`
-- [x] 1.5 Kontrola typów bez błędów: `npx astro check`
+- [x] 1.1 Migracje aplikują się od zera: `npx supabase db reset` — 95fa8c7
+- [x] 1.2 Cały pakiet pgTAP przechodzi, łącznie z pakietem F-01: `npm run test:db` — 95fa8c7
+- [x] 1.3 Typy regenerują się bez błędu: `npx supabase gen types typescript --local` — 95fa8c7
+- [x] 1.4 Lint czysty: `npm run lint` — 95fa8c7
+- [x] 1.5 Kontrola typów bez błędów: `npx astro check` — 95fa8c7
 
 #### Manual
 
-- [x] 1.6 Każda nowa asercja pgTAP sprawdzona mutacją
-- [x] 1.7 Trzy zaległe migracje F-01 na hosted project albo świadomie odłożone z zapisaną decyzją
+- [x] 1.6 Każda nowa asercja pgTAP sprawdzona mutacją — 95fa8c7
+- [x] 1.7 Trzy zaległe migracje F-01 na hosted project albo świadomie odłożone z zapisaną decyzją — 95fa8c7
 
 ### Phase 2: Warstwa dostępu do danych i zapis w trasie generowania
 
 #### Automated
 
-- [ ] 2.1 Lint czysty: `npm run lint`
-- [ ] 2.2 Kontrola typów bez błędów: `npx astro check`
-- [ ] 2.3 Build przechodzi: `npm run build`
-- [ ] 2.4 Build bez `SUPABASE_URL` / `SUPABASE_KEY` nadal przechodzi
-- [ ] 2.5 `POST /api/day-plan/generate` bez sesji odpowiada 401 z `content-type: application/json`
+- [x] 2.1 Lint czysty: `npm run lint`
+- [x] 2.2 Kontrola typów bez błędów: `npx astro check`
+- [x] 2.3 Build przechodzi: `npm run build`
+- [x] 2.4 Build bez `SUPABASE_URL` / `SUPABASE_KEY` nadal przechodzi
+- [x] 2.5 `POST /api/day-plan/generate` bez sesji odpowiada 401 z `content-type: application/json`
 
 #### Manual
 
