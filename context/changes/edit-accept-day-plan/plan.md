@@ -604,9 +604,9 @@ wstecz. Wycofanie to `drop trigger` / `drop function` w odwrotnej kolejności.
 
 #### Manual
 
-- [x] 2.6 Generowanie tworzy wiersz w `day_plans` i trzy w `activities`
-- [x] 2.7 Ponowna generacja: `current_generation` = 2, trzy wiersze w `activities`, nie sześć
-- [x] 2.8 Odświeżenie strony po generowaniu nie gubi propozycji
+- [x] 2.6 Generowanie tworzy wiersz w `day_plans` i trzy w `activities` — 6850022
+- [x] 2.7 Ponowna generacja: `current_generation` = 2, trzy wiersze w `activities`, nie sześć — 6850022
+- [x] 2.8 Odświeżenie strony po generowaniu nie gubi propozycji — 6850022
 - [x] 2.9 Symulowana awaria zapisu daje czytelny polski komunikat z ponowieniem — f31d04e
 
 ### Phase 3: Trasy edycji i akceptacji
@@ -621,7 +621,7 @@ wstecz. Wycofanie to `drop trigger` / `drop function` w odwrotnej kolejności.
 
 #### Manual
 
-- [x] 3.6 Edycja tytułu zapisuje się i przeżywa odświeżenie
+- [x] 3.6 Edycja tytułu zapisuje się i przeżywa odświeżenie — 6850022
 - [x] 3.7 Edycja zaakceptowanego planu wraca do stanu roboczego w tej samej odpowiedzi — 054b2e0
 - [x] 3.8 Akceptacja i cofnięcie akceptacji działają w obie strony — 054b2e0
 - [x] 3.9 `PATCH` na aktywność innego konta odpowiada 404 i nic nie modyfikuje — 054b2e0
@@ -637,11 +637,11 @@ wstecz. Wycofanie to `drop trigger` / `drop function` w odwrotnej kolejności.
 
 #### Manual
 
-- [x] 4.5 Pełny przepływ generuj → edytuj → akceptuj → odśwież przeżywa każdy krok
+- [x] 4.5 Pełny przepływ generuj → edytuj → akceptuj → odśwież przeżywa każdy krok — 6850022
 - [x] 4.6 Zmiana daty na dzień z planem pokazuje go w pierwszym renderze — f31d04e
 - [x] 4.7 Zmiana daty na pusty dzień pokazuje formularz generowania — f31d04e
-- [x] 4.8 Anuluj w trybie edycji przywraca poprzedni tekst i nic nie zapisuje
-- [x] 4.9 Regeneracja zaakceptowanego planu pyta o potwierdzenie i nazywa konsekwencje
-- [x] 4.10 Wskaźnik postępu zachowuje się jak w S-01
+- [x] 4.8 Anuluj w trybie edycji przywraca poprzedni tekst i nic nie zapisuje — 6850022
+- [x] 4.9 Regeneracja zaakceptowanego planu pyta o potwierdzenie i nazywa konsekwencje — 6850022
+- [x] 4.10 Wskaźnik postępu zachowuje się jak w S-01 — 6850022
 - [x] 4.11 Przycisk akceptacji nie pojawia się na dniu bez propozycji — f31d04e
 - [x] 4.12 Cały interfejs po polsku — f31d04e
