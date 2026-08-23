@@ -1,5 +1,13 @@
 # Rules for AI
 
+## Git
+
+**Every product slice from S-03 (`week-generation`) onwards starts on a feature branch.** Before the *first* commit of a new change, run `git branch --show-current`; if it says `master`, branch first. This is not conditional on the size of the change.
+
+F-01 and earlier work was committed straight to `master` by design. S-01 and S-02 were not — they landed on `master` against the convention and it went unnoticed until the S-02 implementation review, which is why the rule is written down here rather than left as a habit.
+
+Exceptions: edits to `context/foundation/*`, and closing out a slice already in progress on `master`.
+
 ## Commands
 
 - `npm run dev` — start dev server (Cloudflare workerd runtime)
