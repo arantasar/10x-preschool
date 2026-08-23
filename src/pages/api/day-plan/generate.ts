@@ -5,7 +5,7 @@ import {
   type GenerationErrorCategory,
 } from "@/lib/services/activity-generator";
 import { generateDayPlanRequestSchema } from "@/lib/services/day-plan-contract";
-import { readDayPlan, saveGeneration } from "@/lib/services/day-plan-store";
+import { readDayPlan, saveGeneration, StoreError } from "@/lib/services/day-plan-store";
 import {
   json,
   requireSaved,
@@ -55,7 +55,9 @@ const MESSAGE_BY_CATEGORY: Record<GenerationErrorCategory, string> = {
 };
 
 function generationFailure(error: unknown): Response {
-  // The service already logged the failure with its status and error_type.
+  // `generateDayActivities` already logged this one with its status and
+  // error_type. Store failures are logged by `toStoreError`, not here - the two
+  // layers each record their own, so this route adds nothing on either path.
   const failure =
     error instanceof GenerationError
       ? error
@@ -110,6 +112,23 @@ export const POST: APIRoute = async (context) => {
     return unconfigured();
   }
 
+  // Asked before the model is, not after. `save_day_plan_generation` refuses an
+  // unconfirmed replacement on its own - that refusal is the enforcement point
+  // and this is not - but reaching it costs the teacher a 10-30s wait and the
+  // tokens for a batch that will never be stored. One indexed read is cheaper
+  // than finding out afterwards. The window between this check and the write is
+  // closed inside the function by `for update`, not here.
+  try {
+    const existing = await readDayPlan(supabase, parsed.data.plan_date);
+    if (existing?.plan.accepted_at && !parsed.data.confirm_replace) {
+      return storeFailure(
+        new StoreError("conflict", `Plan ${parsed.data.plan_date} is accepted; regeneration was not confirmed.`),
+      );
+    }
+  } catch (error) {
+    return storeFailure(error);
+  }
+
   let generated;
   try {
     generated = await generateDayActivities(parsed.data.prompt);
@@ -128,6 +147,7 @@ export const POST: APIRoute = async (context) => {
       plan_date: parsed.data.plan_date,
       prompt: parsed.data.prompt,
       activities: generated.activities,
+      confirm_replace: parsed.data.confirm_replace,
     });
 
     return json(requireSaved(await readDayPlan(supabase, parsed.data.plan_date), planId), 200);

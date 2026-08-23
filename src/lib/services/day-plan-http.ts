@@ -50,6 +50,7 @@ const STATUS_BY_CATEGORY: Record<StoreErrorCategory, number> = {
   transient: 503,
   invalid: 500,
   not_found: 404,
+  conflict: 409,
 };
 
 const MESSAGE_BY_CATEGORY: Record<StoreErrorCategory, string> = {
@@ -60,6 +61,9 @@ const MESSAGE_BY_CATEGORY: Record<StoreErrorCategory, string> = {
   // with `userMessage`; the default must not guess between a plan and a
   // proposal, because naming the wrong one is worse than naming neither.
   not_found: "Nie znaleziono szukanego elementu.",
+  // The one category a teacher can actually resolve: their view of the day is
+  // older than the database's, so the message names the action, not the fault.
+  conflict: "Ten plan zmienił się w innym miejscu. Odśwież stronę i spróbuj ponownie.",
 };
 
 /**
@@ -81,15 +85,43 @@ export function unconfigured(): Response {
   return json({ error: MESSAGE_BY_CATEGORY.config, retryable: false }, 500);
 }
 
+// `wrangler.jsonc` sets `observability.enabled`, so console output is captured
+// without adding a logging dependency the project deliberately does not carry.
+// Same shape as `activity-generator.ts`, on purpose: one route can fail in
+// either layer, and a reader grepping for `.failed` should find both.
+function logError(message: string, fields: Record<string, unknown>): void {
+  /* eslint-disable-next-line no-console */
+  console.error(message, fields);
+}
+
 /**
  * Turns any failure from the store into the envelope. Anything that is not a
  * {@link StoreError} is treated as `transient`: an unrecognised failure is more
  * likely a blip than a permanent condition, and telling a teacher to give up is
  * the more expensive of the two mistakes.
+ *
+ * This is also where store failures are logged, and the reason it happens here
+ * rather than in `toStoreError` is coverage: several `StoreError`s are raised by
+ * hand and never touch a `PostgrestError` - the `not_found` from an update that
+ * matched nothing, the refusal to replace an accepted plan. Every route funnels
+ * through this function, so logging here records all of them exactly once.
+ *
+ * `code` is the field worth having: without it a `23514` from the generation
+ * invariant and a `22001` from an over-long title are the same 500 in the log as
+ * they are on the screen. `message` carries row ids and PostgREST prose, which is
+ * why it goes to the log and never to the browser - the teacher sees
+ * `userMessage`, or the category's default, and nothing else.
  */
 export function storeFailure(error: unknown): Response {
   const failure =
     error instanceof StoreError ? error : new StoreError("transient", "Nieoczekiwany błąd zapisu.", { cause: error });
+
+  logError("day-plan-store.failed", {
+    category: failure.category,
+    code: failure.code,
+    retryable: failure.retryable,
+    message: failure.message,
+  });
 
   return json(
     { error: failure.userMessage ?? MESSAGE_BY_CATEGORY[failure.category], retryable: failure.retryable },

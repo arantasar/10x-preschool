@@ -48,7 +48,18 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
   const [promptError, setPromptError] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState<Busy>("idle");
   const [failure, setFailure] = useState<Failure | null>(null);
-  const [draft, setDraft] = useState<Draft | null>(null);
+  const [draft, setDraftState] = useState<Draft | null>(null);
+  // A live mirror of `draft`, read by the retry path. `draft` itself is captured
+  // by whichever closure was built at the first attempt, and the teacher goes on
+  // typing after a failure - the editor stays open precisely so they can. Reading
+  // state through this ref is what makes "Spróbuj ponownie" mean "send what is on
+  // screen now" rather than "send what was on screen when it failed".
+  const draftRef = useRef<Draft | null>(null);
+
+  function setDraft(next: Draft | null): void {
+    draftRef.current = next;
+    setDraftState(next);
+  }
 
   // The disabled buttons cover the ordinary double click; this covers the rest -
   // a second submit fired before React re-renders, or Enter held down in a field.
@@ -57,21 +68,56 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
   // What the "Spróbuj ponownie" button re-runs. A ref rather than state because
   // it is never rendered, and storing a closure in state would re-render on every
   // request for nothing.
-  const lastAttempt = useRef<(() => Promise<void>) | null>(null);
+  const lastAttempt = useRef<(() => void) | null>(null);
 
   const isBusy = busy !== "idle";
   const accepted = plan?.plan.accepted_at ?? null;
   const hasActivities = (plan?.activities.length ?? 0) > 0;
 
   /**
+   * Re-reads the day after a mutation failed, so what is on screen is what the
+   * server holds before the teacher decides whether to retry.
+   *
+   * A failed write does not mean nothing was written. `saveGeneration` retries
+   * once and is knowingly not idempotent, so a lost response can leave a batch
+   * committed that this island has never seen; showing the pre-request view and a
+   * retry button then invites a second paid generation of a day that already has
+   * one. Its own failure is swallowed: the mutation's message is the one worth
+   * reading, and replacing it with "the refresh also failed" helps nobody.
+   */
+  async function reconcile(): Promise<void> {
+    try {
+      const response = await fetch(`/api/day-plan?date=${planDate}`);
+      if (response.status === 404) {
+        setPlan(null);
+        return;
+      }
+      const body: unknown = await response.json().catch(() => null);
+      if (response.ok && isDayPlanBody(body)) {
+        setPlan(body);
+      }
+    } catch {
+      // Leave the stale view standing rather than blanking it on a second failure.
+    }
+  }
+
+  /**
    * Every mutation goes through here: one in-flight guard, one error envelope,
    * one rule for what happens on success. The routes all answer with the whole
    * plan, so "apply the response" is the same line in all three cases.
    */
-  async function mutate(request: () => Promise<Response>, busyKind: Busy): Promise<void> {
+  async function mutate(request: () => Promise<Response>, busyKind: Busy, retry?: () => void): Promise<void> {
     if (inFlight.current) return;
     inFlight.current = true;
-    lastAttempt.current = () => mutate(request, busyKind);
+    // Re-running `request` verbatim is right for the mutations whose body is
+    // already settled, and wrong for the one whose body is still being edited -
+    // hence `retry`, which lets a caller describe the intent instead of freezing
+    // the payload. See `saveDraft`.
+    lastAttempt.current =
+      retry ??
+      (() => {
+        void mutate(request, busyKind);
+      });
     setBusy(busyKind);
     setFailure(null);
 
@@ -81,7 +127,14 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
 
       if (response.ok && isDayPlanBody(body)) {
         setPlan(body);
-        setPrompt(body.plan.prompt);
+        // Only a generation writes the hasło, so only a generation may take it
+        // back from the server. Resyncing on every response meant a teacher who
+        // retyped the hasło, then saved an edit or accepted the plan instead,
+        // watched their unsent text replaced by the stored one - the textarea is
+        // re-enabled by then, so `disabled={isBusy}` never covered this.
+        if (busyKind === "generating") {
+          setPrompt(body.plan.prompt);
+        }
         setDraft(null);
         return;
       }
@@ -90,11 +143,13 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
       // island does not second-guess it from the status code. Missing credits and
       // a passing rate limit both arrive as a failure, and only `retryable` tells
       // them apart.
+      const signInRequired = response.status === 401;
       setFailure({
         message: isErrorBody(body) ? body.error : "Nie udało się zapisać zmiany. Spróbuj ponownie.",
         retryable: isErrorBody(body) ? body.retryable : true,
-        signInRequired: response.status === 401,
+        signInRequired,
       });
+      if (!signInRequired) await reconcile();
     } catch {
       // The request never completed - offline, or the connection dropped.
       setFailure({
@@ -102,6 +157,7 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
         retryable: true,
         signInRequired: false,
       });
+      await reconcile();
     } finally {
       inFlight.current = false;
       setBusy("idle");
@@ -125,6 +181,12 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
     // nothing in what is there - interrupting that is friction without a
     // decision behind it. An acceptance is the thing worth asking about, and the
     // prompt names what it costs rather than asking a generic "are you sure?".
+    //
+    // This dialog is an affordance, not the guard. `accepted` is this island's
+    // copy of the truth and can be stale - another tab, or a page rendered while
+    // the plan could not be read. `save_day_plan_generation` refuses an
+    // unconfirmed replacement itself and answers 409, which arrives here as an
+    // ordinary non-retryable failure telling the teacher to refresh.
     if (accepted) {
       const consequence =
         "Wygenerowanie nowych propozycji usunie obecne i cofnie akceptację tego planu. " +
@@ -139,7 +201,7 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
         fetch("/api/day-plan/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan_date: planDate, prompt }),
+          body: JSON.stringify({ plan_date: planDate, prompt, confirm_replace: accepted !== null }),
         }),
       "generating",
     );
@@ -154,18 +216,31 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
           body: JSON.stringify({ title: current.title, description: current.description }),
         }),
       "saving",
+      // Deliberately not a re-run of the request above. On failure the editor
+      // stays open and the teacher keeps typing; retrying the frozen body would
+      // save the older text and then close the editor over the newer, with no
+      // error to show for it. "Spróbuj ponownie" and "Zapisz" sit next to each
+      // other, so they had better mean the same thing.
+      () => {
+        const live = draftRef.current;
+        if (live) saveDraft(live);
+      },
     );
   }
 
   function setAcceptance(next: boolean): void {
     if (!plan) return;
     const planId = plan.plan.id;
+    // The generation this view was rendered from. If the day has moved on since -
+    // another tab regenerated it - the route refuses rather than signing off on
+    // proposals nobody here has read, and the teacher is told to refresh.
+    const expected = plan.plan.current_generation;
     void mutate(
       () =>
         fetch("/api/day-plan/accept", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan_id: planId, accepted: next }),
+          body: JSON.stringify({ plan_id: planId, accepted: next, expected_generation: expected }),
         }),
       "saving",
     );
@@ -270,7 +345,7 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
             <Button
               type="button"
               disabled={isBusy}
-              onClick={() => void lastAttempt.current?.()}
+              onClick={() => lastAttempt.current?.()}
               className="rounded-lg bg-white/10 px-4 py-2 text-white transition-colors hover:bg-white/20"
             >
               <RotateCcw className="size-4" />

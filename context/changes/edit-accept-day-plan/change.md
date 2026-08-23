@@ -1,7 +1,7 @@
 ---
 change_id: edit-accept-day-plan
 title: Edit accept day plan
-status: implemented
+status: impl_reviewed
 created: 2026-08-23
 updated: 2026-08-23
 archived_at: null
@@ -145,3 +145,95 @@ Zamknięte dwoma realnymi generacjami (za zgodą, `openai/gpt-5.6-luna`):
 
 Dane testowe (`2026-09-14`, `2026-11-05`, konta `p3-a@` i `p3-b@test.local`)
 zostały w lokalnej bazie — mogą się przydać przy S-03.
+
+### 2026-08-23 — dwie funkcje odczytu ponad plan (przegląd implementacji, F7)
+
+`plan.md` (Faza 2 §1) wymienia **cztery** funkcje serwisu. Jest ich pięć:
+`readDayPlanById` doszła, bo trasy `PATCH /activity/[id]` i `POST /accept`
+trzymają `plan_id`, a nie datę, i musiały odczytać plan po zapisie tą samą
+ścieżką co SSR. Idzie przez `readCurrentActivities` → `selectCurrentGeneration`,
+więc lejek konstruktora `CurrentActivity` pozostaje jeden. Odchylenie
+niezapisane w chwili wprowadzenia — odnotowane tutaj przy triagu przeglądu.
+
+Przegląd dołożył szóstą, `GET /api/day-plan?date=` (nowa trasa, też spoza planu).
+Powód w F5: po nieudanej mutacji wyspa musi porównać się z serwerem, zanim
+zaproponuje ponowienie — inaczej „Spróbuj ponownie" stoi nad widokiem sprzed
+żądania, którego wynik jest nieznany. Trasa jest tylko do odczytu, oddaje tę samą
+kopertę co reszta i odpowiada 404 na dzień bez planu.
+
+### 2026-08-23 — potwierdzenie regeneracji zeszło do schematu (przegląd, F1)
+
+Reguła „regeneracja na zaakceptowanym planie wymaga potwierdzenia" była
+zaimplementowana wyłącznie jako `window.confirm` w wyspie, sterowany jej własną
+kopią `accepted_at`. Pisarz nie sprawdzał nic. Dwie ścieżki omijały pytanie:
+nieudany odczyt SSR renderował dzień jako pusty, a druga karta trzymała stan
+sprzed akceptacji. Obie kończyły się usunięciem zaakceptowanej partii bez pytania,
+a ten slice nie ma undo.
+
+`save_day_plan_generation` dostała czwarty argument `p_confirm_replace` (domyślnie
+`false`), sprawdzany **przed** upsertem — po nim nie ma już śladu po akceptacji,
+którą trzeba chronić — z `for update` na tym pierwszym odczycie, żeby druga sesja
+nie zaakceptowała planu między sprawdzeniem a zapisem. Odmowa to `U0001`,
+odróżnialne od `23514`: pierwsze jest decyzją, drugie naszym błędem.
+
+Trasa generowania sprawdza to samo *przed* wywołaniem modelu — sama odmowa i tak
+przyszłaby z funkcji, ale dotarcie do niej kosztowałoby nauczyciela 30 s i tokeny
+za partię, która nigdy nie zostanie zapisana.
+
+### 2026-08-23 — akceptacja jest teraz warunkowa (przegląd, F4)
+
+Lustrzane odbicie F1: `accepted_at` ustawiane po samym `plan_id` pozwalało
+karcie z nieaktualnym widokiem podpisać propozycje, których nikt na niej nie
+widział. `acceptPlanRequestSchema` niesie `expected_generation`, a `setAcceptance`
+filtruje po nim. Zero wierszy rozstrzyga jeden dodatkowy odczyt — plan widoczny,
+ale przesunięty → `conflict`/409; niewidoczny → `not_found`/404, bez wyroczni
+istnienia.
+
+### 2026-08-23 — pełny przebieg mutacyjny pakietu pgTAP (przegląd, F9)
+
+Pozycja 1.6 była odhaczona bez zapisanego dowodu — jako jedyna pozycja Manual w
+tej zmianie. Przegląd powtórzył sprawdzenie systematycznie: każdy strażnik
+psuty osobno w bazie, pakiet uruchamiany, stan przywracany ze skryptu zbudowanego
+z obu migracji. Wynik (numery testów z przebiegu):
+
+| mutacja | czerwienieje |
+| --- | --- |
+| `drop trigger activities_enforce_generation` | 1, 2, 3, 23 |
+| `drop trigger activities_edit_clears_acceptance` | 18, 19 |
+| zdjęcie klauzuli `when` z tego triggera | 20, 24 |
+| `delete … generation < v_generation` → `< 0` | 13, 14 |
+| upsert nie zeruje `accepted_at` | 15 |
+| upsert nie podbija licznika | cały plik (kolizja unikalności) |
+| `grant execute … to anon` | 25 |
+| brak `p_confirm_replace` w funkcji | 8, 9, 10 |
+| **`with ordinality` → `row_number() over ()`** | **nic — pakiet zielony** |
+
+Ostatni wiersz to realna luka i powód, dla którego warto było to powtórzyć.
+Komentarz przy asercji twierdził, że dowodzi ona wyboru `with ordinality`; dla
+trzyelementowej tablicy oba konstrukty dają to samo, więc nie dowodziła niczego
+takiego. Żadna asercja behawioralna tego nie rozdzieli — gwarancja siedzi w
+wyborze konstruktu, a nie w stanie, który po sobie zostawia. Doszła więc asercja
+strukturalna na `pg_get_functiondef`, sprawdzona tą samą mutacją: czerwienieje.
+Komentarz mówi teraz, co asercja behawioralna faktycznie pokrywa (same ordinale).
+
+Pakiet: 51 testów, zielony.
+
+### 2026-08-23 — `accepted_at` stemplowane zegarem workera, nie bazy (przegląd, F10)
+
+`plan.md` (Faza 2 §1) mówi „ustawia `accepted_at` na `now()`". Kod pisze
+`new Date().toISOString()` z workera. Świadomie: PostgREST nie potrafi wysłać
+`now()` jako wartości UPDATE-a bez kolejnego RPC, a robienie drugiej funkcji
+Postgresa dla jednej kolumny znaczyłoby więcej schematu niż ta różnica jest
+warta.
+
+Co dalej obowiązuje: zwracane `accepted_at` pochodzi z wiersza, nie z tego
+zapisu — `accept.ts` odczytuje plan ponownie po zapisie. Ryzyko jest jedno i
+ograniczone: CHECK `day_plans_accepted_after_created` odrzuca akceptację
+wcześniejszą niż utworzenie planu, co wymagałoby akceptacji w tej samej
+milisekundzie co utworzenie *oraz* zegara workera cofniętego względem Postgresa.
+Człowiek klikający przycisk tam nie dojdzie, a gdyby doszedł, wychodzi to jako
+`invalid` z nazwaną kontrolą, nie jako zły wiersz.
+
+Odnotowane, bo to jedyna trwała wartość w tym slice pochodząca z zegara spoza
+bazy — przy zasadzie „baza jest jedynym źródłem prawdy" warto, żeby wyjątek był
+wypisany, a nie domyślny.

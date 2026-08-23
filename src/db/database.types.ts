@@ -114,7 +114,12 @@ export type Database = {
     }
     Functions: {
       save_day_plan_generation: {
-        Args: { p_activities: Json; p_plan_date: string; p_prompt: string }
+        Args: {
+          p_activities: Json
+          p_confirm_replace?: boolean
+          p_plan_date: string
+          p_prompt: string
+        }
         Returns: string
       }
     }

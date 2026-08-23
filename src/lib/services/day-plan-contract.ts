@@ -65,6 +65,11 @@ export function toActivityDrafts(proposal: DayPlanProposal): ActivityDraft[] {
 export const generateDayPlanRequestSchema = z.object({
   plan_date: z.iso.date(),
   prompt: z.string().min(1).max(PROMPT_MAX),
+  // Carries the teacher's answer to "this deletes the current proposals and
+  // withdraws your acceptance". Defaults to false so an older client, or a
+  // request that simply omits it, gets the refusal rather than the deletion -
+  // the schema enforces it either way (`save_day_plan_generation`, U0001).
+  confirm_replace: z.boolean().default(false),
 });
 
 export type GenerateDayPlanRequest = z.infer<typeof generateDayPlanRequestSchema>;
@@ -97,6 +102,13 @@ export type UpdateActivityRequest = z.infer<typeof updateActivityRequestSchema>;
 export const acceptPlanRequestSchema = z.object({
   plan_id: z.uuid(),
   accepted: z.boolean(),
+  // Which batch the teacher believes they are signing off on. Accept is the one
+  // verb that would otherwise succeed against proposals the caller has never
+  // seen: a tab holding a superseded view still renders its "Akceptuj plan"
+  // button, and without this the acceptance would attest to whatever the current
+  // batch happens to be. Editing that same stale view already 404s, because the
+  // rows are gone; this gives accept the same honesty.
+  expected_generation: z.number().int().min(1),
 });
 
 export type AcceptPlanRequest = z.infer<typeof acceptPlanRequestSchema>;

@@ -44,9 +44,10 @@ export type DayPlanClient = SupabaseClient<Database>;
  *
  * `not_found` has no counterpart there because generation has no notion of a
  * missing row. It exists so routes can answer 404 without pattern-matching on
- * error strings.
+ * error strings. `conflict` is the same idea for 409: a write the schema refused
+ * on purpose, which the teacher can resolve, as against `invalid`, which is ours.
  */
-export type StoreErrorCategory = "transient" | "config" | "invalid" | "not_found";
+export type StoreErrorCategory = "transient" | "config" | "invalid" | "not_found" | "conflict";
 
 const RETRYABLE_BY_CATEGORY: Record<StoreErrorCategory, boolean> = {
   // A dropped connection or an overloaded database. The same write may land.
@@ -58,6 +59,9 @@ const RETRYABLE_BY_CATEGORY: Record<StoreErrorCategory, boolean> = {
   invalid: false,
   // The row is not there, or not this teacher's. Also stable.
   not_found: false,
+  // The schema refused a destructive write the caller had not confirmed. Retrying
+  // the same request repeats the refusal; the teacher has to look and decide.
+  conflict: false,
 };
 
 export class StoreError extends Error {
@@ -92,8 +96,9 @@ export class StoreError extends Error {
  *
  * Branching on the code rather than the message: the message is provider prose
  * and changes between versions, while these codes are SQLSTATEs the schema
- * itself raises. The three the migrations can produce are spelled out - the
- * generation trigger's two, and the CHECKs from F-01.
+ * itself raises. The ones the migrations can produce are spelled out - the
+ * generation trigger's two, the write function's refusal, and the CHECKs from
+ * F-01.
  */
 function categorize(error: PostgrestError): StoreErrorCategory {
   switch (error.code) {
@@ -105,6 +110,10 @@ function categorize(error: PostgrestError): StoreErrorCategory {
     // is fixed by retrying, and both want an operator to look.
     case "42501":
       return "config";
+    // U0001: save_day_plan_generation refusing to supersede an accepted plan
+    // without p_confirm_replace. A deliberate refusal, not a broken value.
+    case "U0001":
+      return "conflict";
     // check_violation (the generation invariant, and the length/ordinal bounds),
     // not_null_violation, unique_violation, foreign_key_violation,
     // string_data_right_truncation.
@@ -141,6 +150,7 @@ async function callSaveGeneration(supabase: DayPlanClient, command: GenerateDayP
     p_plan_date: command.plan_date,
     p_prompt: command.prompt,
     p_activities: toJsonActivities(command.activities),
+    p_confirm_replace: command.confirm_replace,
   });
 
   if (error) {
@@ -160,12 +170,16 @@ async function callSaveGeneration(supabase: DayPlanClient, command: GenerateDayP
  * not separable, and PostgREST gives the client no transaction to put them in.
  * See `20260823095136_day_plan_generation_write_contract.sql`.
  *
- * Retried once, on any failure. The asymmetry is what justifies it: this write
- * happens *after* a generation the teacher already waited 10-30 seconds and paid
- * tokens for, and the realistic failure here is a connection blip rather than a
- * standing condition. The retry costs milliseconds, so it is worth taking even
- * for the categories that will certainly fail again. A second failure is the
- * answer.
+ * Retried once, on any failure but a `conflict`. The asymmetry is what justifies
+ * it: this write happens *after* a generation the teacher already waited 10-30
+ * seconds and paid tokens for, and the realistic failure here is a connection
+ * blip rather than a standing condition. The retry costs milliseconds, so it is
+ * worth taking even for the categories that will certainly fail again. A second
+ * failure is the answer.
+ *
+ * `conflict` is the exception because it is not a failure at all: the schema
+ * refused to destroy an acceptance nobody confirmed, and repeating the request
+ * would only ask the same question twice.
  *
  * Not idempotent, and knowingly so: if the first call committed and only its
  * response was lost, the retry writes a second generation of the same three
@@ -178,6 +192,12 @@ export async function saveGeneration(supabase: DayPlanClient, command: GenerateD
     return await callSaveGeneration(supabase, command);
   } catch (firstFailure) {
     if (!(firstFailure instanceof StoreError)) {
+      throw firstFailure;
+    }
+    // A refusal is not a blip. Re-issuing it would repeat the same answer and,
+    // worse, muddy the one category whose whole point is that the teacher - not
+    // the retry - decides what happens next.
+    if (firstFailure.category === "conflict") {
       throw firstFailure;
     }
     return callSaveGeneration(supabase, command);
@@ -232,22 +252,47 @@ export async function updateActivityText(
  * worker and Postgres; a human pressing a button cannot get there. If it ever
  * did, it surfaces as `invalid` with the constraint named, not as a bad row.
  */
-export async function setAcceptance(supabase: DayPlanClient, planId: string, accepted: boolean): Promise<void> {
+export async function setAcceptance(
+  supabase: DayPlanClient,
+  planId: string,
+  accepted: boolean,
+  expectedGeneration: number,
+): Promise<void> {
   const { data, error } = await supabase
     .from("day_plans")
     .update({ accepted_at: accepted ? new Date().toISOString() : null })
     .eq("id", planId)
+    .eq("current_generation", expectedGeneration)
     .select("id")
     .maybeSingle();
 
   if (error) {
     throw toStoreError(error, "Nie udało się zmienić stanu planu");
   }
-  if (!data) {
-    throw new StoreError("not_found", `Plan ${planId} is not visible to the caller.`, {
-      userMessage: "Nie znaleziono tego planu dnia.",
-    });
+  if (data) {
+    return;
   }
+
+  // Nothing matched, and the two reasons want different answers: the plan is
+  // not this teacher's (or not there at all), or it is theirs and has moved on
+  // since their page was rendered. Only the second is worth a refresh, so the
+  // failure path pays for one read to tell them apart. The success path does not.
+  const { data: existing } = await supabase
+    .from("day_plans")
+    .select("current_generation")
+    .eq("id", planId)
+    .maybeSingle();
+
+  if (existing) {
+    throw new StoreError(
+      "conflict",
+      `Plan ${planId} moved to generation ${String(existing.current_generation)}; caller expected ${String(expectedGeneration)}.`,
+    );
+  }
+
+  throw new StoreError("not_found", `Plan ${planId} is not visible to the caller.`, {
+    userMessage: "Nie znaleziono tego planu dnia.",
+  });
 }
 
 // ---------------------------------------------------------------------------

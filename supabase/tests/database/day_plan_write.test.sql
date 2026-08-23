@@ -15,7 +15,7 @@
 
 begin;
 
-select plan(23);
+select plan(28);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (seeded as the owner, so rls is out of the picture here by design)
@@ -112,14 +112,37 @@ select is(
 );
 
 -- ordinal and title asserted together: array_agg ordered by ordinal alone would
--- still pass if the ordinals were 5, 6, 7. `with ordinality` is what makes this
--- deterministic - `row_number() over ()` has no order by and would not.
+-- still pass if the ordinals were 5, 6, 7.
+--
+-- what this assertion does *not* prove is `with ordinality` rather than
+-- `row_number() over ()`. measured, not assumed: swapping the function to
+-- `row_number()` leaves this green, because for a three-element array the two
+-- agree in practice. they are not the same guarantee - `row_number()` without an
+-- `order by` is unordered by definition and may disagree on a longer array, on a
+-- different plan, or on a different release - but no behavioural assertion can
+-- separate them reliably, since the failure it guards against is one postgres is
+-- permitted to produce and normally does not. the structural assertion below is
+-- the one that holds the line; this one holds the ordinals.
 select is(
   (select array_agg(ordinal::int || ':' || title order by ordinal)
      from public.activities
     where plan_id = (select plan_id from saved where label = 'day')),
   array['1:z-one', '2:z-two', '3:z-three'],
   'ordinals follow the order the model returned the proposals in'
+);
+
+-- asserted on the function's text, which is unusual and deliberate. the ordering
+-- guarantee lives in the choice of construct, not in any state the construct
+-- leaves behind, so there is nothing else to look at. a suite that only checked
+-- behaviour here would report success on the version of this function that has
+-- no ordering guarantee at all - which is exactly what happened before this line
+-- existed.
+select matches(
+  (select pg_get_functiondef(oid) from pg_proc
+    where proname = 'save_day_plan_generation'
+      and pronamespace = 'public'::regnamespace),
+  'with ordinality',
+  'the batch writer numbers proposals with ordinality, not row_number()'
 );
 
 -- ---------------------------------------------------------------------------
@@ -130,13 +153,45 @@ update public.day_plans
    set accepted_at = now()
  where id = (select plan_id from saved where label = 'day');
 
+-- an accepted plan is not replaced on a bare call. the guard lives here rather
+-- than in the island because the island's copy of `accepted_at` can be stale -
+-- a second tab, or a page rendered when the plan could not be read - and this
+-- deletion has no undo. u0001 rather than 23514 so the route can tell a refusal
+-- the teacher can act on from a counter mismatch, which is our bug.
+select throws_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-04-01', 'lato',
+      '[{"title":"l-one","description":"opis 4"}]'::jsonb
+    )$$,
+  'U0001',
+  null,
+  'regenerating an accepted plan without confirmation is refused'
+);
+
+-- the refusal has to happen before the upsert, which would already have cleared
+-- the acceptance and deleted the batch. these two say it aborted early, not late.
+select is(
+  (select array_agg(title order by ordinal) from public.activities
+    where plan_id = (select plan_id from saved where label = 'day')),
+  array['z-one', 'z-two', 'z-three'],
+  'the refused regeneration leaves the existing batch untouched'
+);
+
+select isnt(
+  (select accepted_at from public.day_plans
+    where id = (select plan_id from saved where label = 'day')),
+  null,
+  'the refused regeneration leaves the acceptance standing'
+);
+
 insert into saved
 select 'again', public.save_day_plan_generation(
   date '2026-04-01',
   'lato',
   '[{"title":"l-one","description":"opis 4"},
     {"title":"l-two","description":"opis 5"},
-    {"title":"l-three","description":"opis 6"}]'::jsonb
+    {"title":"l-three","description":"opis 6"}]'::jsonb,
+  p_confirm_replace => true
 );
 
 select is(
@@ -181,6 +236,22 @@ select is(
     where id = (select plan_id from saved where label = 'day')),
   'lato',
   'regeneration replaces the haslo the batch grew from'
+);
+
+-- a plan with no acceptance is regenerated without ceremony. the confirmation
+-- protects an acceptance; on a draft the teacher is still iterating and has
+-- invested nothing, so asking would be friction with no decision behind it.
+-- its own date, so it cannot disturb the assertions above.
+select lives_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-04-03', 'przedwiosnie',
+      '[{"title":"p-one","description":"opis 7"}]'::jsonb
+    ),
+    public.save_day_plan_generation(
+      date '2026-04-03', 'przedwiosnie ii',
+      '[{"title":"p-two","description":"opis 8"}]'::jsonb
+    )$$,
+  'a draft plan is regenerated without confirmation'
 );
 
 -- ---------------------------------------------------------------------------
@@ -304,14 +375,14 @@ select results_eq(
 -- cannot tell whether this migration's revoke line exists at all.
 
 select ok(
-  not has_function_privilege('anon', 'public.save_day_plan_generation(date, text, jsonb)', 'execute'),
+  not has_function_privilege('anon', 'public.save_day_plan_generation(date, text, jsonb, boolean)', 'execute'),
   'anon holds no execute privilege on the batch writer'
 );
 
 -- the positive control: without it the assertion above would read identically
 -- against a function nobody can execute.
 select ok(
-  has_function_privilege('authenticated', 'public.save_day_plan_generation(date, text, jsonb)', 'execute'),
+  has_function_privilege('authenticated', 'public.save_day_plan_generation(date, text, jsonb, boolean)', 'execute'),
   'authenticated does hold execute on the batch writer'
 );
 

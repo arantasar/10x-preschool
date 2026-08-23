@@ -15,6 +15,10 @@ export const prerender = false;
  *
  * The `accepted_at` the island renders is the one read back from the row, never
  * the timestamp this route sent - and certainly never the browser's clock.
+ *
+ * `expected_generation` makes the write conditional on the caller having seen the
+ * batch they are signing off on. Without it a stale tab could put an acceptance
+ * on proposals that replaced the ones on its screen.
  */
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
@@ -39,7 +43,7 @@ export const POST: APIRoute = async (context) => {
   }
 
   try {
-    await setAcceptance(supabase, parsed.data.plan_id, parsed.data.accepted);
+    await setAcceptance(supabase, parsed.data.plan_id, parsed.data.accepted, parsed.data.expected_generation);
     return json(requireSaved(await readDayPlanById(supabase, parsed.data.plan_id), parsed.data.plan_id), 200);
   } catch (error) {
     return storeFailure(error);

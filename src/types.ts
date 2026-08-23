@@ -20,13 +20,16 @@ export type ActivityInsert = Tables["activities"]["Insert"];
 // ---------------------------------------------------------------------------
 // The current-generation invariant
 // ---------------------------------------------------------------------------
-// A regenerated plan leaves the previous batch resident in `activities`, so a
-// plain `where plan_id = …` returns both batches and shows stale proposals with
-// no error. Rather than documenting that and hoping, `CurrentActivity` is a
-// branded type that no literal can satisfy: the only way to obtain one is
-// `selectCurrentGeneration` in `@/lib/day-plans`, which does the comparison
-// against the plan's own counter. Reading the whole table stays possible — you
-// just cannot pass the result anywhere that expects the current batch.
+// `save_day_plan_generation` deletes the superseded batch in the same write that
+// creates its replacement, so in practice a plan's rows are one generation. The
+// brand does not rest on that. It rests on the counter being the definition of
+// "current": a row whose `generation` does not match `current_generation` is not
+// live, whatever put it there — a direct write outside the RPC, or a read taken
+// while a regeneration was in flight — and it renders as a stale proposal with no
+// error to mark it. So `CurrentActivity` is a branded type that no literal can
+// satisfy: the only way to obtain one is `selectCurrentGeneration` in
+// `@/lib/day-plans`, which does the comparison. Reading the whole table stays
+// possible — you just cannot pass the result anywhere that expects the live batch.
 
 declare const currentGenerationBrand: unique symbol;
 
@@ -88,4 +91,6 @@ export type ActivityDraft = Pick<ActivityInsert, "title" | "description">;
  */
 export type GenerateDayPlanCommand = Pick<DayPlanInsert, "plan_date" | "prompt"> & {
   readonly activities: readonly ActivityDraft[];
+  /** The teacher has agreed to lose the current batch and their acceptance. */
+  readonly confirm_replace: boolean;
 };
