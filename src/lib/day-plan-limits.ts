@@ -30,6 +30,15 @@ export const PROMPT_MAX = 2000;
 /** How many proposals one generation returns. Mirrors `day-plan.schema.json`. */
 export const ACTIVITY_COUNT = 3;
 
+/**
+ * The day's theme from a week outline. Mirrors `day_plans_theme_length`.
+ *
+ * A theme is a narrowing of the haslo, not a second haslo - one clause, not a
+ * paragraph - so the bound is the title's rather than the prompt's. If the CHECK
+ * changes, this changes with it; they are the same knob.
+ */
+export const THEME_MAX = 200;
+
 // ---------------------------------------------------------------------------
 // Generation timing
 // ---------------------------------------------------------------------------
