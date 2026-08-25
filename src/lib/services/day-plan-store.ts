@@ -5,6 +5,7 @@ import type {
   ActivityDraft,
   CurrentActivity,
   DayPlan,
+  DayPlanSummary,
   DayPlanWithCurrentActivities,
   GenerateDayPlanCommand,
 } from "@/types";
@@ -111,8 +112,13 @@ function categorize(error: PostgrestError): StoreErrorCategory {
     case "42501":
       return "config";
     // U0001: save_day_plan_generation refusing to supersede an accepted plan
-    // without p_confirm_replace. A deliberate refusal, not a broken value.
+    // without p_confirm_replace. U0002: the same function declining to touch a
+    // day that already has a plan, which is the week generation's skip policy.
+    // Both are deliberate refusals rather than broken values, and both are the
+    // teacher's to resolve - but they are separate codes because they are
+    // separate answers, and the route says different things about them.
     case "U0001":
+    case "U0002":
       return "conflict";
     // check_violation (the generation invariant, and the length/ordinal bounds),
     // not_null_violation, unique_violation, foreign_key_violation,
@@ -151,6 +157,11 @@ async function callSaveGeneration(supabase: DayPlanClient, command: GenerateDayP
     p_prompt: command.prompt,
     p_activities: toJsonActivities(command.activities),
     p_confirm_replace: command.confirm_replace,
+    // Both are omitted rather than nulled when the caller has nothing to say.
+    // `p_theme` absent means "keep whatever theme this day already has", which
+    // is what a single-day regeneration wants; sending null would erase it.
+    ...(command.theme === undefined ? {} : { p_theme: command.theme }),
+    ...(command.require_absent === undefined ? {} : { p_require_absent: command.require_absent }),
   });
 
   if (error) {
@@ -358,4 +369,86 @@ async function readCurrentActivities(supabase: DayPlanClient, plan: DayPlan): Pr
     throw toStoreError(error, "Nie udało się odczytać propozycji");
   }
   return selectCurrentGeneration(plan, data);
+}
+
+/**
+ * Every saved plan in a set of days, keyed by date.
+ *
+ * Two queries for the whole week rather than five round trips: the plans in one
+ * `in (…)`, then their activities in another, and `selectCurrentGeneration` per
+ * plan. That last part is why this cannot be a simple embedded select - the
+ * brand on `CurrentActivity` is only earned by comparing a batch against its own
+ * plan's counter, and this read has to stay inside that funnel like every other.
+ *
+ * A day with no plan has no key. The caller distinguishes "free" from "failed"
+ * by whether this threw, never by a null in the map.
+ */
+export async function readWeekPlans(
+  supabase: DayPlanClient,
+  dates: readonly string[],
+): Promise<Map<string, DayPlanWithCurrentActivities>> {
+  const result = new Map<string, DayPlanWithCurrentActivities>();
+  if (dates.length === 0) {
+    return result;
+  }
+
+  const { data: plans, error: planError } = await supabase
+    .from("day_plans")
+    .select("*")
+    .in("plan_date", [...dates]);
+
+  if (planError) {
+    throw toStoreError(planError, "Nie udało się odczytać planów tygodnia");
+  }
+  if (plans.length === 0) {
+    return result;
+  }
+
+  const { data: activities, error: activityError } = await supabase
+    .from("activities")
+    .select("*")
+    .in(
+      "plan_id",
+      plans.map((plan) => plan.id),
+    )
+    .order("ordinal");
+
+  if (activityError) {
+    throw toStoreError(activityError, "Nie udało się odczytać propozycji tygodnia");
+  }
+
+  for (const plan of plans) {
+    const own = activities.filter((activity) => activity.plan_id === plan.id);
+    result.set(plan.plan_date, { plan, activities: selectCurrentGeneration(plan, own) });
+  }
+  return result;
+}
+
+/**
+ * Which days of a range have a plan, and whether it is accepted.
+ *
+ * The month grid's read. It stops at `day_plans` on purpose - see
+ * {@link DayPlanSummary}.
+ */
+export async function readMonthSummary(
+  supabase: DayPlanClient,
+  fromDate: string,
+  toDate: string,
+): Promise<DayPlanSummary[]> {
+  const { data, error } = await supabase
+    .from("day_plans")
+    .select("plan_date, prompt, accepted_at")
+    .gte("plan_date", fromDate)
+    .lte("plan_date", toDate)
+    .order("plan_date");
+
+  if (error) {
+    throw toStoreError(error, "Nie udało się odczytać planów miesiąca");
+  }
+
+  return data.map((row) => ({
+    plan_date: row.plan_date,
+    prompt: row.prompt,
+    accepted: row.accepted_at !== null,
+  }));
 }

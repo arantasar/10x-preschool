@@ -120,9 +120,35 @@ export const generateDayPlanRequestSchema = z.object({
   // request that simply omits it, gets the refusal rather than the deletion -
   // the schema enforces it either way (`save_day_plan_generation`, U0001).
   confirm_replace: z.boolean().default(false),
+  // This day's slice of a week outline. Optional rather than nullable: absent
+  // means "keep whatever theme this day already has", which is exactly what a
+  // single-day regeneration from `/plan?date=` means. A nullable field would
+  // let an older client erase the theme by sending null.
+  theme: z.string().min(1).max(THEME_MAX).optional(),
+  // The week generation's skip policy: refuse rather than replace a day that is
+  // already planned. Defaults to false, so the single-day route keeps its
+  // existing behaviour and only a caller that opts in gets the refusal
+  // (`save_day_plan_generation`, U0002).
+  only_if_absent: z.boolean().default(false),
 });
 
 export type GenerateDayPlanRequest = z.infer<typeof generateDayPlanRequestSchema>;
+
+/**
+ * The week outline route's request body.
+ *
+ * The dates travel with the hasło rather than being derived server-side from a
+ * week start, because the model is shown them: it plans "poniedziałek, 14
+ * września" and not "day 1". Held to `WEEK_DAYS` so a caller cannot ask for a
+ * three-day or ten-day outline that the schema downstream would then refuse
+ * after the model had already been paid for.
+ */
+export const weekOutlineRequestSchema = z.object({
+  prompt: z.string().min(1).max(PROMPT_MAX),
+  dates: z.array(z.iso.date()).length(WEEK_DAYS),
+});
+
+export type WeekOutlineRequest = z.infer<typeof weekOutlineRequestSchema>;
 
 /**
  * The edit route's request body (FR-008).

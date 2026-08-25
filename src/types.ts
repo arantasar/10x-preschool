@@ -63,6 +63,41 @@ export interface DayPlanView {
 }
 
 // ---------------------------------------------------------------------------
+// Week and month read models
+// ---------------------------------------------------------------------------
+
+/**
+ * What `/plan/week` hands its island.
+ *
+ * A plain record rather than a `Map`, because this crosses the SSR boundary as
+ * JSON. Days with no plan are simply absent from `plans` - "this day is empty"
+ * is the absence of a key, not a null, so the island cannot confuse "no plan"
+ * with "a plan that failed to load".
+ */
+export interface WeekPlanView {
+  /** The Monday the week is addressed by. */
+  readonly weekStart: string;
+  /** The five working days, in calendar order. */
+  readonly days: readonly string[];
+  /** Saved plans, keyed by `plan_date`. Absent key means the day is free. */
+  readonly plans: Readonly<Record<string, DayPlanView>>;
+}
+
+/**
+ * One day as the month grid needs it: enough to say "planned" or "accepted",
+ * and nothing more.
+ *
+ * Deliberately without activities. A month is up to 31 days and the grid shows
+ * none of their contents, so reading the proposals would be up to 31 batches
+ * fetched to render a coloured dot.
+ */
+export interface DayPlanSummary {
+  readonly plan_date: string;
+  readonly prompt: string;
+  readonly accepted: boolean;
+}
+
+// ---------------------------------------------------------------------------
 // Acceptance
 // ---------------------------------------------------------------------------
 

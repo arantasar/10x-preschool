@@ -582,31 +582,31 @@ implementacji.
 
 #### Automated
 
-- [x] 3.1 `./scripts/compare-models.sh` kończy się kodem 0 dla obu trybów i trzech modeli
-- [x] 3.2 Walidacja kształtu wyjść przez `jq` przechodzi dla wszystkich przebiegów
+- [x] 3.1 `./scripts/compare-models.sh` kończy się kodem 0 dla obu trybów i trzech modeli — 3216c04
+- [x] 3.2 Walidacja kształtu wyjść przez `jq` przechodzi dla wszystkich przebiegów — 3216c04
 
 #### Manual
 
-- [x] 3.3 Przegląd wszystkich wyjść pod kątem treści nieodpowiedniej; każde naruszenie z zapisaną decyzją
-- [x] 3.4 Tematy rozłączne dla wszystkich pięciu haseł testowych
-- [x] 3.5 Hasło „Dzień Matki" bez regresji po dołożeniu tematu do promptu dnia
-- [x] 3.6 `model-comparison.md` kończy się jawną decyzją o `DEFAULT_MODEL`
+- [x] 3.3 Przegląd wszystkich wyjść pod kątem treści nieodpowiedniej; każde naruszenie z zapisaną decyzją — 3216c04
+- [x] 3.4 Tematy rozłączne dla wszystkich pięciu haseł testowych — 3216c04
+- [x] 3.5 Hasło „Dzień Matki" bez regresji po dołożeniu tematu do promptu dnia — 3216c04
+- [x] 3.6 `model-comparison.md` kończy się jawną decyzją o `DEFAULT_MODEL` — 3216c04
 
 ### Phase 4: Warstwa danych i trasy
 
 #### Automated
 
-- [ ] 4.1 `npm run lint`, `npx astro check`, `npm run build` czyste
-- [ ] 4.2 `npm run test:db` zielony
-- [ ] 4.3 Build bez `SUPABASE_URL`/`SUPABASE_KEY` przechodzi
+- [x] 4.1 `npm run lint`, `npx astro check`, `npm run build` czyste
+- [x] 4.2 `npm run test:db` zielony
+- [x] 4.3 Build bez `SUPABASE_URL`/`SUPABASE_KEY` przechodzi
 
 #### Manual
 
-- [ ] 4.4 `POST /api/day-plan/week/outline` bez sesji → 401 JSON; z sesją → pięć tematów
-- [ ] 4.5 `only_if_absent: true` na dniu zajętym → 409 bez wywołania modelu
-- [ ] 4.6 `theme` na dniu pustym → plan zapisany z ustawioną kolumną
-- [ ] 4.7 Regeneracja bez `theme` zachowuje temat
-- [ ] 4.8 Odczyt tygodnia zwraca wyłącznie dni wołającego konta
+- [x] 4.4 `POST /api/day-plan/week/outline` bez sesji → 401 JSON; z sesją → pięć tematów
+- [x] 4.5 `only_if_absent: true` na dniu zajętym → 409 bez wywołania modelu
+- [x] 4.6 `theme` na dniu pustym → plan zapisany z ustawioną kolumną
+- [x] 4.7 Regeneracja bez `theme` zachowuje temat
+- [x] 4.8 Odczyt tygodnia zwraca wyłącznie dni wołającego konta
 
 ### Phase 5: Ekran tygodnia
 
