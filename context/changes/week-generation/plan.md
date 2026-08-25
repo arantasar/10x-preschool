@@ -569,28 +569,28 @@ implementacji.
 
 #### Automated
 
-- [x] 2.1 `npm run lint`, `npx astro check`, `npm run build` czyste
-- [x] 2.2 `npm run test:db` nadal zielony
+- [x] 2.1 `npm run lint`, `npx astro check`, `npm run build` czyste — b04832e
+- [x] 2.2 `npm run test:db` nadal zielony — b04832e
 
 #### Manual
 
-- [x] 2.3 `generateWeekOutline("Dinozaury")` → pięć różnych tematów po polsku, każdy ≤ 200 znaków
-- [x] 2.4 `generateDayActivities` bez kontekstu daje wynik nieodróżnialny od dzisiejszego
-- [x] 2.5 `generateDayActivities` z kontekstem → propozycje osadzone w temacie
+- [x] 2.3 `generateWeekOutline("Dinozaury")` → pięć różnych tematów po polsku, każdy ≤ 200 znaków — b04832e
+- [x] 2.4 `generateDayActivities` bez kontekstu daje wynik nieodróżnialny od dzisiejszego — b04832e
+- [x] 2.5 `generateDayActivities` z kontekstem → propozycje osadzone w temacie — b04832e
 
 ### Phase 3: Bramka jakości promptów
 
 #### Automated
 
-- [ ] 3.1 `./scripts/compare-models.sh` kończy się kodem 0 dla obu trybów i trzech modeli
-- [ ] 3.2 Walidacja kształtu wyjść przez `jq` przechodzi dla wszystkich przebiegów
+- [x] 3.1 `./scripts/compare-models.sh` kończy się kodem 0 dla obu trybów i trzech modeli
+- [x] 3.2 Walidacja kształtu wyjść przez `jq` przechodzi dla wszystkich przebiegów
 
 #### Manual
 
-- [ ] 3.3 Przegląd wszystkich wyjść pod kątem treści nieodpowiedniej; każde naruszenie z zapisaną decyzją
-- [ ] 3.4 Tematy rozłączne dla wszystkich pięciu haseł testowych
-- [ ] 3.5 Hasło „Dzień Matki" bez regresji po dołożeniu tematu do promptu dnia
-- [ ] 3.6 `model-comparison.md` kończy się jawną decyzją o `DEFAULT_MODEL`
+- [x] 3.3 Przegląd wszystkich wyjść pod kątem treści nieodpowiedniej; każde naruszenie z zapisaną decyzją
+- [x] 3.4 Tematy rozłączne dla wszystkich pięciu haseł testowych
+- [x] 3.5 Hasło „Dzień Matki" bez regresji po dołożeniu tematu do promptu dnia
+- [x] 3.6 `model-comparison.md` kończy się jawną decyzją o `DEFAULT_MODEL`
 
 ### Phase 4: Warstwa danych i trasy
 

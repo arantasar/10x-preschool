@@ -1,0 +1,25 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787652701-M97LnhulE0lAHqli0xbX","object":"chat.completion","created":1787652701,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Dawne i dzisiejsze zabawy – obrazkowe porównania\",\"opis\":\"Nauczyciel przygotowuje obrazki przedstawiające bezpieczne zabawy związane z andrzejkowym spotkaniem, na przykład taniec, wróżenie z obrazków, zabawę z kluczem oraz wspólne śpiewanie. Dzieci oglądają ilustracje, dzielą je na zabawy znane dawniej i te, które mogą odbywać się dziś, a następnie opowiadają, co się w nich zmieniło. Nauczyciel podkreśla, że współcześnie traktujemy wróżby jako zabawę i nie przewidujemy przyszłości naprawdę.\"},{\"tytul\":\"Andrzejkowy korowód zabaw\",\"opis\":\"Nauczyciel wyznacza w sali kilka stacji: przejście po śladach, taniec z szarfą, toczenie piłki do wyznaczonego miejsca i zatrzymanie się przy muzyce. Dzieci w małych grupach odwiedzają stacje, poznając ruchowe zabawy inspirowane dawnymi spotkaniami, lecz prowadzone w bezpiecznej, współczesnej formie. Na zakończenie wszyscy tworzą korowód i przy muzyce pokazują wybraną zabawę.\"},{\"tytul\":\"Wesołe andrzejkowe dźwięki dawniej i dziś\",\"opis\":\"Nauczyciel pokazuje dzieciom proste instrumenty perkusyjne i proponuje rytm inspirowany dawnym spotkaniem przy muzyce: dwa klaśnięcia, uderzenie w bębenek i pauza. Dzieci powtarzają rytm, a następnie tworzą własne krótkie akompaniamenty do piosenki lub melodii granej przez nauczyciela. Na koniec grupa porównuje zabawy muzyczne dawniej, gdy często śpiewano i tańczono razem, z tymi, które znamy dziś.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1483,"completion_tokens":467,"total_tokens":1950,"cost":0.00060003,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":41,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00060003,"upstream_inference_prompt_cost":0.00003963,"upstream_inference_completions_cost":0.0005604},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

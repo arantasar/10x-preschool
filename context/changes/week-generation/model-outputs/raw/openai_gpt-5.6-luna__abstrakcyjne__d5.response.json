@@ -1,0 +1,19 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787523480-wyUUbDvy3Jz7lHlEFxQj","object":"chat.completion","created":1787523480,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Malujemy ciszę\",\"opis\":\"Nauczyciel przygotowuje kartki, kredki lub farby oraz spokojną muzykę instrumentalną odtwarzaną cicho w tle. Dzieci przez kilka minut tworzą obraz bez rozmów, a nauczyciel pokazuje gestami, kiedy zaczynamy i kończymy pracę. Na zakończenie chętne dzieci pokazują prace, a grupa ogląda je w ciszy i nagradza autorów uśmiechem lub spokojnym gestem.\"},{\"tytul\":\"Cichy spacer po sali\",\"opis\":\"Nauczyciel rozkłada na podłodze szarfy lub obręcze i wyjaśnia, że dzieci poruszają się powoli, bez mówienia, słuchając sygnałów tamburynu lub klaśnięcia. Dzieci przechodzą wyznaczoną trasą, omijają przeszkody i zatrzymują się, gdy ucichnie instrument. Na koniec siadają w kole i pokazują gestem, co pomagało im zachować spokój oraz uważać na innych.\"},{\"tytul\":\"Budujemy w zgodzie\",\"opis\":\"Nauczyciel dzieli dzieci na małe zespoły i przygotowuje klocki oraz prostą kartę obrazkową z budowlą, na przykład mostem lub wieżą. Dzieci wspólnie budują bez używania słów, porozumiewając się gestami i wskazywaniem klocków, a nauczyciel przypomina o dzieleniu się materiałami i spokojnym czekaniu na swoją kolej. Po zakończeniu zespoły oglądają budowle i krótko opowiadają, jak pomagała im cicha współpraca.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1485,"completion_tokens":403,"total_tokens":1888,"cost":0.00052373,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":43,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00052373,"upstream_inference_prompt_cost":0.00004013,"upstream_inference_completions_cost":0.0004836},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

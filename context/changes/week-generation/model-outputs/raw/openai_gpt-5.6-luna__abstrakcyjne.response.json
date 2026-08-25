@@ -1,0 +1,15 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787523472-XiPME2XYTWkOZpz4d6VT","object":"chat.completion","created":1787523472,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Malujemy ciszę\",\"opis\":\"Nauczyciel przygotowuje kartki, farby i pędzle oraz prosi dzieci, aby przez chwilę obserwowały salę w ciszy. Dzieci malują kolory, linie i kształty, które kojarzą im się ze spokojem, a nauczyciel zachęca do delikatnych, powolnych ruchów.\"},{\"tytul\":\"Cichy spacer po sali\",\"opis\":\"Nauczyciel wyznacza bezpieczną trasę między obręczami i poduszkami, a dzieci poruszają się nią na palcach, starając się nie wydawać dźwięków. Na umówiony gest zatrzymują się i nasłuchują, po czym mówią, jakie ciche odgłosy usłyszały.\"},{\"tytul\":\"Muzyka szeptem i gestem\",\"opis\":\"Nauczyciel pokazuje dzieciom, że można tworzyć muzykę także bez głośnego grania: dzieci wystukują rytm palcami na kolanach, poruszają dłońmi i szeleszczą papierem. Następnie nauczyciel prowadzi krótką zabawę, w której dzieci reagują na gesty oznaczające ciszę, cichy dźwięk i zatrzymanie.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1449,"completion_tokens":314,"total_tokens":1763,"cost":0.00040793,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":7,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00040793,"upstream_inference_prompt_cost":0.00003113,"upstream_inference_completions_cost":0.0003768},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

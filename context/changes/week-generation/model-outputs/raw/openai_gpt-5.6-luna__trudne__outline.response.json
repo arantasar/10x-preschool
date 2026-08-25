@@ -1,0 +1,9 @@
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787523454-79VIxCLqLLthVD1NDdgf","object":"chat.completion","created":1787523454,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"tematy\":[{\"dzien\":1,\"temat\":\"Mama w codziennych chwilach – co lubimy robić razem?\"},{\"dzien\":2,\"temat\":\"Jak mogę pomagać mamie w domu i sprawiać jej radość?\"},{\"dzien\":3,\"temat\":\"Czułe słowa i gesty, którymi okazujemy mamie miłość\"},{\"dzien\":4,\"temat\":\"Mama i jej zainteresowania – poznajemy to, co sprawia jej przyjemność\"},{\"dzien\":5,\"temat\":\"Rodzinne podziękowania dla mamy – za co ją cenimy i kochamy\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1344,"completion_tokens":151,"total_tokens":1495,"cost":0.0002307,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1245,"cache_write_tokens":96,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.0002307,"upstream_inference_prompt_cost":0.0000495,"upstream_inference_completions_cost":0.0001812},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

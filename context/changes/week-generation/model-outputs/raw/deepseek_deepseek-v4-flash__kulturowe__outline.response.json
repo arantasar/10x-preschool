@@ -1,0 +1,23 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787524460-uruL75VTIl3F0NrGaEDg","object":"chat.completion","created":1787524460,"model":"deepseek/deepseek-v4-flash","provider":"StreamLake","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\n  \"tematy\": [\n    {\n      \"dzien\": 1,\n      \"temat\": \"Magiczne przedmioty i ich znaczenie – co kryje się w czarodziejskim worku?\"\n    },\n    {\n      \"dzien\": 2,\n      \"temat\": \"Wróżby z cieni i lampionów – odkrywamy tajemnice światła i cienia.\"\n    },\n    {\n      \"dzien\": 3,\n      \"temat\": \"Kim będę, gdy dorosnę? – zabawy w odgadywanie przyszłych zawodów.\"\n    },\n    {\n      \"dzien\": 4,\n      \"temat\": \"Tajemnicze wędrówki – podążamy za nitką i wskazówkami w sali.\"\n    },\n    {\n      \"dzien\": 5,\n      \"temat\": \"Andrzejkowy bal maskowy – poznajemy i tworzymy wesołe przebrania.\"\n    }\n  ]\n}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1042,"completion_tokens":220,"total_tokens":1262,"cost":0.00007241052,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00007241052,"upstream_inference_prompt_cost":0.00005091212,"upstream_inference_completions_cost":0.0000214984},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

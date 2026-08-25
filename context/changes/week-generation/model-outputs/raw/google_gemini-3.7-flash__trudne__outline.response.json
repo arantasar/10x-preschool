@@ -1,0 +1,23 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787522404-uJcQ0OK7Kw9q4Nl1lg8A","object":"chat.completion","created":1787522404,"model":"google/gemini-3.7-flash","provider":"Google","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"STOP","message":{"role":"assistant","content":"{\"tematy\":[{\"dzien\":1,\"temat\":\"Moja mama – kim jest, jak wygląda i co najbardziej w niej lubię\"},{\"dzien\":2,\"temat\":\"Czym zajmuje się mama? – praca, pasje i codzienne obowiązki\"},{\"dzien\":3,\"temat\":\"Pomocne dłonie dla mamy – jak mogę sprawić jej radość i pomóc w domu\"},{\"dzien\":4,\"temat\":\"Mamy w świecie zwierząt – jak troszczą się o swoje małe\"},{\"dzien\":5,\"temat\":\"Świętujemy Dzień Mamy – moc serdeczności, dobrych słów i uśmiechu\"}]}","refusal":null,"reasoning":"**Developing Themes**\n\nI'm currently brainstorming five distinct daily themes for preschoolers in Poland, all centered around Mother's Day. The focus is on creating age-appropriate, engaging activities using natural Polish language for the week of September 14th to 18th, 2026.\n\n","reasoning_details":[{"type":"reasoning.text","text":"**Developing Themes**\n\nI'm currently brainstorming five distinct daily themes for preschoolers in Poland, all centered around Mother's Day. The focus is on creating age-appropriate, engaging activities using natural Polish language for the week of September 14th to 18th, 2026.\n\n","format":"google-gemini-v1","index":0}]}}],"usage":{"prompt_tokens":1298,"completion_tokens":465,"total_tokens":1763,"cost":0.001358625,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.001358625,"upstream_inference_prompt_cost":0.00048675,"upstream_inference_completions_cost":0.000871875},"completion_tokens_details":{"reasoning_tokens":320,"image_tokens":0,"audio_tokens":0}}}

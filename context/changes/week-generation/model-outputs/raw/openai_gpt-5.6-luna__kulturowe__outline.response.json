@@ -1,0 +1,15 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787652693-BNI7cDIXvDShslY0XDHJ","object":"chat.completion","created":1787652693,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"tematy\":[{\"dzien\":1,\"temat\":\"Andrzejkowe zwyczaje i zabawy dawniej oraz dziś\"},{\"dzien\":2,\"temat\":\"Kolory, symbole i znaczenie wróżb w bezpiecznej zabawie\"},{\"dzien\":3,\"temat\":\"Andrzejkowa muzyka, rytm i taniec\"},{\"dzien\":4,\"temat\":\"Tajemnicze cienie, światło i jesienne wieczory\"},{\"dzien\":5,\"temat\":\"Wspólna zabawa andrzejkowa — podsumowanie tygodnia\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1342,"completion_tokens":141,"total_tokens":1483,"cost":0.00050455,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":1339,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00050455,"upstream_inference_prompt_cost":0.00033535,"upstream_inference_completions_cost":0.0001692},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

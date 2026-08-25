@@ -1,0 +1,23 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787523465-f0BglffEKLzwJF20opUL","object":"chat.completion","created":1787523465,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Laurka z sercem i podziękowaniem\",\"opis\":\"Nauczyciel przygotowuje kolorowe kartki, kredki, farby, klej i duże papierowe kształty serc. Dzieci ozdabiają laurki rysunkami przedstawiającymi wspólne chwile z mamą, a nauczyciel pomaga im zapisać krótkie podziękowania, na przykład „Dziękuję za przytulanie” lub „Lubię, gdy się ze mną bawisz”. Na zakończenie dzieci wręczają laurkom wybraną dekorację z papieru.\"},{\"tytul\":\"Co cenimy w mamie? Zabawa ruchowa\",\"opis\":\"Nauczyciel rozkłada w sali obrazki przedstawiające miłe gesty, takie jak przytulanie, pomoc, wspólna zabawa, czytanie i pocieszanie. Dzieci wybierają obrazek, który kojarzy im się z mamą, a następnie pokazują go ruchem lub krótką scenką bez słów. Po każdej prezentacji grupa mówi wspólnie: „Dziękuję, mamo!”, a nauczyciel podkreśla, że każda rodzina może okazywać miłość na różne sposoby.\"},{\"tytul\":\"Piosenka pełna podziękowań\",\"opis\":\"Nauczyciel proponuje prostą, znaną dzieciom melodię lub rytmiczną recytację krótkiego tekstu o wdzięczności dla mamy. Dzieci wystukują spokojny rytm na tamburynach, bębenkach albo drewnianych klockach i dopowiadają słowa: „Dziękuję za uśmiech”, „Dziękuję za pomoc”, „Dziękuję za wspólny czas”. Na zakończenie dzieci tworzą koło i wykonują gesty do słów: serce z dłoni, ukłon i delikatne machanie.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1489,"completion_tokens":458,"total_tokens":1947,"cost":0.00059073,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":47,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00059073,"upstream_inference_prompt_cost":0.00004113,"upstream_inference_completions_cost":0.0005496},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

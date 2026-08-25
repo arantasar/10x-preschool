@@ -1,0 +1,21 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787652714-YjMvwcp3nPgIdM74BzED","object":"chat.completion","created":1787652714,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Jesienny las z odbitych liści\",\"opis\":\"Dzieci oglądają bezpiecznie zebrane, suche liście i nazywają ich kolory oraz kształty. Układają liście na kartce, przykrywają je drugą kartką i delikatnie pocierają kredką, aby uzyskać jesienne odbitki; nauczyciel pokazuje sposób pracy i pomaga w doborze barw.\"},{\"tytul\":\"Spacer tropem jesiennych oznak\",\"opis\":\"Nauczyciel rozmieszcza w sali obrazki lub duże okazy: liście, szyszkę, kasztan, gałązkę i kawałek kory. Dzieci poruszają się między nimi jak podczas leśnego spaceru, a na umówiony sygnał zatrzymują się przy wybranym okazie, nazywają go i pokazują jego kolor, kształt lub fakturę; młodsze dzieci mogą wskazywać, a starsze opisywać.\"},{\"tytul\":\"Jesienny las gra i szumi\",\"opis\":\"Nauczyciel opowiada krótką historię o jesiennym lesie, a dzieci ilustrują ją dźwiękami: pocierają dłonie, lekko stukają palcami, potrząsają delikatnie instrumentami i grają na bębenkach. Na hasło „wiatr” wykonują ciche szumy, na „spadające liście” grają pojedyncze delikatne dźwięki, a na „słońce” podnoszą instrumenty i grają wesoły rytm; nauczyciel kieruje tempem i głośnością.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1483,"completion_tokens":397,"total_tokens":1880,"cost":0.00051603,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":41,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00051603,"upstream_inference_prompt_cost":0.00003963,"upstream_inference_completions_cost":0.0004764},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

@@ -1,0 +1,9 @@
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787523470-uSHQtRr1AXERdhTFCExi","object":"chat.completion","created":1787523470,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"tematy\":[{\"dzien\":1,\"temat\":\"Cisza wokół nas — kiedy ją słyszymy i gdzie możemy ją znaleźć\"},{\"dzien\":2,\"temat\":\"Ciche dźwięki przyrody — odgłosy, które można usłyszeć bardzo uważnie\"},{\"dzien\":3,\"temat\":\"Cisza w ciele — spokojny oddech, odpoczynek i uważne słuchanie siebie\"},{\"dzien\":4,\"temat\":\"Cisza i dźwięk — jak zmienia się otoczenie, gdy coś zaczyna grać lub szumieć\"},{\"dzien\":5,\"temat\":\"Cisza, która pomaga — spokojne chwile, skupienie i zgodna zabawa\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1341,"completion_tokens":177,"total_tokens":1518,"cost":0.00026115,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1245,"cache_write_tokens":93,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00026115,"upstream_inference_prompt_cost":0.00004875,"upstream_inference_completions_cost":0.0002124},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

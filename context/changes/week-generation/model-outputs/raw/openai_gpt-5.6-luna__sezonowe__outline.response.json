@@ -1,0 +1,13 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787652711-FDCzI7jdt4tSO2731VHd","object":"chat.completion","created":1787652711,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"tematy\":[{\"dzien\":1,\"temat\":\"Jesienne kolory i oznaki jesieni w lesie\"},{\"dzien\":2,\"temat\":\"Leśne drzewa jesienią — liście, kora i owoce\"},{\"dzien\":3,\"temat\":\"Jesienne dary lasu i zasady bezpiecznego spaceru\"},{\"dzien\":4,\"temat\":\"Leśne zwierzęta jesienią — przygotowania do zimy\"},{\"dzien\":5,\"temat\":\"Jesienny las pełen dźwięków, zapachów i skarbów\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1344,"completion_tokens":142,"total_tokens":1486,"cost":0.0002199,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1245,"cache_write_tokens":96,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.0002199,"upstream_inference_prompt_cost":0.0000495,"upstream_inference_completions_cost":0.0001704},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

@@ -1,0 +1,9 @@
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787523485-xUNiNBiEnlq7qRvjQJG1","object":"chat.completion","created":1787523485,"model":"deepseek/deepseek-v4-flash","provider":"Baidu","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\"tematy\":[{\"dzien\":1,\"temat\":\"Kolory wokół nas – poznajemy podstawowe barwy w sali i na podwórku\"},{\"dzien\":2,\"temat\":\"Mieszamy kolory – co powstanie, gdy połączymy żółty i niebieski?\"},{\"dzien\":3,\"temat\":\"Ulubiony kolor każdego z nas – rozmowa i zabawa z kolorowymi przedmiotami\"},{\"dzien\":4,\"temat\":\"Kolory w przyrodzie – jakie barwy mają liście, kwiaty i zwierzęta?\"},{\"dzien\":5,\"temat\":\"Kolorowy tydzień – podsumowanie i zabawa w odszukiwanie wszystkich poznanych barw\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1445,"completion_tokens":172,"total_tokens":1617,"cost":0.000087661,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.000087661,"upstream_inference_prompt_cost":0.000070805,"upstream_inference_completions_cost":0.000016856},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

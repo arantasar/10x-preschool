@@ -1,0 +1,19 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787522288-QKtak7U4eHXsGMcYguDE","object":"chat.completion","created":1787522288,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Kolorowe poszukiwania w sali\",\"opis\":\"Nauczyciel przygotowuje kolorowe kartki lub kredki w kilku podstawowych kolorach i rozkłada je w różnych miejscach sali. Dzieci losują albo wybierają jeden kolor, a następnie szukają przedmiotów w tym samym kolorze i nazywają je. Na zakończenie wspólnie porządkują znaleziska według kolorów, porównując, których przedmiotów jest najwięcej.\"},{\"tytul\":\"Tęczowe odbitki palcami\",\"opis\":\"Nauczyciel przygotowuje kartki, farby w kilku kolorach i wilgotne chusteczki do wytarcia rąk. Dzieci wykonują palcami kropki, ślady i proste wzory, tworząc kolorowe kompozycje, a podczas pracy nazywają używane kolory. Nauczyciel pokazuje kolory po kolei, zachęca do ich porównywania i pomaga dzieciom bezpiecznie korzystać z farb.\"},{\"tytul\":\"Kolorowa orkiestra\",\"opis\":\"Nauczyciel przypisuje prostym instrumentom lub gestom kolory, na przykład czerwony oznacza klaśnięcie, żółty potrząśnięcie grzechotką, a niebieski uderzenie w bębenek. Pokazuje dzieciom kolorowe kartki w różnej kolejności, a dzieci wykonują odpowiadające im dźwięki lub ruchy. Następnie chętne dzieci zostają prowadzącymi i układają krótkie sekwencje kolorów dla całej grupy.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1481,"completion_tokens":390,"total_tokens":1871,"cost":0.00050713,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":39,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00050713,"upstream_inference_prompt_cost":0.00003913,"upstream_inference_completions_cost":0.000468},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

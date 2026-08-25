@@ -1,0 +1,17 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787523456-kJZrzxPIsXefnmE2wCVX","object":"chat.completion","created":1787523456,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Laurka z odciskiem dłoni\",\"opis\":\"Nauczyciel przygotowuje kartki, farby plakatowe, kredki i bezpieczne nożyczki. Dzieci odbijają pomalowaną dłoń na kartce, a po wyschnięciu ozdabiają laurkę rysunkami kwiatów i dopisują, z pomocą nauczyciela, krótkie życzenia dla mamy.\"},{\"tytul\":\"Taniec kwiatów dla mamy\",\"opis\":\"Dzieci otrzymują kolorowe szarfy lub wstążki i poruszają się przy spokojnej muzyce, naśladując rozwijanie się kwiatów: kucają, powoli wstają, unoszą ręce i obracają się. Nauczyciel pokazuje proste ruchy, a na zakończenie dzieci tworzą wspólny bukiet, zbliżając się do siebie i unosząc szarfy.\"},{\"tytul\":\"Muzyczne życzenia\",\"opis\":\"Nauczyciel rozdaje proste instrumenty perkusyjne, takie jak grzechotki, tamburyny i bębenki, oraz ustala z dziećmi znak rozpoczęcia i zakończenia gry. Dzieci akompaniują krótkiej, znanej piosence o mamie, a w przerwach mówią lub powtarzają przygotowane życzenia: „Mamo, życzę Ci radości, uśmiechu i pięknego dnia”.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1451,"completion_tokens":353,"total_tokens":1804,"cost":0.00045523,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":9,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00045523,"upstream_inference_prompt_cost":0.00003163,"upstream_inference_completions_cost":0.0004236},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}
