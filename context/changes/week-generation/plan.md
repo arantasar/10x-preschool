@@ -629,12 +629,12 @@ implementacji.
 
 #### Automated
 
-- [x] 6.1 `npm run lint`, `npx astro check`, `npm run build` czyste
-- [x] 6.2 `GET /plan/month` bez sesji → 302 na `/auth/signin`
+- [x] 6.1 `npm run lint`, `npx astro check`, `npm run build` czyste — 6cde46c
+- [x] 6.2 `GET /plan/month` bez sesji → 302 na `/auth/signin` — 6cde46c
 
 #### Manual
 
-- [x] 6.3 Siatka pokazuje właściwe dni z rozróżnieniem roboczy/zaakceptowany
-- [x] 6.4 Wejście w tydzień i w dzień trafia we właściwy tydzień i dzień
-- [x] 6.5 Miesiąc drugiego konta nie pokazuje dni pierwszego
-- [x] 6.6 Przejście grudzień → styczeń działa w obie strony
+- [x] 6.3 Siatka pokazuje właściwe dni z rozróżnieniem roboczy/zaakceptowany — 6cde46c
+- [x] 6.4 Wejście w tydzień i w dzień trafia we właściwy tydzień i dzień — 6cde46c
+- [x] 6.5 Miesiąc drugiego konta nie pokazuje dni pierwszego — 6cde46c
+- [x] 6.6 Przejście grudzień → styczeń działa w obie strony — 6cde46c
