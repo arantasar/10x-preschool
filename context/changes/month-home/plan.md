@@ -423,10 +423,10 @@ na starcie planowania wskazywał `master`.
 
 #### Automated
 
-- [x] 1.1 Lint przechodzi: `npm run lint`
-- [x] 1.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [x] 1.3 Build produkcyjny przechodzi: `npm run build`
-- [x] 1.4 Żadna strona planowania nie renderuje już „Zalogowano jako"
+- [x] 1.1 Lint przechodzi: `npm run lint` — 4f672cb
+- [x] 1.2 Typy i szablony Astro przechodzą: `npx astro check` — 4f672cb
+- [x] 1.3 Build produkcyjny przechodzi: `npm run build` — 4f672cb
+- [x] 1.4 Żadna strona planowania nie renderuje już „Zalogowano jako" — 4f672cb
 
 #### Manual
 
@@ -440,9 +440,9 @@ na starcie planowania wskazywał `master`.
 
 #### Automated
 
-- [ ] 2.1 Lint przechodzi: `npm run lint`
-- [ ] 2.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [ ] 2.3 Build produkcyjny przechodzi: `npm run build`
+- [x] 2.1 Lint przechodzi: `npm run lint`
+- [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check`
+- [x] 2.3 Build produkcyjny przechodzi: `npm run build`
 
 #### Manual
 

@@ -62,6 +62,12 @@ const reactConfig = tseslint.config({
 const astroConfig = tseslint.config({
   files: ["**/*.astro"],
   rules: {
+    // A page-level redirect is a bare `return` in the frontmatter, and
+    // `astro-eslint-parser` (1.4.0) does not give that return statement a parent
+    // function node. `no-misused-promises` dereferences that parent
+    // unconditionally in `checkReturnStatement` and crashes the whole run - not
+    // a finding, a hard abort. Off for `.astro` only; `.ts`/`.tsx` keep the rule.
+    "@typescript-eslint/no-misused-promises": "off",
     "astro/no-set-html-directive": "error",
     "astro/no-unused-css-selector": "warn",
     "astro/prefer-class-list-directive": "warn",

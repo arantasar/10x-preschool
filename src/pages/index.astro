@@ -1,6 +1,18 @@
 ---
 import Welcome from "@/components/Welcome.astro";
 import Layout from "@/layouts/Layout.astro";
+
+// The signed-in app starts at the month, not here. The decision lives in the
+// page that makes it rather than in the middleware: the middleware answers one
+// question - "does this route need a session" - and giving it the shape of the
+// route map would blur that role. `Astro.locals.user` is already resolved by
+// the middleware for every request, so this costs no extra Supabase call.
+// `POST /api/auth/signout` redirects here after clearing the cookie, so the
+// user is null by then and the welcome page renders - no redirect loop.
+const { user } = Astro.locals;
+if (user) {
+  return Astro.redirect("/plan/month");
+}
 ---
 
 <Layout>
