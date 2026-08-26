@@ -430,11 +430,11 @@ na starcie planowania wskazywał `master`.
 
 #### Manual
 
-- [ ] 1.5 Pasek z e-mailem i wylogowaniem widoczny na miesiącu, tygodniu i dniu
-- [ ] 1.6 Wylogowanie działa z każdej z trzech stron
-- [ ] 1.7 Nazwa aplikacji w pasku prowadzi na `/plan/month`
-- [ ] 1.8 Pasek widoczny także na ekranie błędu odczytu
-- [ ] 1.9 `/dashboard` nadal działa i nadal ma swój przycisk wylogowania
+- [x] 1.5 Pasek z e-mailem i wylogowaniem widoczny na miesiącu, tygodniu i dniu — 4f672cb
+- [x] 1.6 Wylogowanie działa z każdej z trzech stron — 4f672cb
+- [x] 1.7 Nazwa aplikacji w pasku prowadzi na `/plan/month` — 4f672cb
+- [x] 1.8 Pasek widoczny także na ekranie błędu odczytu — 4f672cb
+- [x] 1.9 `/dashboard` nadal działa i nadal ma swój przycisk wylogowania — 4f672cb
 
 ### Phase 2: Przeniesienie punktu wejścia
 
@@ -446,11 +446,11 @@ na starcie planowania wskazywał `master`.
 
 #### Manual
 
-- [ ] 2.4 Zalogowanie ląduje bezpośrednio na `/plan/month`
-- [ ] 2.5 Wejście na `/` w sesji przenosi na `/plan/month`
-- [ ] 2.6 Wejście na `/` bez sesji pokazuje stronę powitalną, bez pętli
-- [ ] 2.7 Wylogowanie ląduje na stronie powitalnej, bez pętli
-- [ ] 2.8 Błędne hasło nadal wraca na `/auth/signin` z komunikatem
+- [x] 2.4 Zalogowanie ląduje bezpośrednio na `/plan/month` — 59a98ef
+- [x] 2.5 Wejście na `/` w sesji przenosi na `/plan/month` — 59a98ef
+- [x] 2.6 Wejście na `/` bez sesji pokazuje stronę powitalną, bez pętli — 59a98ef
+- [x] 2.7 Wylogowanie ląduje na stronie powitalnej, bez pętli — 59a98ef
+- [x] 2.8 Błędne hasło nadal wraca na `/auth/signin` z komunikatem — 59a98ef
 
 ### Phase 3: Wygaszenie pulpitu
 
@@ -464,11 +464,11 @@ na starcie planowania wskazywał `master`.
 
 #### Manual
 
-- [ ] 3.6 `/dashboard` daje 404
-- [ ] 3.7 Back-link dnia prowadzi na miesiąc tego dnia, także dla dnia z sąsiedniego miesiąca
-- [ ] 3.8 Miesiąc bez back-linku, odstęp nad nagłówkiem poprawny
-- [ ] 3.9 Pełna pętla nawigacji bez wpisywania URL-a z ręki
-- [ ] 3.10 Link w Topbarze na stronie powitalnej prowadzi na `/plan/month`
+- [x] 3.6 `/dashboard` daje 404 — f2a20d3
+- [x] 3.7 Back-link dnia prowadzi na miesiąc tego dnia, także dla dnia z sąsiedniego miesiąca — f2a20d3
+- [x] 3.8 Miesiąc bez back-linku, odstęp nad nagłówkiem poprawny — f2a20d3
+- [x] 3.9 Pełna pętla nawigacji bez wpisywania URL-a z ręki — f2a20d3
+- [x] 3.10 Link w Topbarze na stronie powitalnej prowadzi na `/plan/month` — f2a20d3
 
 ### Phase 4: Zapis decyzji o S-06
 
@@ -479,5 +479,5 @@ na starcie planowania wskazywał `master`.
 
 #### Manual
 
-- [ ] 4.3 `## At a glance`, `### S-06`, `## Backlog Handoff` i `## Done` mówią to samo o S-06
-- [ ] 4.4 Niewiadoma S-04 przekreślona wraz z rozstrzygnięciem
+- [x] 4.3 `## At a glance`, `### S-06`, `## Backlog Handoff` i `## Done` mówią to samo o S-06 — 47c7d3f
+- [x] 4.4 Niewiadoma S-04 przekreślona wraz z rozstrzygnięciem — 47c7d3f
