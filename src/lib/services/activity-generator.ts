@@ -157,10 +157,15 @@ export interface WeekOutlineResult {
 /**
  * The context a day generation is given when it is one day of a week (S-03).
  *
- * Optional as a whole, and that is load-bearing: with no context the user
- * message is the bare hasło, byte for byte what S-01 sent. `/plan?date=` keeps
- * behaving exactly as it did, and the quality gate has an unchanged baseline to
- * measure the week variant against.
+ * Optional as a whole, and with no context the user message is the bare hasło,
+ * byte for byte what S-01 sent - which is what the gate's `day` mode measures
+ * the other modes against.
+ *
+ * That baseline is *not* what `/plan?date=` sends. The generate route passes
+ * context unconditionally, so a single day travels with its weekday and without
+ * a theme (there is no outline to take one from). Three configurations, and the
+ * gate covers all three by name - `day`, `day-weekday`, `day-themed`. Adding a
+ * fourth means another gate run before merge, per lessons.md #3.
  */
 export interface DayGenerationContext {
   readonly planDate: string;

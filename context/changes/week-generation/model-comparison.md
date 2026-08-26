@@ -12,13 +12,22 @@ tygodnia. Stąd ten przebieg.
 
 ## Co zostało przebiegnięte
 
-3 modele × 5 haseł × 3 tryby = **60 wywołań**.
+3 modele × 5 haseł × 4 tryby = **75 wywołań**.
 
 | Tryb | Co sprawdza | Wywołań |
 | --- | --- | --- |
 | `outline` | nowy kontrakt: hasło + pięć dat → pięć tematów | 15 |
-| `day` | **kontrola bazowa** — samo hasło, żądanie bajt w bajt jak w S-01 | 15 |
+| `day` | **kontrola bazowa** — samo hasło, wiadomość użytkownika bajt w bajt jak w S-01 | 15 |
+| `day-weekday` | konfiguracja produkcyjna **pojedynczego dnia**: hasło + dzień tygodnia, bez tematu | 15 |
 | `day-themed` | konfiguracja produkcyjna tygodnia: hasło + dzień tygodnia + temat z własnego szkicu tego modelu | 30 |
+
+`day-weekday` dołożył **przegląd implementacyjny S-03 (F1)**. Pierwotny przebieg miał trzy tryby
+i żaden z nich nie odpowiadał temu, co realnie wysyła `/plan?date=`: trasa dnia przekazuje kontekst
+bezwarunkowo, więc pojedynczy dzień idzie z dniem tygodnia, ale bez tematu — bo nie ma szkicu, z
+którego temat mógłby pochodzić. `day` (samo hasło) przestał być konfiguracją produkcyjną i został tu
+wyłącznie jako punkt odniesienia dla S-01. Bramka bez `day-weekday` oceniałaby więc dwie konfiguracje,
+których nikt nie uruchamia, i pomijała jedyną, którą nauczyciel dostaje przy pojedynczym dniu —
+dokładnie to, czego zabrania `lessons.md` #3.
 
 `day-themed` próbkuje dni 1 i 5 każdego szkicu — pozycje, które prompt szkicu traktuje osobno
 (wejście w temat, podsumowanie tygodnia). Pełne pięć dni to 75 wywołań do lektury ręcznej przy
@@ -33,12 +42,15 @@ prompt dnia".
 | --- | --- | --- | --- | --- |
 | openai/gpt-5.6-luna | outline | 5/5 | $0,00034 | 2,6 s |
 | openai/gpt-5.6-luna | day | 5/5 | $0,00058 | 4,8 s |
+| openai/gpt-5.6-luna | day-weekday | 5/5 | $0,00056 | 5,0 s |
 | openai/gpt-5.6-luna | day-themed | 10/10 | $0,00055 | 4,6 s |
 | google/gemini-3.7-flash | outline | 5/5 | $0,00155 | 5,4 s |
 | google/gemini-3.7-flash | day | 5/5 | $0,00229 | 8,2 s |
+| google/gemini-3.7-flash | day-weekday | 5/5 | $0,00261 | 9,2 s |
 | google/gemini-3.7-flash | day-themed | 10/10 | $0,00287 | 9,5 s |
 | deepseek/deepseek-v4-flash | outline | 5/5 | $0,00015 | 5,0 s |
 | deepseek/deepseek-v4-flash | **day** | **0/5** | — | — |
+| deepseek/deepseek-v4-flash | **day-weekday** | **4/5** | $0,00023 | 14,8 s |
 | deepseek/deepseek-v4-flash | day-themed | 10/10 | $0,00027 | 10,7 s |
 
 Koszt tygodnia w produkcji (1 szkic + 5 dni): **$0,0031** dla luny, **$0,0159** dla Gemini.
@@ -110,6 +122,23 @@ pięć z pięciu. To nie jest regresja promptu dnia, tylko nowa własność prom
 Janusz. Bramka: przy najbliższej iteracji promptu, nie w S-03** — kryterium odbioru S-03 tego nie
 obejmuje, a zmiana promptu bez ponownej bramki byłaby dokładnie tym, czego zabrania `lessons.md` #3.
 
+### `day-weekday`: konfiguracja pojedynczego dnia przechodzi bez zastrzeżeń
+
+Tryb dołożony przez przegląd (F1) i przebiegnięty osobno, po zmianie skryptu. **14/15 wywołań
+poprawnych**; jedyna porażka to DeepSeek na haśle „Kolory" (timeout 45 s) — czyli ten sam wzorzec, co
+w trybie `day`, opisany niżej.
+
+Przegląd treści 14 wyjść: **żadnego naruszenia** dla obu dopuszczonych modeli. Kontrola pod kątem
+klas zabronionych przez prompt (otwarty ogień, wosk, gorące płyny, ostre narzędzia bez nadzoru,
+drobne elementy) dała trzy trafienia, wszystkie u DeepSeeka i wszystkie po sprawdzeniu niewinne:
+świeczka jest **jawnie LED-owa**, orzechy są **w łupinach** jako materiał sensoryczny do oglądania,
+nożyczki występują w pracy plastycznej z asystą nauczyciela. Andrzejki — pułapka, na której S-01
+zdyskwalifikował DeepSeeka za roztopiony wosk — **nie regresowały u żadnego modelu**.
+
+Osobno warto zapisać, że to właśnie ta konfiguracja, a nie `day-themed`, jest ścieżką, którą
+nauczyciel dostaje najczęściej przy poprawianiu pojedynczego dnia. Do tej pory nie była oceniona
+ani razu.
+
 ### DeepSeek: nowa obserwacja, ta sama decyzja
 
 DeepSeek zawiódł **5/5 wywołań bez tematu** (4× timeout na 45 s, 1× `truncated_budget`), a jednocześnie
@@ -118,13 +147,18 @@ budżetu lub zegara; temat go domyka. Ciekawe, ale nie zmienia niczego — model
 od S-01 i pozostaje zdyskwalifikowany. Drobiazg z tego samego przebiegu: literówka „gotowe **masky**"
 w wyjściu andrzejkowym.
 
+Tryb `day-weekday` doprecyzował tę obserwację: z samym dniem tygodnia, bez tematu, DeepSeek kończy
+**4/5** w średnio 14,8 s (najwolniejsze 24 s). Czyli to nie „dzień tygodnia" go domyka, tylko temat —
+sam weekday zawęża zadanie na tyle, żeby zwykle zdążył, ale bez zapasu. Trzecia literówka z tego
+samego przebiegu: „**Laureatka** dla mamy" zamiast „laurka".
+
 ## Decyzja
 
 **`DEFAULT_MODEL` pozostaje `openai/gpt-5.6-luna`.**
 
 Bramka nie dała żadnego powodu do zmiany, a dała trzy do utrzymania:
 
-- **20/20 wywołań poprawnych** we wszystkich trzech trybach, za pierwszym razem.
+- **25/25 wywołań poprawnych** we wszystkich czterech trybach, za pierwszym razem.
 - **5× tańszy i ~2× szybszy od Gemini** — a tydzień to sześć wywołań zamiast jednego, więc różnica
   kosztu i latencji, która przy jednym dniu była wygodą, przy tygodniu jest odczuwalna: $0,0031 vs
   $0,0159 i ~28 s vs ~57 s sumarycznego czasu modelu na tydzień.
@@ -132,9 +166,17 @@ Bramka nie dała żadnego powodu do zmiany, a dała trzy do utrzymania:
   z zapasem w `OUTLINE_ATTEMPT_TIMEOUT_MS` (20 s).
 
 **`google/gemini-3.7-flash` zostaje udokumentowanym następcą** — przeszedł bramkę w komplecie
-(20/20) w obu nowych trybach, więc podmiana `OPENROUTER_MODEL` nadal jest bezpieczna. Nadal wymaga
+(25/25) we wszystkich trybach, więc podmiana `OPENROUTER_MODEL` nadal jest bezpieczna. Nadal wymaga
 obejścia z S-01: odrzuca `reasoning: {enabled: false}` i potrzebuje podniesionego `max_tokens`
 (skrypt to wykrywa i ponawia bez flagi, produkcja ma już podniesiony budżet).
 
 **`deepseek/deepseek-v4-flash` pozostaje odrzucony** i nadal nie nadaje się na fallback — teraz
-z drugim, niezależnym powodem: nie kończy wywołania bez tematu.
+z drugim, niezależnym powodem: nie kończy wywołania bez tematu (0/5 bez kontekstu, 4/5 z samym dniem
+tygodnia), czyli zawodzi dokładnie na ścieżce pojedynczego dnia.
+
+### Ponowny przebieg 2026-08-26
+
+Bramka została uruchomiona drugi raz, w trybie `day-weekday`, po tym jak przegląd implementacyjny
+(F1) wykazał konfigurację produkcyjną nieobjętą pierwszym przebiegiem. Prompty nie zmieniły się
+między przebiegami — zmienił się zakres bramki. Decyzja o `DEFAULT_MODEL` **pozostaje bez zmian**:
+nowy tryb nie dał żadnego powodu do rewizji, a domknął lukę w pokryciu wymaganą przez `lessons.md` #3.

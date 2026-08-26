@@ -1,0 +1,25 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787727098-N1pXIag7AkB8GU6ppgNU","object":"chat.completion","created":1787727098,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Tęczowe odbitki z gąbki\",\"opis\":\"Nauczyciel przygotowuje kartki, farby w kilku kolorach i kawałki gąbki lub szerokie pędzle. Dzieci tworzą na papierze kolorowe odbitki, mieszając sąsiadujące barwy i nazywając je; młodsze dzieci mogą stemplować dowolnie, a starsze układają prosty wzór. Nauczyciel pokazuje, jak nakładać niewielką ilość farby i zachęca do obserwowania, jakie nowe kolory powstają po połączeniu barw.\"},{\"tytul\":\"Kolorowa wyprawa po sali\",\"opis\":\"Nauczyciel rozkłada w różnych miejscach sali kolorowe kartki lub szarfy i nazywa jeden kolor. Dzieci poruszają się po sali w ustalony sposób, a na sygnał odnajdują wskazany kolor i zatrzymują się przy nim, zachowując bezpieczny odstęp. Następnie nauczyciel zmienia sposób poruszania się, na przykład na chodzenie jak kot lub marsz z wysokim unoszeniem kolan.\"},{\"tytul\":\"Muzyczne kolory\",\"opis\":\"Nauczyciel przygotowuje kolorowe kartki oraz proste instrumenty perkusyjne, takie jak grzechotki, bębenek lub tamburyn. Każdy kolor oznacza inny sposób grania, na przykład czerwony — głośno, niebieski — cicho, żółty — szybko, a zielony — wolno. Dzieci reagują na podnoszone kartki, a nauczyciel zmienia kolejność i tempo, po czym zaprasza dzieci do samodzielnego zaproponowania jednej zasady dla wybranego koloru.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1463,"completion_tokens":428,"total_tokens":1891,"cost":0.0008792,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":1460,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.0008792,"upstream_inference_prompt_cost":0.0003656,"upstream_inference_completions_cost":0.0005136},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

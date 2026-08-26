@@ -1,0 +1,25 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787727104-n6lOuEKNTYKdVPWgODXN","object":"chat.completion","created":1787727104,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Kolorowe klucze do zaczarowanych drzwi\",\"opis\":\"Dzieci oglądają duże papierowe klucze przygotowane przez nauczyciela i ozdabiają własne klucze kredkami, farbami lub naklejanymi kawałkami papieru. Następnie każde dziecko wybiera, jakie dobre miejsce może otworzyć jego klucz, na przykład salę zabaw, ogród albo kącik przyjaźni, i krótko o nim opowiada. Nauczyciel podkreśla, że klucz jest symbolem ciekawości i odkrywania nowych rzeczy.\"},{\"tytul\":\"Taniec z wstążkami przy muzyce\",\"opis\":\"Nauczyciel rozdaje dzieciom szerokie, długie wstążki z bibuły lub paski krepiny i włącza spokojną, wesołą muzykę. Dzieci poruszają wstążkami wysoko, nisko, przed sobą i nad głową, a na przerwę w muzyce zatrzymują się jak posągi. Nauczyciel pokazuje proste ruchy i przypomina o zachowaniu odstępów, aby każdy miał bezpieczne miejsce.\"},{\"tytul\":\"Andrzejkowe wróżby z dobrymi życzeniami\",\"opis\":\"Dzieci siedzą w kole i kolejno losują z dużego pudełka obrazek przedstawiający miłe życzenie, na przykład wspólną zabawę, poznanie czegoś ciekawego, dużo uśmiechu albo pomoc koledze. Nauczyciel odczytuje obrazki i zachęca dzieci do powiedzenia, jak można spełnić takie życzenie dzięki własnemu działaniu. Na zakończenie grupa układa obrazki na wspólnej planszy „Nasze dobre życzenia”.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1464,"completion_tokens":426,"total_tokens":1890,"cost":0.00054608,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":22,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00054608,"upstream_inference_prompt_cost":0.00003488,"upstream_inference_completions_cost":0.0005112},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

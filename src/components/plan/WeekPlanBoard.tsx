@@ -101,9 +101,20 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
       }
 
       // 409 on this route means the day was taken, which is the skip policy
-      // working rather than a failure to report as one.
+      // working rather than a failure to report as one. *Which* writer took it
+      // decides what the card should show, and only a read can tell them apart:
+      // a sibling tab, another device, or this day's own write whose response
+      // was lost. In that last case the day is saved and the card would
+      // otherwise sit here claiming "pominięty" with no proposals - outside
+      // `readyCount`, and silently skipped by "Akceptuj tydzień".
       if (response.status === 409) {
-        patchDay(planDate, { status: "skipped", error: null, retryable: false });
+        const existing = await readDay(planDate);
+        patchDay(planDate, {
+          status: "skipped",
+          error: null,
+          retryable: false,
+          ...(existing === null ? {} : { plan: existing }),
+        });
         return;
       }
 
@@ -149,21 +160,7 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
     setFailure(null);
     setBusy("outlining");
 
-    // Days that already had a plan are marked before anything is asked of the
-    // model, so the outcome of a week generation is legible at a glance: these
-    // are the ones it deliberately left alone. Without this they keep the badge
-    // they had on page load and the teacher cannot tell "not touched" from "just
-    // generated".
     const skipped = week.days.filter((date) => days[date].plan !== null);
-    if (skipped.length > 0) {
-      setDays((current) => {
-        const next = { ...current };
-        for (const date of skipped) {
-          next[date] = { ...next[date], status: "skipped" };
-        }
-        return next;
-      });
-    }
 
     void (async () => {
       try {
@@ -193,6 +190,14 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
             const theme = themeByDate.get(date) ?? null;
             next[date] = { ...next[date], theme: next[date].plan === null ? theme : next[date].theme };
           }
+          // Days that already had a plan are marked only once the week
+          // generation is genuinely under way, so the badge means what it says:
+          // this run reached them and deliberately left them alone. Marking them
+          // before the outline would have a failed outline - which generates
+          // nothing at all - report five successful skips.
+          for (const date of skipped) {
+            next[date] = { ...next[date], status: "skipped" };
+          }
           return next;
         });
 
@@ -200,6 +205,14 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
         // All five at once. The week then costs the slowest day rather than the
         // sum of five, which is the difference between ~20s and ~2 minutes.
         await Promise.allSettled(free.map((date) => generateDay(date, themeByDate.get(date) ?? null, prompt)));
+      } catch {
+        // The outline's own `fetch` - `response.json()` is already guarded. Left
+        // uncaught this rejects the void-ed promise and the button simply returns
+        // to idle, telling the teacher nothing at all.
+        setFailure({
+          message: "Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.",
+          signInRequired: false,
+        });
       } finally {
         weekInFlight.current = false;
         setBusy("idle");
@@ -207,18 +220,18 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
     })();
   }
 
+  /**
+   * Retries one day, and only that day.
+   *
+   * Deliberately does not take `weekInFlight` or move `busy`: two days failing on
+   * one rate limit is the ordinary case, and a global lock here would make the
+   * teacher retry them one after another. `generateDay` already refuses a second
+   * run of the same day, which is the only collision that matters. The week-level
+   * lock is still *read*, so a retry cannot start on top of a running week.
+   */
   function retryDay(planDate: string): void {
     if (weekInFlight.current) return;
-    weekInFlight.current = true;
-    setBusy("generating");
-    void (async () => {
-      try {
-        await generateDay(planDate, days[planDate].theme, prompt);
-      } finally {
-        weekInFlight.current = false;
-        setBusy("idle");
-      }
-    })();
+    void generateDay(planDate, days[planDate].theme, prompt);
   }
 
   function acceptWeek(): void {
@@ -436,6 +449,24 @@ function firstPrompt(week: WeekPlanView): string {
     }
   }
   return "";
+}
+
+/**
+ * Reads one day back, for the 409 branch above.
+ *
+ * `null` covers every "nothing to show" answer alike - a 404, a failed read, a
+ * dropped connection. The caller folds a plan in when there is one and leaves
+ * the row untouched otherwise, which is the same rule `DayPlanEditor.reconcile`
+ * follows: never blank a row on a second failure.
+ */
+async function readDay(planDate: string): Promise<DayPlanView | null> {
+  try {
+    const response = await fetch(`/api/day-plan?date=${planDate}`);
+    const body: unknown = await response.json().catch(() => null);
+    return response.ok && isDayPlanBody(body) ? body : null;
+  } catch {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------

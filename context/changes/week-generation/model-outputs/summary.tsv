@@ -74,3 +74,18 @@ outline	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	-	200	stop	8	0.0002772	dee
 day	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	-	200	length	35	0.0012873	deepseek/deepseek-v4-flash	-	no	truncated_budget
 day-themed	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	1	200	stop	6	0.0001879752	deepseek/deepseek-v4-flash	3	no	ok
 day-themed	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	5	200	stop	9	0.000147312	deepseek/deepseek-v4-flash	3	no	ok
+day-weekday	google/gemini-3.7-flash	neutralne	Kolory	1	200	stop	9	0.002630625	google/gemini-3.7-flash	3	yes	ok
+day-weekday	google/gemini-3.7-flash	kulturowe	Andrzejki	1	200	stop	9	0.002469375	google/gemini-3.7-flash	3	yes	ok
+day-weekday	google/gemini-3.7-flash	sezonowe	Jesień w lesie	1	200	stop	9	0.002643	google/gemini-3.7-flash	3	yes	ok
+day-weekday	google/gemini-3.7-flash	trudne	Dzień Matki	1	200	stop	11	0.0033945	google/gemini-3.7-flash	3	yes	ok
+day-weekday	google/gemini-3.7-flash	abstrakcyjne	Cisza	1	200	stop	8	0.00190125	google/gemini-3.7-flash	3	yes	ok
+day-weekday	openai/gpt-5.6-luna	neutralne	Kolory	1	200	stop	6	0.0008792	openai/gpt-5.6-luna	3	no	ok
+day-weekday	openai/gpt-5.6-luna	kulturowe	Andrzejki	1	200	stop	5	0.00054608	openai/gpt-5.6-luna	3	no	ok
+day-weekday	openai/gpt-5.6-luna	sezonowe	Jesień w lesie	1	200	stop	5	0.00051058	openai/gpt-5.6-luna	3	no	ok
+day-weekday	openai/gpt-5.6-luna	trudne	Dzień Matki	1	200	stop	4	0.00043618	openai/gpt-5.6-luna	3	no	ok
+day-weekday	openai/gpt-5.6-luna	abstrakcyjne	Cisza	1	200	stop	5	0.00044623	openai/gpt-5.6-luna	3	no	ok
+day-weekday	deepseek/deepseek-v4-flash	neutralne	Kolory	1	000		45			-	no	http_000
+day-weekday	deepseek/deepseek-v4-flash	kulturowe	Andrzejki	1	200	stop	13	0.00018279	deepseek/deepseek-v4-flash	3	no	ok
+day-weekday	deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	1	200	stop	24	0.0001944	deepseek/deepseek-v4-flash	3	no	ok
+day-weekday	deepseek/deepseek-v4-flash	trudne	Dzień Matki	1	200	stop	13	0.00034398	deepseek/deepseek-v4-flash	3	no	ok
+day-weekday	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	1	200	stop	9	0.000190237082	deepseek/deepseek-v4-flash	3	no	ok

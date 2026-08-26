@@ -38,7 +38,7 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 | F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done     |
 | S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done        |
 | S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done        |
-| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | in-progress |
+| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done        |
 
 ## Streams
 
@@ -119,10 +119,11 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-02
 - **Blockers:** —
 - **Unknowns:**
-  - Czy tydzień to N niezależnych wywołań LLM (per dzień) czy jedno wywołanie wsadowe — wpływa na koszt, postęp i izolację regeneracji — Owner: TBD. Block: no.
-  - Jak odróżnić pięć dni od siebie: S-01 waliduje `plan_date`, ale **nie przekazuje jej do modelu** (`src/pages/api/day-plan/generate.ts` — „S-01 stores nothing, so the date only labels the request"). Przy jednym dniu to bez znaczenia; przy pięciu dniach z jednego hasła brak dnia w promptcie zamienia „tydzień zajęć" w „pięć razy to samo". Do rozstrzygnięcia razem z pytaniem o wsadowość: dzień w promptcie, wiedza o już wygenerowanych dniach, czy jedno wywołanie na cały tydzień — Owner: TBD. Block: no. (źródło: `/10x-impl-review` S-01, F4)
+  - ~~Czy tydzień to N niezależnych wywołań LLM (per dzień) czy jedno wywołanie wsadowe~~ — **rozstrzygnięte w `context/changes/week-generation/plan.md`**: 1 tanie wywołanie szkicu + 5 niezależnych wywołań dnia, równolegle. Wsadowy zapis odrzucony jawnie (§ What We're NOT Doing) — drugi pisarz oznaczałby drugie miejsce powtarzające protokół licznika generacji. Izolacja regeneracji wychodzi z `unique (user_id, plan_date)`.
+  - ~~Jak odróżnić pięć dni od siebie~~ — **rozstrzygnięte tamże**: szkic tygodnia rozkłada hasło na pięć rozłącznych tematów, temat trafia do modelu **i** do kolumny `day_plans.theme`, więc przeżywa regenerację dnia (`coalesce` w upsercie). Dzień tygodnia trafia do promptu na obu ścieżkach — także przy pojedynczym dniu, co domyka F4 z S-01 również dla `/plan?date=` (patrz plan § Addendum 2026-08-26). (źródło: `/10x-impl-review` S-01, F4)
 - **Risk:** Rozszerza udowodniony przepływ dzienny na skalę tygodnia — realna jednostka pracy nauczyciela. Sekwencjonowane po S-01 (ten sam mechanizm generowania) i F-01 (zapis wielu dni). Zagrożenie: koszt API i czas operacji rosną liniowo z dniami; przy granulacji per-dzień postęp i regeneracja zostają izolowane zgodnie z AC US-01.
-- **Status:** in-progress
+- **Open follow-ups:** `context/changes/week-generation/follow-ups/review-fixes.md` — ekspozycja na hasło wykluczające rośnie wraz ze szkicem tygodnia (właściciel: Janusz, bramka: najbliższa iteracja promptu); hosted project nadal bez migracji.
+- **Status:** done
 
 ## Backlog Handoff
 

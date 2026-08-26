@@ -15,7 +15,7 @@
 
 begin;
 
-select plan(40);
+select plan(42);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (seeded as the owner, so rls is out of the picture here by design)
@@ -355,6 +355,32 @@ select lives_ok(
   'generating with p_require_absent over an empty day is accepted'
 );
 
+-- the order of the two refusals, which the migration calls deliberate and the
+-- two assertions above cannot see: each of them trips exactly one guard, so
+-- swapping the two `if` blocks would leave both of them green. here both guards
+-- are armed at once - an accepted day, asked for with p_require_absent - and
+-- only the order decides the answer. u0002 is the right one: the week is not
+-- offering to replace this day, so u0001's "confirm and i will" would invite a
+-- confirmation the caller has no way to give.
+update public.day_plans
+   set accepted_at = now()
+ where id = (select plan_id from saved where label = 'themed');
+
+select throws_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-05-04', 'cos zupelnie innego',
+      '[{"title":"nie-powinno","description":"opis"}]'::jsonb,
+      p_require_absent => true
+    )$$,
+  'U0002',
+  null,
+  'an accepted day asked for with p_require_absent answers U0002, not U0001'
+);
+
+update public.day_plans
+   set accepted_at = null
+ where id = (select plan_id from saved where label = 'themed');
+
 -- the bound is the same knob as THEME_MAX in day-plan-limits.ts. the empty
 -- string is the case a nullable column would otherwise let through next to null,
 -- and null here means something specific - "this day is not part of a week".
@@ -523,6 +549,27 @@ select ok(
 select ok(
   has_function_privilege('authenticated', 'public.save_day_plan_generation(date, text, jsonb, boolean, text, boolean)', 'execute'),
   'authenticated does hold execute on the batch writer'
+);
+
+-- the signature change had to be drop + create, not create or replace: the two
+-- assertions above name the six-argument signature explicitly, so a surviving
+-- four-argument overload would leave them both green while `supabase.rpc` picked
+-- between two candidates.
+--
+-- measured, like the rest of this file. deleting the `drop` from the migration
+-- does not reach this assertion: the migration itself dies on the `comment on
+-- function` that follows, with 42725 "function name is not unique". so the drop
+-- has a guard upstream of the suite, and this line is not what holds it. what
+-- this line does hold is the case that fails silently instead - a later
+-- migration, or the rollback in the plan's § migration notes, restoring the
+-- four-argument function beside the six-argument one. exactly one writer, with
+-- exactly one signature.
+select is(
+  (select count(*)::int from pg_proc
+    where proname = 'save_day_plan_generation'
+      and pronamespace = 'public'::regnamespace),
+  1,
+  'exactly one save_day_plan_generation remains, so no overload is ambiguous'
 );
 
 set local role anon;

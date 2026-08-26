@@ -1,0 +1,19 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787727114-GqPaCQKPW1veCPDCKQ1D","object":"chat.completion","created":1787727114,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Kolorowy bukiet dla mamy\",\"opis\":\"Dzieci malują farbami kwiaty na kartkach, używając palców, gąbek lub pędzli, a następnie dorysowują łodygi i liście kredkami. Nauczyciel zachęca do wyboru kolorów i pomaga podpisać prace, które mogą stać się laurką lub dekoracją na Dzień Matki.\"},{\"tytul\":\"Taniec z kwiatami\",\"opis\":\"Nauczyciel rozdaje dzieciom kolorowe szarfy lub papierowe kwiaty i włącza spokojną, pogodną muzykę. Dzieci poruszają się jak kwiaty na wietrze, unoszą szarfy wysoko, wykonują obroty i na przerwę w muzyce zatrzymują się w bezruchu; nauczyciel pokazuje ruchy i dba o bezpieczne odstępy.\"},{\"tytul\":\"Muzyczne życzenia dla mamy\",\"opis\":\"Dzieci siedzą w kole i wspólnie układają krótkie życzenia dla mam, np. „Mamo, życzę ci dużo radości”. Nauczyciel wystukuje prosty rytm na bębenku lub klaszcze, a dzieci powtarzają życzenia rytmicznie, akompaniując grzechotkami, tamburynami albo klaskaniem.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1466,"completion_tokens":334,"total_tokens":1800,"cost":0.00043618,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":24,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00043618,"upstream_inference_prompt_cost":0.00003538,"upstream_inference_completions_cost":0.0004008},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

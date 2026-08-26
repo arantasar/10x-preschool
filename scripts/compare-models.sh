@@ -12,15 +12,23 @@
 # copied: a run against a duplicated prompt would prove something about the
 # duplicate rather than about what teachers actually get.
 #
-# Three modes, run in this order because the third depends on the first:
+# Four modes, run in this order because the last depends on the first:
 #
-#   outline     one hasło + five dates -> five day themes.
-#   day         the bare hasło. Byte-identical to the S-01 request, so the
-#               baseline the themed runs are compared against is unchanged.
-#   day-themed  hasło + weekday + the theme this model produced for that day in
-#               its own outline run. This is the configuration production uses
-#               when a week is generated, and grading the day prompt without it
-#               would grade a configuration nobody runs.
+#   outline      one hasło + five dates -> five day themes.
+#   day          the bare hasło. Byte-identical to the S-01 *user message*, so
+#                the baseline the other day runs are compared against is the one
+#                S-01 graded. Note that no route sends this any more (see
+#                day-weekday); it is kept as the baseline, not as a live config.
+#   day-weekday  hasło + weekday, no theme. This is what /plan?date= sends: the
+#                single-day route passes the date to the model but has no week
+#                outline to draw a theme from. Added by the S-03 implementation
+#                review (F1), which found this configuration reachable in
+#                production and covered by no mode - lessons.md #3 asks for every
+#                admitted configuration, not merely the interesting ones.
+#   day-themed   hasło + weekday + the theme this model produced for that day in
+#                its own outline run. This is the configuration production uses
+#                when a week is generated, and grading the day prompt without it
+#                would grade a configuration nobody runs.
 #
 # `day-themed` samples days 1 and 5 of each outline rather than all five: those
 # are the two positions the outline prompt treats specially (entry into the
@@ -34,7 +42,7 @@
 # Usage:
 #   ./scripts/compare-models.sh [output-dir]
 #
-#   MODES="outline day day-themed"   subset of modes to run
+#   MODES="outline day day-weekday day-themed"   subset of modes to run
 #   ONLY_MODEL=luna ONLY_KEYWORD=trudne SKIP_EXISTING=1 ./scripts/compare-models.sh
 #
 # Reads OPENROUTER_API_KEY from the environment, falling back to .dev.vars.
@@ -94,7 +102,13 @@ WEEK_DATES=(
 # Which days of each outline get a themed day generation. See the header.
 THEMED_DAYS=(1 5)
 
-MODES="${MODES:-outline day day-themed}"
+# Which weekday the theme-less single-day run uses. One is enough: the day
+# prompt treats no weekday specially on its own - only the outline does, and the
+# outline is not in play here. Monday keeps this comparable with day-themed's
+# first sample, which differs from it in exactly one line: the theme.
+WEEKDAY_DAY=1
+
+MODES="${MODES:-outline day day-weekday day-themed}"
 
 # Optional substring filters, for re-running a subset after a fix:
 #   ONLY_MODEL=gemini SKIP_EXISTING=1 ./scripts/compare-models.sh
@@ -362,6 +376,13 @@ for model in "${MODELS[@]}"; do
         "$(day_user_message "$keyword")" \
         "$DAY_PROMPT" "$DAY_SCHEMA" "propozycja_dnia" \
         '.aktywnosci | length' 3 "$MAX_TIME" "$OUT_DIR/${mslug}__${kid}.json"
+    fi
+
+    if [[ " $MODES " == *" day-weekday "* ]]; then
+      run_call "day-weekday" "$model" "$kid" "$keyword" "$WEEKDAY_DAY" \
+        "$(day_user_message "$keyword" "${WEEK_DATES[$((WEEKDAY_DAY - 1))]%%,*}")" \
+        "$DAY_PROMPT" "$DAY_SCHEMA" "propozycja_dnia" \
+        '.aktywnosci | length' 3 "$MAX_TIME" "$OUT_DIR/${mslug}__${kid}__weekday.json"
     fi
 
     if [[ " $MODES " == *" day-themed "* ]]; then

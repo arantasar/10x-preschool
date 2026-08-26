@@ -1,0 +1,21 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787727118-OoTczT1OFsLjCuylaE0V","object":"chat.completion","created":1787727118,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Malujemy spokojne dźwięki\",\"opis\":\"Nauczyciel przygotowuje kartki, farby i pędzle oraz prosi dzieci, aby przez chwilę posłuchały ciszy w sali. Dzieci malują spokojne linie, kropki i plamy, dobierając kolory kojarzące się z ciszą, a nauczyciel zachęca do cichej pracy i delikatnych ruchów.\"},{\"tytul\":\"Cichy spacer po sali\",\"opis\":\"Nauczyciel układa na podłodze szarfy lub obręcze jako ścieżkę. Dzieci przechodzą po niej na palcach, omijają przeszkody i zatrzymują się na umówiony cichy sygnał, a następnie próbują poruszać się tak, by nie szeleścić i nie stukać.\"},{\"tytul\":\"Słuchamy i rozpoznajemy\",\"opis\":\"Dzieci siadają w kole i zamykają oczy lub patrzą w dół, a nauczyciel kolejno wydaje delikatne dźwięki, na przykład potrząsa papierem, przesuwa klockiem albo uderza lekko w bębenek. Po każdym dźwięku dzieci pokazują gestem, czy był cichy, oraz próbują wskazać, co mogło go wywołać; na zakończenie wszyscy przez chwilę słuchają ciszy.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1463,"completion_tokens":343,"total_tokens":1806,"cost":0.00044623,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":21,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00044623,"upstream_inference_prompt_cost":0.00003463,"upstream_inference_completions_cost":0.0004116},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

@@ -136,8 +136,25 @@ function categorize(error: PostgrestError): StoreErrorCategory {
   }
 }
 
+/**
+ * The one message a category default cannot cover.
+ *
+ * `conflict`'s default talks about refreshing a stale page, which is right for
+ * U0001 and wrong for U0002: nothing is stale there and nothing needs
+ * refreshing - the day was simply already planned and was left exactly as it
+ * was. The cheap pre-check in `generate.ts` names this itself; this is the same
+ * sentence for the race the pre-check cannot see, so both paths answer alike.
+ */
+const MESSAGE_BY_CODE: Readonly<Record<string, string>> = {
+  U0002: "Ten dzień ma już plan — nie został nadpisany.",
+};
+
 function toStoreError(error: PostgrestError, what: string): StoreError {
-  return new StoreError(categorize(error), `${what}: ${error.message}`, { code: error.code, cause: error });
+  return new StoreError(categorize(error), `${what}: ${error.message}`, {
+    code: error.code,
+    cause: error,
+    userMessage: error.code ? MESSAGE_BY_CODE[error.code] : undefined,
+  });
 }
 
 // ---------------------------------------------------------------------------

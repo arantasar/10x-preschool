@@ -1,0 +1,23 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787727109-m2QrSbqNxNXviRfo3vzY","object":"chat.completion","created":1787727109,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Jesienne drzewo z kolorowych liści\",\"opis\":\"Dzieci oglądają zebrane liście i nazywają ich kolory oraz kształty. Na dużej kartce rysują pień i gałęzie, a następnie przyklejają papierowe liście lub odbijają ich kształty farbą, tworząc wspólne jesienne drzewo. Nauczyciel pomaga w organizacji pracy i zachęca dzieci do porównywania liści.\"},{\"tytul\":\"Leśna ścieżka przez liście\",\"opis\":\"Nauczyciel układa w sali trasę z obręczy, szarf i papierowych liści. Dzieci przechodzą po niej jak leśne zwierzęta: stawiają małe kroki, przeskakują przez kałuże z obręczy i omijają szyszki, zachowując bezpieczne odstępy. Na sygnał zatrzymują się i nasłuchują odgłosów jesiennego lasu, które naśladuje nauczyciel lub dzieci.\"},{\"tytul\":\"Jesienna orkiestra lasu\",\"opis\":\"Dzieci słuchają krótkiej opowieści o spacerze po jesiennym lesie i dobierają dźwięki do jej fragmentów: szeleszczą papierem jak liście, stukają palcami jak deszcz i delikatnie potrząsają instrumentami jak wiatr. Nauczyciel prowadzi zabawę gestami, wskazując moment rozpoczęcia i zakończenia każdego dźwięku. Na koniec grupa wykonuje wspólną, spokojną ilustrację muzyczną jesiennego spaceru.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1466,"completion_tokens":396,"total_tokens":1862,"cost":0.00051058,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":24,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00051058,"upstream_inference_prompt_cost":0.00003538,"upstream_inference_completions_cost":0.0004752},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

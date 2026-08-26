@@ -537,6 +537,35 @@ grantów.
 dokłada się do tej samej kolejki; `npx supabase db push` pozostaje warunkiem wdrożenia, nie
 implementacji.
 
+## Addendum — 2026-08-26, po przeglądzie implementacyjnym
+
+**Kontrakt dnia z Fazy 2 został w implementacji świadomie zmieniony i ten zapis go prostuje.**
+
+Plan mówił dwukrotnie, że brak kontekstu daje `content: keyword` i że „`/plan?date=` nie zmienia
+działania" (§ Faza 2, Overview i Changes Required #3). Sama funkcja `generateDayActivities` tak
+działa — ale `generate.ts` przekazuje kontekst **bezwarunkowo**, więc pojedynczy dzień jedzie z dniem
+tygodnia (bez tematu, bo nie ma szkicu). To była decyzja implementacyjna z uzasadnieniem w kodzie:
+data w promptcie zamyka finding F4 przeglądu S-01 także dla ścieżki jednodniowej, nie tylko dla
+tygodnia.
+
+Decyzja zostaje. Prostujemy zapis, nie kod — z jednym warunkiem, który przegląd wymusił: bramka
+jakości musi objąć tę konfigurację. Do `compare-models.sh` doszedł czwarty tryb **`day-weekday`**
+(hasło + dzień tygodnia, bez tematu), przebiegnięty 2026-08-26 dla trzech modeli i pięciu haseł —
+14/15, zero naruszeń treści, decyzja o `DEFAULT_MODEL` bez zmian. Szczegóły w `model-comparison.md`
+§ „Ponowny przebieg 2026-08-26".
+
+Konfiguracje promptu dnia, jakie realnie istnieją, i tryb bramki, który każdą pokrywa:
+
+| Konfiguracja | Kto ją wysyła | Tryb bramki |
+| --- | --- | --- |
+| samo hasło | nikt — punkt odniesienia S-01 | `day` |
+| hasło + dzień tygodnia | `/plan?date=` (trasa dnia) | `day-weekday` |
+| hasło + dzień tygodnia + temat | generowanie tygodnia | `day-themed` |
+
+Kryterium 2.4 („wynik nieodróżnialny od dzisiejszego") pozostaje zaznaczone jako spełnione, bo
+dotyczy funkcji `generateDayActivities` wywołanej bez kontekstu — i tam nadal jest prawdziwe. Nie
+dotyczyło trasy, i to jest luka, którą ten addendum zamyka.
+
 ## References
 
 - Roadmap: `context/foundation/roadmap.md` § S-03 (oba Unknowns rozstrzygnięte tym planem)
