@@ -42,7 +42,7 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 - Auth pages: `src/pages/auth/{signin,signup,confirm-email}.astro`
 
-- Protected page example: `src/pages/dashboard.astro`
+- Home screen of the signed-in app: `src/pages/plan/month.astro` (protected via the `/plan` prefix in `PROTECTED_ROUTES`; `/` redirects a signed-in user there)
 
 ### Key conventions
 

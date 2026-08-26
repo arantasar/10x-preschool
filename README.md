@@ -144,9 +144,8 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 | `/auth/signin`        | Email/password sign-in form                                             |
 | `/auth/signup`        | Email/password sign-up form                                             |
 | `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
-| `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
 
-Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
+Route protection is handled in `src/middleware.ts`. The `PROTECTED_ROUTES` array there currently holds `/plan`, which covers the whole signed-in app (`/plan`, `/plan/week`, `/plan/month`); add paths to it to require authentication.
 
 ## Deployment
 

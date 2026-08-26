@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase";
 // the session itself: the redirect below is the right answer for a page and the
 // wrong one for a route a React island calls with `fetch`, which would follow it
 // and try to parse the sign-in page as JSON.
-const PROTECTED_ROUTES = ["/dashboard", "/plan"];
+const PROTECTED_ROUTES = ["/plan"];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createClient(context.request.headers, context.cookies);

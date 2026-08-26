@@ -440,9 +440,9 @@ na starcie planowania wskazywał `master`.
 
 #### Automated
 
-- [x] 2.1 Lint przechodzi: `npm run lint`
-- [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [x] 2.3 Build produkcyjny przechodzi: `npm run build`
+- [x] 2.1 Lint przechodzi: `npm run lint` — 59a98ef
+- [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check` — 59a98ef
+- [x] 2.3 Build produkcyjny przechodzi: `npm run build` — 59a98ef
 
 #### Manual
 
@@ -456,11 +456,11 @@ na starcie planowania wskazywał `master`.
 
 #### Automated
 
-- [ ] 3.1 Lint przechodzi: `npm run lint`
-- [ ] 3.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [ ] 3.3 Build produkcyjny przechodzi: `npm run build`
-- [ ] 3.4 `grep -rn "/dashboard" src/ README.md CLAUDE.md` zwraca pusto
-- [ ] 3.5 `test ! -f src/pages/dashboard.astro`
+- [x] 3.1 Lint przechodzi: `npm run lint`
+- [x] 3.2 Typy i szablony Astro przechodzą: `npx astro check`
+- [x] 3.3 Build produkcyjny przechodzi: `npm run build`
+- [x] 3.4 `grep -rn "/dashboard" src/ README.md CLAUDE.md` zwraca pusto
+- [x] 3.5 `test ! -f src/pages/dashboard.astro`
 
 #### Manual
 
