@@ -456,11 +456,11 @@ na starcie planowania wskazywał `master`.
 
 #### Automated
 
-- [x] 3.1 Lint przechodzi: `npm run lint`
-- [x] 3.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [x] 3.3 Build produkcyjny przechodzi: `npm run build`
-- [x] 3.4 `grep -rn "/dashboard" src/ README.md CLAUDE.md` zwraca pusto
-- [x] 3.5 `test ! -f src/pages/dashboard.astro`
+- [x] 3.1 Lint przechodzi: `npm run lint` — f2a20d3
+- [x] 3.2 Typy i szablony Astro przechodzą: `npx astro check` — f2a20d3
+- [x] 3.3 Build produkcyjny przechodzi: `npm run build` — f2a20d3
+- [x] 3.4 `grep -rn "/dashboard" src/ README.md CLAUDE.md` zwraca pusto — f2a20d3
+- [x] 3.5 `test ! -f src/pages/dashboard.astro` — f2a20d3
 
 #### Manual
 
@@ -474,8 +474,8 @@ na starcie planowania wskazywał `master`.
 
 #### Automated
 
-- [ ] 4.1 Wszystkie wystąpienia S-06 w roadmapie mają spójny status
-- [ ] 4.2 Prettier nie zgłasza zmian w `roadmap.md`
+- [x] 4.1 Wszystkie wystąpienia S-06 w roadmapie mają spójny status
+- [x] 4.2 Prettier nie zgłasza zmian w `roadmap.md`
 
 #### Manual
 

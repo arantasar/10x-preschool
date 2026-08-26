@@ -39,9 +39,9 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 | S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done     |
 | S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done     |
 | S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done     |
-| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | ready    |
+| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | in-progress |
 | S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | ready    |
-| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | proposed |
+| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done     |
 | S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | blocked  |
 
 ## Streams
@@ -53,7 +53,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | A      | Rdzeń generowania                          | `S-01` → `S-03`          | Gwiazda przewodnia najpierw; `S-03` rozszerza generowanie z dnia na tydzień i dołącza do `F-01`.                                                                |
 | B      | Zapis, zatwierdzanie i porządkowanie planu | `F-01` → `S-02` → `S-05` | `F-01` może iść równolegle do `S-01`; `S-02` dołącza do Stream A przy `S-01`; `S-05` domyka tę samą pętlę od drugiej strony — cofnięcie zapisu.                 |
 | C      | Ekran główny i nawigacja                   | `S-03` → `S-04` → `S-07` | Siatka miesiąca powstała jako p6 wewnątrz `S-03`; `S-04` promuje ją na punkt wejścia, `S-07` dokłada podgląd dnia w miejscu.                                    |
-| D      | Sesja i konto                              | `S-06`                   | Samodzielny, ale czeka na `S-04`: wylogowanie potrzebuje trwałej powłoki, w której zamieszka — dziś jedyny przycisk stoi na `/dashboard`, który `S-04` wygasza. |
+| D      | Sesja i konto                              | `S-06`                   | Domknięty 2026-08-26 wewnątrz `S-04`: powłoka, na którą `S-06` czekał, powstała jako jego faza 1 i od razu poniosła kontrolkę wylogowania.                      |
 
 ## Baseline
 
@@ -64,7 +64,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Frontend:** present — Astro 6 SSR + React 19 islands, Tailwind 4, shadcn/ui (`src/layouts/Layout.astro`, komponenty auth). Ekrany planowania: `src/pages/plan.astro` (dzień), `src/pages/plan/week.astro` (tydzień), `src/pages/plan/month.astro` + `src/components/plan/MonthGrid.astro` (siatka miesiąca, p6 z S-03).
 - **Backend / API:** present — obok auth istnieją trasy domenowe: `src/pages/api/day-plan/{index,generate,accept}.ts`, `day-plan/activity/[id].ts`, `day-plan/week/outline.ts`. Warstwa serwisowa w `src/lib/services/` (generator, kontrakt, HTTP, store, prompty).
 - **Data:** present — 7 migracji w `supabase/migrations/`; `day_plans` + `activities` z RLS per operacja/rola, wąskimi grantami kolumnowymi UPDATE i `save_day_plan_generation` jako **jedynym** pisarzem partii aktywności.
-- **Auth:** present — klient SSR Supabase (`src/lib/supabase.ts`), middleware z `PROTECTED_ROUTES = ["/dashboard", "/plan"]` (`src/middleware.ts`), endpointy + strony signin/signup/signout. Uwaga dla S-06: `POST /api/auth/signout` działa, ale jedyny widoczny przycisk wylogowania stoi w `src/components/Topbar.astro`, który renderuje się wyłącznie wewnątrz `Welcome.astro` — czyli na stronie dla **nie**zalogowanych; drugi jest na `/dashboard`, który S-04 wygasza.
+- **Auth:** present — klient SSR Supabase (`src/lib/supabase.ts`), middleware z `PROTECTED_ROUTES = ["/plan"]` (`src/middleware.ts`), endpointy + strony signin/signup/signout. Wylogowanie: `POST /api/auth/signout` działa, a widoczny przycisk stoi od `S-04` w powłoce zalogowanej aplikacji (`src/components/plan/AppHeader.astro`), obecnej na `/plan`, `/plan/week` i `/plan/month`. Opis sprzed `S-04` — jedyny przycisk w `Topbar.astro`, czyli na stronie dla **nie**zalogowanych, drugi na `/dashboard` — jest nieaktualny: `/dashboard` został skasowany w `S-04`.
 - **Deploy / infra:** present — `wrangler.jsonc`, adapter `@astrojs/cloudflare`, `.github/workflows/ci.yml`. Akcje przed-deployowe wciąż otwarte wg `infrastructure.md` (Workers Paid — zalecane dla zapasu CPU, nie twardy wymóg; flagi kompatybilności). Streaming tras LLM **skreślony z tej listy 2026-08-22**: nie jest mitygacją limitu platformy, tylko decyzją UX — patrz S-01 § Decyzje.
 - **Observability:** absent — brak biblioteki logowania / śledzenia błędów w zależnościach.
 
@@ -141,9 +141,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-05
 - **Blockers:** —
 - **Unknowns:**
-  - Czy `/dashboard` znika, czy zostaje jako trwałe przekierowanie na `/plan/month` — Owner: Janusz. Block: nie (rozstrzygnięcie należy do `/10x-plan`; zakładki i `PROTECTED_ROUTES` to koszt, nie ryzyko).
+  - ~~Czy `/dashboard` znika, czy zostaje jako trwałe przekierowanie na `/plan/month` — Owner: Janusz. Block: nie (rozstrzygnięcie należy do `/10x-plan`; zakładki i `PROTECTED_ROUTES` to koszt, nie ryzyko).~~ Rozstrzygnięte 2026-08-26 w planie `S-04`: trasa znika w całości — plik, wpis w `PROTECTED_ROUTES`, linki w interfejsie i wzmianki w `README.md` oraz `CLAUDE.md` — bez przekierowania. Kontrolka wylogowania przeniosła się wcześniej do powłoki (`src/components/plan/AppHeader.astro`), więc kasowanie nie zamyka sesji bez wyjścia. Koszt przyjęty świadomie: zakładki na `/dashboard` przestają działać.
 - **Risk:** Ten slice **nie buduje siatki** — ta powstała jako p6 wewnątrz `S-03` (`src/pages/plan/month.astro`, `src/components/plan/MonthGrid.astro`) — tylko przenosi punkt wejścia: `POST /api/auth/signin` przekierowuje dziś na `/`, a `/` renderuje stronę marketingową (`src/pages/index.astro` → `Welcome.astro`). Zagrożenie jest jedno i jest ciche: `/dashboard` trzyma **jedyny w zalogowanej aplikacji** widoczny przycisk wylogowania, a linki „← Wróć do pulpitu" w `src/pages/plan.astro:37` i `src/pages/plan/month.astro:46` celują w niego wprost. Wygaszenie pulpitu przed `S-06` zostawia nauczyciela bez wyjścia z sesji — więc `S-04` albo zachowuje tę kontrolkę do czasu `S-06`, albo przenosi ją razem z nawigacją.
-- **Status:** ready
+- **Status:** in-progress
 
 ### S-05: Usunięcie zapisanego planu dnia
 
@@ -168,7 +168,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Najmniejszy z czwórki i w dużej części już zbudowany: `POST /api/auth/signout` działa (`src/pages/api/auth/signout.ts`), a przycisk istnieje w `src/components/Topbar.astro` — tyle że Topbar renderuje się wyłącznie wewnątrz `Welcome.astro`, czyli na stronie dla **nie**zalogowanych, a drugie wejście stoi na `/dashboard`. Praca jest więc powłoką i umiejscowieniem, nie endpointem. Sekwencjonowany po `S-04`, bo dopiero tam powstaje trwała powłoka zalogowanej aplikacji; odwrotna kolejność znaczyłaby budowanie kontrolki w pulpicie, który `S-04` wygasza. Zagrożenie odwrotne niż zwykle: slice jest na tyle mały, że łatwo go dorzucić „przy okazji" do `S-04` — wtedy FR-003 nigdy nie dostaje własnego wpisu w `## Done`.
-- **Status:** proposed
+- **Status:** done — dostarczone 2026-08-26 wewnątrz `S-04` (`month-home`), faza 1: powłoka `src/components/plan/AppHeader.astro` niesie przycisk „Wyloguj się" na `/plan`, `/plan/week` i `/plan/month`, czyli na każdym ekranie zalogowanej aplikacji. FR-003 skonsumowane tam, nie tutaj; slice nie dostaje własnego change-id ani własnego archiwum. Zagrożenie opisane wyżej — „łatwo go dorzucić przy okazji, wtedy FR-003 nigdy nie dostaje wpisu w `## Done`" — zmaterializowało się co do kształtu; ten wpis jest tym, co je rozbraja.
 
 ### S-07: Podgląd aktywności w siatce miesiąca
 
@@ -194,7 +194,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-03       | week-generation           | Generowanie planu dla całego tygodnia roboczego      | no                    | Czeka na S-01 + F-01                                     |
 | S-04       | month-home                | Widok miesiąca jako ekran główny aplikacji           | yes                   | `/10x-plan month-home`                                   |
 | S-05       | delete-day-plan           | Usunięcie zapisanego planu dnia (skreślenie miękkie) | yes                   | `/10x-plan delete-day-plan`; może iść równolegle do S-04 |
-| S-06       | sign-out                  | Wylogowanie dostępne z powłoki zalogowanej aplikacji | no                    | Czeka na S-04 (powłoka, w której siedzi kontrolka)       |
+| S-06       | sign-out                  | Wylogowanie dostępne z powłoki zalogowanej aplikacji | —                     | Dostarczone w S-04 (`month-home`, faza 1) — nie planować osobno |
 | S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | no                    | Czeka na S-04 + rozstrzygnięcie wzorca interakcji        |
 
 ## Open Roadmap Questions
@@ -216,3 +216,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-01: Nauczyciel loguje się, wybiera dzień w kalendarzu, wpisuje hasło i otrzymuje wygenerowaną propozycję aktywności (z widocznym postępem operacji, po polsku, z treścią bezpieczną dla dzieci 3–6 lat); może ponownie wygenerować propozycję dla tego dnia.** — Archived 2026-08-22 → `context/archive/2026-08-22-first-day-generation/`. Lesson: —.
 - **S-02: Nauczyciel może edytować treść wygenerowanej propozycji, jawnie ją zaakceptować, a zatwierdzony plan dnia zostaje zapisany i jest prywatny dla jego konta.** — Archived 2026-08-23 → `context/archive/2026-08-23-edit-accept-day-plan/`. Lesson: —.
 - **S-03: Nauczyciel może wybrać tydzień i wygenerować propozycję dla każdego dnia roboczego, a regeneracja jednego dnia nie wpływa na pozostałe (pełna US-01).** — Archived 2026-08-26 → `context/archive/2026-08-23-week-generation/`. Lesson: —.
+- **S-06: Nauczyciel może wylogować się z aplikacji z dowolnego ekranu, na którym pracuje, a nie tylko ze strony startowej dla niezalogowanych (FR-003).** — Delivered 2026-08-26 wewnątrz `S-04` (`month-home`, faza 1: `src/components/plan/AppHeader.astro`); bez własnego change-id i bez własnego archiwum. Lesson: —.
