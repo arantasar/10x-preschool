@@ -33,16 +33,16 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 
 ## At a glance
 
-| ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status      |
-| ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | ----------- |
-| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done        |
-| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done        |
-| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done        |
-| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done        |
-| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | in-progress |
-| S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | ready       |
-| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done        |
-| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | blocked     |
+| ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status  |
+| ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | ------- |
+| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done    |
+| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done    |
+| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done    |
+| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done    |
+| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | done    |
+| S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | ready   |
+| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done    |
+| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | blocked |
 
 ## Streams
 
@@ -143,7 +143,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - ~~Czy `/dashboard` znika, czy zostaje jako trwałe przekierowanie na `/plan/month` — Owner: Janusz. Block: nie (rozstrzygnięcie należy do `/10x-plan`; zakładki i `PROTECTED_ROUTES` to koszt, nie ryzyko).~~ Rozstrzygnięte 2026-08-26 w planie `S-04`: trasa znika w całości — plik, wpis w `PROTECTED_ROUTES`, linki w interfejsie i wzmianki w `README.md` oraz `CLAUDE.md` — bez przekierowania. Kontrolka wylogowania przeniosła się wcześniej do powłoki (`src/components/AppHeader.astro`), więc kasowanie nie zamyka sesji bez wyjścia. Koszt przyjęty świadomie: zakładki na `/dashboard` przestają działać.
 - **Risk:** Ten slice **nie buduje siatki** — ta powstała jako p6 wewnątrz `S-03` (`src/pages/plan/month.astro`, `src/components/plan/MonthGrid.astro`) — tylko przenosi punkt wejścia: `POST /api/auth/signin` przekierowuje dziś na `/`, a `/` renderuje stronę marketingową (`src/pages/index.astro` → `Welcome.astro`). Zagrożenie jest jedno i jest ciche: `/dashboard` trzyma **jedyny w zalogowanej aplikacji** widoczny przycisk wylogowania, a linki „← Wróć do pulpitu" w `src/pages/plan.astro:37` i `src/pages/plan/month.astro:46` celują w niego wprost. Wygaszenie pulpitu przed `S-06` zostawia nauczyciela bez wyjścia z sesji — więc `S-04` albo zachowuje tę kontrolkę do czasu `S-06`, albo przenosi ją razem z nawigacją.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-05: Usunięcie zapisanego planu dnia
 
@@ -217,3 +217,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-02: Nauczyciel może edytować treść wygenerowanej propozycji, jawnie ją zaakceptować, a zatwierdzony plan dnia zostaje zapisany i jest prywatny dla jego konta.** — Archived 2026-08-23 → `context/archive/2026-08-23-edit-accept-day-plan/`. Lesson: —.
 - **S-03: Nauczyciel może wybrać tydzień i wygenerować propozycję dla każdego dnia roboczego, a regeneracja jednego dnia nie wpływa na pozostałe (pełna US-01).** — Archived 2026-08-26 → `context/archive/2026-08-23-week-generation/`. Lesson: —.
 - **S-06: Nauczyciel może wylogować się z aplikacji z dowolnego ekranu, na którym pracuje, a nie tylko ze strony startowej dla niezalogowanych (FR-003).** — Delivered 2026-08-26 wewnątrz `S-04` (`month-home`, faza 1: `src/components/AppHeader.astro`); bez własnego change-id i bez własnego archiwum. Lesson: —.
+- **S-04: Zalogowany nauczyciel po wejściu do aplikacji ląduje w widoku miesiąca i z niego wchodzi w tydzień oraz w pojedynczy dzień — bez osobnego pulpitu jako przystanku.** — Archived 2026-08-26 → `context/archive/2026-08-26-month-home/`. Lesson: —.

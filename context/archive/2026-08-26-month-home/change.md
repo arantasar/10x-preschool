@@ -1,10 +1,10 @@
 ---
 change_id: month-home
 title: Month home
-status: impl_reviewed
+status: archived
 created: 2026-08-26
 updated: 2026-08-26
-archived_at: null
+archived_at: 2026-08-26T20:13:31Z
 ---
 
 ## Notes
