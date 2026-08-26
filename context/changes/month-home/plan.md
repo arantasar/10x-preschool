@@ -474,8 +474,8 @@ na starcie planowania wskazywał `master`.
 
 #### Automated
 
-- [x] 4.1 Wszystkie wystąpienia S-06 w roadmapie mają spójny status
-- [x] 4.2 Prettier nie zgłasza zmian w `roadmap.md`
+- [x] 4.1 Wszystkie wystąpienia S-06 w roadmapie mają spójny status — 47c7d3f
+- [x] 4.2 Prettier nie zgłasza zmian w `roadmap.md` — 47c7d3f
 
 #### Manual
 
