@@ -36,28 +36,35 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 | ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status   |
 | ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | -------- |
 | F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done     |
-| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done        |
-| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done        |
-| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done        |
+| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done     |
+| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done     |
+| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done     |
+| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | ready    |
+| S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | ready    |
+| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | proposed |
+| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | blocked  |
 
 ## Streams
 
 Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme                       | Chain           | Note                                                                                             |
-| ------ | --------------------------- | --------------- | ------------------------------------------------------------------------------------------------ |
-| A      | Rdzeń generowania           | `S-01` → `S-03` | Gwiazda przewodnia najpierw; `S-03` rozszerza generowanie z dnia na tydzień i dołącza do `F-01`. |
-| B      | Zapis i zatwierdzanie planu | `F-01` → `S-02` | `F-01` może iść równolegle do `S-01`; `S-02` dołącza do Stream A przy `S-01`.                    |
+| Stream | Theme                                      | Chain                    | Note                                                                                                                                                            |
+| ------ | ------------------------------------------ | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A      | Rdzeń generowania                          | `S-01` → `S-03`          | Gwiazda przewodnia najpierw; `S-03` rozszerza generowanie z dnia na tydzień i dołącza do `F-01`.                                                                |
+| B      | Zapis, zatwierdzanie i porządkowanie planu | `F-01` → `S-02` → `S-05` | `F-01` może iść równolegle do `S-01`; `S-02` dołącza do Stream A przy `S-01`; `S-05` domyka tę samą pętlę od drugiej strony — cofnięcie zapisu.                 |
+| C      | Ekran główny i nawigacja                   | `S-03` → `S-04` → `S-07` | Siatka miesiąca powstała jako p6 wewnątrz `S-03`; `S-04` promuje ją na punkt wejścia, `S-07` dokłada podgląd dnia w miejscu.                                    |
+| D      | Sesja i konto                              | `S-06`                   | Samodzielny, ale czeka na `S-04`: wylogowanie potrzebuje trwałej powłoki, w której zamieszka — dziś jedyny przycisk stoi na `/dashboard`, który `S-04` wygasza. |
 
 ## Baseline
 
-What's already in place in the codebase as of `2026-06-27` (auto-researched + user-confirmed).
+What's already in place in the codebase as of `2026-08-26` (auto-researched + user-confirmed;
+odświeżone przy dopisaniu S-04…S-07 — pierwotna wersja opisywała stan z `2026-06-27`, sprzed F-01).
 Foundations below assume these are present and do NOT re-scaffold them.
 
-- **Frontend:** present — Astro 6 SSR + React 19 islands, Tailwind 4, shadcn/ui (`src/layouts/Layout.astro`, `src/components/ui/button.tsx`, komponenty auth).
-- **Backend / API:** partial — trasy API Astro istnieją tylko dla auth (`src/pages/api/auth/{signin,signup,signout}.ts`); brak tras domenowych / generowania.
-- **Data:** absent — biblioteki Supabase zainstalowane, ale brak `supabase/migrations`, brak schematu i tabel.
-- **Auth:** present — klient SSR Supabase (`src/lib/supabase.ts`), middleware z `PROTECTED_ROUTES` (`src/middleware.ts`), endpointy + strony signin/signup/signout.
+- **Frontend:** present — Astro 6 SSR + React 19 islands, Tailwind 4, shadcn/ui (`src/layouts/Layout.astro`, komponenty auth). Ekrany planowania: `src/pages/plan.astro` (dzień), `src/pages/plan/week.astro` (tydzień), `src/pages/plan/month.astro` + `src/components/plan/MonthGrid.astro` (siatka miesiąca, p6 z S-03).
+- **Backend / API:** present — obok auth istnieją trasy domenowe: `src/pages/api/day-plan/{index,generate,accept}.ts`, `day-plan/activity/[id].ts`, `day-plan/week/outline.ts`. Warstwa serwisowa w `src/lib/services/` (generator, kontrakt, HTTP, store, prompty).
+- **Data:** present — 7 migracji w `supabase/migrations/`; `day_plans` + `activities` z RLS per operacja/rola, wąskimi grantami kolumnowymi UPDATE i `save_day_plan_generation` jako **jedynym** pisarzem partii aktywności.
+- **Auth:** present — klient SSR Supabase (`src/lib/supabase.ts`), middleware z `PROTECTED_ROUTES = ["/dashboard", "/plan"]` (`src/middleware.ts`), endpointy + strony signin/signup/signout. Uwaga dla S-06: `POST /api/auth/signout` działa, ale jedyny widoczny przycisk wylogowania stoi w `src/components/Topbar.astro`, który renderuje się wyłącznie wewnątrz `Welcome.astro` — czyli na stronie dla **nie**zalogowanych; drugi jest na `/dashboard`, który S-04 wygasza.
 - **Deploy / infra:** present — `wrangler.jsonc`, adapter `@astrojs/cloudflare`, `.github/workflows/ci.yml`. Akcje przed-deployowe wciąż otwarte wg `infrastructure.md` (Workers Paid — zalecane dla zapasu CPU, nie twardy wymóg; flagi kompatybilności). Streaming tras LLM **skreślony z tej listy 2026-08-22**: nie jest mitygacją limitu platformy, tylko decyzją UX — patrz S-01 § Decyzje.
 - **Observability:** absent — brak biblioteki logowania / śledzenia błędów w zależnościach.
 
@@ -125,23 +132,79 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Open follow-ups:** `context/changes/week-generation/follow-ups/review-fixes.md` — ekspozycja na hasło wykluczające rośnie wraz ze szkicem tygodnia (właściciel: Janusz, bramka: najbliższa iteracja promptu); hosted project nadal bez migracji.
 - **Status:** done
 
+### S-04: Widok miesiąca jako ekran główny
+
+- **Outcome:** Zalogowany nauczyciel po wejściu do aplikacji ląduje w widoku miesiąca i z niego wchodzi w tydzień oraz w pojedynczy dzień — bez osobnego pulpitu jako przystanku.
+- **Change ID:** month-home
+- **PRD refs:** FR-004, US-01 — samo pojęcie „ekranu głównego" nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
+- **Prerequisites:** S-03
+- **Parallel with:** S-05
+- **Blockers:** —
+- **Unknowns:**
+  - Czy `/dashboard` znika, czy zostaje jako trwałe przekierowanie na `/plan/month` — Owner: Janusz. Block: nie (rozstrzygnięcie należy do `/10x-plan`; zakładki i `PROTECTED_ROUTES` to koszt, nie ryzyko).
+- **Risk:** Ten slice **nie buduje siatki** — ta powstała jako p6 wewnątrz `S-03` (`src/pages/plan/month.astro`, `src/components/plan/MonthGrid.astro`) — tylko przenosi punkt wejścia: `POST /api/auth/signin` przekierowuje dziś na `/`, a `/` renderuje stronę marketingową (`src/pages/index.astro` → `Welcome.astro`). Zagrożenie jest jedno i jest ciche: `/dashboard` trzyma **jedyny w zalogowanej aplikacji** widoczny przycisk wylogowania, a linki „← Wróć do pulpitu" w `src/pages/plan.astro:37` i `src/pages/plan/month.astro:46` celują w niego wprost. Wygaszenie pulpitu przed `S-06` zostawia nauczyciela bez wyjścia z sesji — więc `S-04` albo zachowuje tę kontrolkę do czasu `S-06`, albo przenosi ją razem z nawigacją.
+- **Status:** ready
+
+### S-05: Usunięcie zapisanego planu dnia
+
+- **Outcome:** Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; dzień wraca do stanu „brak planu" wszędzie, gdzie jest pokazywany, a dane pozostają w bazie (skreślenie miękkie).
+- **Change ID:** delete-day-plan
+- **PRD refs:** Access Control (ścieżka kasująca jest zapisem wrażliwym na własność) — brak własnego FR w PRD v1, patrz Open Roadmap Questions #3
+- **Prerequisites:** S-02, S-03
+- **Parallel with:** S-04
+- **Blockers:** —
+- **Unknowns:**
+  - Czy „usunięcie" skreśla cały wiersz `day_plans`, czy tylko bieżącą partię `activities`, zostawiając hasło — Owner: Janusz. Block: nie — decyzja dla `/10x-plan`, ale rozstrzyga kształt kolumny i wszystkich ścieżek odczytu.
+- **Risk:** „Dane w bazie nie muszą być usuwane" oznacza skreślenie miękkie, a to w tym schemacie ma dwa znane ostrza — oba już raz zadziałały. **(1) Nowa kolumna nie dziedziczy grantu UPDATE.** `20260720162553_narrow_authenticated_update_columns.sql` zdjął grant tabelaryczny i oddał listę kolumn po nazwie, właśnie po to, żeby kolumnę dodaną później trzeba było rozważyć. Bez `grant update (…)` zapis kończy się `42501`, który `categorize()` w `src/lib/services/day-plan-store.ts` mapuje na config/500 — dokładnie ta pułapka, którą migracja `theme` musiała rozbroić jawnie. **(2) Skreślony miękko dzień wciąż zajmuje `unique (user_id, plan_date)`** i wciąż czyta się jako `v_exists = true` w `save_day_plan_generation`, więc generowanie tygodnia z `p_require_absent` **pominęłoby** dzień, który nauczyciel uważa za pusty — cicho, bez błędu i bez wpisu w logu. To ten sam kształt awarii, dla którego istnieje licznik generacji. Każda ścieżka odczytu (`readDayPlan`, `readMonthSummary`, `selectCurrentGeneration`) musi nauczyć się skreślenia w tym samym slice'ie, inaczej dzień „usunięty" wraca w siatce miesiąca.
+- **Status:** ready
+
+### S-06: Wylogowanie z aplikacji
+
+- **Outcome:** Nauczyciel może wylogować się z aplikacji z dowolnego ekranu, na którym pracuje, a nie tylko ze strony startowej dla niezalogowanych.
+- **Change ID:** sign-out
+- **PRD refs:** FR-003 (nice-to-have; odparkowane 2026-08-26 — pozycja znika z `## Parked`)
+- **Prerequisites:** S-04
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Najmniejszy z czwórki i w dużej części już zbudowany: `POST /api/auth/signout` działa (`src/pages/api/auth/signout.ts`), a przycisk istnieje w `src/components/Topbar.astro` — tyle że Topbar renderuje się wyłącznie wewnątrz `Welcome.astro`, czyli na stronie dla **nie**zalogowanych, a drugie wejście stoi na `/dashboard`. Praca jest więc powłoką i umiejscowieniem, nie endpointem. Sekwencjonowany po `S-04`, bo dopiero tam powstaje trwała powłoka zalogowanej aplikacji; odwrotna kolejność znaczyłaby budowanie kontrolki w pulpicie, który `S-04` wygasza. Zagrożenie odwrotne niż zwykle: slice jest na tyle mały, że łatwo go dorzucić „przy okazji" do `S-04` — wtedy FR-003 nigdy nie dostaje własnego wpisu w `## Done`.
+- **Status:** proposed
+
+### S-07: Podgląd aktywności w siatce miesiąca
+
+- **Outcome:** Nauczyciel widzi, co jest zaplanowane na dany dzień, bez opuszczania siatki miesiąca — dziś kafelek pokazuje wyłącznie hasło, nie aktywności.
+- **Change ID:** month-day-preview
+- **PRD refs:** FR-004, US-01 — sam podgląd nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
+- **Prerequisites:** S-04
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:**
+  - Wzorzec interakcji — hover, kliknięcie, rozwinięcie wiersza tygodnia, panel boczny? — Owner: Janusz. Block: **tak**, bez tego slice nie ma kształtu. Sam hover nie wystarczy jako jedyna ścieżka: nie istnieje na dotyku i nie jest osiągalny z klawiatury, więc cokolwiek zostanie wybrane, potrzebuje drugiego wejścia.
+  - Skąd biorą się dane podglądu — Owner: TBD. Block: nie. `readMonthSummary` (`src/lib/services/day-plan-store.ts`) czyta dziś trzy kolumny `day_plans` dla ~42 dni; podgląd aktywności to dołożenie `activities` bieżącej generacji dla całego zakresu — odczyt z góry vs. dociąganie na żądanie.
+- **Risk:** Jedyny z czwórki naprawdę otwarty — użytkownik nazwał go „do przegadania i poszukania najlepszych pomysłów". Ryzyko nie leży w kodzie, tylko w tym, że hover jako pierwszy pomysł jest wygodny do zbudowania i słaby w użyciu: gęsta siatka 7 kolumn, dotyk bez hovera, klawiatura bez ścieżki. Sekwencjonowany po `S-04`, bo dopiero wtedy siatka jest ekranem, na którym nauczyciel faktycznie spędza czas — wcześniej podgląd optymalizowałby widok, do którego prawie się nie zagląda. Interakcja z `S-05`: dzień skreślony miękko nie może mieć podglądu, więc kolejność `S-05` → `S-07` jest tańsza niż odwrotna.
+- **Status:** blocked
+
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                 | Suggested issue title                              | Ready for `/10x-plan` | Notes                                                 |
-| ---------- | ------------------------- | -------------------------------------------------- | --------------------- | ----------------------------------------------------- |
-| F-01       | plan-persistence-baseline | Minimalny schemat planów + RLS izolacji per konto  | yes                   | Może iść równolegle do S-01                           |
-| S-01       | first-day-generation      | Generowanie propozycji aktywności dla jednego dnia | yes                   | Gwiazda przewodnia — `/10x-plan first-day-generation` |
-| S-02       | edit-accept-day-plan      | Edycja, akceptacja i zapis planu dnia              | no                    | Czeka na S-01 + F-01                                  |
-| S-03       | week-generation           | Generowanie planu dla całego tygodnia roboczego    | no                    | Czeka na S-01 + F-01                                  |
+| Roadmap ID | Change ID                 | Suggested issue title                                | Ready for `/10x-plan` | Notes                                                    |
+| ---------- | ------------------------- | ---------------------------------------------------- | --------------------- | -------------------------------------------------------- |
+| F-01       | plan-persistence-baseline | Minimalny schemat planów + RLS izolacji per konto    | yes                   | Może iść równolegle do S-01                              |
+| S-01       | first-day-generation      | Generowanie propozycji aktywności dla jednego dnia   | yes                   | Gwiazda przewodnia — `/10x-plan first-day-generation`    |
+| S-02       | edit-accept-day-plan      | Edycja, akceptacja i zapis planu dnia                | no                    | Czeka na S-01 + F-01                                     |
+| S-03       | week-generation           | Generowanie planu dla całego tygodnia roboczego      | no                    | Czeka na S-01 + F-01                                     |
+| S-04       | month-home                | Widok miesiąca jako ekran główny aplikacji           | yes                   | `/10x-plan month-home`                                   |
+| S-05       | delete-day-plan           | Usunięcie zapisanego planu dnia (skreślenie miękkie) | yes                   | `/10x-plan delete-day-plan`; może iść równolegle do S-04 |
+| S-06       | sign-out                  | Wylogowanie dostępne z powłoki zalogowanej aplikacji | no                    | Czeka na S-04 (powłoka, w której siedzi kontrolka)       |
+| S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | no                    | Czeka na S-04 + rozstrzygnięcie wzorca interakcji        |
 
 ## Open Roadmap Questions
 
 1. **Reset hasła** — czy MVP wymaga mechanizmu odzyskiwania hasła przez e-mail? Owner: decyzja produktowa. Block: nie (MVP może startować bez, ale nie nadaje się do produkcji bez rozwiązania) — roadmap-wide.
 2. **Limit regeneracji** — czy istnieje limit liczby wywołań AI dla jednego użytkownika (koszt API)? Owner: decyzja techniczno-biznesowa. Block: nie dla MVP — gates: S-01, S-03.
+3. **Pokrycie w PRD dla S-04…S-07** — PRD v1 wyczerpał się na `S-03`: wszystkie must-have FR (FR-001…FR-009 poza nice-to-have FR-003) są skonsumowane przez F-01…S-03. Usunięcie planu dnia, ekran główny i podgląd aktywności nie mają własnych FR — roadmapa wyprzedza tu PRD, co jest odwróceniem normalnego kierunku. Owner: Janusz. Block: nie (slice'y da się zaplanować z opisu) — gates: S-04, S-05, S-07. Domknięcie: `/10x-shape` (brownfield) → `/10x-prd` z nowymi FR w `prd-v2.md` i bumpem `prd_version` we frontmatterze, zanim któryś z tych slice'ów trafi do archiwum z pustą rubryką „PRD refs".
 
 ## Parked
 
-- **Wylogowanie (FR-003)** — Why parked: nice-to-have w PRD; sesja wygasa automatycznie, wylogowanie można dodać w v2.
 - **Profile grup przedszkolnych** — Why parked: PRD §Non-Goals — plan jest własnością nauczyciela, nie grupy.
 - **Dane o dzieciach (imiona, potrzeby, alergie)** — Why parked: PRD §Non-Goals — poza zakresem MVP.
 - **Generowanie materiałów dodatkowych (karty pracy, grafiki, audio)** — Why parked: PRD §Non-Goals — MVP proponuje tylko tytuł i opis aktywności.
