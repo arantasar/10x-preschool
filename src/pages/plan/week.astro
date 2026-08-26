@@ -1,0 +1,98 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import WeekPlanBoard from "@/components/plan/WeekPlanBoard";
+import { addDays, formatWeekRange, resolveWeekStart, workingDaysOf } from "@/lib/day-plan-dates";
+import { readWeekPlans } from "@/lib/services/day-plan-store";
+import type { DayPlanView, WeekPlanView } from "@/types";
+
+const { user, supabase } = Astro.locals;
+
+// The week is resolved before anything renders, so saved days are on screen in
+// the first paint - the same reason `plan.astro` resolves its day server-side.
+// `?from=` accepts any day of the week and snaps to its Monday, which is what
+// lets the month grid link a whole row to one URL.
+const weekStart = resolveWeekStart(Astro.url.searchParams.get("from"));
+const days = workingDaysOf(weekStart);
+
+// "No plan" and "could not read the plan" must not render the same way. S-02
+// learned this the expensive way: collapsing them showed the generate
+// invitation on a day that may hold an accepted plan. Here the stake is five
+// days at once, so a failed read shows an error and a reload, never a form.
+let plans: Record<string, DayPlanView> = {};
+let readFailed = !supabase;
+if (supabase) {
+  try {
+    const saved = await readWeekPlans(supabase, days);
+    plans = Object.fromEntries(saved);
+  } catch {
+    readFailed = true;
+  }
+}
+
+const week: WeekPlanView = { weekStart, days, plans };
+const previousWeek = addDays(weekStart, -7);
+const nextWeek = addDays(weekStart, 7);
+const month = weekStart.slice(0, 7);
+---
+
+<Layout title={`Plan tygodnia — ${formatWeekRange(weekStart)}`}>
+  <div class="bg-cosmic min-h-screen p-4">
+    <main class="mx-auto w-full max-w-3xl py-10">
+      <header class="mb-8">
+        <a href={`/plan/month?month=${month}`} class="text-sm text-purple-300 hover:underline"
+          >&larr; Wróć do miesiąca</a
+        >
+        <h1 class="mt-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
+          Plan tygodnia
+        </h1>
+        <p class="mt-1 text-lg text-blue-100">{formatWeekRange(weekStart)}</p>
+        {
+          !readFailed && (
+            <p class="mt-2 text-blue-100/80">
+              Wpisz jedno hasło na cały tydzień. Ułożymy z niego pięć różnych tematów — po jednym na dzień roboczy — i
+              wygenerujemy propozycje zajęć dla każdego dnia osobno.
+            </p>
+          )
+        }
+        {user?.email && <p class="mt-2 text-xs text-blue-100/50">Zalogowano jako {user.email}</p>}
+
+        <nav class="mt-4 flex items-center gap-3 text-sm">
+          <a
+            href={`/plan/week?from=${previousWeek}`}
+            class="rounded-lg bg-white/10 px-3 py-1.5 text-white hover:bg-white/20"
+          >
+            &larr; Poprzedni tydzień
+          </a>
+          <a
+            href={`/plan/week?from=${nextWeek}`}
+            class="rounded-lg bg-white/10 px-3 py-1.5 text-white hover:bg-white/20"
+          >
+            Następny tydzień &rarr;
+          </a>
+        </nav>
+      </header>
+
+      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-xl">
+        {
+          readFailed ? (
+            <div class="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
+              <p class="font-medium text-amber-100">Nie udało się wczytać tego tygodnia.</p>
+              <p class="mt-1 text-sm text-amber-100/80">
+                Nie wiemy, które dni mają już plan, więc nie pokazujemy formularza generowania — moglibyśmy nadpisać
+                pracę, która już tu jest. Odśwież stronę i spróbuj ponownie.
+              </p>
+              <a
+                href={`/plan/week?from=${weekStart}`}
+                class="mt-3 inline-block rounded-lg bg-amber-400/20 px-4 py-2 text-sm font-medium text-amber-100 hover:bg-amber-400/30"
+              >
+                Odśwież
+              </a>
+            </div>
+          ) : (
+            <WeekPlanBoard client:load week={week} />
+          )
+        }
+      </div>
+    </main>
+  </div>
+</Layout>

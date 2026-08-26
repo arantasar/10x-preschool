@@ -79,8 +79,14 @@ export interface WeekPlanView {
   readonly weekStart: string;
   /** The five working days, in calendar order. */
   readonly days: readonly string[];
-  /** Saved plans, keyed by `plan_date`. Absent key means the day is free. */
-  readonly plans: Readonly<Record<string, DayPlanView>>;
+  /**
+   * Saved plans, keyed by `plan_date`. Absent key means the day is free.
+   *
+   * `Partial` is load-bearing, not decoration: without it the index signature
+   * promises a `DayPlanView` for every string, and the `?? null` that turns a
+   * missing day into an empty card reads to the compiler as dead code.
+   */
+  readonly plans: Readonly<Partial<Record<string, DayPlanView>>>;
 }
 
 /**

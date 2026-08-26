@@ -596,34 +596,34 @@ implementacji.
 
 #### Automated
 
-- [x] 4.1 `npm run lint`, `npx astro check`, `npm run build` czyste
-- [x] 4.2 `npm run test:db` zielony
-- [x] 4.3 Build bez `SUPABASE_URL`/`SUPABASE_KEY` przechodzi
+- [x] 4.1 `npm run lint`, `npx astro check`, `npm run build` czyste — 4b7f3ca
+- [x] 4.2 `npm run test:db` zielony — 4b7f3ca
+- [x] 4.3 Build bez `SUPABASE_URL`/`SUPABASE_KEY` przechodzi — 4b7f3ca
 
 #### Manual
 
-- [x] 4.4 `POST /api/day-plan/week/outline` bez sesji → 401 JSON; z sesją → pięć tematów
-- [x] 4.5 `only_if_absent: true` na dniu zajętym → 409 bez wywołania modelu
-- [x] 4.6 `theme` na dniu pustym → plan zapisany z ustawioną kolumną
-- [x] 4.7 Regeneracja bez `theme` zachowuje temat
-- [x] 4.8 Odczyt tygodnia zwraca wyłącznie dni wołającego konta
+- [x] 4.4 `POST /api/day-plan/week/outline` bez sesji → 401 JSON; z sesją → pięć tematów — 4b7f3ca
+- [x] 4.5 `only_if_absent: true` na dniu zajętym → 409 bez wywołania modelu — 4b7f3ca
+- [x] 4.6 `theme` na dniu pustym → plan zapisany z ustawioną kolumną — 4b7f3ca
+- [x] 4.7 Regeneracja bez `theme` zachowuje temat — 4b7f3ca
+- [x] 4.8 Odczyt tygodnia zwraca wyłącznie dni wołającego konta — 4b7f3ca
 
 ### Phase 5: Ekran tygodnia
 
 #### Automated
 
-- [ ] 5.1 `npm run lint`, `npx astro check`, `npm run build` czyste
-- [ ] 5.2 `GET /plan/week` bez sesji → 302 na `/auth/signin`
-- [ ] 5.3 `npm run test:db` zielony
+- [x] 5.1 `npm run lint`, `npx astro check`, `npm run build` czyste
+- [x] 5.2 `GET /plan/week` bez sesji → 302 na `/auth/signin`
+- [x] 5.3 `npm run test:db` zielony
 
 #### Manual
 
-- [ ] 5.4 Pusty tydzień → pięć kart równolegle, pięć wyraźnie różnych dni
-- [ ] 5.5 Tydzień z dniem zajętym → dzień pominięty i nietknięty
-- [ ] 5.6 Porażka jednego dnia → sukcesy zachowane, ponowienie punktowe domyka tydzień
-- [ ] 5.7 „Akceptuj tydzień" → stan trwały po odświeżeniu
-- [ ] 5.8 Regeneracja jednego dnia nie rusza pozostałych (AC US-01)
-- [ ] 5.9 Odświeżenie w trakcie generowania nie zostawia stanu sprzecznego
+- [x] 5.4 Pusty tydzień → pięć kart równolegle, pięć wyraźnie różnych dni
+- [x] 5.5 Tydzień z dniem zajętym → dzień pominięty i nietknięty
+- [x] 5.6 Porażka jednego dnia → sukcesy zachowane, ponowienie punktowe domyka tydzień
+- [x] 5.7 „Akceptuj tydzień" → stan trwały po odświeżeniu
+- [x] 5.8 Regeneracja jednego dnia nie rusza pozostałych (AC US-01)
+- [x] 5.9 Odświeżenie w trakcie generowania nie zostawia stanu sprzecznego
 
 ### Phase 6: Siatka miesiąca
 

@@ -77,7 +77,7 @@ export function formatPlanDate(isoDate: string): string {
  * day today is ({@link todayIsoDate}); it does not matter when counting days
  * forward from one.
  */
-function addDays(isoDate: string, days: number): string {
+export function addDays(isoDate: string, days: number): string {
   const shifted = new Date(`${isoDate}T00:00:00Z`);
   shifted.setUTCDate(shifted.getUTCDate() + days);
   return shifted.toISOString().slice(0, 10);
