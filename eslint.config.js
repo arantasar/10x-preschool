@@ -62,6 +62,17 @@ const reactConfig = tseslint.config({
 const astroConfig = tseslint.config({
   files: ["**/*.astro"],
   rules: {
+    // A page-level redirect is a bare `return` in the frontmatter, and
+    // `astro-eslint-parser` (1.4.0) does not give that return statement a parent
+    // function node. `no-misused-promises` dereferences that parent
+    // unconditionally in `checkReturnStatement` and crashes the whole run - not
+    // a finding, a hard abort. Only `checksVoidReturn.returns` reaches that code
+    // path, so that one sub-check is dropped rather than the whole rule:
+    // `checksConditionals` stays on, and frontmatter is exactly where this
+    // project awaits (`readDayPlan`, `readWeekPlans`, `readMonthSummary`), so a
+    // forgotten `await` in an `if` is the failure worth keeping guarded.
+    // Revisit when `astro-eslint-parser` fixes the missing parent node.
+    "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: false, returns: false } }],
     "astro/no-set-html-directive": "error",
     "astro/no-unused-css-selector": "warn",
     "astro/prefer-class-list-directive": "warn",

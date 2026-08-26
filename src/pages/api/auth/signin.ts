@@ -16,5 +16,8 @@ export const POST: APIRoute = async (context) => {
     return context.redirect(`/auth/signin?error=${encodeURIComponent(error.message)}`);
   }
 
-  return context.redirect("/");
+  // Straight to the month - the app's home screen. Going through `/` would
+  // work too (it redirects a signed-in user), but at the cost of one extra hop
+  // on the most-travelled path.
+  return context.redirect("/plan/month");
 };

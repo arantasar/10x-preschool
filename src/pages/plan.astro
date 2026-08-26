@@ -1,11 +1,12 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import AppHeader from "@/components/AppHeader.astro";
 import DayPlanEditor from "@/components/plan/DayPlanEditor";
 import { formatPlanDate, resolvePlanDate } from "@/lib/day-plan-dates";
 import { readDayPlan } from "@/lib/services/day-plan-store";
 import type { DayPlanView } from "@/types";
 
-const { user, supabase } = Astro.locals;
+const { supabase } = Astro.locals;
 
 // The day is read from the URL and resolved before anything renders, so the
 // saved plan is on screen in the first paint - no loading state, no flash of an
@@ -33,8 +34,11 @@ if (supabase) {
 <Layout title={`Plan dnia — ${formatPlanDate(planDate)}`}>
   <div class="bg-cosmic min-h-screen p-4">
     <main class="mx-auto w-full max-w-2xl py-10">
+      <AppHeader />
       <header class="mb-8">
-        <a href="/dashboard" class="text-sm text-purple-300 hover:underline">&larr; Wróć do pulpitu</a>
+        <a href={`/plan/month?month=${planDate.slice(0, 7)}`} class="text-sm text-purple-300 hover:underline"
+          >&larr; Wróć do miesiąca</a
+        >
         <h1 class="mt-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
           Plan dnia
         </h1>
@@ -47,7 +51,6 @@ if (supabase) {
             </p>
           )
         }
-        {user?.email && <p class="mt-2 text-xs text-blue-100/50">Zalogowano jako {user.email}</p>}
       </header>
 
       <div class="rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-xl">

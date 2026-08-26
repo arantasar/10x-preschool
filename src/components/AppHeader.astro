@@ -1,0 +1,21 @@
+---
+// The only place in the signed-in app that carries the session identity and the
+// way out of it. Deliberately not an extension of `Topbar.astro`: that one is
+// the starter's English bar for the signed-out marketing page, and its fate is
+// unrelated to the fate of this shell.
+const { user } = Astro.locals;
+---
+
+<div
+  class="mb-6 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80"
+>
+  <a href="/plan/month" class="font-semibold text-white transition-colors hover:text-purple-200"> 10xPreschool </a>
+  <div class="flex items-center gap-4">
+    {user?.email && <span class="text-blue-100/70">{user.email}</span>}
+    <form method="POST" action="/api/auth/signout">
+      <button type="submit" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
+        Wyloguj się
+      </button>
+    </form>
+  </div>
+</div>
