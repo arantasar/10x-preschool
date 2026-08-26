@@ -39,7 +39,7 @@ widzi na `/` dokładnie to, co dziś.
 
 **In scope:**
 
-- Nowy `src/components/plan/AppHeader.astro` z e-mailem i wylogowaniem, na trzech stronach planowania
+- Nowy `src/components/AppHeader.astro` z e-mailem i wylogowaniem, na trzech stronach planowania
 - Przekierowanie zalogowanego z `/` na `/plan/month`; `signin.ts` celuje tam wprost
 - Usunięcie `dashboard.astro`, wpisu w `PROTECTED_ROUTES` i wszystkich linków do trasy
 - Retargetowanie back-linku dnia, usunięcie back-linku miesiąca, naprawa linku w `Topbar.astro`

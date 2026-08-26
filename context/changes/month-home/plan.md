@@ -126,7 +126,9 @@ przed nią, nigdy z mniejszej.
 
 #### 1. Pasek zalogowanej aplikacji
 
-**File**: `src/components/plan/AppHeader.astro` (nowy)
+**File**: `src/components/plan/AppHeader.astro` (nowy) — przeniesiony w triage'u przeglądu
+implementacyjnego do `src/components/AppHeader.astro` (F7: to powłoka całej zalogowanej aplikacji,
+nie komponent domeny planu)
 
 **Intent**: Jedyne miejsce w zalogowanej aplikacji, które niesie tożsamość sesji i wyjście z niej.
 Powstaje jako osobny komponent, a nie rozszerzenie `Topbar.astro`, bo Topbar jest angielskim
@@ -305,7 +307,7 @@ tabela nie ma już przykładu trasy chronionej, zdanie pod nią o `PROTECTED_ROU
 - Z dnia „← Wróć do miesiąca" prowadzi na miesiąc tego dnia — także dla dnia z sąsiedniego miesiąca
 - Miesiąc nie ma back-linku, a odstęp nad nagłówkiem wygląda poprawnie
 - Pełna pętla bez wpisywania URL-a: logowanie → miesiąc → tydzień → dzień → miesiąc → wylogowanie
-- Pasek Topbara na stronie powitalnej (w sesji otwartej w drugiej karcie) prowadzi na `/plan/month`
+- `Topbar.astro` nie zawiera już linku do skasowanego `/dashboard` — sprawdzane w źródle, nie w przeglądarce: po fazie 2 `/` przekierowuje zalogowanego, więc gałąź Topbara dla zalogowanego jest nieosiągalna (druga karta trafia w to samo przekierowanie)
 
 **Implementation Note**: Po zakończeniu tej fazy i przejściu weryfikacji automatycznej zatrzymaj się
 i poczekaj na potwierdzenie, że testy ręczne wypadły pomyślnie, zanim przejdziesz do fazy 4.
@@ -331,7 +333,7 @@ odwrotność — dostarczenie bez własnej pozycji.
 do slice'u, który je dostarczył.
 
 **Contract**: W bloku `### S-06: Wylogowanie z aplikacji` — `- **Status:**` na `done` z notką
-i datą wskazującą, że wyjście dostarczyła powłoka z S-04 (`src/components/plan/AppHeader.astro`),
+i datą wskazującą, że wyjście dostarczyła powłoka z S-04 (`src/components/AppHeader.astro`),
 oraz odpowiadający wiersz w tabeli `## At a glance` (Status → `done`). Wpis w `## Done` nazywa S-06
 i wskazuje S-04 jako miejsce dostarczenia. Wiersz S-06 w `## Backlog Handoff` odnotowuje to samo.
 Frontmatter `updated:` na dzisiaj. Blok `### S-04` zostaje na `in-progress` — do `done` przesunie go
@@ -353,7 +355,10 @@ którym zamknięto niewiadome S-03.
 #### Automated Verification:
 
 - Żadna pozycja S-06 nie została pominięta: `grep -n "S-06" context/foundation/roadmap.md` pokazuje spójny status we wszystkich wystąpieniach
-- Prettier nie zgłasza zmian: `npx prettier --check context/foundation/roadmap.md`
+- Tabele w roadmapie są wyrównane: każdy blok wierszy `|` ma jednakową szerokość
+  (`python3 -c 'import sys;ls=open("context/foundation/roadmap.md").read().split(chr(10));bad=[];blk=[]\nfor i,l in enumerate(ls,1):\n if l.startswith("|"):blk.append(len(l))\n else:\n  if blk and len(set(blk))>1:bad.append(i)\n  blk=[]\nsys.exit(1 if bad else 0)'`).
+  **Nie** `prettier --check` — `.prettierignore` wyklucza `context/` w całości, więc ta komenda
+  przechodzi bezwarunkowo i niczego nie sprawdza (ustalone w przeglądzie implementacyjnym, F4).
 
 #### Manual Verification:
 
@@ -468,14 +473,14 @@ na starcie planowania wskazywał `master`.
 - [x] 3.7 Back-link dnia prowadzi na miesiąc tego dnia, także dla dnia z sąsiedniego miesiąca — f2a20d3
 - [x] 3.8 Miesiąc bez back-linku, odstęp nad nagłówkiem poprawny — f2a20d3
 - [x] 3.9 Pełna pętla nawigacji bez wpisywania URL-a z ręki — f2a20d3
-- [x] 3.10 Link w Topbarze na stronie powitalnej prowadzi na `/plan/month` — f2a20d3
+- [x] 3.10 `Topbar.astro` nie celuje już w skasowaną trasę (weryfikacja w źródle — faza 2 uczyniła sprawdzenie w przeglądarce niemożliwym; patrz przegląd implementacyjny F3/F6) — f2a20d3
 
 ### Phase 4: Zapis decyzji o S-06
 
 #### Automated
 
 - [x] 4.1 Wszystkie wystąpienia S-06 w roadmapie mają spójny status — 47c7d3f
-- [x] 4.2 Prettier nie zgłasza zmian w `roadmap.md` — 47c7d3f
+- [x] 4.2 Tabele w `roadmap.md` są wyrównane (gate wymieniony — `prettier --check` nie mógł zawieść, patrz F4) — 47c7d3f
 
 #### Manual
 
