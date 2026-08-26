@@ -1,11 +1,12 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import AppHeader from "@/components/plan/AppHeader.astro";
 import WeekPlanBoard from "@/components/plan/WeekPlanBoard";
 import { addDays, formatWeekRange, resolveWeekStart, workingDaysOf } from "@/lib/day-plan-dates";
 import { readWeekPlans } from "@/lib/services/day-plan-store";
 import type { DayPlanView, WeekPlanView } from "@/types";
 
-const { user, supabase } = Astro.locals;
+const { supabase } = Astro.locals;
 
 // The week is resolved before anything renders, so saved days are on screen in
 // the first paint - the same reason `plan.astro` resolves its day server-side.
@@ -38,6 +39,7 @@ const month = weekStart.slice(0, 7);
 <Layout title={`Plan tygodnia — ${formatWeekRange(weekStart)}`}>
   <div class="bg-cosmic min-h-screen p-4">
     <main class="mx-auto w-full max-w-3xl py-10">
+      <AppHeader />
       <header class="mb-8">
         <a href={`/plan/month?month=${month}`} class="text-sm text-purple-300 hover:underline"
           >&larr; Wróć do miesiąca</a
@@ -54,7 +56,6 @@ const month = weekStart.slice(0, 7);
             </p>
           )
         }
-        {user?.email && <p class="mt-2 text-xs text-blue-100/50">Zalogowano jako {user.email}</p>}
 
         <nav class="mt-4 flex items-center gap-3 text-sm">
           <a
