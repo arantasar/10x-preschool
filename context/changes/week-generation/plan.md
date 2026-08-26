@@ -612,29 +612,29 @@ implementacji.
 
 #### Automated
 
-- [x] 5.1 `npm run lint`, `npx astro check`, `npm run build` czyste
-- [x] 5.2 `GET /plan/week` bez sesji → 302 na `/auth/signin`
-- [x] 5.3 `npm run test:db` zielony
+- [x] 5.1 `npm run lint`, `npx astro check`, `npm run build` czyste — 8eefc5f
+- [x] 5.2 `GET /plan/week` bez sesji → 302 na `/auth/signin` — 8eefc5f
+- [x] 5.3 `npm run test:db` zielony — 8eefc5f
 
 #### Manual
 
-- [x] 5.4 Pusty tydzień → pięć kart równolegle, pięć wyraźnie różnych dni
-- [x] 5.5 Tydzień z dniem zajętym → dzień pominięty i nietknięty
-- [x] 5.6 Porażka jednego dnia → sukcesy zachowane, ponowienie punktowe domyka tydzień
-- [x] 5.7 „Akceptuj tydzień" → stan trwały po odświeżeniu
-- [x] 5.8 Regeneracja jednego dnia nie rusza pozostałych (AC US-01)
-- [x] 5.9 Odświeżenie w trakcie generowania nie zostawia stanu sprzecznego
+- [x] 5.4 Pusty tydzień → pięć kart równolegle, pięć wyraźnie różnych dni — 8eefc5f
+- [x] 5.5 Tydzień z dniem zajętym → dzień pominięty i nietknięty — 8eefc5f
+- [x] 5.6 Porażka jednego dnia → sukcesy zachowane, ponowienie punktowe domyka tydzień — 8eefc5f
+- [x] 5.7 „Akceptuj tydzień" → stan trwały po odświeżeniu — 8eefc5f
+- [x] 5.8 Regeneracja jednego dnia nie rusza pozostałych (AC US-01) — 8eefc5f
+- [x] 5.9 Odświeżenie w trakcie generowania nie zostawia stanu sprzecznego — 8eefc5f
 
 ### Phase 6: Siatka miesiąca
 
 #### Automated
 
-- [ ] 6.1 `npm run lint`, `npx astro check`, `npm run build` czyste
-- [ ] 6.2 `GET /plan/month` bez sesji → 302 na `/auth/signin`
+- [x] 6.1 `npm run lint`, `npx astro check`, `npm run build` czyste
+- [x] 6.2 `GET /plan/month` bez sesji → 302 na `/auth/signin`
 
 #### Manual
 
-- [ ] 6.3 Siatka pokazuje właściwe dni z rozróżnieniem roboczy/zaakceptowany
-- [ ] 6.4 Wejście w tydzień i w dzień trafia we właściwy tydzień i dzień
-- [ ] 6.5 Miesiąc drugiego konta nie pokazuje dni pierwszego
-- [ ] 6.6 Przejście grudzień → styczeń działa w obie strony
+- [x] 6.3 Siatka pokazuje właściwe dni z rozróżnieniem roboczy/zaakceptowany
+- [x] 6.4 Wejście w tydzień i w dzień trafia we właściwy tydzień i dzień
+- [x] 6.5 Miesiąc drugiego konta nie pokazuje dni pierwszego
+- [x] 6.6 Przejście grudzień → styczeń działa w obie strony
