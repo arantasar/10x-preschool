@@ -1,0 +1,25 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787653015-Mm0SjehaG4bGfJ5F7KDT","object":"chat.completion","created":1787653015,"model":"deepseek/deepseek-v4-flash","provider":"Alibaba","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\n  \"aktywnosci\": [\n    {\n      \"opis\": \"Nauczyciel zaprasza dzieci do wspólnego nasłuchiwania. Wszyscy siadają wygodnie na dywanie, zamykają oczy i przez 30–60 sekund wsłuchują się w dźwięki w sali i za oknem. Po tym czasie każde dziecko mówi, co usłyszało – może to być tykanie zegara, szum kaloryfera, śpiew ptaków, szelest kartki. Nauczyciel zapisuje dźwięki na dużej kartce, a potem dzieci rysują wybrany dźwięk kredkami na małych kartkach. Zabawa uczy uważności i wrażliwości słuchowej.\",\n      \"tytul\": \"Słuchamy ciszy – co słychać, gdy jest cicho?\"\n    },\n    {\n      \"opis\": \"Dzieci dostają po dwie łyżki drewniane i siadają w kole. Nauczyciel pokazuje, jak wystukiwać ciche dźwięki – delikatnie uderzając łyżką o łyżkę, o dywan, o własną dłoń. Następnie dzieci naśladują odgłosy przyrody: padający deszcz, kapanie wody, szum wiatru, stąpanie mrówki. Zabawa polega na tym, żeby wydobyć jak najcichszy dźwięk, a potem jak najgłośniejszy – ale zawsze w kontrolowany sposób. Rozwija koordynację i świadomość dynamiki dźwięku.\",\n      \"tytul\": \"Ciche dźwięki – zabawa łyżkami i nasłuchiwanie\"\n    },\n    {\n      \"opis\": \"Nauczyciel rozkłada na podłodze chustę animacyjną. Dzieci biorą się za brzegi i unoszą ją lekko nad ziemią. Na hasło „cisza\"  ,\"tytul\": \"Cicha chusta – zabawa w porozumiewanie się bez słów\"\n    }\n  ]\n}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1240,"completion_tokens":491,"total_tokens":1731,"cost":0.0001879752,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1024,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.0001879752,"upstream_inference_prompt_cost":0.0000563872,"upstream_inference_completions_cost":0.000131588},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

@@ -1,0 +1,21 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787522292-3apbf7u1xADjSpzjgQNw","object":"chat.completion","created":1787522292,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Tęcza z kolorowych pasków papieru\",\"opis\":\"Nauczyciel przygotowuje paski papieru w kolorach tęczy oraz dużą kartkę z narysowanym łukiem. Dzieci układają paski od najjaśniejszego do najciemniejszego lub według ustalonej kolejności, a następnie przyklejają je, tworząc wspólną tęczę. Na zakończenie dzieci nazywają kolory i wskazują te, które poznały w ciągu tygodnia.\"},{\"tytul\":\"Kolorowy tor tęczy\",\"opis\":\"Nauczyciel rozkłada na podłodze obręcze, szarfy lub kartki w różnych kolorach, tworząc tor. Dzieci przechodzą po nim zgodnie z poleceniami, na przykład: „stań na żółtym”, „przeskocz do niebieskiego” albo „dotknij czerwonego”, dostosowując sposób poruszania do swoich możliwości. Na koniec każde dziecko wybiera ulubiony kolor i wykonuje wymyślony przez siebie ruch przy odpowiednim polu.\"},{\"tytul\":\"Tęczowa orkiestra kolorów\",\"opis\":\"Nauczyciel przyporządkowuje prostym instrumentom lub gestom kolory, na przykład grzechotanie oznacza czerwony, klaskanie żółty, a stukanie niebieski, i pokazuje dzieciom przygotowane kolorowe kartoniki. Dzieci obserwują kolejno podnoszone kartoniki i wykonują odpowiadający im dźwięk lub gest, najpierw pojedynczo, a potem w krótkich sekwencjach. Na zakończenie grupa tworzy wspólną „tęczową melodię”, powtarzając rytm zaproponowany przez nauczyciela.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1480,"completion_tokens":430,"total_tokens":1910,"cost":0.00055488,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":38,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00055488,"upstream_inference_prompt_cost":0.00003888,"upstream_inference_completions_cost":0.000516},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

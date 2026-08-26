@@ -1,0 +1,25 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787652719-NiBkhlxGQwbV2DMROu2p","object":"chat.completion","created":1787652719,"model":"openai/gpt-5.6-luna","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"{\"aktywnosci\":[{\"tytul\":\"Leśny obraz z jesiennych skarbów\",\"opis\":\"Nauczyciel przygotowuje duże arkusze papieru, kredki, klej oraz większe, bezpieczne materiały naturalne, takie jak liście, szyszki i kasztany, używane pod stałą kontrolą. Dzieci rysują jesienny las, a następnie układają i przyklejają na obraz wybrane skarby, tworząc drzewa, ścieżki i leśne zakątki. Na zakończenie dzieci opowiadają, co przedstawia ich praca i jakie skarby można znaleźć w lesie.\"},{\"tytul\":\"Leśna orkiestra\",\"opis\":\"Nauczyciel przygotowuje proste instrumenty perkusyjne oraz kilka przedmiotów dostępnych w sali, na przykład papier, drewniane klocki i plastikowe pojemniki, które wydają różne dźwięki. Dzieci naśladują odgłosy jesiennego lasu: szelest liści, stukanie deszczu, wiatr i kroki po ścieżce, grając cicho lub głośno według umówionych znaków nauczyciela. Na koniec grupa tworzy krótką wspólną ilustrację dźwiękową jesiennego spaceru.\"},{\"tytul\":\"Poszukiwacze leśnych zapachów i skarbów\",\"opis\":\"Nauczyciel przygotowuje kilka zamkniętych, wyraźnie opisanych pojemników z bezpiecznymi materiałami o łagodnym zapachu, na przykład suszonymi liśćmi, igliwiem lub ziołami, oraz większe naturalne skarby do oglądania. Dzieci wąchają pojemniki z zachowaniem ostrożności, opisują zapachy i próbują dopasować je do obrazków lub materiałów pokazanych przez nauczyciela; nie dotykają zawartości nosa ani ust. Następnie segregują skarby według cechy, na przykład koloru, kształtu lub faktury, i wspólnie układają z nich leśną kolekcję.\"}]}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1488,"completion_tokens":506,"total_tokens":1994,"cost":0.00064808,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1439,"cache_write_tokens":46,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00064808,"upstream_inference_prompt_cost":0.00004088,"upstream_inference_completions_cost":0.0006072},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

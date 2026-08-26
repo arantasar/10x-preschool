@@ -15,7 +15,7 @@
 
 begin;
 
-select plan(28);
+select plan(42);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (seeded as the owner, so rls is out of the picture here by design)
@@ -255,6 +255,161 @@ select lives_ok(
 );
 
 -- ---------------------------------------------------------------------------
+-- the day's theme, and the "leave an existing day alone" refusal
+-- ---------------------------------------------------------------------------
+--
+-- own dates throughout, so nothing here disturbs the plan the assertions above
+-- were built on. same mutation discipline as the rest of this file: every
+-- assertion below was checked by breaking the thing it claims to test.
+
+insert into saved
+select 'themed', public.save_day_plan_generation(
+  date '2026-05-04',
+  'dinozaury',
+  '[{"title":"d-one","description":"opis d1"}]'::jsonb,
+  p_theme => 'tropy i slady'
+);
+
+select is(
+  (select theme from public.day_plans
+    where id = (select plan_id from saved where label = 'themed')),
+  'tropy i slady',
+  'a generation carrying a theme stores it on the plan'
+);
+
+-- the single-day route sends no theme. this is the assertion that fails when
+-- the coalesce in the upsert is replaced by a plain excluded.theme - and the
+-- failure it stands for has no runtime symptom at all: the day simply stops
+-- belonging to its week, silently, on the teacher's next regeneration.
+select lives_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-05-04', 'dinozaury inaczej',
+      '[{"title":"d-two","description":"opis d2"}]'::jsonb
+    )$$,
+  'a day with a theme can be regenerated without supplying one'
+);
+
+select is(
+  (select theme from public.day_plans
+    where id = (select plan_id from saved where label = 'themed')),
+  'tropy i slady',
+  'regenerating without a theme keeps the theme the week assigned'
+);
+
+select lives_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-05-04', 'dinozaury',
+      '[{"title":"d-three","description":"opis d3"}]'::jsonb,
+      p_theme => 'jak wygladal dinozaur'
+    )$$,
+  'a day with a theme accepts a new one'
+);
+
+select is(
+  (select theme from public.day_plans
+    where id = (select plan_id from saved where label = 'themed')),
+  'jak wygladal dinozaur',
+  'a supplied theme replaces the previous one'
+);
+
+-- the week's skip policy. it lives in the schema rather than in the island for
+-- the reason finding f1 of the s-02 review established, and it is asserted here
+-- for the same reason the u0001 refusal is: the island's view of which days are
+-- taken can be stale, and this write has no undo.
+select throws_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-05-04', 'cos zupelnie innego',
+      '[{"title":"nie-powinno","description":"opis"}]'::jsonb,
+      p_require_absent => true
+    )$$,
+  'U0002',
+  null,
+  'generating with p_require_absent over an existing day is refused'
+);
+
+-- the refusal has to abort before the upsert, which would already have bumped
+-- the counter and deleted the batch. these two say it aborted early, not late.
+select is(
+  (select current_generation::int from public.day_plans
+    where id = (select plan_id from saved where label = 'themed')),
+  3,
+  'the refused week generation leaves the counter where it was'
+);
+
+select is(
+  (select array_agg(title order by ordinal) from public.activities
+    where plan_id = (select plan_id from saved where label = 'themed')),
+  array['d-three'],
+  'the refused week generation leaves the existing batch untouched'
+);
+
+-- the positive control: without it the assertion above would read identically
+-- against a function that refuses every call carrying p_require_absent.
+select lives_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-05-05', 'dinozaury',
+      '[{"title":"d-four","description":"opis d4"}]'::jsonb,
+      p_require_absent => true,
+      p_theme => 'gniazdo i jajo'
+    )$$,
+  'generating with p_require_absent over an empty day is accepted'
+);
+
+-- the order of the two refusals, which the migration calls deliberate and the
+-- two assertions above cannot see: each of them trips exactly one guard, so
+-- swapping the two `if` blocks would leave both of them green. here both guards
+-- are armed at once - an accepted day, asked for with p_require_absent - and
+-- only the order decides the answer. u0002 is the right one: the week is not
+-- offering to replace this day, so u0001's "confirm and i will" would invite a
+-- confirmation the caller has no way to give.
+update public.day_plans
+   set accepted_at = now()
+ where id = (select plan_id from saved where label = 'themed');
+
+select throws_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-05-04', 'cos zupelnie innego',
+      '[{"title":"nie-powinno","description":"opis"}]'::jsonb,
+      p_require_absent => true
+    )$$,
+  'U0002',
+  null,
+  'an accepted day asked for with p_require_absent answers U0002, not U0001'
+);
+
+update public.day_plans
+   set accepted_at = null
+ where id = (select plan_id from saved where label = 'themed');
+
+-- the bound is the same knob as THEME_MAX in day-plan-limits.ts. the empty
+-- string is the case a nullable column would otherwise let through next to null,
+-- and null here means something specific - "this day is not part of a week".
+select throws_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-05-06', 'dinozaury',
+      '[{"title":"d-five","description":"opis d5"}]'::jsonb,
+      p_theme => ''
+    )$$,
+  '23514',
+  null,
+  'an empty theme is refused'
+);
+
+select throws_ok(
+  format(
+    $$select public.save_day_plan_generation(
+        date '2026-05-06', 'dinozaury',
+        '[{"title":"d-six","description":"opis d6"}]'::jsonb,
+        p_theme => %L
+      )$$,
+    repeat('x', 201)
+  ),
+  '23514',
+  null,
+  'a theme longer than 200 characters is refused'
+);
+
+-- ---------------------------------------------------------------------------
 -- editing content returns the plan to draft; reordering does not
 -- ---------------------------------------------------------------------------
 
@@ -374,16 +529,47 @@ select results_eq(
 -- assertion is worth keeping as the end-to-end statement, but on its own it
 -- cannot tell whether this migration's revoke line exists at all.
 
+-- the upsert writes `theme` as the caller, and 20260720162553 replaced the
+-- table-level update grant with a named column list - so a column added later
+-- reaches `authenticated` only if a migration says so. dropping the grant line
+-- from the migration turns every week generation into a 42501, which the store
+-- reports as config/500 after the model has already been paid for.
 select ok(
-  not has_function_privilege('anon', 'public.save_day_plan_generation(date, text, jsonb, boolean)', 'execute'),
+  has_column_privilege('authenticated', 'public.day_plans', 'theme', 'update'),
+  'authenticated may write the theme column'
+);
+
+select ok(
+  not has_function_privilege('anon', 'public.save_day_plan_generation(date, text, jsonb, boolean, text, boolean)', 'execute'),
   'anon holds no execute privilege on the batch writer'
 );
 
 -- the positive control: without it the assertion above would read identically
 -- against a function nobody can execute.
 select ok(
-  has_function_privilege('authenticated', 'public.save_day_plan_generation(date, text, jsonb, boolean)', 'execute'),
+  has_function_privilege('authenticated', 'public.save_day_plan_generation(date, text, jsonb, boolean, text, boolean)', 'execute'),
   'authenticated does hold execute on the batch writer'
+);
+
+-- the signature change had to be drop + create, not create or replace: the two
+-- assertions above name the six-argument signature explicitly, so a surviving
+-- four-argument overload would leave them both green while `supabase.rpc` picked
+-- between two candidates.
+--
+-- measured, like the rest of this file. deleting the `drop` from the migration
+-- does not reach this assertion: the migration itself dies on the `comment on
+-- function` that follows, with 42725 "function name is not unique". so the drop
+-- has a guard upstream of the suite, and this line is not what holds it. what
+-- this line does hold is the case that fails silently instead - a later
+-- migration, or the rollback in the plan's § migration notes, restoring the
+-- four-argument function beside the six-argument one. exactly one writer, with
+-- exactly one signature.
+select is(
+  (select count(*)::int from pg_proc
+    where proname = 'save_day_plan_generation'
+      and pronamespace = 'public'::regnamespace),
+  1,
+  'exactly one save_day_plan_generation remains, so no overload is ambiguous'
 );
 
 set local role anon;

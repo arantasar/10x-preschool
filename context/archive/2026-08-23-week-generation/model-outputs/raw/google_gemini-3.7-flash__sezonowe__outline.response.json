@@ -1,0 +1,15 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787522371-COZVKVdl7N3cejJaOKVa","object":"chat.completion","created":1787522371,"model":"google/gemini-3.7-flash","provider":"Google","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"STOP","message":{"role":"assistant","content":"{\"tematy\":[{\"dzien\":1,\"temat\":\"Kolorowe liście i drzewa – jak las zmienia się jesienią?\"},{\"dzien\":2,\"temat\":\"Skarby leśnego runa – szyszki, żołędzie, kasztany i mchy\"},{\"dzien\":3,\"temat\":\"Leśne spiżarnie – jak zwierzęta przygotowują się do zimy?\"},{\"dzien\":4,\"temat\":\"Kto mieszka pod liśćmi, a kto w koronie drzew? Domy leśnych stworzeń\"},{\"dzien\":5,\"temat\":\"Muzyka jesiennego lasu – szum wiatru, szelest liści i stukanie dzięcioła\"}]}","refusal":null,"reasoning":null,"reasoning_details":[{"type":"reasoning.text","signature":"AY89a19fwHn4ZW6DUicfRHXc9M9DhSSKYDffoWD4Rqu8Kz9fIkjxWktKtywgJsmQ53oo6xKaLORC2/+vq5trvW2OfIdCJSv0flefdIyQ","format":"google-gemini-v1","index":0}]}}],"usage":{"prompt_tokens":1299,"completion_tokens":161,"total_tokens":1460,"cost":0.000789,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.000789,"upstream_inference_prompt_cost":0.000487125,"upstream_inference_completions_cost":0.000301875},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

@@ -63,6 +63,47 @@ export interface DayPlanView {
 }
 
 // ---------------------------------------------------------------------------
+// Week and month read models
+// ---------------------------------------------------------------------------
+
+/**
+ * What `/plan/week` hands its island.
+ *
+ * A plain record rather than a `Map`, because this crosses the SSR boundary as
+ * JSON. Days with no plan are simply absent from `plans` - "this day is empty"
+ * is the absence of a key, not a null, so the island cannot confuse "no plan"
+ * with "a plan that failed to load".
+ */
+export interface WeekPlanView {
+  /** The Monday the week is addressed by. */
+  readonly weekStart: string;
+  /** The five working days, in calendar order. */
+  readonly days: readonly string[];
+  /**
+   * Saved plans, keyed by `plan_date`. Absent key means the day is free.
+   *
+   * `Partial` is load-bearing, not decoration: without it the index signature
+   * promises a `DayPlanView` for every string, and the `?? null` that turns a
+   * missing day into an empty card reads to the compiler as dead code.
+   */
+  readonly plans: Readonly<Partial<Record<string, DayPlanView>>>;
+}
+
+/**
+ * One day as the month grid needs it: enough to say "planned" or "accepted",
+ * and nothing more.
+ *
+ * Deliberately without activities. A month is up to 31 days and the grid shows
+ * none of their contents, so reading the proposals would be up to 31 batches
+ * fetched to render a coloured dot.
+ */
+export interface DayPlanSummary {
+  readonly plan_date: string;
+  readonly prompt: string;
+  readonly accepted: boolean;
+}
+
+// ---------------------------------------------------------------------------
 // Acceptance
 // ---------------------------------------------------------------------------
 
@@ -86,6 +127,20 @@ export type PlanAcceptance =
 export type ActivityDraft = Pick<ActivityInsert, "title" | "description">;
 
 /**
+ * One day's slice of a week outline: which day, and the narrowing of the hasło
+ * assigned to it.
+ *
+ * `plan_date` rather than an index, because the index only means anything next
+ * to the week it was generated for. Once the outline is split across five
+ * independent generation requests — which is how a week is generated — the date
+ * is the only thing tying a theme back to the day it belongs to.
+ */
+export interface DayTheme {
+  readonly plan_date: string;
+  readonly theme: string;
+}
+
+/**
  * Create a day plan, or replace its proposals with a fresh batch. Both are the
  * same shape: a hasło and the activities it produced.
  */
@@ -93,4 +148,20 @@ export type GenerateDayPlanCommand = Pick<DayPlanInsert, "plan_date" | "prompt">
   readonly activities: readonly ActivityDraft[];
   /** The teacher has agreed to lose the current batch and their acceptance. */
   readonly confirm_replace: boolean;
+  /**
+   * This day's slice of a week outline, when the generation came from one.
+   *
+   * Omitted rather than nulled by a single-day regeneration: the writer keeps
+   * whatever theme the day already carries when this is absent, so a day
+   * regenerated from `/plan?date=` stays pinned to its week.
+   */
+  readonly theme?: string;
+  /**
+   * Refuse rather than replace if this day already has a plan.
+   *
+   * The week generation's skip policy, enforced by the writer rather than by the
+   * caller. A week is generated from a view of which days were free, and that
+   * view can be stale by the time five parallel requests land.
+   */
+  readonly require_absent?: boolean;
 };

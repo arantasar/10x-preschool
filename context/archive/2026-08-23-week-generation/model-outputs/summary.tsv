@@ -1,0 +1,91 @@
+mode	model	keyword_id	keyword	day	http	finish_reason	elapsed_s	cost	model_used	items	reasoning_dropped	status
+outline	openai/gpt-5.6-luna	neutralne	Kolory	-	200	stop	2	0.0004899	openai/gpt-5.6-luna	5	no	ok
+day	openai/gpt-5.6-luna	neutralne	Kolory	-	200	stop	4	0.00082025	openai/gpt-5.6-luna	3	no	ok
+day-themed	openai/gpt-5.6-luna	neutralne	Kolory	1	200	stop	4	0.00050713	openai/gpt-5.6-luna	3	no	ok
+day-themed	openai/gpt-5.6-luna	neutralne	Kolory	5	200	stop	4	0.00055488	openai/gpt-5.6-luna	3	no	ok
+outline	google/gemini-3.7-flash	neutralne	Kolory	-	200	stop	5	0.001402875	google/gemini-3.7-flash	5	yes	ok
+day	google/gemini-3.7-flash	neutralne	Kolory	-	200	stop	8	0.002488875	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	neutralne	Kolory	1	200	stop	10	0.003153375	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	neutralne	Kolory	5	200	stop	10	0.003010875	google/gemini-3.7-flash	3	yes	ok
+outline	google/gemini-3.7-flash	kulturowe	Andrzejki	-	200	stop	6	0.0016635	google/gemini-3.7-flash	5	yes	ok
+day	google/gemini-3.7-flash	kulturowe	Andrzejki	-	200	stop	8	0.001999875	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	kulturowe	Andrzejki	1	200	stop	7	0.002047875	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	kulturowe	Andrzejki	5	200	stop	9	0.003234375	google/gemini-3.7-flash	3	yes	ok
+outline	google/gemini-3.7-flash	sezonowe	Jesień w lesie	-	200	stop	3	0.000789	google/gemini-3.7-flash	5	yes	ok
+day	google/gemini-3.7-flash	sezonowe	Jesień w lesie	-	200	stop	8	0.00250125	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	sezonowe	Jesień w lesie	1	200	stop	11	0.00283875	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	sezonowe	Jesień w lesie	5	200	stop	11	0.003159	google/gemini-3.7-flash	3	yes	ok
+outline	google/gemini-3.7-flash	trudne	Dzień Matki	-	200	stop	5	0.001358625	google/gemini-3.7-flash	5	yes	ok
+day	google/gemini-3.7-flash	trudne	Dzień Matki	-	200	stop	10	0.002609625	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	trudne	Dzień Matki	1	200	stop	8	0.002463	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	trudne	Dzień Matki	5	200	stop	7	0.002290125	google/gemini-3.7-flash	3	yes	ok
+outline	google/gemini-3.7-flash	abstrakcyjne	Cisza	-	200	stop	8	0.002516625	google/gemini-3.7-flash	5	yes	ok
+day	google/gemini-3.7-flash	abstrakcyjne	Cisza	-	200	stop	7	0.00186675	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	abstrakcyjne	Cisza	1	000		996			-	yes	http_000
+day-themed	google/gemini-3.7-flash	abstrakcyjne	Cisza	5	000	-	0	-	-	-	no	http_000
+outline	openai/gpt-5.6-luna	kulturowe	Andrzejki	-	000	-	0	-	-	-	no	http_000
+day	openai/gpt-5.6-luna	kulturowe	Andrzejki	-	000	-	0	-	-	-	no	http_000
+outline	openai/gpt-5.6-luna	sezonowe	Jesień w lesie	-	000	-	0	-	-	-	no	http_000
+day	openai/gpt-5.6-luna	sezonowe	Jesień w lesie	-	200	stop	8	0.00044803	openai/gpt-5.6-luna	3	no	ok
+outline	openai/gpt-5.6-luna	trudne	Dzień Matki	-	200	stop	2	0.0002307	openai/gpt-5.6-luna	5	no	ok
+day	openai/gpt-5.6-luna	trudne	Dzień Matki	-	200	stop	4	0.00045523	openai/gpt-5.6-luna	3	no	ok
+day-themed	openai/gpt-5.6-luna	trudne	Dzień Matki	1	200	stop	4	0.00047478	openai/gpt-5.6-luna	3	no	ok
+day-themed	openai/gpt-5.6-luna	trudne	Dzień Matki	5	200	stop	5	0.00059073	openai/gpt-5.6-luna	3	no	ok
+outline	openai/gpt-5.6-luna	abstrakcyjne	Cisza	-	200	stop	3	0.00026115	openai/gpt-5.6-luna	5	no	ok
+day	openai/gpt-5.6-luna	abstrakcyjne	Cisza	-	200	stop	3	0.00040793	openai/gpt-5.6-luna	3	no	ok
+day-themed	openai/gpt-5.6-luna	abstrakcyjne	Cisza	1	200	stop	5	0.00056188	openai/gpt-5.6-luna	3	no	ok
+day-themed	openai/gpt-5.6-luna	abstrakcyjne	Cisza	5	200	stop	4	0.00052373	openai/gpt-5.6-luna	3	no	ok
+outline	deepseek/deepseek-v4-flash	neutralne	Kolory	-	200	stop	3	0.000087661	deepseek/deepseek-v4-flash	5	no	ok
+day	deepseek/deepseek-v4-flash	neutralne	Kolory	-	000		937			-	no	http_000
+day-themed	deepseek/deepseek-v4-flash	neutralne	Kolory	1	200	stop	12	0.00036078	deepseek/deepseek-v4-flash	3	no	ok
+day-themed	deepseek/deepseek-v4-flash	neutralne	Kolory	5	200	stop	24	0.0001809283	deepseek/deepseek-v4-flash	3	no	ok
+outline	deepseek/deepseek-v4-flash	kulturowe	Andrzejki	-	200	stop	5	0.00007241052	deepseek/deepseek-v4-flash	5	no	ok
+day	deepseek/deepseek-v4-flash	kulturowe	Andrzejki	-	000		933			-	no	http_000
+day-themed	deepseek/deepseek-v4-flash	kulturowe	Andrzejki	1	000	-	0	-	-	-	no	http_000
+day-themed	deepseek/deepseek-v4-flash	kulturowe	Andrzejki	5	000	-	0	-	-	-	no	http_000
+outline	deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	-	000	-	0	-	-	-	no	http_000
+day	deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	-	000	-	0	-	-	-	no	http_000
+outline	deepseek/deepseek-v4-flash	trudne	Dzień Matki	-	000	-	0	-	-	-	no	http_000
+day	deepseek/deepseek-v4-flash	trudne	Dzień Matki	-	000	-	0	-	-	-	no	http_000
+outline	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	-	000	-	0	-	-	-	no	http_000
+day	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	-	000	-	0	-	-	-	no	http_000
+day-themed	google/gemini-3.7-flash	abstrakcyjne	Cisza	1	200	stop	10	0.003121125	google/gemini-3.7-flash	3	yes	ok
+day-themed	google/gemini-3.7-flash	abstrakcyjne	Cisza	5	200	stop	12	0.003360375	google/gemini-3.7-flash	3	yes	ok
+outline	openai/gpt-5.6-luna	kulturowe	Andrzejki	-	200	stop	3	0.00050455	openai/gpt-5.6-luna	5	no	ok
+day	openai/gpt-5.6-luna	kulturowe	Andrzejki	-	200	stop	5	0.00078955	openai/gpt-5.6-luna	3	no	ok
+day-themed	openai/gpt-5.6-luna	kulturowe	Andrzejki	1	200	stop	5	0.00060003	openai/gpt-5.6-luna	3	no	ok
+day-themed	openai/gpt-5.6-luna	kulturowe	Andrzejki	5	200	stop	5	0.00051558	openai/gpt-5.6-luna	3	no	ok
+outline	openai/gpt-5.6-luna	sezonowe	Jesień w lesie	-	200	stop	3	0.0002199	openai/gpt-5.6-luna	5	no	ok
+day-themed	openai/gpt-5.6-luna	sezonowe	Jesień w lesie	1	200	stop	5	0.00051603	openai/gpt-5.6-luna	3	no	ok
+day-themed	openai/gpt-5.6-luna	sezonowe	Jesień w lesie	5	200	stop	5	0.00064808	openai/gpt-5.6-luna	3	no	ok
+day	deepseek/deepseek-v4-flash	neutralne	Kolory	-	000		46			-	no	http_000
+day	deepseek/deepseek-v4-flash	kulturowe	Andrzejki	-	000		45			-	no	http_000
+day-themed	deepseek/deepseek-v4-flash	kulturowe	Andrzejki	1	200	stop	8	0.00021816	deepseek/deepseek-v4-flash	3	no	ok
+day-themed	deepseek/deepseek-v4-flash	kulturowe	Andrzejki	5	200	stop	8	0.00036736	deepseek/deepseek-v4-flash	3	no	ok
+outline	deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	-	200	stop	5	0.0001211826	deepseek/deepseek-v4-flash	5	no	ok
+day	deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	-	000		45			-	no	http_000
+day-themed	deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	1	200	stop	14	0.0003725	deepseek/deepseek-v4-flash	3	no	ok
+day-themed	deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	5	200	stop	8	0.00034482	deepseek/deepseek-v4-flash	3	no	ok
+outline	deepseek/deepseek-v4-flash	trudne	Dzień Matki	-	200	stop	4	0.000201822	deepseek/deepseek-v4-flash	5	no	ok
+day	deepseek/deepseek-v4-flash	trudne	Dzień Matki	-	000		45			-	no	http_000
+day-themed	deepseek/deepseek-v4-flash	trudne	Dzień Matki	1	200	stop	6	0.000317312	deepseek/deepseek-v4-flash	3	no	ok
+day-themed	deepseek/deepseek-v4-flash	trudne	Dzień Matki	5	200	stop	12	0.0001871114	deepseek/deepseek-v4-flash	3	no	ok
+outline	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	-	200	stop	8	0.0002772	deepseek/deepseek-v4-flash	5	no	ok
+day	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	-	200	length	35	0.0012873	deepseek/deepseek-v4-flash	-	no	truncated_budget
+day-themed	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	1	200	stop	6	0.0001879752	deepseek/deepseek-v4-flash	3	no	ok
+day-themed	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	5	200	stop	9	0.000147312	deepseek/deepseek-v4-flash	3	no	ok
+day-weekday	google/gemini-3.7-flash	neutralne	Kolory	1	200	stop	9	0.002630625	google/gemini-3.7-flash	3	yes	ok
+day-weekday	google/gemini-3.7-flash	kulturowe	Andrzejki	1	200	stop	9	0.002469375	google/gemini-3.7-flash	3	yes	ok
+day-weekday	google/gemini-3.7-flash	sezonowe	Jesień w lesie	1	200	stop	9	0.002643	google/gemini-3.7-flash	3	yes	ok
+day-weekday	google/gemini-3.7-flash	trudne	Dzień Matki	1	200	stop	11	0.0033945	google/gemini-3.7-flash	3	yes	ok
+day-weekday	google/gemini-3.7-flash	abstrakcyjne	Cisza	1	200	stop	8	0.00190125	google/gemini-3.7-flash	3	yes	ok
+day-weekday	openai/gpt-5.6-luna	neutralne	Kolory	1	200	stop	6	0.0008792	openai/gpt-5.6-luna	3	no	ok
+day-weekday	openai/gpt-5.6-luna	kulturowe	Andrzejki	1	200	stop	5	0.00054608	openai/gpt-5.6-luna	3	no	ok
+day-weekday	openai/gpt-5.6-luna	sezonowe	Jesień w lesie	1	200	stop	5	0.00051058	openai/gpt-5.6-luna	3	no	ok
+day-weekday	openai/gpt-5.6-luna	trudne	Dzień Matki	1	200	stop	4	0.00043618	openai/gpt-5.6-luna	3	no	ok
+day-weekday	openai/gpt-5.6-luna	abstrakcyjne	Cisza	1	200	stop	5	0.00044623	openai/gpt-5.6-luna	3	no	ok
+day-weekday	deepseek/deepseek-v4-flash	neutralne	Kolory	1	000		45			-	no	http_000
+day-weekday	deepseek/deepseek-v4-flash	kulturowe	Andrzejki	1	200	stop	13	0.00018279	deepseek/deepseek-v4-flash	3	no	ok
+day-weekday	deepseek/deepseek-v4-flash	sezonowe	Jesień w lesie	1	200	stop	24	0.0001944	deepseek/deepseek-v4-flash	3	no	ok
+day-weekday	deepseek/deepseek-v4-flash	trudne	Dzień Matki	1	200	stop	13	0.00034398	deepseek/deepseek-v4-flash	3	no	ok
+day-weekday	deepseek/deepseek-v4-flash	abstrakcyjne	Cisza	1	200	stop	9	0.000190237082	deepseek/deepseek-v4-flash	3	no	ok

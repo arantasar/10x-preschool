@@ -32,7 +32,17 @@ export interface DayPlanErrorBody {
   readonly retryable: boolean;
 }
 
-export function json(body: DayPlanSuccessBody | DayPlanErrorBody, status: number): Response {
+/**
+ * A success body that is not a day plan.
+ *
+ * The week outline route answers with themes and writes nothing, so it has no
+ * plan to return - but it must still answer in the same envelope, because the
+ * island has one error handler for every call it makes. Widening `json` here is
+ * what keeps that true without each route inventing its own serializer.
+ */
+export type OtherSuccessBody = Record<string, unknown>;
+
+export function json(body: DayPlanSuccessBody | DayPlanErrorBody | OtherSuccessBody, status: number): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "Content-Type": "application/json" },

@@ -112,14 +112,26 @@ export const POST: APIRoute = async (context) => {
     return unconfigured();
   }
 
-  // Asked before the model is, not after. `save_day_plan_generation` refuses an
-  // unconfirmed replacement on its own - that refusal is the enforcement point
-  // and this is not - but reaching it costs the teacher a 10-30s wait and the
-  // tokens for a batch that will never be stored. One indexed read is cheaper
-  // than finding out afterwards. The window between this check and the write is
-  // closed inside the function by `for update`, not here.
+  // Both questions are asked before the model is, not after.
+  // `save_day_plan_generation` refuses either violation on its own - that
+  // refusal is the enforcement point and this is not - but reaching it costs the
+  // teacher a 10-30s wait and the tokens for a batch that will never be stored.
+  // One indexed read is cheaper than finding out afterwards, and for a week that
+  // is five wasted generations rather than one. The window between this check
+  // and the write is closed inside the function by `for update`, not here.
   try {
     const existing = await readDayPlan(supabase, parsed.data.plan_date);
+    if (existing && parsed.data.only_if_absent) {
+      // The week generation's skip policy. Named rather than left to the
+      // category default, which talks about refreshing the page - here nothing
+      // is stale and nothing needs refreshing: the day was simply already
+      // planned, and was left exactly as it was.
+      return storeFailure(
+        new StoreError("conflict", `Plan ${parsed.data.plan_date} already exists; week generation left it alone.`, {
+          userMessage: "Ten dzień ma już plan — nie został nadpisany.",
+        }),
+      );
+    }
     if (existing?.plan.accepted_at && !parsed.data.confirm_replace) {
       return storeFailure(
         new StoreError("conflict", `Plan ${parsed.data.plan_date} is accepted; regeneration was not confirmed.`),
@@ -131,7 +143,15 @@ export const POST: APIRoute = async (context) => {
 
   let generated;
   try {
-    generated = await generateDayActivities(parsed.data.prompt);
+    // The date reaches the model now, which it did not in S-01 ("S-01 stores
+    // nothing, so the date only labels the request"). With one day that was
+    // immaterial; with five days grown from one hasło it is the difference
+    // between a week of lessons and the same lesson five times - finding F4 of
+    // the S-01 implementation review.
+    generated = await generateDayActivities(parsed.data.prompt, {
+      planDate: parsed.data.plan_date,
+      theme: parsed.data.theme,
+    });
   } catch (error) {
     return generationFailure(error);
   }
@@ -148,6 +168,8 @@ export const POST: APIRoute = async (context) => {
       prompt: parsed.data.prompt,
       activities: generated.activities,
       confirm_replace: parsed.data.confirm_replace,
+      theme: parsed.data.theme,
+      require_absent: parsed.data.only_if_absent,
     });
 
     return json(requireSaved(await readDayPlan(supabase, parsed.data.plan_date), planId), 200);

@@ -83,6 +83,7 @@ export type Database = {
           id: string
           plan_date: string
           prompt: string
+          theme: string | null
           updated_at: string
           user_id: string
         }
@@ -93,6 +94,7 @@ export type Database = {
           id?: string
           plan_date: string
           prompt: string
+          theme?: string | null
           updated_at?: string
           user_id: string
         }
@@ -103,6 +105,7 @@ export type Database = {
           id?: string
           plan_date?: string
           prompt?: string
+          theme?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -119,6 +122,8 @@ export type Database = {
           p_confirm_replace?: boolean
           p_plan_date: string
           p_prompt: string
+          p_require_absent?: boolean
+          p_theme?: string
         }
         Returns: string
       }

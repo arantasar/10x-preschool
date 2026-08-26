@@ -1,5 +1,10 @@
+import { WEEK_DAYS } from "@/lib/day-plan-limits";
+
 /**
  * Which day `/plan` is showing.
+ *
+ * S-03 added the week and the month to what "which day" can mean, but the rule
+ * is unchanged: whatever the URL says, one function decides what it resolves to.
  *
  * This moved out of the island in S-02 because the server now needs it too: the
  * page resolves `?date=` before rendering, so a saved plan is on screen in the
@@ -9,6 +14,7 @@
  */
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_MONTH = /^\d{4}-\d{2}$/;
 
 /**
  * Today as the *teacher* reckons it, not as the server does.
@@ -60,6 +66,134 @@ export function formatPlanDate(isoDate: string): string {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(`${isoDate}T00:00:00Z`));
+}
+
+/**
+ * The same calendar date, shifted by whole days.
+ *
+ * UTC throughout, which is what makes it safe: these are calendar dates, not
+ * instants, so there is no local midnight to fall the wrong side of and no DST
+ * transition to lose an hour to. `Europe/Warsaw` matters when deciding *which*
+ * day today is ({@link todayIsoDate}); it does not matter when counting days
+ * forward from one.
+ */
+export function addDays(isoDate: string, days: number): string {
+  const shifted = new Date(`${isoDate}T00:00:00Z`);
+  shifted.setUTCDate(shifted.getUTCDate() + days);
+  return shifted.toISOString().slice(0, 10);
+}
+
+/**
+ * The Monday of the week a date falls in - the day `/plan/week?from=` names.
+ *
+ * Any date in the week resolves to the same Monday, so a link built from
+ * Thursday and one built from Monday open the same page. That is deliberate:
+ * the month grid links a whole row to one week, and `?from=` should not be a
+ * value the caller has to get exactly right.
+ *
+ * Falls back to the current week rather than erroring, for the reason
+ * {@link resolvePlanDate} does - it is the function this delegates that decision
+ * to, so a mistyped query string means "this week", never an error page.
+ */
+export function resolveWeekStart(value: string | null | undefined): string {
+  const date = resolvePlanDate(value);
+  // getUTCDay(): 0 is Sunday. `(day + 6) % 7` turns that into days since Monday,
+  // which is what makes Sunday belong to the week that is ending rather than the
+  // one about to start.
+  const daysSinceMonday = (new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7;
+  return addDays(date, -daysSinceMonday);
+}
+
+/**
+ * The five working days of a week, Monday first.
+ *
+ * Weekends are absent by definition, not by filtering: S-03 generates the
+ * working week, and a teacher who needs a Saturday plans it from `/plan?date=`.
+ */
+export function workingDaysOf(weekStart: string): string[] {
+  return Array.from({ length: WEEK_DAYS }, (_unused, index) => addDays(weekStart, index));
+}
+
+/** `2026-09` — the month `/plan/month?month=` names. Falls back to this month. */
+export function resolveMonth(value: string | null | undefined): string {
+  if (value && ISO_MONTH.test(value)) {
+    const month = Number(value.slice(5, 7));
+    if (month >= 1 && month <= 12) {
+      return value;
+    }
+  }
+  return todayIsoDate().slice(0, 7);
+}
+
+/**
+ * The Mondays of every week that touches a month - the rows of the month grid.
+ *
+ * Weeks, not days, because the grid's unit of action is a week: each row links
+ * to `/plan/week?from=`. A month spans five or six such rows and the first and
+ * last routinely reach into the neighbouring months, which is why this is
+ * derived rather than assumed.
+ */
+export function weeksOfMonth(month: string): string[] {
+  const firstDay = `${month}-01`;
+  const lastDay = addDays(addMonths(month, 1), -1);
+  const weeks: string[] = [];
+  for (let monday = resolveWeekStart(firstDay); monday <= lastDay; monday = addDays(monday, 7)) {
+    weeks.push(monday);
+  }
+  return weeks;
+}
+
+/** `2026-09` shifted by whole months, as the first of that month. */
+export function addMonths(month: string, months: number): string {
+  const shifted = new Date(`${month}-01T00:00:00Z`);
+  shifted.setUTCMonth(shifted.getUTCMonth() + months);
+  return shifted.toISOString().slice(0, 10).slice(0, 7) + "-01";
+}
+
+/** `2026-09` as `wrzesień 2026`. For headings, not inputs. */
+export function formatMonth(month: string): string {
+  return new Intl.DateTimeFormat("pl-PL", { month: "long", year: "numeric", timeZone: "UTC" }).format(
+    new Date(`${month}-01T00:00:00Z`),
+  );
+}
+
+/**
+ * The working week as `14–18 września 2026`, or `28 września – 2 października
+ * 2026` when it straddles two months.
+ *
+ * The two forms exist because the short one is a lie across a month boundary,
+ * and a week heading that says `28–2 września` is worse than a long one.
+ */
+export function formatWeekRange(weekStart: string): string {
+  const days = workingDaysOf(weekStart);
+  const first = days[0];
+  const last = days[days.length - 1];
+  const sameMonth = first.slice(0, 7) === last.slice(0, 7);
+
+  const dayOnly = new Intl.DateTimeFormat("pl-PL", { day: "numeric", timeZone: "UTC" });
+  const dayAndMonth = new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long", timeZone: "UTC" });
+  const full = new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+  const start = sameMonth
+    ? dayOnly.format(new Date(`${first}T00:00:00Z`))
+    : dayAndMonth.format(new Date(`${first}T00:00:00Z`));
+  return `${start} – ${full.format(new Date(`${last}T00:00:00Z`))}`;
+}
+
+/**
+ * `2026-09-14` as `poniedziałek`. For the week board's headings and, more to the
+ * point, for the model: a day generation is told which day of the week it is
+ * planning, so five days from one hasło can differ by more than the roll of the
+ * temperature.
+ *
+ * Pinned to UTC like {@link formatPlanDate} and for the same reason — the input
+ * is a calendar date, not an instant, and reading it in the worker's zone would
+ * shift it.
+ */
+export function weekdayLabel(isoDate: string): string {
+  return new Intl.DateTimeFormat("pl-PL", { weekday: "long", timeZone: "UTC" }).format(
+    new Date(`${isoDate}T00:00:00Z`),
+  );
 }
 
 /**

@@ -1,0 +1,17 @@
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1787652903-l5U4MSS9NcoHzqeuDYe0","object":"chat.completion","created":1787652903,"model":"deepseek/deepseek-v4-flash","provider":"Venice","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\n  \"tematy\": [\n    {\n      \"dzien\": 1,\n      \"temat\": \"Kim jest moja mama? – opowiadamy o tym, co mama robi i lubi.\"\n    },\n    {\n      \"dzien\": 2,\n      \"temat\": \"Jak pomagam mamie? – codzienne drobne gesty i niespodzianki.\"\n    },\n    {\n      \"dzien\": 3,\n      \"temat\": \"Co lubi mama? – poznajemy jej ulubione kolory, kwiaty i zabawy.\"\n    },\n    {\n      \"dzien\": 4,\n      \"temat\": \"Mama w moich rysunkach – portrety i obrazy bliskich.\"\n    },\n    {\n      \"dzien\": 5,\n      \"temat\": \"Dzień Mamy w przedszkolu – wspólne świętowanie i podziękowania.\"\n    }\n  ]\n}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":1044,"completion_tokens":210,"total_tokens":1254,"cost":0.000201822,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.000201822,"upstream_inference_prompt_cost":0.000144072,"upstream_inference_completions_cost":0.00005775},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

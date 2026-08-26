@@ -1,12 +1,12 @@
 import { z } from "zod";
-import type { ActivityDraft } from "@/types";
-import { ACTIVITY_COUNT, DESCRIPTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
+import type { ActivityDraft, DayTheme } from "@/types";
+import { ACTIVITY_COUNT, DESCRIPTION_MAX, PROMPT_MAX, THEME_MAX, TITLE_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
 
 // The bounds live in `@/lib/day-plan-limits` because the React island needs them
 // too and must not pull zod into the client bundle. See that module for why they
 // are what they are.
 
-export { ACTIVITY_COUNT };
+export { ACTIVITY_COUNT, WEEK_DAYS };
 
 // ---------------------------------------------------------------------------
 // Model output
@@ -54,6 +54,56 @@ export function toActivityDrafts(proposal: DayPlanProposal): ActivityDraft[] {
 }
 
 // ---------------------------------------------------------------------------
+// Week outline
+// ---------------------------------------------------------------------------
+
+/**
+ * The week outline as the model returns it, validated after `JSON.parse`.
+ *
+ * Same division of labour as {@link dayPlanProposalSchema}: the JSON Schema in
+ * `week-outline.schema.json` steers the model, and this decides what is actually
+ * accepted. `WEEK_DAYS` is restated here for the reason `ACTIVITY_COUNT` is —
+ * `minItems`/`maxItems` are among the constructs strict mode may drop.
+ *
+ * The uniqueness check is the one this schema needs and the day's does not. Five
+ * items with `dzien` of 1, 2, 2, 4, 5 satisfy every bound in the JSON Schema and
+ * still leave Wednesday with no theme and Tuesday with two. Since the themes are
+ * mapped onto dates by their day number, that lands as a week where one day
+ * silently generates from the hasło alone — the exact failure this whole outline
+ * step exists to prevent.
+ */
+export const weekOutlineSchema = z.object({
+  tematy: z
+    .array(
+      z.object({
+        dzien: z.number().int().min(1).max(WEEK_DAYS),
+        temat: z.string().min(1).max(THEME_MAX),
+      }),
+    )
+    .length(WEEK_DAYS)
+    .refine((items) => new Set(items.map((item) => item.dzien)).size === WEEK_DAYS, {
+      message: "each working day must appear exactly once",
+    }),
+});
+
+export type WeekOutline = z.infer<typeof weekOutlineSchema>;
+
+/**
+ * Pins each theme to the date it belongs to.
+ *
+ * Sorted by `dzien` rather than trusting array order: the schema guarantees the
+ * five numbers are distinct, not that the model listed them in order, and an
+ * out-of-order response would otherwise pin Friday's theme to Monday.
+ *
+ * `dates` is the working week in calendar order, so `dzien - 1` indexes it.
+ */
+export function toDayThemes(outline: WeekOutline, dates: readonly string[]): DayTheme[] {
+  return [...outline.tematy]
+    .sort((left, right) => left.dzien - right.dzien)
+    .map((item, index) => ({ plan_date: dates[index], theme: item.temat }));
+}
+
+// ---------------------------------------------------------------------------
 // Route input
 // ---------------------------------------------------------------------------
 
@@ -70,9 +120,35 @@ export const generateDayPlanRequestSchema = z.object({
   // request that simply omits it, gets the refusal rather than the deletion -
   // the schema enforces it either way (`save_day_plan_generation`, U0001).
   confirm_replace: z.boolean().default(false),
+  // This day's slice of a week outline. Optional rather than nullable: absent
+  // means "keep whatever theme this day already has", which is exactly what a
+  // single-day regeneration from `/plan?date=` means. A nullable field would
+  // let an older client erase the theme by sending null.
+  theme: z.string().min(1).max(THEME_MAX).optional(),
+  // The week generation's skip policy: refuse rather than replace a day that is
+  // already planned. Defaults to false, so the single-day route keeps its
+  // existing behaviour and only a caller that opts in gets the refusal
+  // (`save_day_plan_generation`, U0002).
+  only_if_absent: z.boolean().default(false),
 });
 
 export type GenerateDayPlanRequest = z.infer<typeof generateDayPlanRequestSchema>;
+
+/**
+ * The week outline route's request body.
+ *
+ * The dates travel with the hasło rather than being derived server-side from a
+ * week start, because the model is shown them: it plans "poniedziałek, 14
+ * września" and not "day 1". Held to `WEEK_DAYS` so a caller cannot ask for a
+ * three-day or ten-day outline that the schema downstream would then refuse
+ * after the model had already been paid for.
+ */
+export const weekOutlineRequestSchema = z.object({
+  prompt: z.string().min(1).max(PROMPT_MAX),
+  dates: z.array(z.iso.date()).length(WEEK_DAYS),
+});
+
+export type WeekOutlineRequest = z.infer<typeof weekOutlineRequestSchema>;
 
 /**
  * The edit route's request body (FR-008).
