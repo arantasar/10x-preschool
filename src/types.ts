@@ -95,12 +95,21 @@ export interface WeekPlanView {
  *
  * Deliberately without activities. A month is up to 31 days and the grid shows
  * none of their contents, so reading the proposals would be up to 31 batches
- * fetched to render a coloured dot.
+ * fetched to render a coloured dot. The theme is the exception that proves the
+ * shape: one more column of the same row, not a second read.
  */
 export interface DayPlanSummary {
   readonly plan_date: string;
   readonly prompt: string;
   readonly accepted: boolean;
+  /**
+   * This day's slice of a week outline, or `null` when it has none.
+   *
+   * `null` is a permanent, valid state rather than missing data - a day planned
+   * on its own from `/plan?date=` never gets a theme and never will. Consumers
+   * fall back to showing the hasło alone; none of them flags the absence.
+   */
+  readonly theme: string | null;
 }
 
 // ---------------------------------------------------------------------------
