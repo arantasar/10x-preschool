@@ -226,7 +226,7 @@ Brak migracji. Kolumna `theme`, CHECK `day_plans_theme_length` i granty kolumnow
 - [x] 1.9 Wysokość kafelka wystarczająca dla dwóch linii (rozstrzygnięcie `min-h-16` vs `min-h-18`) — b655827
 - [x] 1.10 Kafelki w wierszu tygodnia mają równą wysokość mimo mieszania dni z tematem i bez — b655827
 - [x] 1.11 Tooltip pokazuje pełne „hasło — temat" — b655827
-- [x] 1.12 Nazwa dostępna czyta hasło i temat przed statusem — b655827 (przyjęte na podstawie inspekcji kodu, nie obserwacji z czytnikiem ekranu — przegląd F3)
+- [x] 1.12 Nazwa dostępna czyta hasło i temat przed statusem (przyjęte na podstawie inspekcji kodu, nie obserwacji z czytnikiem ekranu — przegląd F3) — b655827
 - [x] 1.13 Miesiąc z sześcioma wierszami mieści się na ekranie laptopa — b655827
 - [x] 1.14 Legenda i przycisk „Zaplanuj tydzień" nie rozjechały się — b655827
 
@@ -245,5 +245,5 @@ Brak migracji. Kolumna `theme`, CHECK `day_plans_theme_length` i granty kolumnow
 - [x] 2.6 Nagłówek dnia pokazuje ten sam tekst co kafelek w siatce — 6e004a4
 - [x] 2.7 Dzień bez tematu ma nagłówek jak przed zmianą — 6e004a4
 - [x] 2.8 Regeneracja z `/plan?date=` nie usuwa podtytułu po odświeżeniu — 6e004a4
-- [x] 2.9 Stan `readFailed` bez śladu po podtytule — 6e004a4 (przyjęte na podstawie inspekcji kodu: przy `readFailed` `initialPlan` jest `null`, więc warunek nic nie renderuje — przegląd F3)
+- [x] 2.9 Stan `readFailed` bez śladu po podtytule (przyjęte na podstawie inspekcji kodu: przy `readFailed` `initialPlan` jest `null`, więc warunek nic nie renderuje — przegląd F3) — 6e004a4
 - [x] 2.10 Miesiąc, tydzień i dzień pokazują dla tego samego dnia ten sam tekst — 6e004a4
