@@ -2,7 +2,7 @@
 
 ## Git
 
-**Every product slice from S-03 (`week-generation`) onwards starts on a feature branch.** Before the *first* commit of a new change, run `git branch --show-current`; if it says `master`, branch first. This is not conditional on the size of the change.
+**Every product slice from S-03 (`week-generation`) onwards starts on a feature branch.** Before the _first_ commit of a new change, run `git branch --show-current`; if it says `master`, branch first. This is not conditional on the size of the change.
 
 F-01 and earlier work was committed straight to `master` by design. S-01 and S-02 were not — they landed on `master` against the convention and it went unnoticed until the S-02 implementation review, which is why the rule is written down here rather than left as a habit.
 
@@ -72,11 +72,17 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 - Local Supabase: `npx supabase start` (requires Docker)
 
-- Deploy: `npx wrangler deploy` (requires Cloudflare account + `wrangler` auth)
+- Manual deploy: `npx wrangler deploy` (requires Cloudflare account + `wrangler` auth). Rarely needed — see the CI section: `master` deploys itself.
 
 ## CI
 
-See `@.github/workflows/ci.yml`. Requires `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
+**Two independent systems watch this repo, and only one of them is in `.github/`.**
+
+1. **GitHub Actions** — `@.github/workflows/ci.yml`, on push to `master` and on PRs against it. Runs `npm ci`, `astro sync`, `npm run lint`, `npm run build`. Requires `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step. **Does not deploy.**
+
+2. **Cloudflare Workers Builds** — connected to the repo through the Cloudflare dashboard, not through a file in this repo. It builds and **deploys the `10x-preschool` worker to `production`** when `master` changes, and posts a `Workers Builds: 10x-preschool` check on PRs. There is no YAML for it here; `wrangler.jsonc` only names the worker.
+
+**Merging to `master` ships to production.** Nothing else has to be run, and there is no approval step between the merge and the live worker. Reading `ci.yml` alone gives the opposite impression — it has no deploy step — which is exactly the trap: the deploy lives outside the repo. Treat a `master` merge as a release, not as an integration.
 
 <!-- BEGIN @przeprogramowani/10x-cli -->
 
@@ -98,24 +104,24 @@ PRD + roadmap + archive
 
 ### Task Router - Where to start
 
-| Skill | Use it when |
-| --- | --- |
-| **Quality strategy as a rules-file (lesson focus)** | |
-| `/10x-test-plan` | You have a PRD (and ideally a roadmap and a few archived slices) and you are about to write the project's first tests, or you noticed that AI-generated tests are landing on helpers while critical flows go uncovered. First invocation runs discovery (PRD + roadmap + archive + hot-spot scan), a 5-question user interview, and a synthesis pass with a mandatory challenger check, then writes `test-plan.md` in `context/foundation/` with a risk map (5–7 failure scenarios), a phased rollout table, a stack table, a quality-gates table, a cookbook section (`§6`, fills in as phases ship), and a negative-space section (what we deliberately don't test). Subsequent invocations advance the rollout one handoff at a time. |
-| `/10x-test-plan --status` | A `test-plan.md` already exists and you want a compact snapshot of where the rollout stands — which phases are `not started`, `change opened`, `researched`, `planned`, `implementing`, or `complete`, and what the next action is. Does no work; safe to run any time. |
-| `/10x-test-plan --refresh` | A `test-plan.md` already exists and one of: a new top-3 risk surfaced from the roadmap or archive, a tool's `checked:` date is older than three months, the project's tech stack changed, or §7 negative-space no longer matches what the team believes. Opens a new `test-plan-refresh-<YYYY-MM-DD>` change folder rather than editing the guide in place. |
+| Skill                                               | Use it when                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Quality strategy as a rules-file (lesson focus)** |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `/10x-test-plan`                                    | You have a PRD (and ideally a roadmap and a few archived slices) and you are about to write the project's first tests, or you noticed that AI-generated tests are landing on helpers while critical flows go uncovered. First invocation runs discovery (PRD + roadmap + archive + hot-spot scan), a 5-question user interview, and a synthesis pass with a mandatory challenger check, then writes `test-plan.md` in `context/foundation/` with a risk map (5–7 failure scenarios), a phased rollout table, a stack table, a quality-gates table, a cookbook section (`§6`, fills in as phases ship), and a negative-space section (what we deliberately don't test). Subsequent invocations advance the rollout one handoff at a time. |
+| `/10x-test-plan --status`                           | A `test-plan.md` already exists and you want a compact snapshot of where the rollout stands — which phases are `not started`, `change opened`, `researched`, `planned`, `implementing`, or `complete`, and what the next action is. Does no work; safe to run any time.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `/10x-test-plan --refresh`                          | A `test-plan.md` already exists and one of: a new top-3 risk surfaced from the roadmap or archive, a tool's `checked:` date is older than three months, the project's tech stack changed, or §7 negative-space no longer matches what the team believes. Opens a new `test-plan-refresh-<YYYY-MM-DD>` change folder rather than editing the guide in place.                                                                                                                                                                                                                                                                                                                                                                              |
 
 ### Rollout chain — what happens after the guide is written
 
-The guide's §3 *Phased Rollout* table is the orchestrator's state. For each non-`complete` row the orchestrator selects the next handoff based on which artifacts exist in `context/changes/<change-id>/`:
+The guide's §3 _Phased Rollout_ table is the orchestrator's state. For each non-`complete` row the orchestrator selects the next handoff based on which artifacts exist in `context/changes/<change-id>/`:
 
-| State on disk | Next handoff | Status transitions to |
-| --- | --- | --- |
-| change folder missing | `/10x-new <change-id>` | `change opened` |
-| `change.md` only | `/10x-research` (with a risks-to-verify brief) | `researched` |
-| `+ research.md` | `/10x-plan` (with cost × signal + cookbook-update constraints) | `planned` |
-| `+ plan.md` with pending `## Progress` items | `/10x-implement <change-id> phase <N>` | `implementing` / `complete` |
-| `+ plan.md` fully `[x]` | Mark §3 row `complete`; loop to next pending row | — |
+| State on disk                                | Next handoff                                                   | Status transitions to       |
+| -------------------------------------------- | -------------------------------------------------------------- | --------------------------- |
+| change folder missing                        | `/10x-new <change-id>`                                         | `change opened`             |
+| `change.md` only                             | `/10x-research` (with a risks-to-verify brief)                 | `researched`                |
+| `+ research.md`                              | `/10x-plan` (with cost × signal + cookbook-update constraints) | `planned`                   |
+| `+ plan.md` with pending `## Progress` items | `/10x-implement <change-id> phase <N>`                         | `implementing` / `complete` |
+| `+ plan.md` fully `[x]`                      | Mark §3 row `complete`; loop to next pending row               | —                           |
 
 Each handoff is a **STOP point**. The orchestrator copies the next command to the clipboard, asks the user to `/clear` and run it, then exits. Re-invoke `/10x-test-plan` (no arguments) to advance.
 
@@ -125,7 +131,7 @@ Each handoff is a **STOP point**. The orchestrator copies the next command to th
 - 5 to 7 risks. Fewer is too coarse; more makes prioritization useless.
 - Impact and likelihood are user/business ratings, not technical complexity.
 - Every risk traces to a source: PRD section, archived slice, roadmap entry, Phase 2 interview question, hot-spot **directory** with churn count, or a tech-stack constraint. No invented risks.
-- **Signal, not knowledge.** §2 cites *evidence that raised the risk*, never a file as "where the failure lives." File:line anchors, function names, schema names, and module names are forbidden in §2 — they belong in `/10x-research`'s output, produced per rollout phase against current code. The plan is a QA spec; it is not a code audit.
+- **Signal, not knowledge.** §2 cites _evidence that raised the risk_, never a file as "where the failure lives." File:line anchors, function names, schema names, and module names are forbidden in §2 — they belong in `/10x-research`'s output, produced per rollout phase against current code. The plan is a QA spec; it is not a code audit.
 - Coverage is not the metric. **Risk coverage** is the metric.
 
 ### Dual-layer mapping rules
