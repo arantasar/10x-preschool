@@ -14,6 +14,14 @@ const { supabase } = Astro.locals;
 // bookmark and the back button all mean the same day.
 const planDate = resolvePlanDate(Astro.url.searchParams.get("date"));
 
+// The plan is also what the header's subtitle comes from. Rendering the theme
+// as static SSR text - rather than passing it into the island - is safe rather
+// than lucky: this page never sends a theme when it regenerates (DayPlanEditor
+// posts plan_date, prompt and confirm_replace, nothing else) and the writer's
+// coalesce keeps the stored one. From `/plan?date=` the theme therefore cannot
+// change, so the line cannot go stale. A day without one renders nothing, which
+// is the same silence the month tile and the week board keep.
+//
 // "No plan" and "could not read the plan" are different answers and must not
 // render the same way. Collapsing them showed the empty-day state - an invitation
 // to generate - on a day that may hold an accepted plan, and generating from
@@ -43,6 +51,8 @@ if (supabase) {
           Plan dnia
         </h1>
         <p class="mt-1 text-lg text-blue-100">{formatPlanDate(planDate)}</p>
+        {/* The day's theme - see the note on `initialPlan` above. */}
+        {initialPlan?.plan.theme && <p class="mt-1 text-purple-200/90">{initialPlan.plan.theme}</p>}
         {
           !readFailed && (
             <p class="mt-2 text-blue-100/80">

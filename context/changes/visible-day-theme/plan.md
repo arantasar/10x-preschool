@@ -212,12 +212,12 @@ Brak migracji. Kolumna `theme`, CHECK `day_plans_theme_length` i granty kolumnow
 
 #### Automated
 
-- [x] 1.1 Lint przechodzi: `npm run lint`
-- [x] 1.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [x] 1.3 Build produkcyjny przechodzi: `npm run build`
-- [x] 1.4 Odczyt miesiąca niesie temat (`grep` na `select` w `day-plan-store.ts`)
-- [x] 1.5 Tablica tygodnia nietknięta (`git diff --name-only` bez `WeekDayCard.tsx` i `WeekPlanBoard.tsx`)
-- [x] 1.6 Brak placeholdera dla dnia bez tematu (`grep` na `MonthGrid.astro`)
+- [x] 1.1 Lint przechodzi: `npm run lint` — b655827
+- [x] 1.2 Typy i szablony Astro przechodzą: `npx astro check` — b655827
+- [x] 1.3 Build produkcyjny przechodzi: `npm run build` — b655827
+- [x] 1.4 Odczyt miesiąca niesie temat (`grep` na `select` w `day-plan-store.ts`) — b655827
+- [x] 1.5 Tablica tygodnia nietknięta (`git diff --name-only` bez `WeekDayCard.tsx` i `WeekPlanBoard.tsx`) — b655827
+- [x] 1.6 Brak placeholdera dla dnia bez tematu (`grep` na `MonthGrid.astro`) — b655827
 
 #### Manual
 
@@ -234,11 +234,11 @@ Brak migracji. Kolumna `theme`, CHECK `day_plans_theme_length` i granty kolumnow
 
 #### Automated
 
-- [ ] 2.1 Lint przechodzi: `npm run lint`
-- [ ] 2.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [ ] 2.3 Build produkcyjny przechodzi: `npm run build`
-- [ ] 2.4 Wyspa nietknięta (`git diff --name-only` bez `DayPlanEditor.tsx`)
-- [ ] 2.5 Temat renderowany warunkowo (`grep` na `plan.astro`)
+- [x] 2.1 Lint przechodzi: `npm run lint`
+- [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check`
+- [x] 2.3 Build produkcyjny przechodzi: `npm run build`
+- [x] 2.4 Wyspa nietknięta (`git diff --name-only` bez `DayPlanEditor.tsx`)
+- [x] 2.5 Temat renderowany warunkowo (`grep` na `plan.astro`)
 
 #### Manual
 
