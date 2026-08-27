@@ -45,17 +45,17 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 
 ## At a glance
 
-| ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status      |
-| ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | ----------- |
-| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done        |
-| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done        |
-| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done        |
-| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done        |
-| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | done        |
-| S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | ready       |
-| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done        |
-| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | blocked     |
-| S-08 | visible-day-theme         | odróżnić dni jednego hasła po podtytule dnia w miesiącu i w dniu   | S-03, S-04    | FR-004, US-01 (brak FR — pyt. 3)                      | in-progress |
+| ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status  |
+| ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | ------- |
+| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done    |
+| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done    |
+| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done    |
+| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done    |
+| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | done    |
+| S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | ready   |
+| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done    |
+| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | blocked |
+| S-08 | visible-day-theme         | odróżnić dni jednego hasła po podtytule dnia w miesiącu i w dniu   | S-03, S-04    | FR-004, US-01 (brak FR — pyt. 3)                      | done    |
 
 ## Streams
 
@@ -209,7 +209,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Co pokazuje kafelek dnia, który tematu nie ma — dzień wygenerowany pojedynczo z `/plan?date=`, bez przejścia przez szkic tygodnia, nigdy go nie dostał. Owner: Janusz. Block: nie — wariant domyślny to zachowanie dzisiejsze (hasło jako jedyna linia); decyzja o kształcie należy do `/10x-plan`.
 - **Zakres ustalony 2026-08-26 (user):** slice jest **wyłącznie odczytowy**. Generator i prompty zostają nietknięte — szkic tygodnia już produkuje pięć rozłącznych ujęć hasła i już zapisuje je w wierszu planu; brakuje wyłącznie ich pokazania poza tablicą tygodnia. Dwa rozszerzenia zostały jawnie odrzucone przy wyborze zakresu i **nie wchodzą** do tego slice'a: (1) nadanie tematu dniowi generowanemu pojedynczo — wymagałoby dotknięcia ścieżki generowania dnia i promptu; (2) iteracja jakościowa na promptcie szkicu tygodnia, żeby tematy lepiej czytały się jako podtytuł. Oba pozostają otwarte jako możliwa przyszła pozycja, żadne nie blokuje tego slice'a.
 - **Risk:** Najtańsza pozycja w roadmapie i jedyna czysto odczytowa — cała treść już istnieje, więc ryzyko nie leży w generowaniu, tylko w niespójności ekranów. Trzy znane ostrza. **(1) Temat jest nullowalny i to nie jest przypadek brzegowy, tylko normalny stan** — dzień wygenerowany poza tygodniem nigdy tematu nie miał, a dzień, którego generowanie w tygodniu padło, nie ma nawet wiersza (szkic tygodnia świadomie nic nie zapisuje — patrz komentarz projektowy w trasie szkicu). Każda powierzchnia musi mieć zdefiniowane zachowanie dla braku tematu, inaczej kafelek traci linię tekstu, którą dziś ma. **(2) Tablica tygodnia pokazuje temat już dziś** i robi to z dwóch źródeł — z zapisanego planu albo z kopii trzymanej w wyspie — więc nowe powierzchnie muszą pokazywać to samo co ona, a nie własną interpretację; rozjazd między tygodniem a miesiącem byłby gorszy niż dzisiejsze pięć razy „Dinozaury". **(3) To ta sama ścieżka odczytu miesiąca, którą `S-05` będzie musiał nauczyć skreślenia miękkiego, a `S-07` rozszerzyć o aktywności** — trzy slice'y dokładają do jednego zapytania, więc kolejność ma znaczenie. `S-08` idzie pierwszy, bo ustala, co kafelek pokazuje w stanie spoczynku, zanim `S-07` zdecyduje, co pokazuje po interakcji.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -250,3 +250,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-03: Nauczyciel może wybrać tydzień i wygenerować propozycję dla każdego dnia roboczego, a regeneracja jednego dnia nie wpływa na pozostałe (pełna US-01).** — Archived 2026-08-26 → `context/archive/2026-08-23-week-generation/`. Lesson: —.
 - **S-06: Nauczyciel może wylogować się z aplikacji z dowolnego ekranu, na którym pracuje, a nie tylko ze strony startowej dla niezalogowanych (FR-003).** — Delivered 2026-08-26 wewnątrz `S-04` (`month-home`, faza 1: `src/components/AppHeader.astro`); bez własnego change-id i bez własnego archiwum. Lesson: —.
 - **S-04: Zalogowany nauczyciel po wejściu do aplikacji ląduje w widoku miesiąca i z niego wchodzi w tydzień oraz w pojedynczy dzień — bez osobnego pulpitu jako przystanku.** — Archived 2026-08-26 → `context/archive/2026-08-26-month-home/`. Lesson: —.
+- **S-08: Nauczyciel odróżnia od siebie dni jednego hasła bez wchodzenia w każdy z nich — kafelek w siatce miesiąca i nagłówek widoku dnia pokazują podtytuł dnia („Dinozaury — co jadły dinozaury"), a nie pięć razy to samo hasło.** — Archived 2026-08-27 → `context/archive/2026-08-27-visible-day-theme/`. Lesson: „Kryterium weryfikacji musi móc nie przejść".

@@ -1,10 +1,10 @@
 ---
 change_id: visible-day-theme
 title: Visible day theme
-status: impl_reviewed
+status: archived
 created: 2026-08-27
 updated: 2026-08-27
-archived_at: null
+archived_at: 2026-08-27T19:55:07Z
 ---
 
 ## Notes
