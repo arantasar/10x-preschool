@@ -111,7 +111,7 @@ Temat dociera z bazy do kafelka i jest na nim widoczny — jako druga linia, w t
 - Typy i szablony Astro przechodzą: `npx astro check`
 - Build produkcyjny przechodzi: `npm run build`
 - Odczyt miesiąca niesie temat: `grep -n 'plan_date, prompt, accepted_at, theme' src/lib/services/day-plan-store.ts` zwraca trafienie
-- Tablica tygodnia nietknięta: `git diff --name-only` nie zawiera `src/components/plan/WeekDayCard.tsx` ani `src/components/plan/WeekPlanBoard.tsx`
+- Tablica tygodnia nietknięta: `git diff --name-only master..HEAD` nie zawiera `src/components/plan/WeekDayCard.tsx` ani `src/components/plan/WeekPlanBoard.tsx`
 - Brak placeholdera dla dnia bez tematu: `grep -rn 'bez tematu\|brak tematu' src/components/plan/MonthGrid.astro` zwraca pusto
 
 #### Manual Verification:
@@ -154,7 +154,7 @@ Wejście w dzień pokazuje ten sam temat co kafelek, pod datą w nagłówku.
 - Lint przechodzi: `npm run lint`
 - Typy i szablony Astro przechodzą: `npx astro check`
 - Build produkcyjny przechodzi: `npm run build`
-- Wyspa nietknięta: `git diff --name-only` nie zawiera `src/components/plan/DayPlanEditor.tsx`
+- Wyspa nietknięta: `git diff --name-only master..HEAD` nie zawiera `src/components/plan/DayPlanEditor.tsx`
 - Temat renderowany warunkowo: `grep -n 'plan.theme' src/pages/plan.astro` zwraca trafienie
 
 #### Manual Verification:
@@ -216,7 +216,7 @@ Brak migracji. Kolumna `theme`, CHECK `day_plans_theme_length` i granty kolumnow
 - [x] 1.2 Typy i szablony Astro przechodzą: `npx astro check` — b655827
 - [x] 1.3 Build produkcyjny przechodzi: `npm run build` — b655827
 - [x] 1.4 Odczyt miesiąca niesie temat (`grep` na `select` w `day-plan-store.ts`) — b655827
-- [x] 1.5 Tablica tygodnia nietknięta (`git diff --name-only` bez `WeekDayCard.tsx` i `WeekPlanBoard.tsx`) — b655827
+- [x] 1.5 Tablica tygodnia nietknięta (`git diff --name-only master..HEAD` bez `WeekDayCard.tsx` i `WeekPlanBoard.tsx`) — b655827
 - [x] 1.6 Brak placeholdera dla dnia bez tematu (`grep` na `MonthGrid.astro`) — b655827
 
 #### Manual
@@ -226,7 +226,7 @@ Brak migracji. Kolumna `theme`, CHECK `day_plans_theme_length` i granty kolumnow
 - [x] 1.9 Wysokość kafelka wystarczająca dla dwóch linii (rozstrzygnięcie `min-h-16` vs `min-h-18`) — b655827
 - [x] 1.10 Kafelki w wierszu tygodnia mają równą wysokość mimo mieszania dni z tematem i bez — b655827
 - [x] 1.11 Tooltip pokazuje pełne „hasło — temat" — b655827
-- [x] 1.12 Nazwa dostępna czyta hasło i temat przed statusem — b655827
+- [x] 1.12 Nazwa dostępna czyta hasło i temat przed statusem — b655827 (przyjęte na podstawie inspekcji kodu, nie obserwacji z czytnikiem ekranu — przegląd F3)
 - [x] 1.13 Miesiąc z sześcioma wierszami mieści się na ekranie laptopa — b655827
 - [x] 1.14 Legenda i przycisk „Zaplanuj tydzień" nie rozjechały się — b655827
 
@@ -237,7 +237,7 @@ Brak migracji. Kolumna `theme`, CHECK `day_plans_theme_length` i granty kolumnow
 - [x] 2.1 Lint przechodzi: `npm run lint` — 6e004a4
 - [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check` — 6e004a4
 - [x] 2.3 Build produkcyjny przechodzi: `npm run build` — 6e004a4
-- [x] 2.4 Wyspa nietknięta (`git diff --name-only` bez `DayPlanEditor.tsx`) — 6e004a4
+- [x] 2.4 Wyspa nietknięta (`git diff --name-only master..HEAD` bez `DayPlanEditor.tsx`) — 6e004a4
 - [x] 2.5 Temat renderowany warunkowo (`grep` na `plan.astro`) — 6e004a4
 
 #### Manual
@@ -245,5 +245,5 @@ Brak migracji. Kolumna `theme`, CHECK `day_plans_theme_length` i granty kolumnow
 - [x] 2.6 Nagłówek dnia pokazuje ten sam tekst co kafelek w siatce — 6e004a4
 - [x] 2.7 Dzień bez tematu ma nagłówek jak przed zmianą — 6e004a4
 - [x] 2.8 Regeneracja z `/plan?date=` nie usuwa podtytułu po odświeżeniu — 6e004a4
-- [x] 2.9 Stan `readFailed` bez śladu po podtytule — 6e004a4
+- [x] 2.9 Stan `readFailed` bez śladu po podtytule — 6e004a4 (przyjęte na podstawie inspekcji kodu: przy `readFailed` `initialPlan` jest `null`, więc warunek nic nie renderuje — przegląd F3)
 - [x] 2.10 Miesiąc, tydzień i dzień pokazują dla tego samego dnia ten sam tekst — 6e004a4
