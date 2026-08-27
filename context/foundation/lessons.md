@@ -22,3 +22,10 @@
 - **Problem**: Wynik DeepSeeka z Fazy 5 S-01 jest dowodem, że model przechodzi każdą automatyczną kontrolę w slice — JSON Schema, `dayPlanProposalSchema`, `jq aktywnosci | length == 3` — i mimo to proponuje roztopiony wosk dzieciom 3–6 lat. Jedyną warstwą, która to łapie, jest prompt, a jedynym narzędziem, które go sprawdza, jest jednorazowy skrypt poza CI. Edycja promptu albo podmiana `OPENROUTER_MODEL` może więc cofnąć bezpieczeństwo przy zerowym sygnale.
 - **Rule**: Jeśli prompt jest jedyną warstwą bezpieczeństwa treści, bramka jakości musi obejmować każdy model dopuszczony do konfiguracji — nie tylko wybrany — a każda zmiana promptu lub domyślnego modelu wymaga ponownego przebiegu tej bramki przed scaleniem.
 - **Applies to**: plan, plan-review, implement, impl-review
+
+## Kryterium weryfikacji musi móc nie przejść
+
+- **Context**: Kryteria sukcesu w `plan.md`, które sprawdzają **nieobecność** czegoś — że plik nie został dotknięty, że wzorzec nie występuje, że formatowanie się nie rozjechało.
+- **Problem**: Kryterium sformułowane bez zakresu przechodzi bezwarunkowo w momencie, w którym rytuał je uruchamia. `git diff --name-only` bez zakresu porównuje drzewo robocze z HEAD, więc po commicie fazy zwraca pusto i każdy grep na nim jest zielony niezależnie od faktów (`visible-day-theme`, 1.5 i 2.4). `prettier --check` na `context/` przechodzi bezwarunkowo, bo `.prettierignore` wyklucza ten katalog w całości (`month-home`, F4). W obu wypadkach wniosek był prawdziwy przez przypadek, a bramka nie sprawdzała niczego — i w obu wypadkach zauważył to dopiero przegląd implementacyjny.
+- **Rule**: Zanim kryterium „czegoś nie ma" trafi do planu, upewnij się, że **potrafi nie przejść**: uruchom je na stanie, w którym naruszenie istnieje, albo zapisz w treści kryterium zakres, który to gwarantuje (`git diff --name-only master..HEAD`, nie `git diff --name-only`). Kryterium, którego nikt nie widział na czerwono, jest komentarzem, nie bramką.
+- **Applies to**: plan, plan-review, implement, impl-review

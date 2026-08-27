@@ -454,7 +454,7 @@ export async function readMonthSummary(
 ): Promise<DayPlanSummary[]> {
   const { data, error } = await supabase
     .from("day_plans")
-    .select("plan_date, prompt, accepted_at")
+    .select("plan_date, prompt, accepted_at, theme")
     .gte("plan_date", fromDate)
     .lte("plan_date", toDate)
     .order("plan_date");
@@ -467,5 +467,6 @@ export async function readMonthSummary(
     plan_date: row.plan_date,
     prompt: row.prompt,
     accepted: row.accepted_at !== null,
+    theme: row.theme,
   }));
 }

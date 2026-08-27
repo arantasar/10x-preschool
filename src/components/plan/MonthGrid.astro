@@ -28,6 +28,51 @@ const WEEKDAY_HEADS = ["pon", "wt", "śr", "czw", "pt", "sob", "nd"];
 function dayNumber(isoDate: string): string {
   return String(Number(isoDate.slice(8, 10)));
 }
+
+/**
+ * How much of the hasło or the theme the accessible name carries.
+ *
+ * The tooltip is bounded by the screen and by the reader dismissing it; a
+ * screen reader is bounded by neither, and reads the whole name before the
+ * teacher can act on the tile. `PROMPT_MAX` is 2000 and nothing narrower stands
+ * between the textarea and this string, so the bound has to live here.
+ */
+const LABEL_PART_MAX = 80;
+
+function clipForLabel(text: string): string {
+  return text.length <= LABEL_PART_MAX ? text : `${text.slice(0, LABEL_PART_MAX - 1).trimEnd()}…`;
+}
+
+function joinText(prompt: string, theme: string | null): string {
+  return theme === null ? prompt : `${prompt} — ${theme}`;
+}
+
+/**
+ * Hasło and theme as one string, for the tooltip - in full.
+ *
+ * Both tile lines clip at roughly a dozen characters, so this is where the
+ * whole text survives.
+ */
+function tileText(summary: DayPlanSummary): string {
+  return joinText(summary.prompt, summary.theme);
+}
+
+/**
+ * The tile's accessible name: which day, what is on it, and what state it is in.
+ *
+ * The content sits before the state on purpose - a teacher tabbing across a
+ * planned week wants to hear which day is which, and "zaakceptowany" is the
+ * qualifier on that, not the headline. Each member is clipped: the name is read
+ * aloud in full, so an unbounded hasło would bury the state at the end of a
+ * paragraph. The tooltip keeps the untruncated text.
+ */
+function tileLabel(isoDate: string, summary: DayPlanSummary | undefined): string {
+  if (!summary) {
+    return `Plan na ${isoDate} — brak planu`;
+  }
+  const content = joinText(clipForLabel(summary.prompt), summary.theme === null ? null : clipForLabel(summary.theme));
+  return `Plan na ${isoDate} — ${content} — ${summary.accepted ? "zaakceptowany" : "roboczy"}`;
+}
 ---
 
 <div class="space-y-3">
@@ -59,9 +104,9 @@ function dayNumber(isoDate: string): string {
               return (
                 <a
                   href={`/plan?date=${date}`}
-                  aria-label={`Plan na ${date}${summary ? (summary.accepted ? " — zaakceptowany" : " — roboczy") : " — brak planu"}`}
+                  aria-label={tileLabel(date, summary)}
                   class:list={[
-                    "flex min-h-14 flex-col justify-between rounded-lg border p-1.5 transition-colors",
+                    "flex min-h-16 flex-col justify-between rounded-lg border p-1.5 transition-colors",
                     summary?.accepted && "border-emerald-400/40 bg-emerald-500/15 hover:bg-emerald-500/25",
                     summary && !summary.accepted && "border-purple-400/40 bg-purple-500/15 hover:bg-purple-500/25",
                     !summary && "border-white/10 bg-white/5 hover:bg-white/10",
@@ -73,9 +118,17 @@ function dayNumber(isoDate: string): string {
                     {dayNumber(date)}
                   </span>
                   {summary && (
-                    <span class="truncate text-[10px] leading-tight text-blue-100/70" title={summary.prompt}>
-                      {summary.prompt}
-                    </span>
+                    // The hasło is dimmed and the theme is not: five days of one
+                    // hasło differ only in the second line, so that is the line
+                    // the eye should land on. A day without a theme keeps the
+                    // single line it has today - no placeholder, no reserved
+                    // gap. `null` there is a permanent state, not an omission.
+                    <div title={tileText(summary)}>
+                      <span class="block truncate text-[10px] leading-tight text-blue-100/50">{summary.prompt}</span>
+                      {summary.theme && (
+                        <span class="block truncate text-[10px] leading-tight text-purple-200/90">{summary.theme}</span>
+                      )}
+                    </div>
                   )}
                 </a>
               );
