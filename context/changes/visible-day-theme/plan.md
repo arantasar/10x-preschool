@@ -221,29 +221,29 @@ Brak migracji. Kolumna `theme`, CHECK `day_plans_theme_length` i granty kolumnow
 
 #### Manual
 
-- [ ] 1.7 Pięć dni jednego hasła ma pięć różnych drugich linii
-- [ ] 1.8 Dzień bez tematu ma jedną linię, jak przed zmianą
-- [ ] 1.9 Wysokość kafelka wystarczająca dla dwóch linii (rozstrzygnięcie `min-h-16` vs `min-h-18`)
-- [ ] 1.10 Kafelki w wierszu tygodnia mają równą wysokość mimo mieszania dni z tematem i bez
-- [ ] 1.11 Tooltip pokazuje pełne „hasło — temat"
-- [ ] 1.12 Nazwa dostępna czyta hasło i temat przed statusem
-- [ ] 1.13 Miesiąc z sześcioma wierszami mieści się na ekranie laptopa
-- [ ] 1.14 Legenda i przycisk „Zaplanuj tydzień" nie rozjechały się
+- [x] 1.7 Pięć dni jednego hasła ma pięć różnych drugich linii — b655827
+- [x] 1.8 Dzień bez tematu ma jedną linię, jak przed zmianą — b655827
+- [x] 1.9 Wysokość kafelka wystarczająca dla dwóch linii (rozstrzygnięcie `min-h-16` vs `min-h-18`) — b655827
+- [x] 1.10 Kafelki w wierszu tygodnia mają równą wysokość mimo mieszania dni z tematem i bez — b655827
+- [x] 1.11 Tooltip pokazuje pełne „hasło — temat" — b655827
+- [x] 1.12 Nazwa dostępna czyta hasło i temat przed statusem — b655827
+- [x] 1.13 Miesiąc z sześcioma wierszami mieści się na ekranie laptopa — b655827
+- [x] 1.14 Legenda i przycisk „Zaplanuj tydzień" nie rozjechały się — b655827
 
 ### Phase 2: Podtytuł w widoku dnia
 
 #### Automated
 
-- [x] 2.1 Lint przechodzi: `npm run lint`
-- [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [x] 2.3 Build produkcyjny przechodzi: `npm run build`
-- [x] 2.4 Wyspa nietknięta (`git diff --name-only` bez `DayPlanEditor.tsx`)
-- [x] 2.5 Temat renderowany warunkowo (`grep` na `plan.astro`)
+- [x] 2.1 Lint przechodzi: `npm run lint` — 6e004a4
+- [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check` — 6e004a4
+- [x] 2.3 Build produkcyjny przechodzi: `npm run build` — 6e004a4
+- [x] 2.4 Wyspa nietknięta (`git diff --name-only` bez `DayPlanEditor.tsx`) — 6e004a4
+- [x] 2.5 Temat renderowany warunkowo (`grep` na `plan.astro`) — 6e004a4
 
 #### Manual
 
-- [ ] 2.6 Nagłówek dnia pokazuje ten sam tekst co kafelek w siatce
-- [ ] 2.7 Dzień bez tematu ma nagłówek jak przed zmianą
-- [ ] 2.8 Regeneracja z `/plan?date=` nie usuwa podtytułu po odświeżeniu
-- [ ] 2.9 Stan `readFailed` bez śladu po podtytule
-- [ ] 2.10 Miesiąc, tydzień i dzień pokazują dla tego samego dnia ten sam tekst
+- [x] 2.6 Nagłówek dnia pokazuje ten sam tekst co kafelek w siatce — 6e004a4
+- [x] 2.7 Dzień bez tematu ma nagłówek jak przed zmianą — 6e004a4
+- [x] 2.8 Regeneracja z `/plan?date=` nie usuwa podtytułu po odświeżeniu — 6e004a4
+- [x] 2.9 Stan `readFailed` bez śladu po podtytule — 6e004a4
+- [x] 2.10 Miesiąc, tydzień i dzień pokazują dla tego samego dnia ten sam tekst — 6e004a4
