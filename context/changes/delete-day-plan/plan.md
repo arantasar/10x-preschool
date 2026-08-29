@@ -409,12 +409,12 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 #### Automated
 
-- [x] 4.1 S-05 nie opisuje już skreślenia miękkiego jako stanu docelowego (`awk` + `grep` na bloku S-05)
-- [x] 4.2 Tabela `Backlog Handoff` bez „(skreślenie miękkie)" (`grep`)
-- [x] 4.3 Niewiadoma S-05 oznaczona jako rozstrzygnięta (`awk` + `grep -c 'rozstrzygnięt'`)
-- [x] 4.4 Frontmatter `updated:` zaktualizowany (`grep`) — zapisano `2026-08-29`, faktyczną datę edycji, zamiast literalnego `2026-08-27` z planu
-- [x] 4.5 Poza S-05 i frontmatterem roadmapa nietknięta (`git diff master...HEAD -- context/foundation/roadmap.md`)
-- [x] 4.6 Lint i build nadal przechodzą: `npm run lint && npm run build`
+- [x] 4.1 S-05 nie opisuje już skreślenia miękkiego jako stanu docelowego (`awk` + `grep` na bloku S-05) — 8a62cb2
+- [x] 4.2 Tabela `Backlog Handoff` bez „(skreślenie miękkie)" (`grep`) — 8a62cb2
+- [x] 4.3 Niewiadoma S-05 oznaczona jako rozstrzygnięta (`awk` + `grep -c 'rozstrzygnięt'`) — 8a62cb2
+- [x] 4.4 Frontmatter `updated:` zaktualizowany (`grep`) — zapisano `2026-08-29`, faktyczną datę edycji, zamiast literalnego `2026-08-27` z planu — 8a62cb2
+- [x] 4.5 Poza S-05 i frontmatterem roadmapa nietknięta (`git diff master...HEAD -- context/foundation/roadmap.md`) — 8a62cb2
+- [x] 4.6 Lint i build nadal przechodzą: `npm run lint && npm run build` — 8a62cb2
 
 #### Manual
 
