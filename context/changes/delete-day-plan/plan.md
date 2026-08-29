@@ -357,8 +357,8 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 #### Manual
 
-- [ ] 1.8 Każda z sześciu asercji sprawdzona mutacją i zaobserwowana na czerwono (mutacje cofnięte przed commitem)
-- [ ] 1.9 Asercja kaskady „tylko ten dzień" idzie na czerwono przy kaskadzie rozszerzonej na wszystkie plany nauczyciela
+- [x] 1.8 Każda z sześciu asercji sprawdzona mutacją i zaobserwowana na czerwono (mutacje cofnięte przed commitem) — 51abcf4
+- [x] 1.9 Asercja kaskady „tylko ten dzień" idzie na czerwono przy kaskadzie rozszerzonej na wszystkie plany nauczyciela — 51abcf4
 
 ### Phase 2: Trasa DELETE
 
@@ -373,11 +373,11 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 #### Manual
 
-- [ ] 2.7 `DELETE` na dzień z planem zwraca `204`, a `GET` zaraz potem `404`
-- [ ] 2.8 Powtórzony `DELETE` zwraca `404` z komunikatem „Ten dzień nie ma planu do usunięcia."
-- [ ] 2.9 `DELETE` bez sesji zwraca `401` jako JSON, nie przekierowanie
-- [ ] 2.10 `DELETE` ze złą datą zwraca `400`
-- [ ] 2.11 Siatka miesiąca i tablica tygodnia pokazują skasowany dzień jako wolny bez zmian w ich kodzie
+- [x] 2.7 `DELETE` na dzień z planem zwraca `204`, a `GET` zaraz potem `404` — f25e4ca
+- [x] 2.8 Powtórzony `DELETE` zwraca `404` z komunikatem „Ten dzień nie ma planu do usunięcia." — f25e4ca
+- [x] 2.9 `DELETE` bez sesji zwraca `401` jako JSON, nie przekierowanie — f25e4ca
+- [x] 2.10 `DELETE` ze złą datą zwraca `400` — f25e4ca
+- [x] 2.11 Siatka miesiąca i tablica tygodnia pokazują skasowany dzień jako wolny bez zmian w ich kodzie — f25e4ca
 - [ ] 2.12 Generowanie tygodnia obejmuje skasowany dzień zamiast go pominąć
 
 ### Phase 3: Przycisk w widoku dnia
@@ -396,14 +396,14 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 - [ ] 3.8 Plan roboczy: przycisk widoczny, dialog się pokazuje, anulowanie nic nie zmienia
 - [ ] 3.9 Plan zaakceptowany: ten sam dialog i ta sama treść
-- [ ] 3.10 Po skasowaniu nauczyciel jest na tym samym dniu, pustym, bez podtytułu w nagłówku
-- [ ] 3.11 Dzień skasowany i dzień nigdy nieplanowany są nieodróżnialne (porównane obok siebie)
-- [ ] 3.12 Dzień bez planu nie pokazuje przycisku kasowania
+- [x] 3.10 Po skasowaniu nauczyciel jest na tym samym dniu, pustym, bez podtytułu w nagłówku — b0caf1b
+- [x] 3.11 Dzień skasowany i dzień nigdy nieplanowany są nieodróżnialne (porównane obok siebie) — b0caf1b
+- [x] 3.12 Dzień bez planu nie pokazuje przycisku kasowania — b0caf1b
 - [ ] 3.13 Przycisk niedostępny w trakcie generowania i przy otwartej edycji propozycji
 - [ ] 3.14 Kasowanie offline pokazuje błąd i **nie** nawiguje; plan zostaje na ekranie
 - [ ] 3.15 Kasowanie dnia skasowanego już w drugiej zakładce kończy się komunikatem, nie nawigacją
-- [ ] 3.16 Ścieżka „usuń i wygeneruj od nowa" działa bez opuszczania strony dnia
-- [ ] 3.17 Powrót do siatki miesiąca pokazuje kafelek w stanie „brak planu"
+- [x] 3.16 Ścieżka „usuń i wygeneruj od nowa" działa bez opuszczania strony dnia — b0caf1b
+- [x] 3.17 Powrót do siatki miesiąca pokazuje kafelek w stanie „brak planu" — b0caf1b
 
 ### Phase 4: Domknięcie roadmapy
 
@@ -418,6 +418,6 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 #### Manual
 
-- [ ] 4.7 Blok S-05 czytany samodzielnie tłumaczy, co zbudowano i dlaczego odrzucono skreślenie miękkie
-- [ ] 4.8 Tabela `At a glance` i blok S-05 są zgodne
-- [ ] 4.9 Ryzyko nieodwracalności jest nazwane w roadmapie
+- [x] 4.7 Blok S-05 czytany samodzielnie tłumaczy, co zbudowano i dlaczego odrzucono skreślenie miękkie — 8a62cb2
+- [x] 4.8 Tabela `At a glance` i blok S-05 są zgodne — 8a62cb2
+- [x] 4.9 Ryzyko nieodwracalności jest nazwane w roadmapie — 8a62cb2
