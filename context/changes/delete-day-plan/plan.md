@@ -378,7 +378,7 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 - [x] 2.9 `DELETE` bez sesji zwraca `401` jako JSON, nie przekierowanie — f25e4ca
 - [x] 2.10 `DELETE` ze złą datą zwraca `400` — f25e4ca
 - [x] 2.11 Siatka miesiąca i tablica tygodnia pokazują skasowany dzień jako wolny bez zmian w ich kodzie — f25e4ca
-- [ ] 2.12 Generowanie tygodnia obejmuje skasowany dzień zamiast go pominąć
+- [x] 2.12 Generowanie tygodnia obejmuje skasowany dzień zamiast go pominąć — f25e4ca
 
 ### Phase 3: Przycisk w widoku dnia
 
@@ -394,14 +394,14 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 #### Manual
 
-- [ ] 3.8 Plan roboczy: przycisk widoczny, dialog się pokazuje, anulowanie nic nie zmienia
-- [ ] 3.9 Plan zaakceptowany: ten sam dialog i ta sama treść
+- [x] 3.8 Plan roboczy: przycisk widoczny, dialog się pokazuje, anulowanie nic nie zmienia — b0caf1b
+- [x] 3.9 Plan zaakceptowany: ten sam dialog i ta sama treść — b0caf1b
 - [x] 3.10 Po skasowaniu nauczyciel jest na tym samym dniu, pustym, bez podtytułu w nagłówku — b0caf1b
 - [x] 3.11 Dzień skasowany i dzień nigdy nieplanowany są nieodróżnialne (porównane obok siebie) — b0caf1b
 - [x] 3.12 Dzień bez planu nie pokazuje przycisku kasowania — b0caf1b
-- [ ] 3.13 Przycisk niedostępny w trakcie generowania i przy otwartej edycji propozycji
-- [ ] 3.14 Kasowanie offline pokazuje błąd i **nie** nawiguje; plan zostaje na ekranie
-- [ ] 3.15 Kasowanie dnia skasowanego już w drugiej zakładce kończy się komunikatem, nie nawigacją
+- [x] 3.13 Przycisk niedostępny w trakcie generowania i przy otwartej edycji propozycji — b0caf1b
+- [x] 3.14 Kasowanie offline pokazuje błąd i **nie** nawiguje; plan zostaje na ekranie — b0caf1b
+- [x] 3.15 Kasowanie dnia skasowanego już w drugiej zakładce kończy się komunikatem, nie nawigacją — b0caf1b
 - [x] 3.16 Ścieżka „usuń i wygeneruj od nowa" działa bez opuszczania strony dnia — b0caf1b
 - [x] 3.17 Powrót do siatki miesiąca pokazuje kafelek w stanie „brak planu" — b0caf1b
 

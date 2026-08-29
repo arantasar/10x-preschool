@@ -36,13 +36,33 @@ Pozycje ręczne odhaczone niżej zostały **zaobserwowane**, nie wywnioskowane z
   innym niż GET/HEAD, więc wyspa jest bezpieczna, ale ręczne `curl` wymaga
   `-H "Origin: http://localhost:4321"`.
 
-Sześć pozycji pozostaje **otwartych** i wymaga przeglądarki albo płatnej generacji:
-`2.12`, `3.8`, `3.9`, `3.13`, `3.14`, `3.15`. Nie zostały odhaczone, bo nie zostały
-zaobserwowane — dowód dla każdej istnieje tylko na poziomie kodu lub trasy:
+Pozostałe sześć pozycji domkniętych w drugim podejściu:
 
-- `2.12` — mechanizm (`p_require_absent` przepuszcza skasowany dzień) jest asertowany
-  w `day_plan_delete.test.sql`; brakuje przebiegu przez realne generowanie tygodnia.
-- `3.15` — trasa potwierdzona (`404` + „Ten dzień nie ma planu do usunięcia."); brakuje
-  obserwacji, że wyspa pokazuje komunikat zamiast nawigować.
-- `3.8`, `3.9`, `3.13`, `3.14` — zachowanie dialogu, stanu `disabled` i ścieżki offline
-  w przeglądarce.
+- **2.12** — decyzja „pominąć czy generować" zapada w taniej przedkontroli
+  `generate.ts`, przed wywołaniem modelu. Ten **sam** request `only_if_absent: true`
+  na ten sam dzień: przed skasowaniem `409 „Ten dzień ma już plan — nie został
+  nadpisany."`, po skasowaniu `200` z nowym planem i `current_generation: 1`
+  (pokrywa też scenariusz 8 z Testing Strategy). Kosztowało jedną generację jednego
+  dnia — podmiana `OPENROUTER_API_KEY` przez zmienną środowiskową nie działa,
+  `.dev.vars` wygrywa.
+- **3.8, 3.9, 3.13, 3.14, 3.15** — przeprowadzone w bezgłowym Chrome sterowanym
+  DevTools Protocol (bez dokładania zależności do projektu). Dialog obsługiwany
+  natywnie przez `Page.handleJavaScriptDialog`, offline przez
+  `Network.emulateNetworkConditions`, zawieszona generacja przez `Fetch.requestPaused`.
+
+  Pierwsze podejście podmieniało `window.confirm`/`window.fetch` skryptem
+  wstrzykiwanym przez `Page.addScriptToEvaluateOnNewDocument` i **dało fałszywy
+  wynik**: w jednym dokumencie Vite przeładował stronę, stub zniknął, kasowanie
+  poszło naprawdę i 3.14 „nie przeszło". Metoda natywna jest odporna na to
+  przeładowanie i testuje prawdziwą ścieżkę, a nie atrapę.
+
+  Wyniki: przycisk aktywny na planie roboczym, anulowanie dialogu nie wysyła
+  `DELETE` i zostawia wiersz w bazie; plan zaakceptowany dostaje **identyczny**
+  tekst dialogu co roboczy; przycisk `disabled` przy otwartej edycji propozycji
+  i w trakcie generowania; offline → „Brak połączenia z serwerem." z przyciskiem
+  ponowienia, **bez** nawigacji, trzy propozycje zostają na ekranie; dzień
+  skasowany w drugiej zakładce → „Ten dzień nie ma planu do usunięcia." bez
+  nawigacji.
+
+Wszystkie 47 pozycji Progress odhaczone. Konta testowe usunięte, lokalna baza
+w stanie zastanym.
