@@ -69,6 +69,11 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
   // it is never rendered, and storing a closure in state would re-render on every
   // request for nothing.
   const lastAttempt = useRef<(() => void) | null>(null);
+  // Set once a delete has succeeded and `window.location.assign` has been
+  // called. `assign` does not block, so without this the `finally` below hands
+  // the button back to the teacher for the whole length of the SSR round trip -
+  // enabled, relabelled, and still showing the plan that is already gone.
+  const navigatingAway = useRef(false);
 
   const isBusy = busy !== "idle";
   const accepted = plan?.plan.accepted_at ?? null;
@@ -137,6 +142,7 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
       // jeszcze planu". One SSR read rebuilds header, form and empty-day
       // message together.
       if (busyKind === "deleting" && response.ok) {
+        navigatingAway.current = true;
         window.location.assign(`/plan?date=${planDate}`);
         return;
       }
@@ -177,8 +183,13 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
       });
       await reconcile();
     } finally {
-      inFlight.current = false;
-      setBusy("idle");
+      // Not on the delete path: the document is on its way out, and handing the
+      // button back now is what lets a second click answer 404 over the top of a
+      // delete that worked.
+      if (!navigatingAway.current) {
+        inFlight.current = false;
+        setBusy("idle");
+      }
     }
   }
 
