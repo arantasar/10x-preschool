@@ -86,6 +86,23 @@ export function unauthorized(): Response {
   return json({ error: "Twoja sesja wygasła. Zaloguj się ponownie.", retryable: false }, 401);
 }
 
+/**
+ * Success with nothing to say.
+ *
+ * The one route that does not answer with a plan: deleting a day leaves no plan
+ * to return, and `json` always serialises a body. It joins `unauthorized` /
+ * `badRequest` / `unconfigured` here rather than being written inline in the
+ * route, so the shape of every day-plan response stays this module's property -
+ * and so the one response that deliberately breaks the rule stated at the top of
+ * this file is visible where that rule is written, not discovered in the island.
+ *
+ * The body is `null` rather than `""`: a 204 carrying a body is out of spec and
+ * some runtimes reject it. No `Content-Type` either, for the same reason.
+ */
+export function noContent(): Response {
+  return new Response(null, { status: 204 });
+}
+
 export function badRequest(message: string): Response {
   return json({ error: message, retryable: false }, 400);
 }

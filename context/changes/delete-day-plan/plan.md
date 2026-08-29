@@ -347,13 +347,13 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 #### Automated
 
-- [x] 1.1 Lint przechodzi: `npm run lint`
-- [x] 1.2 Typy przechodzą: `npx astro check`
-- [x] 1.3 Build produkcyjny przechodzi: `npm run build`
-- [x] 1.4 Cała suita bazodanowa przechodzi: `npm run test:db`
-- [x] 1.5 Nowa suita `day_plan_delete` ma sześć asercji i żadnego `not ok`
-- [x] 1.6 Slice nie dokłada migracji (`git diff --name-only master...HEAD -- supabase/migrations/` pusto)
-- [x] 1.7 Ścieżki odczytu nietknięte (`git diff master...HEAD` na `day-plan-store.ts` bez zmian w `readDayPlan`/`readWeekPlans`/`readMonthSummary`)
+- [x] 1.1 Lint przechodzi: `npm run lint` — 51abcf4
+- [x] 1.2 Typy przechodzą: `npx astro check` — 51abcf4
+- [x] 1.3 Build produkcyjny przechodzi: `npm run build` — 51abcf4
+- [x] 1.4 Cała suita bazodanowa przechodzi: `npm run test:db` — 51abcf4
+- [x] 1.5 Nowa suita `day_plan_delete` ma sześć asercji i żadnego `not ok` — 51abcf4
+- [x] 1.6 Slice nie dokłada migracji (`git diff --name-only master...HEAD -- supabase/migrations/` pusto) — 51abcf4
+- [x] 1.7 Ścieżki odczytu nietknięte (`git diff master...HEAD` na `day-plan-store.ts` bez zmian w `readDayPlan`/`readWeekPlans`/`readMonthSummary`) — 51abcf4
 
 #### Manual
 
@@ -364,12 +364,12 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 #### Automated
 
-- [ ] 2.1 Lint przechodzi: `npm run lint`
-- [ ] 2.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [ ] 2.3 Build produkcyjny przechodzi: `npm run build`
-- [ ] 2.4 Trasa eksportuje `DELETE` (`grep` na `src/pages/api/day-plan/index.ts`)
-- [ ] 2.5 Nie powstał nowy plik trasy (`git diff --name-only master...HEAD -- src/pages/api/`)
-- [ ] 2.6 Wyspa jeszcze nietknięta w tej fazie (`git diff --name-only master...HEAD` bez `DayPlanEditor.tsx`)
+- [x] 2.1 Lint przechodzi: `npm run lint`
+- [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check`
+- [x] 2.3 Build produkcyjny przechodzi: `npm run build`
+- [x] 2.4 Trasa eksportuje `DELETE` (`grep` na `src/pages/api/day-plan/index.ts`)
+- [x] 2.5 Nie powstał nowy plik trasy (`git diff --name-only master...HEAD -- src/pages/api/`)
+- [x] 2.6 Wyspa jeszcze nietknięta w tej fazie (`git diff --name-only master...HEAD` bez `DayPlanEditor.tsx`)
 
 #### Manual
 
