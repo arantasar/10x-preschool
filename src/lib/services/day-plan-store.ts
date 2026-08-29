@@ -323,6 +323,48 @@ export async function setAcceptance(
   });
 }
 
+/**
+ * Deletes one day's plan, addressed by date.
+ *
+ * Addressed by date rather than by id for the same reason `readDayPlan` is:
+ * `unique (user_id, plan_date)` plus RLS means a teacher has at most one row per
+ * day, so the date names it as precisely as the id does - and it is what the
+ * screen doing the deleting already holds.
+ *
+ * The proposals go with it, by `on delete cascade` on
+ * `activities_plan_id_user_id_fkey`. This function does not know about them and
+ * must not: a second statement here could half-succeed, and the schema has
+ * carried that guarantee since F-01.
+ *
+ * A row that is not visible under RLS - another teacher's, or none at all - is
+ * not an error but a delete that touches nothing, which is why the empty result
+ * is checked explicitly. It answers `not_found` rather than a privilege failure,
+ * on the same reasoning as `updateActivityText`: saying "that exists but is not
+ * yours" is an existence oracle.
+ *
+ * Not retried, unlike `saveGeneration`. There the retry buys back a generation
+ * the teacher waited 10-30 seconds and paid tokens for; here a retry after a
+ * lost response would find the row already gone and turn a success into
+ * "Ten dzień nie ma planu do usunięcia."
+ */
+export async function deleteDayPlan(supabase: DayPlanClient, planDate: string): Promise<void> {
+  const { data, error } = await supabase
+    .from("day_plans")
+    .delete()
+    .eq("plan_date", planDate)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    throw toStoreError(error, "Nie udało się usunąć planu dnia");
+  }
+  if (!data) {
+    throw new StoreError("not_found", `No plan for ${planDate} is visible to the caller.`, {
+      userMessage: "Ten dzień nie ma planu do usunięcia.",
+    });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Reads
 // ---------------------------------------------------------------------------
