@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { CalendarDays, Check, CircleAlert, Pencil, RotateCcw, Sparkles, Undo2, X } from "lucide-react";
+import { CalendarDays, Check, CircleAlert, Pencil, RotateCcw, Sparkles, Trash2, Undo2, X } from "lucide-react";
 import { GenerationProgress } from "@/components/plan/GenerationProgress";
 import { Button } from "@/components/ui/button";
 import { DESCRIPTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
@@ -28,7 +28,7 @@ interface DayPlanEditorProps {
   readonly initialPlan: DayPlanView | null;
 }
 
-type Busy = "idle" | "generating" | "saving";
+type Busy = "idle" | "generating" | "saving" | "deleting";
 
 interface Failure {
   readonly message: string;
@@ -123,6 +123,24 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
 
     try {
       const response = await request();
+
+      // The one success with nothing to apply. A 204 has no body, so
+      // `response.json()` rejects, the catch below hands back `null`, and
+      // `isDayPlanBody(null)` is false - without this branch a delete that
+      // worked would be reported as "Nie udało się zapisać zmiany" and then
+      // `reconcile()` would blank the day underneath the message.
+      //
+      // Navigation rather than `setPlan(null)`, and that is correctness rather
+      // than convenience: the day's subtitle is static SSR in `plan.astro`,
+      // outside this island's reach, so clearing state here would leave the
+      // deleted day's theme standing in the header above "Ten dzień nie ma
+      // jeszcze planu". One SSR read rebuilds header, form and empty-day
+      // message together.
+      if (busyKind === "deleting" && response.ok) {
+        window.location.assign(`/plan?date=${planDate}`);
+        return;
+      }
+
       const body: unknown = await response.json().catch(() => null);
 
       if (response.ok && isDayPlanBody(body)) {
@@ -244,6 +262,33 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
         }),
       "saving",
     );
+  }
+
+  /**
+   * Deletes the whole day: the hasło, the proposals, the row.
+   *
+   * The dialog is unconditional, unlike the one in `generate()`. There the
+   * question is only worth asking on an accepted plan, because regeneration
+   * hands back a new batch in exchange and a teacher still iterating on a draft
+   * has invested nothing in what is on screen. Deleting hands back nothing, and
+   * a draft cost the same 10-30 seconds and the same tokens.
+   *
+   * Unlike that dialog, this one has nothing behind it: there is no schema-side
+   * refusal to fall back on, so the confirmation is the whole protection against
+   * a misclick. Hence text that names what is lost rather than a generic
+   * "are you sure?".
+   */
+  function deletePlan(): void {
+    if (!plan) return;
+    const consequence =
+      "Usunięcie planu dnia skasuje hasło i wszystkie propozycje tego dnia. " +
+      "Dzień wróci do stanu sprzed planowania. Tej operacji nie można cofnąć.";
+    if (!window.confirm(consequence)) {
+      return;
+    }
+    // No headers and no body: the route reads the day from the query string,
+    // exactly as `GET` does.
+    void mutate(() => fetch(`/api/day-plan?date=${planDate}`, { method: "DELETE" }), "deleting");
   }
 
   const remaining = PROMPT_MAX - prompt.length;
@@ -416,6 +461,29 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
             {accepted ? "Cofnij akceptację" : "Akceptuj plan"}
           </Button>
         </section>
+      )}
+
+      {/* Gated on the plan row, not on `hasActivities`. A day_plans row with no
+          live batch is unreachable through the application's own paths, but if
+          one ever existed it would be the day that most needs deleting: not
+          visible as a plan anywhere, and still occupying `unique (user_id,
+          plan_date)` so week generation skips over it.
+
+          Placed below the acceptance button and deliberately quieter than it -
+          an outline rather than a fill. This is not an action the eye should
+          fall into. Disabled during an open proposal edit for the same reason
+          the acceptance button is: deleting mid-edit would drop unsaved text
+          without a word. */}
+      {plan && (
+        <Button
+          type="button"
+          disabled={isBusy || draft !== null}
+          onClick={deletePlan}
+          className="w-full rounded-lg border border-red-400/30 bg-transparent px-4 py-2 text-sm text-red-300/90 transition-colors hover:bg-red-500/10 hover:text-red-200"
+        >
+          <Trash2 className="size-4" />
+          {busy === "deleting" ? "Usuwam…" : "Usuń plan dnia"}
+        </Button>
       )}
     </div>
   );

@@ -364,12 +364,12 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 #### Automated
 
-- [x] 2.1 Lint przechodzi: `npm run lint`
-- [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check`
-- [x] 2.3 Build produkcyjny przechodzi: `npm run build`
-- [x] 2.4 Trasa eksportuje `DELETE` (`grep` na `src/pages/api/day-plan/index.ts`)
-- [x] 2.5 Nie powstał nowy plik trasy (`git diff --name-only master...HEAD -- src/pages/api/`)
-- [x] 2.6 Wyspa jeszcze nietknięta w tej fazie (`git diff --name-only master...HEAD` bez `DayPlanEditor.tsx`)
+- [x] 2.1 Lint przechodzi: `npm run lint` — f25e4ca
+- [x] 2.2 Typy i szablony Astro przechodzą: `npx astro check` — f25e4ca
+- [x] 2.3 Build produkcyjny przechodzi: `npm run build` — f25e4ca
+- [x] 2.4 Trasa eksportuje `DELETE` (`grep` na `src/pages/api/day-plan/index.ts`) — f25e4ca
+- [x] 2.5 Nie powstał nowy plik trasy (`git diff --name-only master...HEAD -- src/pages/api/`) — f25e4ca
+- [x] 2.6 Wyspa jeszcze nietknięta w tej fazie (`git diff --name-only master...HEAD` bez `DayPlanEditor.tsx`) — f25e4ca
 
 #### Manual
 
@@ -384,13 +384,13 @@ Rollback slice'u to cofnięcie zmian w czterech plikach źródłowych i usunięc
 
 #### Automated
 
-- [ ] 3.1 Lint przechodzi: `npm run lint`
-- [ ] 3.2 Typy przechodzą: `npx astro check`
-- [ ] 3.3 Build produkcyjny przechodzi: `npm run build`
-- [ ] 3.4 Wyspa kasuje przez trasę `DELETE` (`grep` na `DayPlanEditor.tsx`)
-- [ ] 3.5 Dialog kasowania jest bezwarunkowy — tylko `window.confirm` w `generate()` stoi za `if (accepted)`
-- [ ] 3.6 Ekrany miesiąca i tygodnia nietknięte przez cały slice (`git diff --name-only master...HEAD`)
-- [ ] 3.7 `src/pages/plan.astro` nietknięty (`git diff --name-only master...HEAD`)
+- [x] 3.1 Lint przechodzi: `npm run lint`
+- [x] 3.2 Typy przechodzą: `npx astro check`
+- [x] 3.3 Build produkcyjny przechodzi: `npm run build`
+- [x] 3.4 Wyspa kasuje przez trasę `DELETE` (`grep` na `DayPlanEditor.tsx`)
+- [x] 3.5 Dialog kasowania jest bezwarunkowy — tylko `window.confirm` w `generate()` stoi za `if (accepted)`
+- [x] 3.6 Ekrany miesiąca i tygodnia nietknięte przez cały slice (`git diff --name-only master...HEAD`)
+- [x] 3.7 `src/pages/plan.astro` nietknięty (`git diff --name-only master...HEAD`)
 
 #### Manual
 
