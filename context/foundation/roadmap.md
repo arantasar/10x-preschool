@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 1
 status: draft
 created: 2026-06-27
-updated: 2026-08-27
+updated: 2026-08-29
 prd_version: 1
 main_goal: low-complexity
 top_blocker: time
@@ -45,17 +45,17 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 
 ## At a glance
 
-| ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status  |
-| ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | ------- |
-| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done    |
-| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done    |
-| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done    |
-| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done    |
-| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | done    |
-| S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | ready   |
-| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done    |
-| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | blocked |
-| S-08 | visible-day-theme         | odróżnić dni jednego hasła po podtytule dnia w miesiącu i w dniu   | S-03, S-04    | FR-004, US-01 (brak FR — pyt. 3)                      | done    |
+| ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status      |
+| ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | ----------- |
+| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done        |
+| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done        |
+| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done        |
+| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done        |
+| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | done        |
+| S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | done        |
+| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done        |
+| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | blocked     |
+| S-08 | visible-day-theme         | odróżnić dni jednego hasła po podtytule dnia w miesiącu i w dniu   | S-03, S-04    | FR-004, US-01 (brak FR — pyt. 3)                      | done        |
 
 ## Streams
 
@@ -160,16 +160,16 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ### S-05: Usunięcie zapisanego planu dnia
 
-- **Outcome:** Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; dzień wraca do stanu „brak planu" wszędzie, gdzie jest pokazywany, a dane pozostają w bazie (skreślenie miękkie).
+- **Outcome:** Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; wiersz `day_plans` i jego aktywności są usuwane trwale (kasowanie twarde), a dzień wraca do stanu **nieodróżnialnego od dnia nigdy nieplanowanego** — na wszystkich powierzchniach, na których jest pokazywany, i dla generowania tygodnia, które obejmuje go ponownie zamiast pominąć.
 - **Change ID:** delete-day-plan
 - **PRD refs:** Access Control (ścieżka kasująca jest zapisem wrażliwym na własność) — brak własnego FR w PRD v1, patrz Open Roadmap Questions #3
 - **Prerequisites:** S-02, S-03
 - **Parallel with:** S-04
 - **Blockers:** —
 - **Unknowns:**
-  - Czy „usunięcie" skreśla cały wiersz `day_plans`, czy tylko bieżącą partię `activities`, zostawiając hasło — Owner: Janusz. Block: nie — decyzja dla `/10x-plan`, ale rozstrzyga kształt kolumny i wszystkich ścieżek odczytu.
-- **Risk:** „Dane w bazie nie muszą być usuwane" oznacza skreślenie miękkie, a to w tym schemacie ma dwa znane ostrza — oba już raz zadziałały. **(1) Nowa kolumna nie dziedziczy grantu UPDATE.** `20260720162553_narrow_authenticated_update_columns.sql` zdjął grant tabelaryczny i oddał listę kolumn po nazwie, właśnie po to, żeby kolumnę dodaną później trzeba było rozważyć. Bez `grant update (…)` zapis kończy się `42501`, który `categorize()` w `src/lib/services/day-plan-store.ts` mapuje na config/500 — dokładnie ta pułapka, którą migracja `theme` musiała rozbroić jawnie. **(2) Skreślony miękko dzień wciąż zajmuje `unique (user_id, plan_date)`** i wciąż czyta się jako `v_exists = true` w `save_day_plan_generation`, więc generowanie tygodnia z `p_require_absent` **pominęłoby** dzień, który nauczyciel uważa za pusty — cicho, bez błędu i bez wpisu w logu. To ten sam kształt awarii, dla którego istnieje licznik generacji. Każda ścieżka odczytu (`readDayPlan`, `readMonthSummary`, `selectCurrentGeneration`) musi nauczyć się skreślenia w tym samym slice'ie, inaczej dzień „usunięty" wraca w siatce miesiąca.
-- **Status:** ready
+  - ~~Czy „usunięcie" skreśla cały wiersz `day_plans`, czy tylko bieżącą partię `activities`, zostawiając hasło~~ — **rozstrzygnięte 2026-08-27 w `/10x-plan`: cały wiersz, twardo.** Powody: PRD nie stawia wymogu retencji; produkt nie ma cofania nigdzie indziej (S-02 usunął undo świadomie); skreślenie miękkie zostawiłoby w tabeli dane bez czytelnika i bez właściciela sprzątania — dokładnie to, przed czym ostrzega `lessons.md` („Odroczone sprzątanie danych musi mieć właściciela"). Odwraca to pierwotny Outcome tej pozycji.
+- **Risk:** Oba ostrza opisane niżej są ostrzami **skreślenia miękkiego** i zostały **uniknięte przez wybór kształtu**, nie zmitygowane — kasowanie twarde ich nie tworzy. Opis zostaje, bo obie pułapki są prawdziwe i będą prawdziwe dla każdej kolumny dodanej do `day_plans` w przyszłości. **(1) Nowa kolumna nie dziedziczy grantu UPDATE.** `20260720162553_narrow_authenticated_update_columns.sql` zdjął grant tabelaryczny i oddał listę kolumn po nazwie, właśnie po to, żeby kolumnę dodaną później trzeba było rozważyć. Bez `grant update (…)` zapis kończy się `42501`, który `categorize()` w `src/lib/services/day-plan-store.ts` mapuje na config/500 — dokładnie ta pułapka, którą migracja `theme` musiała rozbroić jawnie. Nie powstaje tutaj, bo slice nie dodaje kolumny (ani żadnej migracji). **(2) Skreślony miękko dzień wciąż zajmowałby `unique (user_id, plan_date)`** i wciąż czytałby się jako `v_exists = true` w `save_day_plan_generation`, więc generowanie tygodnia z `p_require_absent` **pominęłoby** dzień, który nauczyciel uważa za pusty — cicho, bez błędu i bez wpisu w logu. Skasowany wiersz nie zajmuje nic: `v_exists` zostaje `null`, `coalesce(v_exists, false)` daje `false`, generacja przechodzi. Ta własność jest asertowana w `supabase/tests/database/day_plan_delete.test.sql`, a nie zakładana. Z tego samego powodu żadna ścieżka odczytu (`readDayPlan`, `readWeekPlans`, `readMonthSummary`) nie wymagała zmiany. **Ryzyko, które faktycznie zajęło ich miejsce, to nieodwracalność.** Kasowanie jest trwałe, obejmuje hasło i wszystkie propozycje, i stoi przed nim wyłącznie dialog potwierdzenia w przeglądarce — nie ma kosza, nie ma „Cofnij", nie ma odmowy po stronie schematu, na którą można by liczyć, gdy dialog zawiedzie.
+- **Status:** done
 
 ### S-06: Wylogowanie z aplikacji
 
@@ -220,7 +220,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-02       | edit-accept-day-plan      | Edycja, akceptacja i zapis planu dnia                | no                    | Czeka na S-01 + F-01                                            |
 | S-03       | week-generation           | Generowanie planu dla całego tygodnia roboczego      | no                    | Czeka na S-01 + F-01                                            |
 | S-04       | month-home                | Widok miesiąca jako ekran główny aplikacji           | yes                   | `/10x-plan month-home`                                          |
-| S-05       | delete-day-plan           | Usunięcie zapisanego planu dnia (skreślenie miękkie) | yes                   | `/10x-plan delete-day-plan`; może iść równolegle do S-04        |
+| S-05       | delete-day-plan           | Usunięcie zapisanego planu dnia                      | yes                   | `/10x-plan delete-day-plan`; może iść równolegle do S-04        |
 | S-06       | sign-out                  | Wylogowanie dostępne z powłoki zalogowanej aplikacji | —                     | Dostarczone w S-04 (`month-home`, faza 1) — nie planować osobno |
 | S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | no                    | Czeka na S-04 + rozstrzygnięcie wzorca interakcji               |
 | S-08       | visible-day-theme         | Widoczny podtytuł dnia w miesiącu i w widoku dnia    | yes                   | `/10x-plan visible-day-theme`; może iść równolegle do S-05      |
@@ -251,3 +251,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-06: Nauczyciel może wylogować się z aplikacji z dowolnego ekranu, na którym pracuje, a nie tylko ze strony startowej dla niezalogowanych (FR-003).** — Delivered 2026-08-26 wewnątrz `S-04` (`month-home`, faza 1: `src/components/AppHeader.astro`); bez własnego change-id i bez własnego archiwum. Lesson: —.
 - **S-04: Zalogowany nauczyciel po wejściu do aplikacji ląduje w widoku miesiąca i z niego wchodzi w tydzień oraz w pojedynczy dzień — bez osobnego pulpitu jako przystanku.** — Archived 2026-08-26 → `context/archive/2026-08-26-month-home/`. Lesson: —.
 - **S-08: Nauczyciel odróżnia od siebie dni jednego hasła bez wchodzenia w każdy z nich — kafelek w siatce miesiąca i nagłówek widoku dnia pokazują podtytuł dnia („Dinozaury — co jadły dinozaury"), a nie pięć razy to samo hasło.** — Archived 2026-08-27 → `context/archive/2026-08-27-visible-day-theme/`. Lesson: „Kryterium weryfikacji musi móc nie przejść".
+- **S-05: Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; wiersz `day_plans` i jego aktywności są usuwane trwale (kasowanie twarde), a dzień wraca do stanu **nieodróżnialnego od dnia nigdy nieplanowanego** — na wszystkich powierzchniach, na których jest pokazywany, i dla generowania tygodnia, które obejmuje go ponownie zamiast pominąć.** — Archived 2026-08-29 → `context/archive/2026-08-27-delete-day-plan/`. Lesson: „Kryterium »poza X nietknięte« musi być odporne na przerównanie".
