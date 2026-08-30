@@ -20,28 +20,33 @@ Faza 1 rolloutu z `context/foundation/test-plan.md` §3.
 ## Warunki przed merge'em do `master`
 
 `master` deployuje wprost na produkcję (Cloudflare Workers Builds, poza repo),
-więc merge jest releasem. Dwie rzeczy nie zostały sprawdzone i sprawdzić ich
-stąd nie sposób:
+więc merge jest releasem. Trzy rzeczy wymagały sprawdzenia poza tym repozytorium.
+**Wszystkie zamknięte 2026-08-30 — zmiana jest gotowa do merge'a.**
 
-- [ ] **Dni bez aktywności na produkcji.** Uruchom na produkcyjnym Supabase:
+- [x] **Dni bez aktywności na produkcji.** Wykonane 2026-08-30 na produkcyjnym
+      Supabase: *Success. No rows returned.* Zero dni z pustą bieżącą generacją,
+      więc zaostrzony `isDayPlanBody` nie odrzuci żadnego istniejącego dnia.
+      Zapytanie:
       `select id, plan_date from day_plans p where not exists (select 1 from activities a where a.plan_id = p.id and a.generation = p.current_generation)`.
-      Musi zwrócić zero wierszy. Lokalnie to zapytanie zwraca `0`, ale wyłącznie
-      dlatego, że po `supabase db reset` tabela jest pusta — kryterium nie mogło
-      nie przejść. Znaczenie ma nie migracja (ta nie rusza istniejących wierszy),
-      lecz zaostrzony `isDayPlanBody`: taki dzień przestaje być akceptowany, więc
-      w `reconcile` daje cichy no-op, a w `mutate` — komunikat o niepowodzeniu
-      zapisu, który się powiódł. Wynik zapisz tutaj.
+      Uruchomione na produkcji, bo lokalnie nie mogło nie przejść: po
+      `supabase db reset` tabela jest pusta, więc zwracało `0` niezależnie od
+      faktów. Stawką była nie migracja (ta nie rusza istniejących wierszy), lecz
+      zaostrzony `isDayPlanBody`: taki dzień przestałby być akceptowany, więc
+      w `reconcile` dałby cichy no-op, a w `mutate` — komunikat o niepowodzeniu
+      zapisu, który się powiódł.
 - [x] **Krok `npm test` w logu CI.** Potwierdzone na PR #18, przebieg
       `33303229764`: `npm ci` → `npx astro sync` → `npm run lint` → **`npm test`**
       → `npm run build`, wszystkie zielone. Kolejność zgodna z planem.
-- [ ] **Bramka jest doradcza, nie blokująca.** `gh api …/branches/master/protection`
+- [x] **Bramka jest doradcza, nie blokująca.** `gh api …/branches/master/protection`
       zwraca 403 („Upgrade to GitHub Pro or make this repository public"), a PR
       raportuje `mergeStateStatus: CLEAN` — czyli **czerwony test nie zatrzyma
       merge'a**, tylko pokaże czerwony znaczek. Ponieważ merge do `master`
       deployuje wprost na produkcję, jedyną realną bramką jest dziś dyscyplina
-      człowieka. Do rozstrzygnięcia: upublicznić repo, wykupić Pro, albo przyjąć
-      to jako świadome ograniczenie i zapisać w `test-plan.md` §5, że bramka
-      `unit + integration` jest `required (wired, advisory)`.
+      człowieka. **Rozstrzygnięte 2026-08-30**: repozytorium zostaje prywatne,
+      planu nie kupujemy. Ograniczenie zapisane w `test-plan.md` §5 — trzy
+      wpięte bramki mają teraz status `required (wired, doradcza)`, a nagłówek
+      §5 mówi wprost, że kolumna „Required?" opisuje, co jest uruchamiane, nie
+      co jest egzekwowane.
 
 ## Roadmapa
 

@@ -116,12 +116,23 @@ Bramki mają tu wagę większą niż zwykle: merge do `master` deployuje worker 
 produkcję bez kroku zatwierdzenia, więc PR jest ostatnim miejscem, w którym
 cokolwiek da się zatrzymać.
 
+**Żadna bramka na PR-ze nie jest dziś blokująca — wszystkie są doradcze.**
+Ochrona gałęzi wymaga publicznego repozytorium albo planu GitHub Pro, a to jest
+prywatne repo na planie darmowym: `gh api …/branches/master/protection` odpowiada
+`403 Upgrade to GitHub Pro or make this repository public`, a PR raportuje
+`mergeStateStatus: CLEAN` niezależnie od wyniku checków. Czerwony test pokazuje
+czerwony znaczek i nic poza tym; przycisk merge zostaje aktywny. Świadoma decyzja
+z 2026-08-30 — repozytorium zostaje prywatne, planu nie kupujemy — więc ostatnią
+realną bramką przed produkcją jest człowiek czytający checki przed kliknięciem.
+Kolumna „Required?" opisuje zatem, co jest **wpięte i uruchamiane**, a nie co
+jest **egzekwowane**. Re-evaluate, gdy repozytorium zmieni status albo plan.
+
 | Gate | Where | Required? | Catches |
 |---|---|---|---|
-| lint + typecheck (`npm run lint`, `astro sync`) | local (husky/lint-staged) + CI | required (wired) | dryf składniowy i typowy |
-| build (`npm run build`) | CI on PR + push do `master` | required (wired) | błędy SSR i konfiguracji adaptera |
+| lint + typecheck (`npm run lint`, `astro sync`) | local (husky/lint-staged) + CI | required (wired, doradcza) | dryf składniowy i typowy |
+| build (`npm run build`) | CI on PR + push do `master` | required (wired, doradcza) | błędy SSR i konfiguracji adaptera |
 | testy bazy (`npm run test:db`) | local | required after §3 Phase 3 | regresje izolacji RLS i kontraktu zapisu; dziś uruchamiane ręcznie, faza 3 wprowadza je do CI |
-| unit + integration | local + CI on PR | required (wired) | regresje kontraktu odpowiedzi, mapowania błędów, protokołu zapisu |
+| unit + integration | local + CI on PR | required (wired, doradcza) | regresje kontraktu odpowiedzi, mapowania błędów, protokołu zapisu |
 | bramka bezpieczeństwa treści (każdy dopuszczony model) | CI on PR, wyzwalana zmianą promptu lub konfiguracji modelu | required after §3 Phase 2 | propozycje nieodpowiednie dla 3–6 lat; cofnięcie guardrailu przez podmianę modelu |
 | e2e na ścieżce krytycznej | CI on PR | required after §3 Phase 4 | zerwanie przepływu login → dzień → hasło → generowanie → edycja → akceptacja |
 | post-edit hook | local (pętla agenta) | recommended after §3 Phase 4 | regresje w momencie edycji; nie zastępuje CI |
