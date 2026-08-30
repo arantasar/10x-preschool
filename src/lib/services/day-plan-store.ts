@@ -120,6 +120,15 @@ function categorize(error: PostgrestError): StoreErrorCategory {
     case "U0001":
     case "U0002":
       return "conflict";
+    // U0003: save_day_plan_generation refusing an empty batch. Not `conflict` -
+    // there is nothing for the teacher to decide - and explicitly not left to
+    // the `default` below, which leans retryable: the same empty batch would be
+    // refused identically, and "spróbuj ponownie za chwilę" would be a lie. It
+    // is `invalid` for the reason day-plan-http gives that category: zod already
+    // accepted the value against the same bound, so the two disagreeing is our
+    // bug, not the caller's.
+    case "U0003":
+      return "invalid";
     // check_violation (the generation invariant, and the length/ordinal bounds),
     // not_null_violation, unique_violation, foreign_key_violation,
     // string_data_right_truncation.

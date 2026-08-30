@@ -507,11 +507,11 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Automated
 
-- [x] 3.1 `npm test` zielone
-- [x] 3.2 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji
-- [x] 3.3 Każdy przypadek spoza kontraktu asertuje `rpc` zero razy
-- [x] 3.4 Szczęśliwa ścieżka asertuje `rpc` dokładnie raz z trzema aktywnościami
-- [x] 3.5 Zestaw rozróżniający (zamiana kolejności zapis/walidacja psuje (a)–(e), zostawia (f) zielonym)
+- [x] 3.1 `npm test` zielone — 42e62e4
+- [x] 3.2 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji — 42e62e4
+- [x] 3.3 Każdy przypadek spoza kontraktu asertuje `rpc` zero razy — 42e62e4
+- [x] 3.4 Szczęśliwa ścieżka asertuje `rpc` dokładnie raz z trzema aktywnościami — 42e62e4
+- [x] 3.5 Zestaw rozróżniający (zamiana kolejności zapis/walidacja psuje (a)–(e), zostawia (f) zielonym) — 42e62e4
 
 #### Manual
 
@@ -522,13 +522,13 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Automated
 
-- [ ] 4.1 Migracja stosuje się czysto (`npx supabase db reset`)
-- [ ] 4.2 Istniejący pgTAP przechodzi bez zmian (`npm run test:db`, `plan(42)` i `plan(23)` nietknięte)
-- [ ] 4.3 `npm test` zielone
-- [ ] 4.4 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji
-- [ ] 4.5 Migracja potrafi odmówić (pusta partia rzuca, zero wierszy `day_plans` po rzucie)
-- [ ] 4.6 Brak definicji strażników w `src/components/plan/*.tsx` (grep pusty)
-- [ ] 4.7 Zestaw strażników rozróżniający (przywrócenie `.every()` psuje puste tablice, zostawia poprawne body zielonym)
+- [x] 4.1 Migracja stosuje się czysto (`npx supabase db reset`)
+- [x] 4.2 Istniejący pgTAP przechodzi bez zmian (`npm run test:db`, `plan(42)` i `plan(23)` nietknięte)
+- [x] 4.3 `npm test` zielone
+- [x] 4.4 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji
+- [x] 4.5 Migracja potrafi odmówić (pusta partia rzuca, zero wierszy `day_plans` po rzucie)
+- [x] 4.6 Brak definicji strażników w `src/components/plan/*.tsx` (grep pusty)
+- [x] 4.7 Zestaw strażników rozróżniający (przywrócenie `.every()` psuje puste tablice, zostawia poprawne body zielonym)
 
 #### Manual
 

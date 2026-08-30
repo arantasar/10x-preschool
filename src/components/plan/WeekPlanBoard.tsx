@@ -4,6 +4,7 @@ import { WeekDayCard, type DayState } from "@/components/plan/WeekDayCard";
 import { Button } from "@/components/ui/button";
 import { PROMPT_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
 import { cn } from "@/lib/utils";
+import { isDayPlanBody, isErrorBody, isOutlineBody } from "@/lib/day-plan-guards";
 import type { DayPlanView, WeekPlanView } from "@/types";
 
 /**
@@ -467,53 +468,4 @@ async function readDay(planDate: string): Promise<DayPlanView | null> {
   } catch {
     return null;
   }
-}
-
-// ---------------------------------------------------------------------------
-// Wire shapes
-// ---------------------------------------------------------------------------
-// Narrowed rather than asserted, for the reason `DayPlanEditor` gives: an
-// unexpected body should become a readable message, not a crash inside the
-// island. `DayPlanView` and not `DayPlanWithCurrentActivities` - the brand says
-// a batch was checked against its plan's counter, and that check happened on the
-// server, before serialising.
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function isDayPlanBody(body: unknown): body is DayPlanView {
-  if (!isRecord(body) || !isRecord(body.plan) || !Array.isArray(body.activities)) {
-    return false;
-  }
-  const plan = body.plan;
-  if (typeof plan.id !== "string" || typeof plan.prompt !== "string") {
-    return false;
-  }
-  if (plan.accepted_at !== null && typeof plan.accepted_at !== "string") {
-    return false;
-  }
-  if (typeof plan.current_generation !== "number") {
-    return false;
-  }
-  return body.activities.every(
-    (item: unknown) =>
-      isRecord(item) &&
-      typeof item.id === "string" &&
-      typeof item.title === "string" &&
-      typeof item.description === "string",
-  );
-}
-
-function isOutlineBody(body: unknown): body is { themes: { plan_date: string; theme: string }[] } {
-  if (!isRecord(body) || !Array.isArray(body.themes)) {
-    return false;
-  }
-  return body.themes.every(
-    (item: unknown) => isRecord(item) && typeof item.plan_date === "string" && typeof item.theme === "string",
-  );
-}
-
-function isErrorBody(body: unknown): body is { error: string; retryable: boolean } {
-  return isRecord(body) && typeof body.error === "string" && typeof body.retryable === "boolean";
 }
