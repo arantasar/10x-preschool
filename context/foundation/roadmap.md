@@ -54,7 +54,7 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 | S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | done        |
 | S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | done        |
 | S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done        |
-| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | blocked     |
+| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | ready     |
 | S-08 | visible-day-theme         | odróżnić dni jednego hasła po podtytule dnia w miesiącu i w dniu   | S-03, S-04    | FR-004, US-01 (brak FR — pyt. 3)                      | done        |
 
 ## Streams
@@ -175,7 +175,56 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 - **Outcome:** Nauczyciel może wylogować się z aplikacji z dowolnego ekranu, na którym pracuje, a nie tylko ze strony startowej dla niezalogowanych.
 - **Change ID:** sign-out
-- **PRD refs:** FR-003 (nice-to-have; odparkowane 2026-08-26 — pozycja znika z `## Parked`)
+- **PRD refs:** FR-003 (nice-to-have; odparkowane 2026-08-26 — pozycja znika z `## Kandydaci do następnego kamienia (M-02)
+
+Zgłoszone przez użytkownika 2026-08-30 i przetriagowane. **To nie są jeszcze slice'y** —
+żaden nie ma FR w PRD v1, a dwa wymagają zmiany PRD, nie dopisania do niego. Kolejność
+wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap Questions #3)
+→ `/10x-roadmap` (zamknięcie `M-01`, otwarcie `M-02`). Dopiero wtedy stają się `S-NN`.
+
+| Kandydat | Charakter | Uwaga |
+| --- | --- | --- |
+| Regeneracja tygodnia z zastępowaniem istniejących dni | ścieżka generowania — **najcięższy z paczki** | patrz Decyzje poniżej |
+| Cofnięcie akceptacji i usunięcie dnia z poziomu tygodnia | UI + istniejący prymityw | `setAcceptance(…, false)` już istnieje; brakuje powierzchni w tygodniu |
+| Blokada edycji zaakceptowanego dnia / tygodnia | maszyna stanów | zawężone 2026-08-30 — patrz Decyzje |
+| Układ przycisków w widoku dnia (cofnięcie akceptacji, usunięcie pod przyciskiem generowania) | UI | wchodzi razem z powyższym; osobno oznacza przesuwanie tych samych przycisków dwa razy |
+| Wydruk zaakceptowanego tygodnia (dzień na stronę) | nowa funkcja | czysty dodatek, nic nie łamie |
+
+**Decyzje ustalone 2026-08-30 (user) — regeneracja tygodnia:**
+
+- **Zastępowanie obejmuje także dni zaakceptowane.** Nauczyciel, który chce zmienić motyw
+  całego tygodnia, nie ma wchodzić w pięć dni po kolei.
+- **Potwierdzenie musi być uczciwe** — „zastąpisz 5 dni, w tym 3 zaakceptowane", nie
+  generyczne „na pewno?".
+- **Blokada „tydzień zaakceptowany" dotyczy edycji przypadkowej** (inline w kafelkach);
+  operacje jawne — regeneruj tydzień, cofnij akceptację, usuń dzień — pozostają dostępne.
+
+**Co ta pozycja pociąga za sobą** (do przeniesienia w shape-notes, nie do rozstrzygnięcia tutaj):
+
+1. Dzisiejsza blokada w widoku tygodnia **nie dotyczy akceptacji** — generowanie pomija
+   każdy dzień, który ma *jakikolwiek* plan, także roboczy szkic. To nie jest zmiana
+   komunikatu, tylko nowa zdolność.
+2. Kryterium akceptacji `S-03` („regeneracja jednego dnia nie wpływa na pozostałe")
+   wymaga przeformułowania — nowa operacja świadomie rusza pięć dni naraz.
+3. Ryzyko #3 w `test-plan.md` §2 zostaje ważne, ale jego kryterium ochrony zmienia się z
+   „nigdy nie niszczy" na „nigdy nie niszczy **bez jawnego potwierdzenia**, a po
+   potwierdzeniu podmienia komplet". Faza 3 rolloutu (§3) idzie **po** tym slice'ie.
+4. Kolejność operacji: stary tydzień nie może zniknąć, zanim nowy nie jest gotowy —
+   inaczej awaria dostawcy LLM zostawia pięć pustych dni zamiast pięciu starych.
+
+**Poza paczką `M-02`:**
+
+- **Rodzaje aktywności (plastyczne / muzyczne / ruchowe)** — wymaga **odwrócenia**
+  `prd.md` §Non-Goals i pozycji w §Parked poniżej, nie dopisania FR. Osobna sesja
+  `/10x-shape` z researchem **dziedzinowym** (typowe aktywności przedszkolne) — to nie
+  jest zadanie dla `/10x-research`, który czyta kodebazę. Otwarte w samym pomyśle: wybór
+  typu przez nauczyciela vs. nacisk na typ w tygodniu vs. równomierne rozłożenie.
+- **Monetyzacja** — własny kamień milowy, nie funkcja. Sekwencjonowana po powyższych, bo
+  to one są kandydatami na „za subskrypcją". Wymaga powrotu do `infrastructure.md`.
+- **Polska wersja strony głównej** — poprawka poza roadmapą; wchodzi jako zmiana
+  `pl-landing-copy` bez FR i bez wiersza tutaj.
+
+## Parked`)
 - **Prerequisites:** S-04
 - **Parallel with:** —
 - **Blockers:** —
@@ -191,11 +240,15 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** S-04
 - **Parallel with:** —
 - **Blockers:** —
-- **Unknowns:**
-  - Wzorzec interakcji — hover, kliknięcie, rozwinięcie wiersza tygodnia, panel boczny? — Owner: Janusz. Block: **tak**, bez tego slice nie ma kształtu. Sam hover nie wystarczy jako jedyna ścieżka: nie istnieje na dotyku i nie jest osiągalny z klawiatury, więc cokolwiek zostanie wybrane, potrzebuje drugiego wejścia.
-  - Skąd biorą się dane podglądu — Owner: TBD. Block: nie. `readMonthSummary` (`src/lib/services/day-plan-store.ts`) czyta dziś trzy kolumny `day_plans` dla ~42 dni; podgląd aktywności to dołożenie `activities` bieżącej generacji dla całego zakresu — odczyt z góry vs. dociąganie na żądanie.
-- **Risk:** Jedyny z czwórki naprawdę otwarty — użytkownik nazwał go „do przegadania i poszukania najlepszych pomysłów". Ryzyko nie leży w kodzie, tylko w tym, że hover jako pierwszy pomysł jest wygodny do zbudowania i słaby w użyciu: gęsta siatka 7 kolumn, dotyk bez hovera, klawiatura bez ścieżki. Sekwencjonowany po `S-04`, bo dopiero wtedy siatka jest ekranem, na którym nauczyciel faktycznie spędza czas — wcześniej podgląd optymalizowałby widok, do którego prawie się nie zagląda. Interakcja z `S-05`: dzień skreślony miękko nie może mieć podglądu, więc kolejność `S-05` → `S-07` jest tańsza niż odwrotna. Interakcja z `S-08`: podtytuł dnia zdejmuje z tego slice'a część ciężaru — jeśli kafelek już odróżnia pięć dni jednego hasła, podgląd aktywności przestaje być jedynym sposobem, żeby zobaczyć, czym te dni się różnią, i można go projektować spokojniej.
-- **Status:** blocked
+- **Unknowns:** — (obie rozstrzygnięte 2026-08-30, patrz Decyzje poniżej)
+- **Decyzje ustalone 2026-08-30 (user):**
+  - **Wzorzec interakcji: podgląd na `:hover` oraz `:focus-visible`; kliknięcie kafelka otwiera dzień.** Zarzut „hover nie istnieje na dotyku i nie jest osiągalny z klawiatury" zostaje zdjęty nie przez drugie wejście do podglądu, tylko przez uznanie, że **podgląd jest akceleratorem, a nie jedyną drogą do informacji**: na każdym wejściu kliknięcie/Enter otwiera dzień, gdzie widać komplet. Nikt nie traci dostępu do treści — traci skrót. `:focus-visible` domyka lukę klawiatury niskim kosztem, bo kafelek jest już `<a>` i stoi w kolejności tabulacji.
+  - **Podgląd jest wyłącznie do odczytu** — żadnej edycji na hoverze.
+  - **Dane podglądu dociągane na żądanie (na hover), nie z góry dla całego miesiąca.** Preload (np. bieżącego tygodnia) świadomie odłożony jako możliwa przyszła optymalizacja, nie zakres tego slice'a. Do ugruntowania przez `/10x-research`: opóźnienie na najechaniu, anulowanie żądania przy zejściu z kafelka, pamięć podręczna już pobranych dni.
+- **Zakres zawężony przez stan kodu (2026-08-30):** kliknięcie kafelka **już** prowadzi do `/plan?date=` — ta ścieżka istnieje i nie jest budowana od nowa. To, co dziś wygląda jak tooltip, to natywny atrybut `title`; slice go zastępuje. Ucięcie podtytułu to jednolinijkowy `truncate` — kafelek musi dostać więcej wysokości na `theme`, i to jest ta sama zmiana, co pozycja „kafelek mieści cały podtytuł" z listy poprawek z 2026-08-30 (wchodzi tutaj, nie osobno: powiększony kafelek i panel podglądu konkurują o tę samą siatkę siedmiu kolumn).
+- **Dług PRD:** `PRD refs` tego slice'a zostają puste do czasu przejścia PRD v2 (Open Roadmap Questions #3). Slice można planować i implementować wcześniej, ale **nie archiwizować z pustą rubryką** — v2 obejmuje `S-04`…`S-08` jednym przebiegiem.
+- **Risk:** Jedyny z czwórki naprawdę otwarty — użytkownik nazwał go „do przegadania i poszukania najlepszych pomysłów". Ryzyko nie leży w kodzie, tylko w tym, że hover jako pierwszy pomysł jest wygodny do zbudowania i słaby w użyciu: gęsta siatka 7 kolumn, dotyk bez hovera, klawiatura bez ścieżki. Sekwencjonowany po `S-04`, bo dopiero wtedy siatka jest ekranem, na którym nauczyciel faktycznie spędza czas — wcześniej podgląd optymalizowałby widok, do którego prawie się nie zagląda. Interakcja z `S-05`: dzień skreślony miękko nie może mieć podglądu, więc kolejność `S-05` → `S-07` jest tańsza niż odwrotna. Interakcja z `S-08`: podtytuł dnia zdejmuje z tego slice'a część ciężaru — jeśli kafelek już odróżnia pięć dni jednego hasła, podgląd aktywności przestaje być jedynym sposobem, żeby zobaczyć, czym te dni się różnią, i można go projektować spokojniej. Odblokowany 2026-08-30: rozstrzygnięcie wzorca interakcji zdjęło jedyny blokujący unknown.
+- **Status:** ready
 
 ### S-08: Widoczny podtytuł dnia
 
@@ -222,7 +275,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-04       | month-home                | Widok miesiąca jako ekran główny aplikacji           | yes                   | `/10x-plan month-home`                                          |
 | S-05       | delete-day-plan           | Usunięcie zapisanego planu dnia                      | yes                   | `/10x-plan delete-day-plan`; może iść równolegle do S-04        |
 | S-06       | sign-out                  | Wylogowanie dostępne z powłoki zalogowanej aplikacji | —                     | Dostarczone w S-04 (`month-home`, faza 1) — nie planować osobno |
-| S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | no                    | Czeka na S-04 + rozstrzygnięcie wzorca interakcji               |
+| S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | yes                   | `/10x-plan month-day-preview`; odblokowany 2026-08-30           |
 | S-08       | visible-day-theme         | Widoczny podtytuł dnia w miesiącu i w widoku dnia    | yes                   | `/10x-plan visible-day-theme`; może iść równolegle do S-05      |
 
 ## Open Roadmap Questions
