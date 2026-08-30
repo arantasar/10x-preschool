@@ -81,8 +81,16 @@ czerwono) plus ręczne przejście lejka w przeglądarce.
   testowej poza swoim rolloutem.
 - **Nie ruszamy ekranów zalogowanych** (`plan.astro`, `plan/week.astro`, `plan/month.astro`,
   `AppHeader.astro`, komponenty w `src/components/plan/`) — są już po polsku.
-- **Nie zmieniamy warstwy wizualnej** — klasy Tailwind, układ, orby, pole gwiazd, ikony SVG
+- **Nie zmieniamy warstwy wizualnej** — klasy Tailwind, układ, orby, pole gwiazd
   i struktura kafelków zostają. Zmieniają się wyłącznie treści tekstowe.
+  **Addendum 2026-08-30 (implementacja, potwierdzone w `/10x-impl-review` F3):** ikony SVG
+  **zostały wypisane z tej pozycji**. Pierwotne brzmienie obejmowało je razem z układem,
+  co stało w sprzeczności z Contractem zmiany 5 („podmiana ikon jest opcjonalna") —
+  plan przeczył sam sobie. Trzy ikony podmieniono (kalendarz / edycja / siatka), bo dobrano
+  je do treści startera: kłódka ilustrowała „Authentication Ready" i nad tekstem
+  „Propozycje na dzień i na tydzień" sugerowałaby bezpieczeństwo, czyli powielałaby
+  obrazkiem tę samą wadę, którą zmiana usuwa słowem. Klasy, układ i struktura kafelków
+  pozostają nietknięte — podmienione są wyłącznie ścieżki wewnątrz `<svg>`.
 - **Nie usuwamy martwej gałęzi `user ? …` w `Topbar.astro`.** Kusi, ale to zmiana strukturalna
   pod szyldem zmiany copy; gałąź zostaje i zostaje przetłumaczona razem z resztą.
 - **Nie obiecujemy funkcji z `M-02`** w kafelkach — podgląd aktywności w siatce miesiąca,
