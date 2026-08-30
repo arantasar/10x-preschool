@@ -414,20 +414,20 @@ Brak — zmiana nie dotyka bazy danych, schematu ani danych użytkowników.
 
 #### Automated
 
-- [x] 2.1 Grep fazy 2 uruchomiony przed zmianą zwraca trafienia (bramka widziana na czerwono)
-- [x] 2.2 Grep fazy 2 po zmianie zwraca zero trafień
-- [x] 2.3 `error.message` z Supabase nadal przekazywany bez zmian w obu trasach
-- [x] 2.4 Plik `context/changes/pl-landing-copy/follow-ups/supabase-error-copy.md` istnieje
-- [x] 2.5 Lint przechodzi: `npm run lint`
-- [x] 2.6 Build przechodzi: `npm run build`
-- [x] 2.7 Grep z fazy 1 nadal zwraca zero trafień
+- [x] 2.1 Grep fazy 2 uruchomiony przed zmianą zwraca trafienia (bramka widziana na czerwono) — 1543aed
+- [x] 2.2 Grep fazy 2 po zmianie zwraca zero trafień — 1543aed
+- [x] 2.3 `error.message` z Supabase nadal przekazywany bez zmian w obu trasach — 1543aed
+- [x] 2.4 Plik `context/changes/pl-landing-copy/follow-ups/supabase-error-copy.md` istnieje — 1543aed
+- [x] 2.5 Lint przechodzi: `npm run lint` — 1543aed
+- [x] 2.6 Build przechodzi: `npm run build` — 1543aed
+- [x] 2.7 Grep z fazy 1 nadal zwraca zero trafień — 1543aed
 
 #### Manual
 
-- [x] 2.8 Ścieżka rejestracji `/` → „Załóż konto" → potwierdzenie e-maila w całości po polsku
-- [x] 2.9 Ścieżka logowania `/` → „Zaloguj się" → formularz w całości po polsku
-- [x] 2.10 Wszystkie komunikaty walidacji po stronie klienta po polsku
-- [x] 2.11 Podpowiedź o długości hasła poprawna gramatycznie przy 1 i przy kilku znakach
-- [x] 2.12 `aria-label` przełącznika hasła po polsku
-- [x] 2.13 Błąd z Supabase pojawia się po angielsku — oczekiwane, pokryte follow-upem
-- [x] 2.14 Poprawne logowanie nadal prowadzi do `/plan/month`
+- [x] 2.8 Ścieżka rejestracji `/` → „Załóż konto" → potwierdzenie e-maila w całości po polsku — 1543aed
+- [x] 2.9 Ścieżka logowania `/` → „Zaloguj się" → formularz w całości po polsku — 1543aed
+- [x] 2.10 Wszystkie komunikaty walidacji po stronie klienta po polsku — 1543aed
+- [x] 2.11 Podpowiedź o długości hasła poprawna gramatycznie przy 1 i przy kilku znakach — 1543aed
+- [x] 2.12 `aria-label` przełącznika hasła po polsku — 1543aed
+- [x] 2.13 Błąd z Supabase pojawia się po angielsku — oczekiwane, pokryte follow-upem — 1543aed
+- [x] 2.14 Poprawne logowanie nadal prowadzi do `/plan/month` — 1543aed
