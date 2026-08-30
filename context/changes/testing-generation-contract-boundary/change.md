@@ -31,10 +31,17 @@ stąd nie sposób:
       lecz zaostrzony `isDayPlanBody`: taki dzień przestaje być akceptowany, więc
       w `reconcile` daje cichy no-op, a w `mutate` — komunikat o niepowodzeniu
       zapisu, który się powiódł. Wynik zapisz tutaj.
-- [ ] **Krok `npm test` w logu CI.** Pozycja 1.9 w `plan.md` jest odhaczona na
-      podstawie linii w `ci.yml`, nie na podstawie przebiegu. Otwórz PR i
-      potwierdź, że krok stoi po `astro sync`, przed `build`, i że czerwony test
-      faktycznie blokuje merge.
+- [x] **Krok `npm test` w logu CI.** Potwierdzone na PR #18, przebieg
+      `33303229764`: `npm ci` → `npx astro sync` → `npm run lint` → **`npm test`**
+      → `npm run build`, wszystkie zielone. Kolejność zgodna z planem.
+- [ ] **Bramka jest doradcza, nie blokująca.** `gh api …/branches/master/protection`
+      zwraca 403 („Upgrade to GitHub Pro or make this repository public"), a PR
+      raportuje `mergeStateStatus: CLEAN` — czyli **czerwony test nie zatrzyma
+      merge'a**, tylko pokaże czerwony znaczek. Ponieważ merge do `master`
+      deployuje wprost na produkcję, jedyną realną bramką jest dziś dyscyplina
+      człowieka. Do rozstrzygnięcia: upublicznić repo, wykupić Pro, albo przyjąć
+      to jako świadome ograniczenie i zapisać w `test-plan.md` §5, że bramka
+      `unit + integration` jest `required (wired, advisory)`.
 
 ## Roadmapa
 
