@@ -321,7 +321,10 @@ follow-upu nazywa problem, właściciela (Janusz) i bramkę wejścia; nie propon
 - Grep uruchomiony **przed** zmianą zwraca trafienia (dowód, że bramka potrafi nie przejść) —
   wyłącznie pełne frazy widoczne dla użytkownika, żadnych identyfikatorów (patrz §Critical
   Implementation Details):
-  `grep -nE "Sign in|Sign up|Don't have an account|Already have an account|Registration successful|Check your email|Go to sign in|Back to sign in|Your account has been created|We've sent a confirmation link|Email is required|Enter a valid email address|Password is required|Please confirm your password|Passwords do not match|Your password|Re-enter your password|Confirm password|Min\. 6 characters|more character|Signing in|Creating account|Create account|Hide password|Show password|Supabase is not configured" src/pages/auth/*.astro src/components/auth/*.tsx src/pages/api/auth/signin.ts src/pages/api/auth/signup.ts`
+  ⚠️ Wzorzec poprawiony w trakcie implementacji: pierwotna lista pomijała
+  `Password must be at least` z `SignUpForm.tsx` — zmaterializowane ryzyko z §Open Risks
+  („lista fraz jest ręczna"). Bramka bez tej frazy przechodziła z angielskim tekstem w kodzie.
+  `grep -nE "Sign in|Sign up|Don't have an account|Already have an account|Registration successful|Check your email|Go to sign in|Back to sign in|Your account has been created|We've sent a confirmation link|Email is required|Enter a valid email address|Password is required|Password must be at least|Please confirm your password|Passwords do not match|Your password|Re-enter your password|Confirm password|Min\. 6 characters|more character|Signing in|Creating account|Create account|Hide password|Show password|Supabase is not configured" src/pages/auth/*.astro src/components/auth/*.tsx src/pages/api/auth/signin.ts src/pages/api/auth/signup.ts`
 - Ten sam grep po zmianie zwraca **zero trafień** (kod wyjścia 1)
 - `error.message` z Supabase jest nadal przekazywany bez zmian w obu trasach:
   `grep -c "encodeURIComponent(error.message)" src/pages/api/auth/signin.ts src/pages/api/auth/signup.ts` zwraca `1` dla każdego pliku
@@ -391,40 +394,40 @@ Brak — zmiana nie dotyka bazy danych, schematu ani danych użytkowników.
 
 #### Automated
 
-- [x] 1.1 Grep fazy 1 uruchomiony przed zmianą zwraca trafienia (bramka widziana na czerwono)
-- [x] 1.2 Grep fazy 1 po zmianie zwraca zero trafień
-- [x] 1.3 `src/layouts/Layout.astro` zawiera `lang="pl"`
-- [x] 1.4 `src/pages/index.astro` przekazuje własny `title`
-- [x] 1.5 Lint przechodzi: `npm run lint`
-- [x] 1.6 Build przechodzi: `npm run build`
-- [x] 1.7 `git diff --name-only master..HEAD` wypisuje wyłącznie cztery pliki fazy plus `context/`
+- [x] 1.1 Grep fazy 1 uruchomiony przed zmianą zwraca trafienia (bramka widziana na czerwono) — c7481e9
+- [x] 1.2 Grep fazy 1 po zmianie zwraca zero trafień — c7481e9
+- [x] 1.3 `src/layouts/Layout.astro` zawiera `lang="pl"` — c7481e9
+- [x] 1.4 `src/pages/index.astro` przekazuje własny `title` — c7481e9
+- [x] 1.5 Lint przechodzi: `npm run lint` — c7481e9
+- [x] 1.6 Build przechodzi: `npm run build` — c7481e9
+- [x] 1.7 `git diff --name-only master..HEAD` wypisuje wyłącznie cztery pliki fazy plus `context/` — c7481e9
 
 #### Manual
 
-- [x] 1.8 Strona `/` w całości po polsku — hero, przyciski, trzy kafelki, pasek
-- [x] 1.9 Tytuł karty przeglądarki na `/` nie zawiera „Astro Starter"
-- [x] 1.10 Zalogowany na `/` nadal trafia na `/plan/month`
+- [x] 1.8 Strona `/` w całości po polsku — hero, przyciski, trzy kafelki, pasek — c7481e9
+- [x] 1.9 Tytuł karty przeglądarki na `/` nie zawiera „Astro Starter" — c7481e9
+- [x] 1.10 Zalogowany na `/` nadal trafia na `/plan/month` — c7481e9
 - [ ] 1.11 Układ nie rozjechał się na szerokości mobilnej i desktopowej
-- [x] 1.12 Żaden kafelek nie obiecuje funkcji spoza `S-01`…`S-05`, `S-08`
+- [x] 1.12 Żaden kafelek nie obiecuje funkcji spoza `S-01`…`S-05`, `S-08` — c7481e9
 
 ### Phase 2: Ekrany logowania i rejestracji
 
 #### Automated
 
-- [ ] 2.1 Grep fazy 2 uruchomiony przed zmianą zwraca trafienia (bramka widziana na czerwono)
-- [ ] 2.2 Grep fazy 2 po zmianie zwraca zero trafień
-- [ ] 2.3 `error.message` z Supabase nadal przekazywany bez zmian w obu trasach
-- [ ] 2.4 Plik `context/changes/pl-landing-copy/follow-ups/supabase-error-copy.md` istnieje
-- [ ] 2.5 Lint przechodzi: `npm run lint`
-- [ ] 2.6 Build przechodzi: `npm run build`
-- [ ] 2.7 Grep z fazy 1 nadal zwraca zero trafień
+- [x] 2.1 Grep fazy 2 uruchomiony przed zmianą zwraca trafienia (bramka widziana na czerwono)
+- [x] 2.2 Grep fazy 2 po zmianie zwraca zero trafień
+- [x] 2.3 `error.message` z Supabase nadal przekazywany bez zmian w obu trasach
+- [x] 2.4 Plik `context/changes/pl-landing-copy/follow-ups/supabase-error-copy.md` istnieje
+- [x] 2.5 Lint przechodzi: `npm run lint`
+- [x] 2.6 Build przechodzi: `npm run build`
+- [x] 2.7 Grep z fazy 1 nadal zwraca zero trafień
 
 #### Manual
 
-- [ ] 2.8 Ścieżka rejestracji `/` → „Załóż konto" → potwierdzenie e-maila w całości po polsku
-- [ ] 2.9 Ścieżka logowania `/` → „Zaloguj się" → formularz w całości po polsku
-- [ ] 2.10 Wszystkie komunikaty walidacji po stronie klienta po polsku
-- [ ] 2.11 Podpowiedź o długości hasła poprawna gramatycznie przy 1 i przy kilku znakach
-- [ ] 2.12 `aria-label` przełącznika hasła po polsku
-- [ ] 2.13 Błąd z Supabase pojawia się po angielsku — oczekiwane, pokryte follow-upem
-- [ ] 2.14 Poprawne logowanie nadal prowadzi do `/plan/month`
+- [x] 2.8 Ścieżka rejestracji `/` → „Załóż konto" → potwierdzenie e-maila w całości po polsku
+- [x] 2.9 Ścieżka logowania `/` → „Zaloguj się" → formularz w całości po polsku
+- [x] 2.10 Wszystkie komunikaty walidacji po stronie klienta po polsku
+- [x] 2.11 Podpowiedź o długości hasła poprawna gramatycznie przy 1 i przy kilku znakach
+- [x] 2.12 `aria-label` przełącznika hasła po polsku
+- [x] 2.13 Błąd z Supabase pojawia się po angielsku — oczekiwane, pokryte follow-upem
+- [x] 2.14 Poprawne logowanie nadal prowadzi do `/plan/month`
