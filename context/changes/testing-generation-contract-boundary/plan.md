@@ -474,13 +474,13 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Automated
 
-- [x] 1.1 Instalacja nie rozbija deduplikacji Vite (`npm ls vite` — wyłącznie 7.3.3 i `deduped`)
-- [x] 1.2 Runner wstaje i przechodzi (`npm test`)
-- [x] 1.3 Typy czyste (`npx astro sync && npx tsc --noEmit`)
-- [x] 1.4 Lint przechodzi bez nowego override'u (`npm run lint`)
-- [x] 1.5 Build bez regresji (`npm run build`)
-- [x] 1.6 Pliki testowe nie trafiają do bundla (grep na `dist/`)
-- [x] 1.7 Bramka potrafi zawieść (odwrócona asercja → `npm test` kod ≠ 0, potem powrót do zieleni)
+- [x] 1.1 Instalacja nie rozbija deduplikacji Vite (`npm ls vite` — wyłącznie 7.3.3 i `deduped`) — 54e680c
+- [x] 1.2 Runner wstaje i przechodzi (`npm test`) — 54e680c
+- [x] 1.3 Typy czyste (`npx astro sync && npx tsc --noEmit`) — 54e680c
+- [x] 1.4 Lint przechodzi bez nowego override'u (`npm run lint`) — 54e680c
+- [x] 1.5 Build bez regresji (`npm run build`) — 54e680c
+- [x] 1.6 Pliki testowe nie trafiają do bundla (grep na `dist/`) — 54e680c
+- [x] 1.7 Bramka potrafi zawieść (odwrócona asercja → `npm test` kod ≠ 0, potem powrót do zieleni) — 54e680c
 
 #### Manual
 
@@ -491,12 +491,12 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Automated
 
-- [ ] 2.1 `npm test` zielone
-- [ ] 2.2 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji
-- [ ] 2.3 Nieparsowalne body → `invalid` przy dokładnie jednym wywołaniu `fetch`
-- [ ] 2.4 `finish_reason: "length"` → `invalid`, bez ponowienia
-- [ ] 2.5 429 i 5xx dalej `transient` przy dwóch wywołaniach `fetch`
-- [ ] 2.6 Testy widziane na czerwono (odwrócenie naprawy psuje wyłącznie przypadek nieparsowalnego body)
+- [x] 2.1 `npm test` zielone
+- [x] 2.2 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji
+- [x] 2.3 Nieparsowalne body → `invalid` przy dokładnie jednym wywołaniu `fetch`
+- [x] 2.4 `finish_reason: "length"` → `invalid`, bez ponowienia
+- [x] 2.5 429 i 5xx dalej `transient` przy dwóch wywołaniach `fetch`
+- [x] 2.6 Testy widziane na czerwono (odwrócenie naprawy psuje wyłącznie przypadek nieparsowalnego body)
 
 #### Manual
 
