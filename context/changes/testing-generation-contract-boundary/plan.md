@@ -484,8 +484,8 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Manual
 
-- [ ] 1.8 `astro.config.test.mjs` niesie w nagłówku dosłowną treść błędu `@cloudflare/vite-plugin`
-- [ ] 1.9 Krok `npm test` widoczny w logu CI, po `astro sync`, przed `build`
+- [x] 1.8 `astro.config.test.mjs` niesie w nagłówku dosłowną treść błędu `@cloudflare/vite-plugin` — 54e680c
+- [x] 1.9 Krok `npm test` widoczny w logu CI, po `astro sync`, przed `build` — 54e680c
 
 ### Phase 2: Klasy awarii dostawcy (ryzyko #5)
 
@@ -500,8 +500,8 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Manual
 
-- [ ] 2.7 Log rozróżnia nieparsowalne body od `finish_reason: "error"`
-- [ ] 2.8 Nauczyciel przy nieparsowalnym body czyta komunikat `invalid`, nie „przeciążona"
+- [x] 2.7 Log rozróżnia nieparsowalne body od `finish_reason: "error"` — 34b696f
+- [x] 2.8 Nauczyciel przy nieparsowalnym body czyta komunikat `invalid`, nie „przeciążona" — 34b696f
 
 ### Phase 3: Granica kontrakt→zapis (ryzyko #2, serwer)
 
@@ -515,8 +515,8 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Manual
 
-- [ ] 3.6 Żaden test nie mockuje modułu z `src/lib/services/`
-- [ ] 3.7 Atrapa Supabase nie odwzorowuje PostgREST głębiej, niż wymagają wołane funkcje
+- [x] 3.6 Żaden test nie mockuje modułu z `src/lib/services/` — 42e62e4
+- [x] 3.7 Atrapa Supabase nie odwzorowuje PostgREST głębiej, niż wymagają wołane funkcje — 42e62e4
 
 ### Phase 4: Domknięcie dziur pustego planu (ryzyko #2, obrona w głąb)
 
@@ -532,21 +532,21 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Manual
 
-- [ ] 4.8 `/plan/week` przy `{"themes": []}` pokazuje błąd, nie pięć dni bez tematu
-- [ ] 4.9 Nowy `errcode` daje nauczycielowi sensowny komunikat przez `toStoreError`
-- [ ] 4.10 Komentarze uzasadniające narrowing przetrwały przenosiny
+- [x] 4.8 `/plan/week` przy `{"themes": []}` pokazuje błąd, nie pięć dni bez tematu — 8358bb8
+- [x] 4.9 Nowy `errcode` daje nauczycielowi sensowny komunikat przez `toStoreError` — 8358bb8
+- [x] 4.10 Komentarze uzasadniające narrowing przetrwały przenosiny — 8358bb8
 
 ### Phase 5: Cookbook i status rolloutu
 
 #### Automated
 
-- [x] 5.1 §6.1 i §6.2 bez „TBD" (6.3 i 6.5 zostają)
-- [x] 5.2 Wiersz Fazy 1 w §3 ma Status `complete`
-- [x] 5.3 `required after §3 Phase 1` nie występuje już w §5
-- [x] 5.4 Poza §3, §5, §6, §8 test-plan nietknięty (`git diff -w master..HEAD`)
-- [x] 5.5 Cały zestaw zielony (`npm test`, `npm run lint`, `npm run build`, `npm run test:db`)
+- [x] 5.1 §6.1 i §6.2 bez „TBD" (6.3 i 6.5 zostają) — 1deede2
+- [x] 5.2 Wiersz Fazy 1 w §3 ma Status `complete` — 1deede2
+- [x] 5.3 `required after §3 Phase 1` nie występuje już w §5 — 1deede2
+- [x] 5.4 Poza §3, §5, §6, §8 test-plan nietknięty (`git diff -w master..HEAD`) — 1deede2
+- [x] 5.5 Cały zestaw zielony (`npm test`, `npm run lint`, `npm run build`, `npm run test:db`) — 1deede2
 
 #### Manual
 
-- [ ] 5.6 §6.1 i §6.2 odpowiadają na „jak dodać test dla X" bez czytania kodu testów
-- [ ] 5.7 Notatka §6.6 mówi, czego faza nauczyła, a nie co zrobiła
+- [x] 5.6 §6.1 i §6.2 odpowiadają na „jak dodać test dla X" bez czytania kodu testów — 1deede2
+- [x] 5.7 Notatka §6.6 mówi, czego faza nauczyła, a nie co zrobiła — 1deede2
