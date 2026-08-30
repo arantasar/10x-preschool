@@ -120,6 +120,23 @@ function categorize(error: PostgrestError): StoreErrorCategory {
     case "U0001":
     case "U0002":
       return "conflict";
+    // U0003: save_day_plan_generation refusing an empty batch. Not `conflict` -
+    // there is nothing for the teacher to decide - and explicitly not left to
+    // the `default` below, which leans retryable: telling the teacher "spróbuj
+    // ponownie za chwilę" about a batch the schema will refuse identically would
+    // be a lie. It is `invalid` for the reason day-plan-http gives that category:
+    // zod already accepted the value against the same bound, so the two
+    // disagreeing is our bug, not the caller's.
+    //
+    // What this does *not* do is stop the write from being re-issued.
+    // `saveGeneration` retries every StoreError but `conflict`, so a U0003 - like
+    // `not_found` and `config` - is sent to Postgres twice before it surfaces.
+    // Harmless (nothing was written either time) and deliberate: the retry is
+    // there to buy back a generation the teacher already paid 10-30s for, and it
+    // is not worth a category-by-category exception list. The category decides
+    // what the teacher is *told*, not how many times we ask.
+    case "U0003":
+      return "invalid";
     // check_violation (the generation invariant, and the length/ordinal bounds),
     // not_null_violation, unique_violation, foreign_key_violation,
     // string_data_right_truncation.

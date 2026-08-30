@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DESCRIPTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
 import { formatAcceptedAt, formatPlanDate } from "@/lib/day-plan-dates";
 import { cn } from "@/lib/utils";
+import { isDayPlanBody, isErrorBody } from "@/lib/day-plan-guards";
 import type { Activity, DayPlanView } from "@/types";
 
 /**
@@ -633,41 +634,4 @@ function FieldError({ message }: { message?: string }) {
       {message}
     </p>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Wire shapes
-// ---------------------------------------------------------------------------
-// Narrowed rather than asserted: an unexpected body should become a readable
-// error, not a crash inside the island. `DayPlanView` and not
-// `DayPlanWithCurrentActivities` - the brand on the latter says the batch has
-// been checked against its plan's counter, and a predicate here would be
-// claiming a check that never ran. The server did it before serialising.
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function isDayPlanBody(body: unknown): body is DayPlanView {
-  if (!isRecord(body) || !isRecord(body.plan) || !Array.isArray(body.activities)) {
-    return false;
-  }
-  const plan = body.plan;
-  if (typeof plan.id !== "string" || typeof plan.prompt !== "string") {
-    return false;
-  }
-  if (plan.accepted_at !== null && typeof plan.accepted_at !== "string") {
-    return false;
-  }
-  return body.activities.every(
-    (item: unknown) =>
-      isRecord(item) &&
-      typeof item.id === "string" &&
-      typeof item.title === "string" &&
-      typeof item.description === "string",
-  );
-}
-
-function isErrorBody(body: unknown): body is { error: string; retryable: boolean } {
-  return isRecord(body) && typeof body.error === "string" && typeof body.retryable === "boolean";
 }

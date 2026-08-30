@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-08-29
+> Last updated: 2026-08-30
 
 ## 1. Strategy
 
@@ -78,9 +78,9 @@ poniżej; orkiestrator aktualizuje Status, gdy artefakty pojawiają się na dysk
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Runner + granica model→kontrakt→zapis | Udowodnić, że odpowiedź spoza kontraktu i awaria dostawcy kończą się uczciwą porażką, a nie cichym pustym planem | #2, #5 | unit + integration | change opened | context/changes/testing-generation-contract-boundary/ |
+| 1 | Runner + granica model→kontrakt→zapis | Udowodnić, że odpowiedź spoza kontraktu i awaria dostawcy kończą się uczciwą porażką, a nie cichym pustym planem | #2, #5 | unit + integration | complete | context/changes/testing-generation-contract-boundary/ |
 | 2 | Powtarzalna bramka bezpieczeństwa treści | Wyjąć jedyną kontrolę guardrailu z jednorazowego skryptu i objąć nią każdy dopuszczony model oraz każdą zmianę promptu | #1, #6 | contract + AI-native judge | not started | — |
-| 3 | Ochrona zapisu i własności | Zaakceptowany dzień przeżywa regenerację i generowanie tygodnia; endpoint odmawia dostępu do cudzego zasobu | #3, #4, #7 | integration + pgTAP | not started | — |
+| 3 | Ochrona zapisu i własności | Zaakceptowany dzień przeżywa regenerację i generowanie tygodnia; endpoint odmawia dostępu do cudzego zasobu; **odmowa pustej partii (`U0003`) dostaje asercję pgTAP** — dziś niezapięta, patrz §6.4 | #3, #4, #7 | integration + pgTAP | not started | — |
 | 4 | Bramki jakości w CI + e2e ścieżki krytycznej | Zamknąć podłogę przed merge'em do `master`, który deployuje wprost na produkcję | przekrojowe | gates + e2e | not started | — |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` →
@@ -116,12 +116,23 @@ Bramki mają tu wagę większą niż zwykle: merge do `master` deployuje worker 
 produkcję bez kroku zatwierdzenia, więc PR jest ostatnim miejscem, w którym
 cokolwiek da się zatrzymać.
 
+**Żadna bramka na PR-ze nie jest dziś blokująca — wszystkie są doradcze.**
+Ochrona gałęzi wymaga publicznego repozytorium albo planu GitHub Pro, a to jest
+prywatne repo na planie darmowym: `gh api …/branches/master/protection` odpowiada
+`403 Upgrade to GitHub Pro or make this repository public`, a PR raportuje
+`mergeStateStatus: CLEAN` niezależnie od wyniku checków. Czerwony test pokazuje
+czerwony znaczek i nic poza tym; przycisk merge zostaje aktywny. Świadoma decyzja
+z 2026-08-30 — repozytorium zostaje prywatne, planu nie kupujemy — więc ostatnią
+realną bramką przed produkcją jest człowiek czytający checki przed kliknięciem.
+Kolumna „Required?" opisuje zatem, co jest **wpięte i uruchamiane**, a nie co
+jest **egzekwowane**. Re-evaluate, gdy repozytorium zmieni status albo plan.
+
 | Gate | Where | Required? | Catches |
 |---|---|---|---|
-| lint + typecheck (`npm run lint`, `astro sync`) | local (husky/lint-staged) + CI | required (wired) | dryf składniowy i typowy |
-| build (`npm run build`) | CI on PR + push do `master` | required (wired) | błędy SSR i konfiguracji adaptera |
+| lint + typecheck (`npm run lint`, `astro sync`) | local (husky/lint-staged) + CI | required (wired, doradcza) | dryf składniowy i typowy |
+| build (`npm run build`) | CI on PR + push do `master` | required (wired, doradcza) | błędy SSR i konfiguracji adaptera |
 | testy bazy (`npm run test:db`) | local | required after §3 Phase 3 | regresje izolacji RLS i kontraktu zapisu; dziś uruchamiane ręcznie, faza 3 wprowadza je do CI |
-| unit + integration | local + CI on PR | required after §3 Phase 1 | regresje kontraktu odpowiedzi, mapowania błędów, protokołu zapisu |
+| unit + integration | local + CI on PR | required (wired, doradcza) | regresje kontraktu odpowiedzi, mapowania błędów, protokołu zapisu |
 | bramka bezpieczeństwa treści (każdy dopuszczony model) | CI on PR, wyzwalana zmianą promptu lub konfiguracji modelu | required after §3 Phase 2 | propozycje nieodpowiednie dla 3–6 lat; cofnięcie guardrailu przez podmianę modelu |
 | e2e na ścieżce krytycznej | CI on PR | required after §3 Phase 4 | zerwanie przepływu login → dzień → hasło → generowanie → edycja → akceptacja |
 | post-edit hook | local (pętla agenta) | recommended after §3 Phase 4 | regresje w momencie edycji; nie zastępuje CI |
@@ -134,14 +145,56 @@ faza rolloutu wyląduje; wcześniej czyta się jako „TBD".
 
 ### 6.1 Dodanie testu jednostkowego
 
-TBD — see §3 Phase 1 (wzorzec dla mapowania klas awarii dostawcy na uczciwy
-komunikat i dla walidacji wejścia na granicy serwera).
+- **Lokalizacja**: ko-lokowany obok testowanego modułu — `foo.ts` sąsiaduje z
+  `foo.test.ts` w tym samym katalogu. Bez katalogu `tests/` na szczycie drzewa:
+  test, którego nie widać obok modułu, nie zostanie zaktualizowany razem z nim.
+- **Nazewnictwo**: `<nazwa-modułu>.test.ts`. Dane pomocnicze (kształty odpowiedzi
+  dostawcy, atrapy klienta) idą do `__fixtures__/` obok testów, nie do pliku testu.
+- **Test referencyjny**: `src/lib/services/activity-generator.test.ts` —
+  czternaście klas awarii dostawcy jako tabela `it.each`, każda z asercją na
+  kategorii, na `retryable` **i na liczbie wywołań `fetch`**.
+- **Uruchomienie lokalnie**: `npm test` (Vitest, `vitest run`). W CI ten sam
+  skrypt stoi po `npx astro sync`, a przed `npm run build`.
+- **Zasada mockowania**: podmieniamy **wyłącznie** `globalThis.fetch` (granica
+  sieciowa) i `astro:env/server` (konfiguracja, nie kod). **Nigdy** modułu z
+  `src/lib/` — mockowany moduł wewnętrzny to test, który sprawdza sam siebie.
+  Fixture nie importuje niczego z modułu, który testuje.
+- **Kiedy tutaj, a kiedy wyżej**: czysta funkcja, schemat zoda, mapowanie błędu,
+  strażnik typu — tutaj. Zachowanie, które zależy od tego, jak trasa łączy kilka
+  modułów (status HTTP, kolejność walidacja→zapis), wyżej — patrz §6.2.
+- **Fake timers są obowiązkowe** wszędzie, gdzie ścieżka ponawia (`RETRY_BACKOFF_MS`
+  to realny `setTimeout`) albo czeka na timeout. Bez nich każdy przypadek
+  `transient` kosztuje sekundę; zestaw ma zostać sekundowy, nie minutowy.
+- **Asercja negatywna musi być rozróżniająca**: zanim test „X się nie wydarzyło"
+  trafi do zestawu, zepsuj kod, który za X odpowiada, i zobacz go na czerwono.
+  To ta sama reguła co w `rls_isolation.test.sql:152-156` i w `lessons.md`
+  („Kryterium weryfikacji musi móc nie przejść").
 
 ### 6.2 Dodanie testu integracyjnego
 
-TBD — see §3 Phase 1 (wzorzec dla granicy model → kontrakt → zapis: odpowiedź
-spoza kontraktu kończy się błędem i zerowym zapisem; mockowanie wyłącznie na
-granicy sieciowej).
+- **Lokalizacja**: ko-lokowany obok trasy — `src/pages/api/<obszar>/<trasa>.test.ts`.
+- **Nazewnictwo**: `<nazwa-trasy>.test.ts`, jak dla testu jednostkowego.
+- **Test referencyjny**: `src/pages/api/day-plan/generate.test.ts`.
+- **Uruchomienie lokalnie**: `npm test` — ten sam runner i ta sama bramka co §6.1.
+- **Jak wywołać trasę**: `POST` jest zwykłą eksportowaną funkcją, więc testuje się
+  ją bez serwera HTTP — `POST({ request, locals })` z ręcznie zbudowanym `Request`
+  i atrapą `locals`. Klient Supabase wstrzykuje się przez `context.locals`, bo
+  `day-plan-store.ts` bierze go zawsze pierwszym argumentem i nigdy z singletonu
+  modułu; kod produkcyjny nie wymaga z tego powodu żadnej zmiany.
+- **Zasada mockowania**: jak w §6.1 — wyłącznie `globalThis.fetch` i `locals`,
+  nigdy moduł z `src/lib/`. Atrapa Supabase odwzorowuje PostgREST **dokładnie tak
+  głęboko, jak potrzebują wołane funkcje** i ani o wywołanie dalej; głębsza
+  imitacja zaczyna być drugą implementacją PostgREST-a i test przestaje mówić
+  cokolwiek o prawdziwej.
+- **Co asertować**: licznik, nie brak wyjątku. „Zapis się nie odbył" znaczy
+  `expect(supabase.rpc).not.toHaveBeenCalled()`, a nie „trasa nie rzuciła".
+- **Przypadek pozytywny jest obowiązkowy**: bez „szczęśliwa ścieżka woła `rpc`
+  dokładnie raz z trzema aktywnościami" cały blok negatywny przechodziłby przy
+  trasie, która nie zapisuje niczego nigdy.
+- **Kiedy tutaj, a kiedy wyżej**: zachowanie trasy jako całości — status, envelope
+  `{ error, retryable }`, kolejność walidacja→zapis — tutaj. Niezmiennik, którego
+  pilnuje sama baza (polityka, grant, CHECK, trigger), niżej — patrz §6.4.
+  Przepływ przez kilka ekranów w przeglądarce — wyżej, e2e (§3 Faza 4).
 
 ### 6.3 Dodanie testu dla nowego endpointu API
 
@@ -158,6 +211,15 @@ dwoma kontami, asercja na odpowiedzi API, nie tylko na wyniku zapytania).
 - **Kiedy tutaj, a kiedy wyżej**: niezmiennik, który baza egzekwuje sama
   (polityka, grant, CHECK, trigger), testuj tutaj. Zachowanie, które zależy od
   tłumaczenia błędu bazy na odpowiedź HTTP, testuj na warstwie API — patrz §6.3.
+- **Dług otwarty, z właścicielem**: odmowa pustej partii (`U0003`,
+  `save_day_plan_generation`, migracja `20260830092600`) **nie ma dziś żadnej
+  asercji** — usunięcie całego bloku `if` z migracji zostawia 71 asercji pgTAP i
+  cały zestaw Vitest zielonymi. Zweryfikowano to raz ręcznie przez `psql`
+  (Faza 1 rolloutu, kryterium 4.5); automatyczną blokadę zakłada **Faza 3
+  rolloutu**, która jest właścicielem tego katalogu. Wymagany kształt to
+  `throws_ok(… '[]'::jsonb …, 'U0003')` plus asercje „licznik nie drgnął, stara
+  partia nietknięta" i jeden przypadek pustej partii na dniu już zaplanowanym,
+  żeby przypiąć kolejność `U0003` przed `U0002`.
 
 ### 6.5 Dodanie przypadku do bramki bezpieczeństwa treści
 
@@ -167,6 +229,24 @@ model do zakresu bramki, jak zapisana jest rubryka oceny).
 ### 6.6 Notatki z faz rolloutu
 
 (Wypełniane po każdej fazie — 2–3 linie o tym, czego faza nauczyła.)
+
+**Faza 1 — runner + granica model→kontrakt→zapis (2026-08-30).** Adapter
+Cloudflare wywraca Vitest **na starcie, nie na teście**: `@cloudflare/vite-plugin`
+waliduje wstrzyknięty przez Vitest `resolve.external` w `configResolved` i
+przerywa cały przebieg. Jedyna działająca ścieżka to `getViteConfig(cfg, {
+configFile: "./astro.config.test.mjs" })`, gdzie plik testowy **importuje**
+prawdziwą konfigurację i zeruje adapter — kopiowanie rozjechałoby schemat `env`,
+który jest tym, co daje testom `astro:env/server`.
+
+Przesłanka fazy była w połowie nieaktualna. Serwerowa ścieżka generowania
+**nie miała** dziury „cichego pustego planu" — zod wypada bezwarunkowo przed
+zapisem — więc testy na niej są regresją na zachowaniu, które działa. Ryzyko #2
+mieszkało piętro wyżej i niżej naraz: w strażnikach wysp (`[].every()` to `true`)
+i w pisarzu bazy (`jsonb_array_elements('[]')` wstawia zero wierszy i nie rzuca).
+Ryzyko #5 wypadło gorzej, niż zakładano: `!choice` dzieliło gałąź z
+`finish_reason: "error"`, więc niepoprawne body dostawcy kupowało **płatne
+ponowienie** i pokazywało 503 „przeciążona". Wniosek na przyszłe fazy: research
+per fazę bywa ważniejszy od przesłanki, z którą fazę otwarto.
 
 ## 7. What We Deliberately Don't Test
 
@@ -190,7 +270,7 @@ respektują je, dopóki nie zmieni się założenie leżące u podstaw.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-08-29
+- Strategy (§1–§5) last reviewed: 2026-08-30
 - Stack versions last verified: 2026-08-29
 - AI-native tool references last verified: 2026-08-29
 

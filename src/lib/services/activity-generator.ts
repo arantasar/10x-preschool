@@ -252,17 +252,65 @@ async function callOpenRouter(body: unknown, timeoutMs: number): Promise<OpenRou
     });
   }
 
-  const data: unknown = await response.json().catch(() => null);
+  // Two different failures reach this catch and they are not the same class, so
+  // `.catch(() => null)` would be lying by omission. A `SyntaxError` means the
+  // bytes arrived and were not JSON - the provider answered off-contract, and an
+  // identical second request is not going to come back different. Anything else
+  // means the body never finished arriving: `AbortSignal.timeout` aborts the
+  // response *stream*, not just the headers, so a provider that stalls midway
+  // through the body lands here rather than in the `fetch` catch above. That one
+  // is transport, it is transient, and it keeps the retry it has always had.
+  let data: unknown;
+  try {
+    data = await response.json();
+  } catch (cause) {
+    if (cause instanceof SyntaxError) {
+      throw new GenerationError("invalid", "Odpowiedź OpenRoutera nie jest poprawnym JSON-em.", {
+        errorType: "unparsable_response_body",
+        cause,
+      });
+    }
+    throw new GenerationError("transient", "Połączenie z OpenRouter przerwane w trakcie odbierania odpowiedzi.", {
+      errorType: "response_body_aborted",
+      cause,
+    });
+  }
+
   const choice = firstChoice(data);
+
+  // A 200 that parses but carries no recognizable `choices` array is not a
+  // transient failure: the provider answered, just with something outside the
+  // contract. It used to share a branch with the two signals below, which bought
+  // it a paid retry of a request that was never going to come back different,
+  // and showed the teacher "usluga jest chwilowo przeciazona" for a provider
+  // that was not overloaded at all.
+  if (!choice) {
+    throw new GenerationError("invalid", "Odpowiedź OpenRoutera nie ma rozpoznawalnego kształtu.", {
+      errorType: "unrecognized_response_shape",
+    });
+  }
 
   // A 200 is not proof of success: OpenRouter reports partial failures inside an
   // otherwise valid response, next to a fragment of content. Checking this before
   // parsing is what stops a "successful" generation from handing the teacher an
-  // empty screen with nothing in the log.
-  if (!choice || choice.finish_reason === "error" || choice.error) {
+  // empty screen with nothing in the log. Unlike the branch above, this is the
+  // provider honestly reporting that it broke off mid-generation - a second
+  // attempt can plausibly succeed, so it stays `transient`.
+  if (choice.finish_reason === "error" || choice.error) {
     throw new GenerationError("transient", "OpenRouter przerwał generowanie w trakcie.", {
-      status: choice?.error?.code,
-      errorType: choice?.error?.metadata?.error_type,
+      status: choice.error?.code,
+      errorType: choice.error?.metadata?.error_type,
+    });
+  }
+
+  // The truncation documented on MAX_TOKENS above, finally named. The content is
+  // present but cut mid-string, so `JSON.parse` would fail a step later and reach
+  // the teacher as a generic `invalid` with nothing in the log pointing at the
+  // token ceiling. Not retryable in practice: an identical request with the same
+  // MAX_TOKENS truncates again, so it is `invalid` rather than `transient`.
+  if (choice.finish_reason === "length") {
+    throw new GenerationError("invalid", "Odpowiedź modelu została ucięta na limicie tokenów.", {
+      errorType: "truncated_response",
     });
   }
 
