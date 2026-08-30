@@ -53,7 +53,11 @@ describe("isDayPlanBody", () => {
     expect(isDayPlanBody(dayPlanBody({ plan: { accepted_at: 17 } }))).toBe(false);
   });
 
-  it.each([null, undefined, 42, "plan", [], {}])("rejects %o", (value) => {
+  // Each row is wrapped in its own array: Vitest spreads an `it.each` row that is
+  // itself an array into the test's parameters, so a bare `[]` row would supply
+  // zero arguments and silently duplicate the `undefined` case instead of ever
+  // handing the guard an array.
+  it.each([[null], [undefined], [42], ["plan"], [[]], [{}]])("rejects %o", (value: unknown) => {
     expect(isDayPlanBody(value)).toBe(false);
   });
 });

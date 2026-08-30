@@ -1,4 +1,4 @@
-import type { DayPlanView } from "@/types";
+import type { DayPlanView, DayTheme } from "@/types";
 
 /**
  * The narrowing predicates both islands use on the bodies they fetch.
@@ -28,12 +28,18 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 /**
  * The empty-array check is the point of this predicate, not a detail of it.
  *
- * `[].every(...)` is `true`, so a body carrying a plan and zero activities used
- * to narrow as a successful generation: the week board marked the day `done`,
- * `readyCount` counted it as ready, and the teacher was shown a planned day with
- * nothing in it. The bound is "non-empty" rather than `ACTIVITY_COUNT` on
+ * `[].every(...)` is `true`, so a body carrying a plan and zero activities
+ * narrows as a successful generation, and the teacher is shown a planned day
+ * with nothing in it. The bound is "non-empty" rather than `ACTIVITY_COUNT` on
  * purpose - three is the prompt contract's number, enforced by zod on the
  * server, and an island is not where it belongs.
+ *
+ * Scope, stated because it is easy to over-read: this closes the `fetch` paths
+ * only. `save_day_plan_generation` closes the source (migration 20260830092600,
+ * `U0003`). The SSR path is still open - `WeekPlanBoard`'s `readyCount` counts
+ * `day.plan !== null` and `initialDays` sets `status: plan ? "done" : "empty"`,
+ * neither of which looks at `activities.length`. A server-rendered empty day
+ * would still read as `done`; it is simply no longer producible.
  */
 export function isDayPlanBody(body: unknown): body is DayPlanView {
   if (!isRecord(body) || !isRecord(body.plan) || !Array.isArray(body.activities)) {
@@ -66,7 +72,7 @@ export function isDayPlanBody(body: unknown): body is DayPlanView {
  * be accepted, and the week board then rendered five days with no theme instead
  * of showing the outline as failed.
  */
-export function isOutlineBody(body: unknown): body is { themes: { plan_date: string; theme: string }[] } {
+export function isOutlineBody(body: unknown): body is { themes: DayTheme[] } {
   if (!isRecord(body) || !Array.isArray(body.themes) || body.themes.length === 0) {
     return false;
   }

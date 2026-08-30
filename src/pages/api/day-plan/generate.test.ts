@@ -150,6 +150,31 @@ describe("POST /api/day-plan/generate — the model's answer never reaches the w
     expect(body.activities).toHaveLength(ACTIVITY_COUNT);
   });
 
+  // The other half of the empty-batch defence, seen from the route. The schema
+  // refuses with U0003; this pins that the refusal is classified `invalid` rather
+  // than falling through `categorize`'s retryable-leaning default, so the teacher
+  // is not told to try again in a moment for a batch that will be refused
+  // identically. Two `rpc` calls because `saveGeneration` retries every
+  // StoreError but `conflict` — asserted rather than assumed.
+  it("classifies the schema's empty-batch refusal as terminal, not transient", async () => {
+    const supabase = supabaseStub({
+      rpcError: {
+        code: "U0003",
+        message: "activity batch for 2026-09-14 is empty; a generation must write at least one activity",
+        details: "",
+        hint: "",
+      },
+    });
+    stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+    const body = (await response.json()) as { error: string; retryable: boolean };
+
+    expect(response.status).toBe(500);
+    expect(body.retryable).toBe(false);
+    expect(supabase.rpc).toHaveBeenCalledTimes(2);
+  });
+
   it("answers 401 without a session and never reaches the provider", async () => {
     const supabase = supabaseStub();
     const fetchStub = stubFetch(() => proposalResponse(validProposal()));

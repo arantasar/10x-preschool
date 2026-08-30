@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  abortedBodyResponse,
   choiceErrorResponse,
   errorStatusResponse,
   finishReasonResponse,
@@ -133,6 +134,10 @@ describe("generateDayActivities — failure classes", () => {
       calls: 1,
     },
     { name: "unparsable body", outcome: unparsableBodyResponse, category: "invalid", retryable: true, calls: 1 },
+    // The body never finished arriving. Transport, not a provider fault - and the
+    // one case a bare `.catch(() => null)` used to hide behind "unrecognizable
+    // shape", losing the retry it deserves.
+    { name: "aborted body read", outcome: abortedBodyResponse, category: "transient", retryable: true, calls: 2 },
     { name: "200 without choices", outcome: noChoicesResponse, category: "invalid", retryable: true, calls: 1 },
     {
       name: "finish_reason error",
@@ -199,6 +204,18 @@ describe("generateDayActivities — failure classes", () => {
     expect(fetchStub).toHaveBeenCalledTimes(calls);
   });
 
+  it("tells an off-contract body apart from a body that never arrived", async () => {
+    stubFetch(unparsableBodyResponse);
+    const offContract = await failureOf(generateDayActivities(KEYWORD));
+
+    stubFetch(abortedBodyResponse);
+    const neverArrived = await failureOf(generateDayActivities(KEYWORD));
+
+    expect(offContract.errorType).toBe("unparsable_response_body");
+    expect(neverArrived.errorType).toBe("response_body_aborted");
+    expect(offContract.category).not.toBe(neverArrived.category);
+  });
+
   it("names the unparsable body differently from a mid-generation break", async () => {
     stubFetch(unparsableBodyResponse);
     const unparsable = await failureOf(generateDayActivities(KEYWORD));
@@ -206,7 +223,7 @@ describe("generateDayActivities — failure classes", () => {
     stubFetch(() => finishReasonResponse("error"));
     const brokeOff = await failureOf(generateDayActivities(KEYWORD));
 
-    expect(unparsable.errorType).toBe("unrecognized_response_shape");
+    expect(unparsable.errorType).toBe("unparsable_response_body");
     expect(unparsable.message).not.toBe(brokeOff.message);
   });
 

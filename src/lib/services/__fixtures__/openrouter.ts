@@ -64,6 +64,23 @@ export function noChoicesResponse(): Response {
   return jsonResponse({ id: "gen-1", object: "chat.completion" });
 }
 
+/**
+ * A 200 whose body never finishes arriving.
+ *
+ * Not a real `Response`: there is no way to construct one whose `json()` rejects
+ * with an abort rather than a `SyntaxError`, and the abort is the whole point —
+ * `AbortSignal.timeout` cancels the response stream, not just the headers, so a
+ * provider that stalls midway through the body fails here and not in `fetch`.
+ * The shape carries exactly the three members `callOpenRouter` touches.
+ */
+export function abortedBodyResponse(): Response {
+  return {
+    ok: true,
+    status: 200,
+    json: () => Promise.reject(new DOMException("The operation was aborted", "AbortError")),
+  } as unknown as Response;
+}
+
 /** What `AbortSignal.timeout` makes `fetch` reject with once the attempt window closes. */
 export function timeoutRejection(): DOMException {
   return new DOMException("The operation was aborted due to timeout", "TimeoutError");

@@ -252,16 +252,38 @@ async function callOpenRouter(body: unknown, timeoutMs: number): Promise<OpenRou
     });
   }
 
-  const data: unknown = await response.json().catch(() => null);
+  // Two different failures reach this catch and they are not the same class, so
+  // `.catch(() => null)` would be lying by omission. A `SyntaxError` means the
+  // bytes arrived and were not JSON - the provider answered off-contract, and an
+  // identical second request is not going to come back different. Anything else
+  // means the body never finished arriving: `AbortSignal.timeout` aborts the
+  // response *stream*, not just the headers, so a provider that stalls midway
+  // through the body lands here rather than in the `fetch` catch above. That one
+  // is transport, it is transient, and it keeps the retry it has always had.
+  let data: unknown;
+  try {
+    data = await response.json();
+  } catch (cause) {
+    if (cause instanceof SyntaxError) {
+      throw new GenerationError("invalid", "Odpowiedź OpenRoutera nie jest poprawnym JSON-em.", {
+        errorType: "unparsable_response_body",
+        cause,
+      });
+    }
+    throw new GenerationError("transient", "Połączenie z OpenRouter przerwane w trakcie odbierania odpowiedzi.", {
+      errorType: "response_body_aborted",
+      cause,
+    });
+  }
+
   const choice = firstChoice(data);
 
-  // A 200 whose body has no recognizable `choices` array is not a transient
-  // failure: the provider answered, just with something outside the contract. It
-  // used to share a branch with the two signals below, which bought it a paid
-  // retry of a request that was never going to come back different, and showed
-  // the teacher "usluga jest chwilowo przeciazona" for a provider that was not
-  // overloaded at all. `firstChoice` returns null both when `response.json()`
-  // failed to parse and when the parsed body has no `choices`.
+  // A 200 that parses but carries no recognizable `choices` array is not a
+  // transient failure: the provider answered, just with something outside the
+  // contract. It used to share a branch with the two signals below, which bought
+  // it a paid retry of a request that was never going to come back different,
+  // and showed the teacher "usluga jest chwilowo przeciazona" for a provider
+  // that was not overloaded at all.
   if (!choice) {
     throw new GenerationError("invalid", "Odpowiedź OpenRoutera nie ma rozpoznawalnego kształtu.", {
       errorType: "unrecognized_response_shape",
