@@ -3,13 +3,13 @@ project: 10xPreschool
 version: 1
 status: draft
 created: 2026-06-27
-updated: 2026-08-29
+updated: 2026-08-30
 prd_version: 1
 main_goal: low-complexity
 top_blocker: time
 milestone_id: usable-month-plan
 milestone_seq: 1
-milestone_status: open
+milestone_status: done
 ---
 
 # Roadmap: 10xPreschool
@@ -20,11 +20,12 @@ milestone_status: open
 
 ## Milestone
 
-**M-01: Użyteczny plan miesiąca** — Status: open
+**M-01: Użyteczny plan miesiąca** — Status: done (zamknięty 2026-08-30)
 
 - **Intent:** Nauczyciel prowadzi pełny cykl planowania miesiąca w jednym miejscu: generuje propozycje dla dnia i dla tygodnia, edytuje je i zatwierdza, porządkuje siatkę miesiąca i odczytuje z niej, co jest zaplanowane — bez wychodzenia do zewnętrznych narzędzi.
 - **Source materials:** `context/foundation/prd.md` (v1), rozszerzone o pozycje uzgodnione bezpośrednio z użytkownikiem (`S-04`…`S-08`) — patrz Open Roadmap Questions #3.
-- **Done when:** każdy `F-NN` i `S-NN` poniżej ma status `done`.
+- **Done when:** każdy `F-NN` i `S-NN` poniżej ma status `done`. **Zmieniony 2026-08-30:** kryterium zostało spełnione po jawnym wypisaniu `S-07` z zakresu kamienia — patrz Zmiana zakresu poniżej. Kamień zamknięty z ośmioma pozycjami `done` z dziewięciu.
+- **Zmiana zakresu 2026-08-30 (user):** `S-07` (`month-day-preview`) **wypisany z `M-01` i przeniesiony do `M-02`**. Powód: `S-07` był `ready`, ale jego FR nie istnieje — PRD v1 wyczerpał się na `S-03` (Open Roadmap Questions #3), więc zbudowanie go przed przebiegiem PRD v2 oznaczałoby dopisywanie FR wstecz do gotowego kodu. Zamiast trzymać kamień otwarty na zależności papierowej, zakres został skrócony świadomie. **Koszt jest realny i nazwany:** intent `M-01` mówi „porządkuje siatkę miesiąca **i odczytuje z niej, co jest zaplanowane**" — ten ostatni człon to dokładnie `S-07`, więc kamień zamyka się bez części własnego celu. Alternatywa (odwrócenie kolejności: PRD v2 przed `S-07`, kamień zamknięty w pełni) została rozważona i odrzucona na rzecz czystego konta pod `M-02`.
 - **Scope anchors:** FR-001…FR-009, US-01. Adoptowane wstecznie 2026-08-26: roadmapa powstała 2026-06-27, przed wprowadzeniem warstwy kamieni milowych, i została owinięta jako `M-01` bez zmiany treści ani statusów pozycji.
 
 ## Vision recap
@@ -54,7 +55,7 @@ generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych d
 | S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | done        |
 | S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | done        |
 | S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done        |
-| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | ready     |
+| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | ready → M-02 |
 | S-08 | visible-day-theme         | odróżnić dni jednego hasła po podtytule dnia w miesiącu i w dniu   | S-03, S-04    | FR-004, US-01 (brak FR — pyt. 3)                      | done        |
 
 ## Streams
@@ -177,6 +178,11 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Change ID:** sign-out
 - **PRD refs:** FR-003 (nice-to-have; odparkowane 2026-08-26 — pozycja znika z `## Kandydaci do następnego kamienia (M-02)
 
+> **Sekcja tymczasowa.** Nie należy do schematu roadmapy — `/10x-roadmap` przy
+> regeneracji pod `M-02` odtwarza plik z sekcji wymaganych i **tę usunie**. Musi
+> zostać skonsumowana przez `/10x-shape` (krok 3 w `next-actions.md`), zanim to
+> nastąpi. Runbook o tym przypomina.
+
 Zgłoszone przez użytkownika 2026-08-30 i przetriagowane. **To nie są jeszcze slice'y** —
 żaden nie ma FR w PRD v1, a dwa wymagają zmiany PRD, nie dopisania do niego. Kolejność
 wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap Questions #3)
@@ -184,6 +190,7 @@ wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap
 
 | Kandydat | Charakter | Uwaga |
 | --- | --- | --- |
+| **`S-07` — podgląd aktywności w siatce miesiąca (+ powiększony kafelek)** | UI, **`ready`, decyzje zamknięte** | wypisany z `M-01` 2026-08-30; jedyny kandydat gotowy do planowania od zaraz — pierwszy slice `M-02` |
 | Regeneracja tygodnia z zastępowaniem istniejących dni | ścieżka generowania — **najcięższy z paczki** | patrz Decyzje poniżej |
 | Cofnięcie akceptacji i usunięcie dnia z poziomu tygodnia | UI + istniejący prymityw | `setAcceptance(…, false)` już istnieje; brakuje powierzchni w tygodniu |
 | Blokada edycji zaakceptowanego dnia / tygodnia | maszyna stanów | zawężone 2026-08-30 — patrz Decyzje |
@@ -236,6 +243,7 @@ wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap
 
 - **Outcome:** Nauczyciel widzi, co jest zaplanowane na dany dzień, bez opuszczania siatki miesiąca — dziś kafelek pokazuje wyłącznie hasło, nie aktywności.
 - **Change ID:** month-day-preview
+- **Kamień:** **wypisany z `M-01` 2026-08-30, należy do `M-02`** — patrz §Milestone §Zmiana zakresu. Wiersz zostaje tutaj do czasu, aż `/10x-roadmap` zregeneruje roadmapę pod `M-02` i przeniesie go do nowej dekompozycji.
 - **PRD refs:** FR-004, US-01 — sam podgląd nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
 - **Prerequisites:** S-04
 - **Parallel with:** —
@@ -275,14 +283,14 @@ wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap
 | S-04       | month-home                | Widok miesiąca jako ekran główny aplikacji           | yes                   | `/10x-plan month-home`                                          |
 | S-05       | delete-day-plan           | Usunięcie zapisanego planu dnia                      | yes                   | `/10x-plan delete-day-plan`; może iść równolegle do S-04        |
 | S-06       | sign-out                  | Wylogowanie dostępne z powłoki zalogowanej aplikacji | —                     | Dostarczone w S-04 (`month-home`, faza 1) — nie planować osobno |
-| S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | yes                   | `/10x-plan month-day-preview`; odblokowany 2026-08-30           |
+| S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | po PRD v2             | odblokowany 2026-08-30, wypisany z `M-01`; planować jako pierwszy slice `M-02` |
 | S-08       | visible-day-theme         | Widoczny podtytuł dnia w miesiącu i w widoku dnia    | yes                   | `/10x-plan visible-day-theme`; może iść równolegle do S-05      |
 
 ## Open Roadmap Questions
 
 1. **Reset hasła** — czy MVP wymaga mechanizmu odzyskiwania hasła przez e-mail? Owner: decyzja produktowa. Block: nie (MVP może startować bez, ale nie nadaje się do produkcji bez rozwiązania) — roadmap-wide.
 2. **Limit regeneracji** — czy istnieje limit liczby wywołań AI dla jednego użytkownika (koszt API)? Owner: decyzja techniczno-biznesowa. Block: nie dla MVP — gates: S-01, S-03.
-3. **Pokrycie w PRD dla S-04…S-07** — PRD v1 wyczerpał się na `S-03`: wszystkie must-have FR (FR-001…FR-009 poza nice-to-have FR-003) są skonsumowane przez F-01…S-03. Usunięcie planu dnia, ekran główny, podgląd aktywności i czytelność podtytułu dnia nie mają własnych FR — roadmapa wyprzedza tu PRD, co jest odwróceniem normalnego kierunku. Owner: Janusz. Block: nie (slice'y da się zaplanować z opisu) — gates: S-04, S-05, S-07, S-08. Domknięcie: `/10x-shape` (brownfield) → `/10x-prd` z nowymi FR w `prd-v2.md` i bumpem `prd_version` we frontmatterze, zanim któryś z tych slice'ów trafi do archiwum z pustą rubryką „PRD refs".
+3. **Pokrycie w PRD dla S-04…S-07** — PRD v1 wyczerpał się na `S-03`: wszystkie must-have FR (FR-001…FR-009 poza nice-to-have FR-003) są skonsumowane przez F-01…S-03. Usunięcie planu dnia, ekran główny, podgląd aktywności i czytelność podtytułu dnia nie mają własnych FR — roadmapa wyprzedza tu PRD, co jest odwróceniem normalnego kierunku. Owner: Janusz. Block: nie (slice'y da się zaplanować z opisu) — gates: S-04, S-05, S-07, S-08. Domknięcie: `/10x-shape` (brownfield) → `/10x-prd` z nowymi FR w `prd-v2.md` i bumpem `prd_version` we frontmatterze, zanim któryś z tych slice'ów trafi do archiwum z pustą rubryką „PRD refs". **Pytanie pozostaje otwarte po zamknięciu `M-01` (2026-08-30)** — `S-04`, `S-05` i `S-08` są już zarchiwizowane z pustą rubryką, więc dług jest zaciągnięty, nie uniknięty; PRD v2 spłaca go wstecz. `S-07` wyszedł z tej czwórki, bo przeniesiono go do `M-02`, gdzie dostanie FR przed planowaniem.
 
 ## Parked
 
@@ -293,7 +301,12 @@ wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap
 
 ## Milestone History
 
-(Append-only. Puste przy pierwszym kamieniu milowym — `M-01` jest wciąż otwarty i żaden kamień nie został jeszcze zamknięty.)
+(Append-only. Przenoszone verbatim do roadmapy każdego kolejnego kamienia.)
+
+- **M-01: Użyteczny plan miesiąca** (`usable-month-plan`) — closed 2026-08-30. Nauczyciel prowadzi pełny cykl planowania miesiąca w jednym miejscu: generuje dzień i tydzień, edytuje, akceptuje, usuwa i odróżnia dni po podtytule.
+  - **Zamknięty z niepełnym zakresem.** `S-07` (`month-day-preview`, podgląd aktywności w siatce miesiąca) został 2026-08-30 jawnie wypisany z kamienia i przeniesiony do `M-02`. Kamień zamknął się więc **bez odczytu aktywności z siatki**, mimo że ten człon stoi wprost w jego intencie.
+  - **Dlaczego mimo to zamknięty:** `S-07` był `ready`, ale bez własnego FR (PRD v1 wyczerpał się na `S-03` — Open Roadmap Questions #3). Zbudowanie go przed PRD v2 oznaczałoby dopisywanie wymagania wstecz do gotowego kodu; trzymanie kamienia otwartego oznaczałoby blokowanie go zależnością papierową. Wybrano trzecią drogę: skrócić zakres świadomie i wejść w `M-02` z czystym kontem.
+  - **Dług przeniesiony dalej:** `S-04`, `S-05` i `S-08` są zarchiwizowane z pustą rubryką „PRD refs". PRD v2 spłaca to wstecz.
 
 ## Done
 
