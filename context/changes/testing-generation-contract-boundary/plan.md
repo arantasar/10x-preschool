@@ -491,12 +491,12 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Automated
 
-- [x] 2.1 `npm test` zielone
-- [x] 2.2 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji
-- [x] 2.3 Nieparsowalne body → `invalid` przy dokładnie jednym wywołaniu `fetch`
-- [x] 2.4 `finish_reason: "length"` → `invalid`, bez ponowienia
-- [x] 2.5 429 i 5xx dalej `transient` przy dwóch wywołaniach `fetch`
-- [x] 2.6 Testy widziane na czerwono (odwrócenie naprawy psuje wyłącznie przypadek nieparsowalnego body)
+- [x] 2.1 `npm test` zielone — 34b696f
+- [x] 2.2 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji — 34b696f
+- [x] 2.3 Nieparsowalne body → `invalid` przy dokładnie jednym wywołaniu `fetch` — 34b696f
+- [x] 2.4 `finish_reason: "length"` → `invalid`, bez ponowienia — 34b696f
+- [x] 2.5 429 i 5xx dalej `transient` przy dwóch wywołaniach `fetch` — 34b696f
+- [x] 2.6 Testy widziane na czerwono (odwrócenie naprawy psuje wyłącznie przypadek nieparsowalnego body) — 34b696f
 
 #### Manual
 
@@ -507,11 +507,11 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Automated
 
-- [ ] 3.1 `npm test` zielone
-- [ ] 3.2 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji
-- [ ] 3.3 Każdy przypadek spoza kontraktu asertuje `rpc` zero razy
-- [ ] 3.4 Szczęśliwa ścieżka asertuje `rpc` dokładnie raz z trzema aktywnościami
-- [ ] 3.5 Zestaw rozróżniający (zamiana kolejności zapis/walidacja psuje (a)–(e), zostawia (f) zielonym)
+- [x] 3.1 `npm test` zielone
+- [x] 3.2 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji
+- [x] 3.3 Każdy przypadek spoza kontraktu asertuje `rpc` zero razy
+- [x] 3.4 Szczęśliwa ścieżka asertuje `rpc` dokładnie raz z trzema aktywnościami
+- [x] 3.5 Zestaw rozróżniający (zamiana kolejności zapis/walidacja psuje (a)–(e), zostawia (f) zielonym)
 
 #### Manual
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { dayPlanProposalSchema, weekOutlineSchema } from "./day-plan-contract";
+import { dayPlanProposalSchema, toDayThemes, weekOutlineSchema } from "./day-plan-contract";
 import { ACTIVITY_COUNT, DESCRIPTION_MAX, TITLE_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
 
 // `dayPlanProposalSchema` is the only thing in the codebase that enforces
@@ -73,5 +73,33 @@ describe("weekOutlineSchema", () => {
 
   it(`rejects fewer than ${String(WEEK_DAYS)} themes`, () => {
     expect(weekOutlineSchema.safeParse(themes([1, 2, 3, 4])).success).toBe(false);
+  });
+});
+
+describe("toDayThemes", () => {
+  const DATES = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18"];
+
+  // Pinned to dates rather than to day numbers, because that is what the mapping
+  // actually promises: the schema guarantees the five numbers are distinct, not
+  // that the model listed them in order, and an out-of-order response would
+  // otherwise put Friday's theme on Monday.
+  it("pins each theme to its date, whatever order the model listed them in", () => {
+    const parsed = weekOutlineSchema.parse({
+      tematy: [
+        { dzien: 3, temat: "Środa" },
+        { dzien: 1, temat: "Poniedziałek" },
+        { dzien: 5, temat: "Piątek" },
+        { dzien: 2, temat: "Wtorek" },
+        { dzien: 4, temat: "Czwartek" },
+      ],
+    });
+
+    expect(toDayThemes(parsed, DATES)).toEqual([
+      { plan_date: "2026-09-14", theme: "Poniedziałek" },
+      { plan_date: "2026-09-15", theme: "Wtorek" },
+      { plan_date: "2026-09-16", theme: "Środa" },
+      { plan_date: "2026-09-17", theme: "Czwartek" },
+      { plan_date: "2026-09-18", theme: "Piątek" },
+    ]);
   });
 });
