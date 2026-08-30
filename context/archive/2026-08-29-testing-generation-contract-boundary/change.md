@@ -1,10 +1,10 @@
 ---
 change_id: testing-generation-contract-boundary
 title: Runner testów + granica model→kontrakt→zapis
-status: impl_reviewed
+status: archived
 created: 2026-08-29
 updated: 2026-08-30
-archived_at: null
+archived_at: 2026-08-30T09:15:36Z
 ---
 
 ## Notes
