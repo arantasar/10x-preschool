@@ -522,13 +522,13 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Automated
 
-- [x] 4.1 Migracja stosuje się czysto (`npx supabase db reset`)
-- [x] 4.2 Istniejący pgTAP przechodzi bez zmian (`npm run test:db`, `plan(42)` i `plan(23)` nietknięte)
-- [x] 4.3 `npm test` zielone
-- [x] 4.4 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji
-- [x] 4.5 Migracja potrafi odmówić (pusta partia rzuca, zero wierszy `day_plans` po rzucie)
-- [x] 4.6 Brak definicji strażników w `src/components/plan/*.tsx` (grep pusty)
-- [x] 4.7 Zestaw strażników rozróżniający (przywrócenie `.every()` psuje puste tablice, zostawia poprawne body zielonym)
+- [x] 4.1 Migracja stosuje się czysto (`npx supabase db reset`) — 8358bb8
+- [x] 4.2 Istniejący pgTAP przechodzi bez zmian (`npm run test:db`, `plan(42)` i `plan(23)` nietknięte) — 8358bb8
+- [x] 4.3 `npm test` zielone — 8358bb8
+- [x] 4.4 `npm run lint`, `npx tsc --noEmit`, `npm run build` bez regresji — 8358bb8
+- [x] 4.5 Migracja potrafi odmówić (pusta partia rzuca, zero wierszy `day_plans` po rzucie) — 8358bb8
+- [x] 4.6 Brak definicji strażników w `src/components/plan/*.tsx` (grep pusty) — 8358bb8
+- [x] 4.7 Zestaw strażników rozróżniający (przywrócenie `.every()` psuje puste tablice, zostawia poprawne body zielonym) — 8358bb8
 
 #### Manual
 
@@ -540,11 +540,11 @@ Dane istniejące: żaden dzisiejszy wiersz nie narusza nowego warunku — pusta 
 
 #### Automated
 
-- [ ] 5.1 §6.1 i §6.2 bez „TBD" (6.3 i 6.5 zostają)
-- [ ] 5.2 Wiersz Fazy 1 w §3 ma Status `complete`
-- [ ] 5.3 `required after §3 Phase 1` nie występuje już w §5
-- [ ] 5.4 Poza §3, §5, §6, §8 test-plan nietknięty (`git diff -w master..HEAD`)
-- [ ] 5.5 Cały zestaw zielony (`npm test`, `npm run lint`, `npm run build`, `npm run test:db`)
+- [x] 5.1 §6.1 i §6.2 bez „TBD" (6.3 i 6.5 zostają)
+- [x] 5.2 Wiersz Fazy 1 w §3 ma Status `complete`
+- [x] 5.3 `required after §3 Phase 1` nie występuje już w §5
+- [x] 5.4 Poza §3, §5, §6, §8 test-plan nietknięty (`git diff -w master..HEAD`)
+- [x] 5.5 Cały zestaw zielony (`npm test`, `npm run lint`, `npm run build`, `npm run test:db`)
 
 #### Manual
 
