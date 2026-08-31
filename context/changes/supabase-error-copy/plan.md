@@ -429,12 +429,12 @@ phases should be reviewed before the PR merges.
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Build passes: `npm run build`
-- [x] 2.4 `grep -n "error.message" src/pages/api/auth/` returns nothing
-- [x] 2.5 `grep -n "Supabase nie jest skonfigurowany" src/pages/api/auth/` returns nothing
-- [x] 2.6 Both auth pages reference `authErrorMessage` twice each
+- [x] 2.1 Unit tests pass: `npm test` — c85128c
+- [x] 2.2 Lint passes: `npm run lint` — c85128c
+- [x] 2.3 Build passes: `npm run build` — c85128c
+- [x] 2.4 `grep -n "error.message" src/pages/api/auth/` returns nothing — c85128c
+- [x] 2.5 `grep -n "Supabase nie jest skonfigurowany" src/pages/api/auth/` returns nothing — c85128c
+- [x] 2.6 Both auth pages reference `authErrorMessage` twice each — c85128c
 
 #### Manual
 
@@ -449,11 +449,11 @@ phases should be reviewed before the PR merges.
 
 #### Automated
 
-- [ ] 3.1 `grep -n "Known exception" CLAUDE.md` returns nothing
-- [ ] 3.2 `grep -n "auth-error-messages" CLAUDE.md` returns a line
-- [ ] 3.3 Lint passes: `npm run lint`
-- [ ] 3.4 `npm test && npm run build` green
-- [ ] 3.5 `git diff -w --name-only master..HEAD -- src/` lists exactly the six expected files
+- [x] 3.1 `grep -n "Known exception" CLAUDE.md` returns nothing
+- [x] 3.2 `grep -n "auth-error-messages" CLAUDE.md` returns a line
+- [x] 3.3 Lint passes: `npm run lint`
+- [x] 3.4 `npm test && npm run build` green
+- [x] 3.5 `git diff -w --name-only master..HEAD -- src/` lists exactly the six expected files
 
 #### Manual
 

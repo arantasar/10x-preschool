@@ -64,7 +64,7 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 - **Shared types** (entities, DTOs) go in `src/types.ts`.
 
-- **UI copy is Polish** — every string a user sees, on both sides of the login threshold (`pl-landing-copy`, 2026-08-30). `src/layouts/Layout.astro` declares `lang="pl"`. No i18n layer and no second language: strings live at their point of use. Known exception: `error.message` passed straight from Supabase in `src/pages/api/auth/{signin,signup}.ts` still reaches the user in English — open follow-up, see `context/archive/2026-08-30-pl-landing-copy/follow-ups/supabase-error-copy.md`.
+- **UI copy is Polish** — every string a user sees, on both sides of the login threshold (`pl-landing-copy`, 2026-08-30). `src/layouts/Layout.astro` declares `lang="pl"`. No i18n layer and no second language: strings live at their point of use. **Auth errors are the one indirect case**: `?error=` on `/auth/{signin,signup}` carries a short _code_ — Supabase's `error.code`, or `config_missing` / `connection_failed` which we mint ourselves — and never a sentence. The two pages translate it at render through `src/lib/auth-error-messages.ts`; to cover a new Supabase code, add an entry to the map in that file. Anything unmapped falls back to a generic Polish message. Free text in `?error=` is a bug, not a shortcut: it puts Supabase's English in front of a teacher, and it lets a hand-crafted link render an arbitrary sentence inside our own error box (`supabase-error-copy`, 2026-08-31).
 
 ### Environment
 

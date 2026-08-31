@@ -10,7 +10,8 @@
 - **Krok 1 (`pl-landing-copy`) zamknięty 2026-08-30**, PR #19 zmergowany do `master` —
   czyli wydany na produkcję. Archiwum: `context/archive/2026-08-30-pl-landing-copy/`.
 - **Otwarty folder zmiany: `supabase-error-copy`** (Krok 1a) na gałęzi
-  `fix/supabase-error-copy`, status `new`. Wszedł 2026-08-31 przed Krokiem 2 — jest to
+  `fix/supabase-error-copy`, status `implemented` (trzy fazy wdrożone 2026-08-31,
+  czeka na `/10x-impl-review` i `/10x-archive`). Wszedł 2026-08-31 przed Krokiem 2 — jest to
   ogon po Kroku 1, którego bramka wejścia („najbliższa zmiana dotykająca
   `src/pages/api/auth/*`") została spełniona przez samego siebie.
 - **Krok 2 czeka**, aż `supabase-error-copy` się zarchiwizuje — jeden folder zmiany w locie.
@@ -67,15 +68,15 @@ okazała się całym lejkiem niezalogowanego, nie samym landingiem:
 Przegląd: `NEEDS ATTENTION`, 0 critical / 3 warnings / 3 observations. F1–F3 poprawione
 w `0246bf5`. **Ogony poniżej — patrz §Otwarte ogony po Kroku 1.**
 
-### Krok 1a — `supabase-error-copy` (ogon po Kroku 1) ← **TU JESTEŚ**
+### Krok 1a — `supabase-error-copy` (ogon po Kroku 1) — WDROŻONE 2026-08-31
 
 ```
 git checkout -b fix/supabase-error-copy   # ✅ zrobione 2026-08-31
 /10x-new supabase-error-copy              # ✅ zrobione 2026-08-31
-/10x-plan supabase-error-copy             # ← następna komenda
-/10x-plan-review                          # opcjonalnie — zmiana jest mała
-/10x-implement supabase-error-copy phase <N>
-/10x-impl-review
+/10x-plan supabase-error-copy             # ✅ zrobione 2026-08-31
+/10x-plan-review                          # pominięte — zmiana jest mała
+/10x-implement supabase-error-copy        # ✅ zrobione 2026-08-31 (3 fazy)
+/10x-impl-review                          # ← następna komenda
 /10x-archive supabase-error-copy
 ```
 
@@ -188,12 +189,12 @@ Na końcu, gdy ścieżki krytyczne są już stabilne.
 
 ## Otwarte ogony po Kroku 1
 
-Pierwszy ogon jest **w realizacji jako Krok 1a**; reszta nie blokuje Kroku 2. Wszystko ma
+Pierwszy ogon jest **wdrożony jako Krok 1a** (czeka na przegląd i archiwizację); reszta nie blokuje Kroku 2. Wszystko ma
 wskazane wejście — żaden ogon nie wisi „kiedyś".
 
 | Co                                                                | Właściciel / bramka wejścia                                                                                        |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| ~~**Angielskie komunikaty błędów z Supabase** na ekranach auth~~ | 🔄 **W realizacji od 2026-08-31 jako Krok 1a** (`supabase-error-copy`). Cztery decyzje zamknięte — patrz Krok 1a wyżej. Pierwotny opis: `context/archive/2026-08-30-pl-landing-copy/follow-ups/supabase-error-copy.md` |
+| ~~**Angielskie komunikaty błędów z Supabase** na ekranach auth~~ | ✅ **Wdrożone 2026-08-31 jako Krok 1a** (`supabase-error-copy`, 3 fazy). `?error=` niesie kod, tłumaczenie w `src/lib/auth-error-messages.ts`; zamknęło przy okazji lukę phishingową w tym parametrze. Plan: `context/changes/supabase-error-copy/plan.md`. Pierwotny opis: `context/archive/2026-08-30-pl-landing-copy/follow-ups/supabase-error-copy.md` |
 | **Pozycja 1.11 planu nieodhaczona** — układ na szerokości mobilnej i desktopowej | Weryfikacja wzrokowa strony `/`. Naturalnie domyka się w Kroku 4 (`S-07` i tak przebudowuje siatkę), ale strona jest już na produkcji — warto rzucić okiem wcześniej |
 | **F6 → `/10x-lesson`**: bramka oparta na ręcznej liście wzorców musi być wyprowadzona z kodu albo mieć test na własną kompletność | Nie zapisane w `lessons.md`. Rodzina ta sama co §„Kryterium weryfikacji musi móc nie przejść" i §„Kryterium »poza X nietknięte« musi być odporne na przerównanie". Uruchom `/10x-lesson` — reguła wróci przy każdej bramce grepowej, w tym w fazie 2 test-planu |
 | **F4, F5 — `PENDING`, świadomie bez decyzji**                     | F4: niespójna odmiana po `MIN_PASSWORD_LENGTH` (skutek nieosiągalny, stała = 6, Supabase wymusza 6). F5: produkcyjna gałąź `confirm-email` zweryfikowana tylko przez odczyt kodu (`isAutoConfirmed = import.meta.env.DEV`). Oba w `context/archive/2026-08-30-pl-landing-copy/reviews/impl-review.md` |

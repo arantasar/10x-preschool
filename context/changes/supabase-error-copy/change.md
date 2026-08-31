@@ -45,3 +45,33 @@ Zakres obejmuje więc też `signin.astro` i `signup.astro`, nie tylko dwie trasy
 
 **Uwaga wydaniowa:** merge do `master` = deploy na produkcję (Cloudflare Workers Builds).
 Gałąź: `fix/supabase-error-copy`.
+
+## Co wdrożono (2026-08-31)
+
+Trzy fazy planu, gałąź `fix/supabase-error-copy`:
+
+- **Faza 1** — `src/lib/auth-error-messages.ts`: czysta mapa `kod → polski tekst`
+  (13 kodów Supabase osiągalnych z `signInWithPassword`/`signUp` + dwa nasze,
+  `config_missing` i `connection_failed`) plus generyczny fallback. Test
+  `src/lib/auth-error-messages.test.ts` (§6.1 test-planu) pilnuje trzech rzeczy:
+  każdy klucz tłumaczy się na własny tekst, wszystko spoza mapy wpada w fallback,
+  żaden komunikat nie niesie angielskiego.
+- **Faza 2** — jeden commit na sześć miejsc wywołań: obie trasy API emitują kod
+  (`error.code ?? CONNECTION_FAILED`, a przy braku klienta `CONFIG_MISSING`)
+  i logują oryginał przez `console.error`; obie strony `.astro` tłumaczą kod przy
+  renderze, pomijając wywołanie przy braku parametru, żeby pusty ekran nie pokazywał
+  ramki błędu.
+- **Faza 3** — `CLAUDE.md` §Key conventions, ten plik i `next-actions.md`.
+
+**Decyzja podjęta w trakcie planowania, spoza czterech powyższych:** gałąź
+`config_missing` też stała się kodem. Zostawienie choćby jednego producenta
+wolnego tekstu w `?error=` utrzymywałoby otwartą powierzchnię wstrzyknięcia —
+niezmiennik „nic, co nie pochodzi z naszego źródła, nie wyrenderuje się w ramce
+błędu" trzyma się tylko wtedy, gdy **wszyscy** producenci emitują kody.
+
+**Odstępstwo od planu, faza 2, kryterium 2.4.** Kryterium w brzmieniu
+`grep -n "error.message" src/pages/api/auth/` nie może przejść przy implementacji,
+którą ta sama faza nakazuje: łapie zarówno wymagany `console.error(… error.message)`,
+jak i import z `auth-error-messages` (kropka w regeksie pasuje do myślnika).
+Zweryfikowane w zamian jako `grep -rnF 'encodeURIComponent(error.message'
+src/pages/api/auth/` — puste teraz, niepuste przed commitem fazy 2.
