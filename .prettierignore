@@ -16,3 +16,10 @@ supabase/.temp/
 # large, meaningless diffs and once mangled a glob (`*` → `_`) in these files.
 # Excluded from both `npm run format` and the lint-staged pre-commit hook.
 context/
+
+# Toolkit-managed (`@przeprogramowani/10x-cli`) — skills, prompts and the manifest
+# are machine-written and re-applied on every lesson bump. The manifest stores a
+# contentHash per file, so a Prettier pass here makes the toolkit see its own
+# files as hand-edited and rewrite them back on the next run — a loop that
+# produced pure formatting churn in 52d8c0d. Same reasoning as `context/` above.
+.claude/
