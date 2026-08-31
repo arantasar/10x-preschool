@@ -9,19 +9,26 @@
 
 - **Krok 1 (`pl-landing-copy`) zamknięty 2026-08-30**, PR #19 zmergowany do `master` —
   czyli wydany na produkcję. Archiwum: `context/archive/2026-08-30-pl-landing-copy/`.
-- **Otwarty folder zmiany: `supabase-error-copy`** (Krok 1a) na gałęzi
-  `fix/supabase-error-copy`, status `implemented` (trzy fazy wdrożone 2026-08-31,
-  czeka na `/10x-impl-review` i `/10x-archive`). Wszedł 2026-08-31 przed Krokiem 2 — jest to
-  ogon po Kroku 1, którego bramka wejścia („najbliższa zmiana dotykająca
-  `src/pages/api/auth/*`") została spełniona przez samego siebie.
-- **Krok 2 czeka**, aż `supabase-error-copy` się zarchiwizuje — jeden folder zmiany w locie.
+- **Krok 1a (`supabase-error-copy`) zamknięty 2026-08-31** — trzy fazy, przegląd implementacji
+  (0 critical / 3 warnings / 3 observations; pięć findingów naprawionych, jeden świadomie
+  pominięty) i archiwizacja (`73b0d85`). Archiwum:
+  `context/archive/2026-08-31-supabase-error-copy/`. Wszedł przed Krokiem 2 jako ogon po
+  Kroku 1, którego bramka wejścia („najbliższa zmiana dotykająca `src/pages/api/auth/*`")
+  została spełniona przez samego siebie.
+- **PR #20 czeka na merge** — CI i Workers Builds zielone, gałąź `fix/supabase-error-copy`
+  wypchnięta, 12 commitów. Cała powyższa praca (łącznie z archiwum) siedzi na tej gałęzi,
+  nie na `master`. **Merge = deploy na produkcję.**
+- **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie, więc Krok 2 może
+  ruszyć zaraz po merge'u.
 - **`M-01` zamknięty 2026-08-30** z ośmioma pozycjami `done` z dziewięciu. `S-07` jawnie
   wypisany z zakresu i przeniesiony do `M-02` — powód i koszt zapisane w `roadmap.md`
   §Milestone History.
 - `S-07` jest `ready`, decyzje zamknięte, czeka na FR z PRD v2. Żaden kamień nie jest teraz
   otwarty (`milestone_status: done`).
-- `test-plan.md` §3: faza 1 `complete`, fazy 2–4 `not started` — `pl-landing-copy` niczego
-  tu nie ruszył (zmiana copy, bez infrastruktury testowej).
+- `test-plan.md` §3: faza 1 `complete`, fazy 2–4 `not started` — ani `pl-landing-copy`, ani
+  `supabase-error-copy` nie ruszyły żadnej fazy rolloutu. Ten drugi dołożył test jednostkowy
+  wprost wg wzorca §6.1 (`src/lib/auth-error-messages.test.ts`), ale to konsumpcja cookbooka,
+  nie postęp rolloutu.
 - PRD v1 wyczerpał się na `S-03`; `S-04`, `S-05`, `S-08` zarchiwizowane z pustą rubryką
   „PRD refs" (Open Roadmap Questions #3, wciąż otwarte).
 
@@ -68,7 +75,7 @@ okazała się całym lejkiem niezalogowanego, nie samym landingiem:
 Przegląd: `NEEDS ATTENTION`, 0 critical / 3 warnings / 3 observations. F1–F3 poprawione
 w `0246bf5`. **Ogony poniżej — patrz §Otwarte ogony po Kroku 1.**
 
-### Krok 1a — `supabase-error-copy` (ogon po Kroku 1) — WDROŻONE 2026-08-31
+### ✅ Krok 1a — `supabase-error-copy` (ogon po Kroku 1) — ZROBIONE 2026-08-31
 
 ```
 git checkout -b fix/supabase-error-copy   # ✅ zrobione 2026-08-31
@@ -76,8 +83,9 @@ git checkout -b fix/supabase-error-copy   # ✅ zrobione 2026-08-31
 /10x-plan supabase-error-copy             # ✅ zrobione 2026-08-31
 /10x-plan-review                          # pominięte — zmiana jest mała
 /10x-implement supabase-error-copy        # ✅ zrobione 2026-08-31 (3 fazy)
-/10x-impl-review                          # ← następna komenda
-/10x-archive supabase-error-copy
+/10x-impl-review                          # ✅ zrobione 2026-08-31 (6 findingów, 5 naprawionych)
+/10x-archive supabase-error-copy          # ✅ zrobione 2026-08-31 (73b0d85)
+gh pr merge 20 --merge                    # ← następna komenda (= deploy na produkcję)
 ```
 
 Numer `1a`, nie `10` — numeracja kroków jest stała, a ta pozycja nie jest nowym punktem
@@ -86,7 +94,7 @@ pięć plików, a kluczowy fakt zewnętrzny (kształt `AuthError`) czyta się wp
 z zainstalowanych typów.
 
 **Cztery decyzje zamknięte 2026-08-31, przed planowaniem** — pełne uzasadnienia w
-`context/changes/supabase-error-copy/change.md`:
+`context/archive/2026-08-31-supabase-error-copy/change.md`:
 
 1. **Mapujemy po `error.code`, nie po `error.message`.** Follow-up zakładał kompromis; w
    `@supabase/auth-js` 2.105.3 kompromisu nie ma — `code` jest typowaną unią `ErrorCode`,
@@ -194,7 +202,7 @@ wskazane wejście — żaden ogon nie wisi „kiedyś".
 
 | Co                                                                | Właściciel / bramka wejścia                                                                                        |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| ~~**Angielskie komunikaty błędów z Supabase** na ekranach auth~~ | ✅ **Wdrożone 2026-08-31 jako Krok 1a** (`supabase-error-copy`, 3 fazy). `?error=` niesie kod, tłumaczenie w `src/lib/auth-error-messages.ts`; zamknęło przy okazji lukę phishingową w tym parametrze. Plan: `context/changes/supabase-error-copy/plan.md`. Pierwotny opis: `context/archive/2026-08-30-pl-landing-copy/follow-ups/supabase-error-copy.md` |
+| ~~**Angielskie komunikaty błędów z Supabase** na ekranach auth~~ | ✅ **Wdrożone 2026-08-31 jako Krok 1a** (`supabase-error-copy`, 3 fazy). `?error=` niesie kod, tłumaczenie w `src/lib/auth-error-messages.ts`; zamknęło przy okazji lukę phishingową w tym parametrze. Plan: `context/archive/2026-08-31-supabase-error-copy/plan.md`. Pierwotny opis: `context/archive/2026-08-30-pl-landing-copy/follow-ups/supabase-error-copy.md` |
 | **Pozycja 1.11 planu nieodhaczona** — układ na szerokości mobilnej i desktopowej | Weryfikacja wzrokowa strony `/`. Naturalnie domyka się w Kroku 4 (`S-07` i tak przebudowuje siatkę), ale strona jest już na produkcji — warto rzucić okiem wcześniej |
 | **F6 (zawężone)**: bramka oparta na **ręcznej liście wzorców** musi być wyprowadzona z kodu albo mieć test na własną kompletność | Połowa grepowa **domknięta 2026-08-31** — `lessons.md` §„Bramka grepowa musi celować w konstrukcję i przejechać oba stany" (powód: `supabase-error-copy`, findingi F1 i F4 z przeglądu implementacji). Otwarta zostaje wyłącznie połowa o ręcznych listach wzorców; świeży przykład to `ENGLISH_STOP_WORDS` w `src/lib/auth-error-messages.test.ts` — sześć słów utrzymywanych ręcznie, bez asercji na własną kompletność. Bramka wejścia: **faza 2 test-planu** (Krok 2), która będzie takich list produkować więcej — wtedy `/10x-lesson` na tę połowę |
 | **F4, F5 — `PENDING`, świadomie bez decyzji**                     | F4: niespójna odmiana po `MIN_PASSWORD_LENGTH` (skutek nieosiągalny, stała = 6, Supabase wymusza 6). F5: produkcyjna gałąź `confirm-email` zweryfikowana tylko przez odczyt kodu (`isAutoConfirmed = import.meta.env.DEV`). Oba w `context/archive/2026-08-30-pl-landing-copy/reviews/impl-review.md` |
@@ -247,5 +255,6 @@ obok F6 (patrz wiersz wyżej), gdyby powtórzył się po raz trzeci.
 | Co dokładnie zmienił `pl-landing-copy` i dlaczego     | `context/archive/2026-08-30-pl-landing-copy/plan.md`                      |
 | Findingi i decyzje z przeglądu `pl-landing-copy`      | `context/archive/2026-08-30-pl-landing-copy/reviews/impl-review.md`       |
 | Odroczone tłumaczenie błędów Supabase — pierwotny opis | `context/archive/2026-08-30-pl-landing-copy/follow-ups/supabase-error-copy.md` |
-| Decyzje o mapowaniu błędów auth i o kontrakcie `?error=` | `context/changes/supabase-error-copy/change.md` §Notes |
+| Decyzje o mapowaniu błędów auth i o kontrakcie `?error=` | `context/archive/2026-08-31-supabase-error-copy/change.md` §Notes |
+| Findingi i decyzje z przeglądu `supabase-error-copy` | `context/archive/2026-08-31-supabase-error-copy/reviews/impl-review.md` |
 | Kolejność prac i komendy                              | ten plik                                                                  |
