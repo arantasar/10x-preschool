@@ -264,13 +264,22 @@ page skip the lookup when the parameter is absent, rather than by weakening the 
 - Unit tests pass: `npm test`
 - Lint passes: `npm run lint`
 - Build passes: `npm run build`
-- No route emits free text any more: `grep -n "error.message" src/pages/api/auth/` returns
-  nothing. (Scoped to the two route files, and it fails today — verified before the edit.)
+- No route emits free text any more:
+  `grep -rnF 'encodeURIComponent(error.message' src/pages/api/auth/` returns nothing.
+  (Corrected 2026-08-31 after impl-review F1. The original wording — a bare
+  `grep -n "error.message" src/pages/api/auth/` — cannot pass against the implementation
+  this same phase mandates: it matches the required `console.error(… error.message)`, and,
+  because `.` matches the hyphen, the `auth-error-messages` import too. The fixed-string
+  form above is scoped to the redirect, and was verified empty at HEAD and **non-empty**
+  at HEAD~1 — it can fail, per `lessons.md`.)
 - No literal Polish sentence remains in the routes:
   `grep -n "Supabase nie jest skonfigurowany" src/pages/api/auth/` returns nothing.
 - Both pages go through the map:
-  `grep -c "authErrorMessage" src/pages/auth/signin.astro src/pages/auth/signup.astro`
-  reports 2 for each file (import + call).
+  `grep -c 'authErrorMessage(errorCode)' src/pages/auth/signin.astro src/pages/auth/signup.astro`
+  reports 1 for each file. (Corrected 2026-08-31 after impl-review F4. The original counted
+  *occurrences of the identifier* and expected 2 — which passes or fails on comment wording:
+  a comment naming the function turns it red with no behavioural change, and two such comments
+  would turn it green with the import deleted. Matching the call site measures the contract.)
 
 #### Manual Verification:
 
@@ -280,8 +289,10 @@ page skip the lookup when the parameter is absent, rather than by weakening the 
 - Open `/auth/signin?error=Twoje%20konto%20wygaslo%20-%20zadzwon%20pod%20500600700`: the
   injected sentence does **not** appear; the generic fallback does. Repeat on `/auth/signup`.
 - Open `/auth/signin` with no parameter: no error box at all (the falsy-guard check).
-- With `SUPABASE_URL` / `SUPABASE_KEY` removed from `.dev.vars`, submit the sign-in form: the
-  Polish config-missing message appears via `?error=config_missing`.
+- With `SUPABASE_URL` / `SUPABASE_KEY` removed from `.dev.vars` **and from `.env`**, submit the
+  sign-in form: the Polish config-missing message appears via `?error=config_missing`.
+  (Corrected 2026-08-31 after impl-review F2: this repo carries both files, and `.env` alone
+  keeps `createClient` alive — blanking only `.dev.vars` reproduces nothing.)
 - Point `SUPABASE_URL` at an unroutable host and submit: the `connection_failed` message
   appears, distinct from the generic fallback, and the server console carries the original.
 
@@ -432,9 +443,9 @@ phases should be reviewed before the PR merges.
 - [x] 2.1 Unit tests pass: `npm test` — c85128c
 - [x] 2.2 Lint passes: `npm run lint` — c85128c
 - [x] 2.3 Build passes: `npm run build` — c85128c
-- [x] 2.4 `grep -n "error.message" src/pages/api/auth/` returns nothing — c85128c
+- [x] 2.4 `grep -rnF 'encodeURIComponent(error.message' src/pages/api/auth/` returns nothing — c85128c
 - [x] 2.5 `grep -n "Supabase nie jest skonfigurowany" src/pages/api/auth/` returns nothing — c85128c
-- [x] 2.6 Both auth pages reference `authErrorMessage` twice each — c85128c
+- [x] 2.6 Both auth pages call `authErrorMessage(errorCode)` exactly once — c85128c
 
 #### Manual
 
@@ -442,8 +453,8 @@ phases should be reviewed before the PR merges.
 - [ ] 2.8 Existing address on sign-up shows Polish message, no English
 - [ ] 2.9 Injected `?error=<sentence>` renders the generic fallback, not the sentence
 - [ ] 2.10 Clean `/auth/signin` renders no error box
-- [ ] 2.11 Missing Supabase config shows the config-missing message
-- [ ] 2.12 Unreachable Supabase host shows the connection message; original in server console
+- [x] 2.11 Missing Supabase config shows the config-missing message — zweryfikowane 2026-08-31 (impl-review F2): oba `?error=config_missing`
+- [x] 2.12 Unreachable Supabase host shows the connection message; original in server console — zweryfikowane 2026-08-31 (impl-review F2): `code: undefined, status: 0` w logu → `?error=connection_failed`
 
 ### Phase 3: Close the recorded exception
 

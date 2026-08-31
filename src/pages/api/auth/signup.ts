@@ -19,7 +19,11 @@ export const POST: APIRoute = async (context) => {
     /* eslint-disable-next-line no-console */
     console.error("auth.signup.failed", { code: error.code, status: error.status, message: error.message });
 
-    return context.redirect(`/auth/signup?error=${encodeURIComponent(error.code ?? CONNECTION_FAILED)}`);
+    // A missing code and an empty one are the same case, and `??` only catches the
+    // first. An empty code would redirect to a bare `?error=`, which the page reads
+    // as falsy and renders as no error box at all - a silently blank form.
+    const code = error.code ?? "";
+    return context.redirect(`/auth/signup?error=${encodeURIComponent(code || CONNECTION_FAILED)}`);
   }
 
   return context.redirect("/auth/confirm-email");

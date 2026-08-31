@@ -71,6 +71,10 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
     "Wysłaliśmy już zbyt wiele wiadomości na ten adres. Odczekaj kilka minut i spróbuj ponownie.",
 
   // --- either screen -------------------------------------------------------
+  // From the plan's coverage table; kept, but note that local Supabase answers a
+  // malformed address with `validation_failed` instead, so this key has no path
+  // confirmed against a running instance. Whether it fires depends on the
+  // project's address validator and blocklist settings.
   email_address_invalid: "Ten adres e-mail jest nieprawidłowy. Sprawdź, czy nie ma w nim literówki.",
   validation_failed: "Formularz zawiera nieprawidłowe dane. Sprawdź adres e-mail i hasło, a potem spróbuj ponownie.",
   over_request_rate_limit: "Za dużo prób z rzędu. Odczekaj chwilę i spróbuj ponownie.",

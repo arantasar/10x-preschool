@@ -25,8 +25,12 @@ export const POST: APIRoute = async (context) => {
     console.error("auth.signin.failed", { code: error.code, status: error.status, message: error.message });
 
     // A missing `code` is not a guess: per `@supabase/auth-js` `lib/errors.d.ts`
-    // it means the failure happened before any response was received.
-    return context.redirect(`/auth/signin?error=${encodeURIComponent(error.code ?? CONNECTION_FAILED)}`);
+    // it means the failure happened before any response was received. An *empty*
+    // code is the same case and `??` alone would not catch it - it would redirect
+    // to a bare `?error=`, which the page reads as falsy and renders as no error
+    // box at all, leaving the teacher with a silently blank form.
+    const code = error.code ?? "";
+    return context.redirect(`/auth/signin?error=${encodeURIComponent(code || CONNECTION_FAILED)}`);
   }
 
   // Straight to the month - the app's home screen. Going through `/` would
