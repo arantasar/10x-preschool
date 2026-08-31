@@ -1011,17 +1011,17 @@ Brak migracji danych — obie zmiany w `supabase/` to wyłącznie asercje testow
 
 #### Automated
 
-- [x] 4.1 Lint przechodzi: `npm run lint`
-- [x] 4.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
-- [x] 4.3 Domyślny zestaw przechodzi bez klucza i nie wciągnął bramki: `npm test`
-- [x] 4.4 Build przechodzi: `npm run build`
+- [x] 4.1 Lint przechodzi: `npm run lint` — 7b36117
+- [x] 4.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit` — 7b36117
+- [x] 4.3 Domyślny zestaw przechodzi bez klucza i nie wciągnął bramki: `npm test` — 7b36117
+- [x] 4.4 Build przechodzi: `npm run build` — 7b36117
 - [ ] 4.5 Bramka przechodzi na prompcie z repo: `npm run test:gate` — **blocked**: konto dev (`.dev.vars`) wyczerpało się z $5 do $0.60 podczas debugowania współbieżności; kod naprawia trzy realne usterki (patrz test-plan.md §6.6) ale pełny zielony przebieg nie jest jeszcze potwierdzony na koncie z pełnym saldem
 - [ ] 4.6 Raport wymienia każdy identyfikator z `allowed-models.ts` — zależy od 4.5
 - [ ] 4.7 Bramka pokryła wszystkie cztery osiągalne tryby — zależy od 4.5
-- [x] 4.8 Filtr ścieżek obejmuje oba kanały instrukcji (`.pl.md` i `.schema.json`)
-- [x] 4.9 Istniejący job CI nietknięty (`npm test`, `npm run build` bez zmian)
-- [x] 4.10 Martwy `OUT_DIR` w `scripts/compare-models.sh` naprawiony
-- [x] 4.11 `test-plan.md §6.5` nie jest już „TBD"
+- [x] 4.8 Filtr ścieżek obejmuje oba kanały instrukcji (`.pl.md` i `.schema.json`) — 7b36117
+- [x] 4.9 Istniejący job CI nietknięty (`npm test`, `npm run build` bez zmian) — 7b36117
+- [x] 4.10 Martwy `OUT_DIR` w `scripts/compare-models.sh` naprawiony — 7b36117
+- [x] 4.11 `test-plan.md §6.5` nie jest już „TBD" — 7b36117
 
 #### Manual
 
