@@ -415,10 +415,10 @@ phases should be reviewed before the PR merges.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Build passes: `npm run build`
-- [x] 1.4 Map not yet wired up (grep returns nothing outside the module itself)
+- [x] 1.1 Unit tests pass: `npm test` — c085123
+- [x] 1.2 Lint passes: `npm run lint` — c085123
+- [x] 1.3 Build passes: `npm run build` — c085123
+- [x] 1.4 Map not yet wired up (grep returns nothing outside the module itself) — c085123
 
 #### Manual
 
@@ -429,12 +429,12 @@ phases should be reviewed before the PR merges.
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm test`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Build passes: `npm run build`
-- [ ] 2.4 `grep -n "error.message" src/pages/api/auth/` returns nothing
-- [ ] 2.5 `grep -n "Supabase nie jest skonfigurowany" src/pages/api/auth/` returns nothing
-- [ ] 2.6 Both auth pages reference `authErrorMessage` twice each
+- [x] 2.1 Unit tests pass: `npm test`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Build passes: `npm run build`
+- [x] 2.4 `grep -n "error.message" src/pages/api/auth/` returns nothing
+- [x] 2.5 `grep -n "Supabase nie jest skonfigurowany" src/pages/api/auth/` returns nothing
+- [x] 2.6 Both auth pages reference `authErrorMessage` twice each
 
 #### Manual
 

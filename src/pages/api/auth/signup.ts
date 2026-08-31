@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { CONFIG_MISSING, CONNECTION_FAILED } from "@/lib/auth-error-messages";
 import { createClient } from "@/lib/supabase";
 
 export const POST: APIRoute = async (context) => {
@@ -6,14 +7,19 @@ export const POST: APIRoute = async (context) => {
   const email = form.get("email") as string;
   const password = form.get("password") as string;
 
+  // Structurally parallel to `signin.ts` on purpose - a future reader will diff
+  // the two. See that file for why `?error=` carries a code and not a sentence.
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return context.redirect(`/auth/signup?error=${encodeURIComponent("Supabase nie jest skonfigurowany")}`);
+    return context.redirect(`/auth/signup?error=${encodeURIComponent(CONFIG_MISSING)}`);
   }
   const { error } = await supabase.auth.signUp({ email, password });
 
   if (error) {
-    return context.redirect(`/auth/signup?error=${encodeURIComponent(error.message)}`);
+    /* eslint-disable-next-line no-console */
+    console.error("auth.signup.failed", { code: error.code, status: error.status, message: error.message });
+
+    return context.redirect(`/auth/signup?error=${encodeURIComponent(error.code ?? CONNECTION_FAILED)}`);
   }
 
   return context.redirect("/auth/confirm-email");
