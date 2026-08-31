@@ -956,37 +956,37 @@ Brak migracji danych — obie zmiany w `supabase/` to wyłącznie asercje testow
 
 #### Automated
 
-- [x] 1.1 Lint przechodzi: `npm run lint`
-- [x] 1.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
-- [x] 1.3 Domyślny zestaw przechodzi i nadal jest bezkluczowy: `npm test`
-- [x] 1.4 Build przechodzi: `npm run build`
-- [x] 1.5 `DEFAULT_MODEL` nie jest już definiowany w generatorze
-- [x] 1.6 Odczyt konfiguracji przechodzi przez zbiór (`OPENROUTER_MODEL ?? ` nieobecne)
-- [x] 1.7 Martwe wskaźniki do `context/changes/first-day-generation/` zniknęły
+- [x] 1.1 Lint przechodzi: `npm run lint` — 021a7ad
+- [x] 1.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit` — 021a7ad
+- [x] 1.3 Domyślny zestaw przechodzi i nadal jest bezkluczowy: `npm test` — 021a7ad
+- [x] 1.4 Build przechodzi: `npm run build` — 021a7ad
+- [x] 1.5 `DEFAULT_MODEL` nie jest już definiowany w generatorze — 021a7ad
+- [x] 1.6 Odczyt konfiguracji przechodzi przez zbiór (`OPENROUTER_MODEL ?? ` nieobecne) — 021a7ad
+- [x] 1.7 Martwe wskaźniki do `context/changes/first-day-generation/` zniknęły — 021a7ad
 
 #### Manual
 
-- [x] 1.8 Model spoza listy pokazuje komunikat o konfiguracji, nie generyczny błąd
-- [x] 1.9 Brak `OPENROUTER_MODEL` generuje dzień jak przed zmianą
-- [x] 1.10 Komentarz w module czyta się jako świadoma decyzja o utracie bezdeployowej podmiany
+- [x] 1.8 Model spoza listy pokazuje komunikat o konfiguracji, nie generyczny błąd — 021a7ad
+- [x] 1.9 Brak `OPENROUTER_MODEL` generuje dzień jak przed zmianą — 021a7ad
+- [x] 1.10 Komentarz w module czyta się jako świadoma decyzja o utracie bezdeployowej podmiany — 021a7ad
 
 ### Phase 2: Ryzyko #6 — twarde wejście i dowód sufitu
 
 #### Automated
 
-- [ ] 2.1 Lint przechodzi: `npm run lint`
-- [ ] 2.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
-- [ ] 2.3 Domyślny zestaw przechodzi: `npm test`
-- [ ] 2.4 Testy bazy przechodzą z podbitym licznikiem: `npm run test:db`
-- [ ] 2.5 Cztery udowodnione ładunki odrzucone; przypadek pozytywny zielony
-- [ ] 2.6 Trasa nie płaci za odrzucone wejście (`fetch` i `supabase.rpc` niewołane)
-- [ ] 2.7 Granice długości nie drgnęły (`PROMPT_MAX`, `THEME_MAX`)
+- [x] 2.1 Lint przechodzi: `npm run lint`
+- [x] 2.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
+- [x] 2.3 Domyślny zestaw przechodzi: `npm test`
+- [x] 2.4 Testy bazy przechodzą z podbitym licznikiem: `npm run test:db`
+- [x] 2.5 Cztery udowodnione ładunki odrzucone; przypadek pozytywny zielony
+- [x] 2.6 Trasa nie płaci za odrzucone wejście (`fetch` i `supabase.rpc` niewołane)
+- [x] 2.7 Granice długości nie drgnęły (`PROMPT_MAX`, `THEME_MAX`)
 
 #### Manual
 
-- [ ] 2.8 Mutacja pgTAP przejechana — obie nowe asercje widziane na czerwono
-- [ ] 2.9 Hasło z nową linią pokazuje zrozumiały polski komunikat
-- [ ] 2.10 Zwykłe hasła z polskimi znakami nadal przechodzą
+- [x] 2.8 Mutacja pgTAP przejechana — obie nowe asercje widziane na czerwono
+- [x] 2.9 Hasło z nową linią pokazuje zrozumiały polski komunikat
+- [x] 2.10 Zwykłe hasła z polskimi znakami nadal przechodzą
 
 ### Phase 3: Rubryka i sędzia, skalibrowani na fixture'ach
 

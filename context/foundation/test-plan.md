@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-08-30
+> Last updated: 2026-08-31
 
 ## 1. Strategy
 
@@ -79,7 +79,7 @@ poniżej; orkiestrator aktualizuje Status, gdy artefakty pojawiają się na dysk
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Runner + granica model→kontrakt→zapis | Udowodnić, że odpowiedź spoza kontraktu i awaria dostawcy kończą się uczciwą porażką, a nie cichym pustym planem | #2, #5 | unit + integration | complete | context/changes/testing-generation-contract-boundary/ |
-| 2 | Powtarzalna bramka bezpieczeństwa treści | Wyjąć jedyną kontrolę guardrailu z jednorazowego skryptu i objąć nią każdy dopuszczony model oraz każdą zmianę promptu | #1, #6 | contract + AI-native judge | not started | — |
+| 2 | Powtarzalna bramka bezpieczeństwa treści | Wyjąć jedyną kontrolę guardrailu z jednorazowego skryptu i objąć nią każdy dopuszczony model oraz każdą zmianę promptu | #1, #6 | contract + AI-native judge | researched | context/changes/testing-content-safety-gate/ |
 | 3 | Ochrona zapisu i własności | Zaakceptowany dzień przeżywa regenerację i generowanie tygodnia; endpoint odmawia dostępu do cudzego zasobu; **odmowa pustej partii (`U0003`) dostaje asercję pgTAP** — dziś niezapięta, patrz §6.4 | #3, #4, #7 | integration + pgTAP | not started | — |
 | 4 | Bramki jakości w CI + e2e ścieżki krytycznej | Zamknąć podłogę przed merge'em do `master`, który deployuje wprost na produkcję | przekrojowe | gates + e2e | not started | — |
 
@@ -213,13 +213,19 @@ dwoma kontami, asercja na odpowiedzi API, nie tylko na wyniku zapytania).
   tłumaczenia błędu bazy na odpowiedź HTTP, testuj na warstwie API — patrz §6.3.
 - **Dług otwarty, z właścicielem**: odmowa pustej partii (`U0003`,
   `save_day_plan_generation`, migracja `20260830092600`) **nie ma dziś żadnej
-  asercji** — usunięcie całego bloku `if` z migracji zostawia 71 asercji pgTAP i
+  asercji** — usunięcie całego bloku `if` z migracji zostawia 73 asercje pgTAP i
   cały zestaw Vitest zielonymi. Zweryfikowano to raz ręcznie przez `psql`
   (Faza 1 rolloutu, kryterium 4.5); automatyczną blokadę zakłada **Faza 3
   rolloutu**, która jest właścicielem tego katalogu. Wymagany kształt to
   `throws_ok(… '[]'::jsonb …, 'U0003')` plus asercje „licznik nie drgnął, stara
   partia nietknięta" i jeden przypadek pustej partii na dniu już zaplanowanym,
   żeby przypiąć kolejność `U0003` przed `U0002`.
+- **Cudze asercje w tym katalogu, świadomie**: `activities_ordinal_bounds`
+  (partia 21 pozycji wywraca cały zapis, nie ucina się do 20) oraz
+  `day_plans_prompt_length` (hasło 2001 znaków) dostały asercje w **Fazie 2**, bo
+  ryzyko #6 żąda dowodu sufitu **poniżej aplikacji** — obie przejechały rytuał
+  mutacji przed commitem. Przekroczenie granicy kończy się na tych dwóch
+  ograniczeniach; `U0003` zostaje nietknięty u swojego właściciela, Fazy 3.
 
 ### 6.5 Dodanie przypadku do bramki bezpieczeństwa treści
 

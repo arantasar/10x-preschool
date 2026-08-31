@@ -108,13 +108,56 @@ export function toDayThemes(outline: WeekOutline, dates: readonly string[]): Day
 // ---------------------------------------------------------------------------
 
 /**
+ * The two Unicode categories a hasło has no use for: `Cc`, the C0/C1 range that
+ * the newline and the tab live in, and `Cf`, the invisible format characters -
+ * zero-width joiners and the bidirectional overrides.
+ *
+ * Both are refused rather than stripped. The teacher's free text is interpolated
+ * raw into the system prompt's user message, one field per line
+ * (`buildDayUserMessage`), so a newline inside `prompt` does not corrupt a
+ * string - it *forges a line*, and the line it forges most cheaply is `Temat
+ * dnia:`, the one slot `day-plan.pl.md` declares superior to the hasło itself.
+ * Silently deleting the character would leave the caller believing the rest of
+ * their instruction had been read; refusing says what happened.
+ */
+const CONTROL_CHARACTERS = /[\p{Cc}\p{Cf}]/u;
+
+/**
+ * A teacher-written field that reaches the model: one line of text, trimmed.
+ *
+ * The trim runs *before* the bounds rather than after, which is the whole point
+ * of it being here. `"   "` used to pass `min(1)` on the server and `char_length
+ * between 1 and 2000` in the database, and was refused only by the island's own
+ * `prompt.trim()` - the textbook "validated in the form, therefore validated"
+ * mistake, since the island sends the untrimmed value anyway
+ * (`WeekPlanBoard.tsx:139,175`).
+ *
+ * The upper bound is unchanged and stays the same knob as the CHECK it mirrors:
+ * this narrows what the route accepts, it never widens it, so a hasło that gets
+ * past here still cannot be one the database refuses to store.
+ */
+function singleLineText(max: number) {
+  return z
+    .string()
+    .trim()
+    .min(1)
+    .max(max)
+    .refine((value) => !CONTROL_CHARACTERS.test(value), {
+      // Deliberately does not name the offending character or its position. The
+      // message is UI copy a teacher reads, not a diagnostic - and a refusal that
+      // reports precisely which byte it disliked is a probe oracle.
+      message: "Hasło musi być pojedynczą linią tekstu.",
+    });
+}
+
+/**
  * The generation route's request body. `prompt` is bounded to the same range as
  * `day_plans.prompt` so a hasło that S-01 accepts cannot become a value S-02
  * fails to store.
  */
 export const generateDayPlanRequestSchema = z.object({
   plan_date: z.iso.date(),
-  prompt: z.string().min(1).max(PROMPT_MAX),
+  prompt: singleLineText(PROMPT_MAX),
   // Carries the teacher's answer to "this deletes the current proposals and
   // withdraws your acceptance". Defaults to false so an older client, or a
   // request that simply omits it, gets the refusal rather than the deletion -
@@ -124,7 +167,7 @@ export const generateDayPlanRequestSchema = z.object({
   // means "keep whatever theme this day already has", which is exactly what a
   // single-day regeneration from `/plan?date=` means. A nullable field would
   // let an older client erase the theme by sending null.
-  theme: z.string().min(1).max(THEME_MAX).optional(),
+  theme: singleLineText(THEME_MAX).optional(),
   // The week generation's skip policy: refuse rather than replace a day that is
   // already planned. Defaults to false, so the single-day route keeps its
   // existing behaviour and only a caller that opts in gets the refusal
@@ -144,7 +187,7 @@ export type GenerateDayPlanRequest = z.infer<typeof generateDayPlanRequestSchema
  * after the model had already been paid for.
  */
 export const weekOutlineRequestSchema = z.object({
-  prompt: z.string().min(1).max(PROMPT_MAX),
+  prompt: singleLineText(PROMPT_MAX),
   dates: z.array(z.iso.date()).length(WEEK_DAYS),
 });
 
