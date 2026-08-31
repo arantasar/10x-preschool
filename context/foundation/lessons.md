@@ -36,3 +36,10 @@
 - **Problem**: Kryterium może być zakresowane poprawnie i mimo to opisywać stan mocniej, niż pozwala diff. W `delete-day-plan` (4.5) zmiana jednego wiersza tabeli poszerzyła kolumnę Status, co przerównało whitespace we **wszystkich** wierszach. Kryterium — zakresowane na bloki `### F-01` … `### S-08` — przeszło słusznie, ale czytelnik odhaczonego Progress wyciąga z niego wniosek „zmienił się tylko S-05", którego `git diff` nie potwierdza. To siostra reguły „Kryterium weryfikacji musi móc nie przejść": tam kryterium nie mogło zawieść, tu może, ale jego zielony wynik znaczy mniej, niż brzmi.
 - **Rule**: Kryterium „poza X nic się nie zmieniło" na pliku z tabelami markdown formułuj tak, żeby przerównanie whitespace go nie dotyczyło (`git diff -w`, grep na treści wierszy zamiast na ich obecności w diffie) — albo zapisz w treści kryterium, że szum formatujący jest dopuszczony i czego dokładnie dotyczy zielony wynik.
 - **Applies to**: plan, plan-review, implement, impl-review
+
+## Bramka grepowa musi celować w konstrukcję i przejechać oba stany
+
+- **Context**: Każde kryterium sukcesu w `plan.md`, które jest wywołaniem `grep` — zarówno w formie „X nie występuje", jak i „X występuje N razy".
+- **Problem**: `supabase-error-copy` 2.4 nie mogło przejść przy implementacji, którą ta sama faza nakazywała: `.` w `error.message` łapało myślnik w `auth-error-messages`, a `console.error(… error.message)` był wymagany przez kontrakt fazy. Kryterium 2.6 (`grep -c "authErrorMessage"` == 2) przechodziło wyłącznie dzięki temu, że komentarz w obu plikach `.astro` celowo nie nazywał funkcji — dopisanie zdania z nazwą funkcji zapala je na czerwono bez zmiany zachowania, a dwie wzmianki w komentarzach zapalają je na zielono przy usuniętym imporcie. Obie bramki były zielone lub czerwone przez przypadek, nie przez stan kodu.
+- **Rule**: Bramkę grepową zakotwicz na konstrukcji niosącej niezmiennik (wywołanie, przekierowanie, literał), nie na gołym identyfikatorze, który pada też w komentarzach, importach i logach. Zanim trafi do planu, uruchom ją na stanie zepsutym i na docelowym — musi rozróżnić oba.
+- **Applies to**: plan, plan-review, implement, impl-review

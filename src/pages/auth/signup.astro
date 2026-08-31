@@ -1,8 +1,15 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import SignUpForm from "@/components/auth/SignUpForm";
+import { authErrorMessage } from "@/lib/auth-error-messages";
 
-const error = Astro.url.searchParams.get("error");
+// `?error=` carries a code, not a sentence. An absent parameter has to
+// short-circuit rather than go through the lookup: the lookup is
+// contractually non-empty, and `ServerError` hides itself only on a falsy
+// message - passing it a translated string would show the box on every
+// clean page load.
+const errorCode = Astro.url.searchParams.get("error");
+const serverError = errorCode ? authErrorMessage(errorCode) : null;
 ---
 
 <Layout title="Załóż konto">
@@ -13,7 +20,7 @@ const error = Astro.url.searchParams.get("error");
       >
         Załóż konto
       </h1>
-      <SignUpForm serverError={error} client:load />
+      <SignUpForm serverError={serverError} client:load />
       <p class="mt-4 text-center text-sm text-blue-100/60">
         Masz już konto? <a href="/auth/signin" class="text-purple-300 hover:underline">Zaloguj się</a>
       </p>

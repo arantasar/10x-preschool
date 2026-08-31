@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 1
 status: draft
 created: 2026-06-27
-updated: 2026-08-30
+updated: 2026-08-31
 prd_version: 1
 main_goal: low-complexity
 top_blocker: time
@@ -228,8 +228,13 @@ wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap
   typu przez nauczyciela vs. nacisk na typ w tygodniu vs. równomierne rozłożenie.
 - **Monetyzacja** — własny kamień milowy, nie funkcja. Sekwencjonowana po powyższych, bo
   to one są kandydatami na „za subskrypcją". Wymaga powrotu do `infrastructure.md`.
-- **Polska wersja strony głównej** — poprawka poza roadmapą; wchodzi jako zmiana
-  `pl-landing-copy` bez FR i bez wiersza tutaj.
+- **Polska wersja strony głównej** — ✅ **dostarczona 2026-08-30** jako zmiana
+  `pl-landing-copy`, poza roadmapą: bez FR i bez wiersza `S-NN`. Zakres wyszedł szerszy niż
+  sam landing — objął cały lejek niezalogowanego (powłoka `Layout.astro` z `lang="pl"`,
+  strona główna, ekrany logowania, rejestracji i potwierdzenia e-maila). Archiwum:
+  `context/archive/2026-08-30-pl-landing-copy/`. Otwarty ogon: angielskie komunikaty błędów
+  z Supabase na ekranach auth — follow-up z właścicielem, wejście przy najbliższej zmianie
+  w `src/pages/api/auth/*` (`next-actions.md` §Otwarte ogony po Kroku 1).
 
 ## Parked`)
 - **Prerequisites:** S-04
