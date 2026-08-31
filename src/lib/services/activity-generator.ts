@@ -9,7 +9,9 @@ import {
   TOTAL_BUDGET_MS,
 } from "@/lib/day-plan-limits";
 import { formatPlanDate, weekdayLabel } from "@/lib/day-plan-dates";
+import { type AllowedModel, resolveModel } from "./allowed-models";
 import { dayPlanProposalSchema, toActivityDrafts, toDayThemes, weekOutlineSchema } from "./day-plan-contract";
+import { categorizeStatus, GenerationError } from "./generation-error";
 import dayResponseJsonSchema from "./prompts/day-plan.schema.json";
 import dayPrompt from "./prompts/day-plan.pl.md?raw";
 import outlineResponseJsonSchema from "./prompts/week-outline.schema.json";
@@ -23,20 +25,11 @@ import outlinePrompt from "./prompts/week-outline.pl.md?raw";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-/**
- * Overridden by `OPENROUTER_MODEL`. Frozen by the phase-5 comparison, which
- * graded three candidates over five keywords: see
- * `context/changes/first-day-generation/model-comparison.md`.
- *
- * Chosen over `google/gemini-3.7-flash` - which scored marginally better on
- * Polish cultural competence - because it is 5x cheaper, 2.3x faster, and needs
- * no operational workaround: Gemini rejects the request outright with
- * "Reasoning is mandatory for this endpoint and cannot be disabled".
- *
- * `deepseek/deepseek-v4-flash` was disqualified outright: it proposed melting
- * wax in a room of three-year-olds. It is not a fallback candidate either.
- */
-const DEFAULT_MODEL = "openai/gpt-5.6-luna";
+// Which model a request carries is decided by `./allowed-models`: the default,
+// the allowed set, and the reason each is what it is all live there, together
+// with the disqualification of `deepseek/deepseek-v4-flash`. `OPENROUTER_MODEL`
+// is resolved against that set on every request rather than read directly, so a
+// model the content-safety gate has never graded cannot reach a teacher.
 
 // The attempt timeout and the total budget come from `@/lib/day-plan-limits`,
 // which the progress indicator reads as well: it derives the moment a retry can
@@ -64,61 +57,11 @@ const MAX_TOKENS = 4000;
 // Errors
 // ---------------------------------------------------------------------------
 
-/**
- * OpenRouter distinguishes nine status codes; a teacher needs to know only one
- * thing - whether clicking again can help. These three categories are that
- * question, and nothing finer.
- */
-export type GenerationErrorCategory = "transient" | "config" | "invalid";
-
-const RETRYABLE_BY_CATEGORY: Record<GenerationErrorCategory, boolean> = {
-  // Rate limits, upstream hiccups, timeouts: the same request may well succeed.
-  transient: true,
-  // Missing credits or a bad key. Retrying burns the teacher's time for nothing.
-  config: false,
-  // Malformed or out-of-bounds output. A fresh roll of the model often lands
-  // inside the contract, so this is worth another try - just not automatically.
-  invalid: true,
-};
-
-export class GenerationError extends Error {
-  readonly category: GenerationErrorCategory;
-  readonly retryable: boolean;
-  /** Upstream HTTP status, when the failure had one. */
-  readonly status?: number;
-  /** OpenRouter's normalized `error.metadata.error_type`, when present. */
-  readonly errorType?: string;
-
-  constructor(
-    category: GenerationErrorCategory,
-    message: string,
-    options: { status?: number; errorType?: string; cause?: unknown } = {},
-  ) {
-    super(message, { cause: options.cause });
-    this.name = "GenerationError";
-    this.category = category;
-    this.retryable = RETRYABLE_BY_CATEGORY[category];
-    this.status = options.status;
-    this.errorType = options.errorType;
-  }
-}
-
-/**
- * Maps an upstream status onto a category. The status is the structural signal -
- * it is the axis OpenRouter's own error table is written against - while
- * `error_type` is carried alongside for the log. `provider_code` is deliberately
- * ignored: it is the raw upstream code and differs per provider, so branching on
- * it would make the behaviour depend on which provider happened to serve us.
- */
-function categorizeStatus(status: number): GenerationErrorCategory {
-  if (status === 401 || status === 402 || status === 403 || status === 404) {
-    return "config";
-  }
-  if (status === 429 || status >= 500) {
-    return "transient";
-  }
-  return "invalid";
-}
+// Defined in `./generation-error` so `allowed-models.ts` can throw a `config`
+// failure without importing this module back. Re-exported here because every
+// caller reaches for it through `activity-generator`.
+export { GenerationError } from "./generation-error";
+export type { GenerationErrorCategory } from "./generation-error";
 
 // ---------------------------------------------------------------------------
 // Logging
@@ -172,6 +115,18 @@ export interface DayGenerationContext {
   readonly theme?: string;
 }
 
+/**
+ * Per-call overrides. Absent, both entry points behave byte for byte as before -
+ * every existing caller passes nothing and is unchanged.
+ *
+ * `model` exists for the content-safety gate, which has to run the same request
+ * once per allowed model. It is validated against the allow-list like any
+ * configured value; see {@link requireConfigured}.
+ */
+export interface GenerationOptions {
+  readonly model?: string;
+}
+
 interface OpenRouterCall {
   /** `JSON.parse` of the model's content. Shape is the caller's to validate. */
   readonly parsed: unknown;
@@ -179,9 +134,15 @@ interface OpenRouterCall {
   readonly modelUsed: string | null;
 }
 
-function buildRequestBody(userMessage: string, systemMessage: string, schemaName: string, schema: unknown) {
+function buildRequestBody(
+  model: AllowedModel,
+  userMessage: string,
+  systemMessage: string,
+  schemaName: string,
+  schema: unknown,
+) {
   return {
-    model: OPENROUTER_MODEL ?? DEFAULT_MODEL,
+    model,
     messages: [
       { role: "system", content: systemMessage },
       { role: "user", content: userMessage },
@@ -411,12 +372,26 @@ async function runWithBudget<T>(
   }
 }
 
-function requireConfigured(): void {
+/**
+ * Both configuration preconditions in one place, and the model the request will
+ * carry as the return value.
+ *
+ * `modelOverride` is what lets the content-safety gate drive the *production*
+ * path once per allowed model instead of rebuilding the request itself - the
+ * mistake `scripts/compare-models.sh` makes by re-implementing message building
+ * in bash. It goes through `resolveModel` exactly like the configured value: the
+ * gate must not be able to certify a model production would refuse.
+ *
+ * Called before anything reaches the network, so a bad key or an off-list model
+ * costs no request.
+ */
+function requireConfigured(modelOverride?: string): AllowedModel {
   if (!OPENROUTER_API_KEY) {
     // Mirrors `createClient` in `@/lib/supabase`: missing configuration is a
     // named condition, not an exception thrown from module scope.
     throw new GenerationError("config", "OpenRouter nie jest skonfigurowany.");
   }
+  return resolveModel(modelOverride ?? OPENROUTER_MODEL);
 }
 
 /**
@@ -428,8 +403,9 @@ function requireConfigured(): void {
 export async function generateDayActivities(
   keyword: string,
   context?: DayGenerationContext,
+  options?: GenerationOptions,
 ): Promise<GenerationResult> {
-  requireConfigured();
+  const model = requireConfigured(options?.model);
 
   return runWithBudget(
     "generation",
@@ -437,7 +413,13 @@ export async function generateDayActivities(
     TOTAL_BUDGET_MS,
     async (timeoutMs) => {
       const call = await callOpenRouter(
-        buildRequestBody(buildDayUserMessage(keyword, context), dayPrompt, "propozycja_dnia", dayResponseJsonSchema),
+        buildRequestBody(
+          model,
+          buildDayUserMessage(keyword, context),
+          dayPrompt,
+          "propozycja_dnia",
+          dayResponseJsonSchema,
+        ),
         timeoutMs,
       );
 
@@ -469,8 +451,12 @@ export async function generateDayActivities(
  * calendar order and the model's day numbers index it, so nothing downstream has
  * to know what "day 3" meant.
  */
-export async function generateWeekOutline(keyword: string, dates: readonly string[]): Promise<WeekOutlineResult> {
-  requireConfigured();
+export async function generateWeekOutline(
+  keyword: string,
+  dates: readonly string[],
+  options?: GenerationOptions,
+): Promise<WeekOutlineResult> {
+  const model = requireConfigured(options?.model);
 
   return runWithBudget(
     "outline",
@@ -479,6 +465,7 @@ export async function generateWeekOutline(keyword: string, dates: readonly strin
     async (timeoutMs) => {
       const call = await callOpenRouter(
         buildRequestBody(
+          model,
           buildOutlineUserMessage(keyword, dates),
           outlinePrompt,
           "szkic_tygodnia",

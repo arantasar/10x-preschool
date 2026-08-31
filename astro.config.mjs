@@ -27,6 +27,11 @@ export default defineConfig({
       // every CI build depend on a repository secret, and would surface a missing
       // key as an exception instead of the config-status message.
       OPENROUTER_API_KEY: envField.string({ context: "server", access: "secret", optional: true }),
+      // Stays optional: validation belongs to `src/lib/services/allowed-models.ts`,
+      // which checks the value against the allow-list on every request and
+      // reports an off-list model as a config failure. Making it required here
+      // would tie every CI build to a repository secret, for the reason stated
+      // above OPENROUTER_API_KEY.
       OPENROUTER_MODEL: envField.string({ context: "server", access: "secret", optional: true }),
     },
   },
