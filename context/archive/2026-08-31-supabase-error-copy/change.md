@@ -1,10 +1,10 @@
 ---
 change_id: supabase-error-copy
 title: Polskie komunikaty błędów logowania i rejestracji
-status: impl_reviewed
+status: archived
 created: 2026-08-31
 updated: 2026-08-31
-archived_at: null
+archived_at: 2026-08-31T12:35:47Z
 ---
 
 ## Notes
