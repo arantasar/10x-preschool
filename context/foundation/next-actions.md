@@ -15,11 +15,11 @@
   `context/archive/2026-08-31-supabase-error-copy/`. Wszedł przed Krokiem 2 jako ogon po
   Kroku 1, którego bramka wejścia („najbliższa zmiana dotykająca `src/pages/api/auth/*`")
   została spełniona przez samego siebie.
-- **PR #20 czeka na merge** — CI i Workers Builds zielone, gałąź `fix/supabase-error-copy`
-  wypchnięta, 12 commitów. Cała powyższa praca (łącznie z archiwum) siedzi na tej gałęzi,
-  nie na `master`. **Merge = deploy na produkcję.**
-- **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie, więc Krok 2 może
-  ruszyć zaraz po merge'u.
+- **PR #20 zmergowany 2026-08-31** (`bed1c12`) — czyli wydany na produkcję przez Workers
+  Builds. CI i Workers Builds były zielone przed merge'em. Gałąź `fix/supabase-error-copy`
+  nadal istnieje zdalnie — do sprzątnięcia.
+- **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie. **Krok 2 jest
+  następny i nic go nie blokuje.**
 - **`M-01` zamknięty 2026-08-30** z ośmioma pozycjami `done` z dziewięciu. `S-07` jawnie
   wypisany z zakresu i przeniesiony do `M-02` — powód i koszt zapisane w `roadmap.md`
   §Milestone History.
@@ -85,7 +85,7 @@ git checkout -b fix/supabase-error-copy   # ✅ zrobione 2026-08-31
 /10x-implement supabase-error-copy        # ✅ zrobione 2026-08-31 (3 fazy)
 /10x-impl-review                          # ✅ zrobione 2026-08-31 (6 findingów, 5 naprawionych)
 /10x-archive supabase-error-copy          # ✅ zrobione 2026-08-31 (73b0d85)
-gh pr merge 20 --merge                    # ← następna komenda (= deploy na produkcję)
+gh pr merge 20 --merge                    # ✅ zrobione 2026-08-31 (bed1c12) = deploy na produkcję
 ```
 
 Numer `1a`, nie `10` — numeracja kroków jest stała, a ta pozycja nie jest nowym punktem
