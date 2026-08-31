@@ -73,7 +73,7 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // --- either screen -------------------------------------------------------
   email_address_invalid: "Ten adres e-mail jest nieprawidłowy. Sprawdź, czy nie ma w nim literówki.",
   validation_failed: "Formularz zawiera nieprawidłowe dane. Sprawdź adres e-mail i hasło, a potem spróbuj ponownie.",
-  over_request_rate_limit: "Za dużo prób pod rząd. Odczekaj chwilę i spróbuj ponownie.",
+  over_request_rate_limit: "Za dużo prób z rzędu. Odczekaj chwilę i spróbuj ponownie.",
   captcha_failed: "Nie udało się potwierdzić, że to Ty, a nie robot. Odśwież stronę i spróbuj ponownie.",
 
   // --- ours ----------------------------------------------------------------
