@@ -449,11 +449,11 @@ phases should be reviewed before the PR merges.
 
 #### Automated
 
-- [x] 3.1 `grep -n "Known exception" CLAUDE.md` returns nothing
-- [x] 3.2 `grep -n "auth-error-messages" CLAUDE.md` returns a line
-- [x] 3.3 Lint passes: `npm run lint`
-- [x] 3.4 `npm test && npm run build` green
-- [x] 3.5 `git diff -w --name-only master..HEAD -- src/` lists exactly the six expected files
+- [x] 3.1 `grep -n "Known exception" CLAUDE.md` returns nothing — 463ddb8
+- [x] 3.2 `grep -n "auth-error-messages" CLAUDE.md` returns a line — 463ddb8
+- [x] 3.3 Lint passes: `npm run lint` — 463ddb8
+- [x] 3.4 `npm test && npm run build` green — 463ddb8
+- [x] 3.5 `git diff -w --name-only master..HEAD -- src/` lists exactly the six expected files — 463ddb8
 
 #### Manual
 
