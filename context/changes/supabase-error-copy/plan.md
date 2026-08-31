@@ -433,8 +433,8 @@ phases should be reviewed before the PR merges.
 
 #### Manual
 
-- [ ] 1.5 Deleting one map entry turns `npm test` red; entry restored
-- [ ] 1.6 The fifteen Polish strings read correctly to a teacher
+- [x] 1.5 Deleting one map entry turns `npm test` red; entry restored
+- [x] 1.6 The fifteen Polish strings read correctly to a teacher
 
 ### Phase 2: Flip the `?error=` contract
 
@@ -449,10 +449,10 @@ phases should be reviewed before the PR merges.
 
 #### Manual
 
-- [ ] 2.7 Wrong password shows Polish message and `?error=invalid_credentials`
-- [ ] 2.8 Existing address on sign-up shows Polish message, no English
-- [ ] 2.9 Injected `?error=<sentence>` renders the generic fallback, not the sentence
-- [ ] 2.10 Clean `/auth/signin` renders no error box
+- [x] 2.7 Wrong password shows Polish message and `?error=invalid_credentials`
+- [x] 2.8 Existing address on sign-up shows Polish message, no English
+- [x] 2.9 Injected `?error=<sentence>` renders the generic fallback, not the sentence
+- [x] 2.10 Clean `/auth/signin` renders no error box
 - [x] 2.11 Missing Supabase config shows the config-missing message — zweryfikowane 2026-08-31 (impl-review F2): oba `?error=config_missing`
 - [x] 2.12 Unreachable Supabase host shows the connection message; original in server console — zweryfikowane 2026-08-31 (impl-review F2): `code: undefined, status: 0` w logu → `?error=connection_failed`
 
@@ -468,5 +468,5 @@ phases should be reviewed before the PR merges.
 
 #### Manual
 
-- [ ] 3.6 `CLAUDE.md` §Key conventions is actionable without reading this plan
-- [ ] 3.7 `next-actions.md` no longer lists this item as pending
+- [x] 3.6 `CLAUDE.md` §Key conventions is actionable without reading this plan
+- [x] 3.7 `next-actions.md` no longer lists this item as pending
