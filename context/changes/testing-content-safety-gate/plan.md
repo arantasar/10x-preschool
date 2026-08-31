@@ -974,38 +974,38 @@ Brak migracji danych — obie zmiany w `supabase/` to wyłącznie asercje testow
 
 #### Automated
 
-- [x] 2.1 Lint przechodzi: `npm run lint`
-- [x] 2.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
-- [x] 2.3 Domyślny zestaw przechodzi: `npm test`
-- [x] 2.4 Testy bazy przechodzą z podbitym licznikiem: `npm run test:db`
-- [x] 2.5 Cztery udowodnione ładunki odrzucone; przypadek pozytywny zielony
-- [x] 2.6 Trasa nie płaci za odrzucone wejście (`fetch` i `supabase.rpc` niewołane)
-- [x] 2.7 Granice długości nie drgnęły (`PROMPT_MAX`, `THEME_MAX`)
+- [x] 2.1 Lint przechodzi: `npm run lint` — f7b9ad7
+- [x] 2.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit` — f7b9ad7
+- [x] 2.3 Domyślny zestaw przechodzi: `npm test` — f7b9ad7
+- [x] 2.4 Testy bazy przechodzą z podbitym licznikiem: `npm run test:db` — f7b9ad7
+- [x] 2.5 Cztery udowodnione ładunki odrzucone; przypadek pozytywny zielony — f7b9ad7
+- [x] 2.6 Trasa nie płaci za odrzucone wejście (`fetch` i `supabase.rpc` niewołane) — f7b9ad7
+- [x] 2.7 Granice długości nie drgnęły (`PROMPT_MAX`, `THEME_MAX`) — f7b9ad7
 
 #### Manual
 
-- [x] 2.8 Mutacja pgTAP przejechana — obie nowe asercje widziane na czerwono
-- [x] 2.9 Hasło z nową linią pokazuje zrozumiały polski komunikat
-- [x] 2.10 Zwykłe hasła z polskimi znakami nadal przechodzą
+- [x] 2.8 Mutacja pgTAP przejechana — obie nowe asercje widziane na czerwono — f7b9ad7
+- [x] 2.9 Hasło z nową linią pokazuje zrozumiały polski komunikat — f7b9ad7
+- [x] 2.10 Zwykłe hasła z polskimi znakami nadal przechodzą — f7b9ad7
 
 ### Phase 3: Rubryka i sędzia, skalibrowani na fixture'ach
 
 #### Automated
 
-- [ ] 3.1 Lint przechodzi: `npm run lint`
-- [ ] 3.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
-- [ ] 3.3 Domyślny zestaw nie wciągnął żadnego pliku `*.gate.test.ts`
-- [ ] 3.4 Domyślny zestaw przechodzi przy nieustawionym `OPENROUTER_API_KEY`
-- [ ] 3.5 Warstwa bramki uruchamia się osobno i widzi `astro:env/server`: `npm run test:gate`
-- [ ] 3.6 Sędzia poprawnie ocenia wszystkie fixture'y kalibracyjne
-- [ ] 3.7 Rubryka jest ładowana `?raw`, a nie zduplikowana w kodzie
-- [ ] 3.8 Wykluczenia Vitesta rozszerzają `configDefaults.exclude`, a nie zastępują
+- [x] 3.1 Lint przechodzi: `npm run lint`
+- [x] 3.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
+- [x] 3.3 Domyślny zestaw nie wciągnął żadnego pliku `*.gate.test.ts`
+- [x] 3.4 Domyślny zestaw przechodzi przy nieustawionym `OPENROUTER_API_KEY`
+- [x] 3.5 Warstwa bramki uruchamia się osobno i widzi `astro:env/server`: `npm run test:gate`
+- [x] 3.6 Sędzia poprawnie ocenia wszystkie fixture'y kalibracyjne
+- [x] 3.7 Rubryka jest ładowana `?raw`, a nie zduplikowana w kodzie
+- [x] 3.8 Wykluczenia Vitesta rozszerzają `configDefaults.exclude`, a nie zastępują
 
 #### Manual
 
-- [ ] 3.9 Rubryka czyta się jako spójny dokument normatywny
-- [ ] 3.10 Werdykt na wyjściu DeepSeeka nazywa wosk i cytuje fragment
-- [ ] 3.11 Werdykt na fixture polskiej fleksji nie zgłasza fałszywego naruszenia
+- [x] 3.9 Rubryka czyta się jako spójny dokument normatywny
+- [x] 3.10 Werdykt na wyjściu DeepSeeka nazywa wosk i cytuje fragment
+- [x] 3.11 Werdykt na fixture polskiej fleksji nie zgłasza fałszywego naruszenia
 
 ### Phase 4: Żywa bramka, CI i kontrola negatywna
 
