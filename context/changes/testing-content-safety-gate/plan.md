@@ -992,36 +992,36 @@ Brak migracji danych — obie zmiany w `supabase/` to wyłącznie asercje testow
 
 #### Automated
 
-- [x] 3.1 Lint przechodzi: `npm run lint`
-- [x] 3.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
-- [x] 3.3 Domyślny zestaw nie wciągnął żadnego pliku `*.gate.test.ts`
-- [x] 3.4 Domyślny zestaw przechodzi przy nieustawionym `OPENROUTER_API_KEY`
-- [x] 3.5 Warstwa bramki uruchamia się osobno i widzi `astro:env/server`: `npm run test:gate`
-- [x] 3.6 Sędzia poprawnie ocenia wszystkie fixture'y kalibracyjne
-- [x] 3.7 Rubryka jest ładowana `?raw`, a nie zduplikowana w kodzie
-- [x] 3.8 Wykluczenia Vitesta rozszerzają `configDefaults.exclude`, a nie zastępują
+- [x] 3.1 Lint przechodzi: `npm run lint` — add3345
+- [x] 3.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit` — add3345
+- [x] 3.3 Domyślny zestaw nie wciągnął żadnego pliku `*.gate.test.ts` — add3345
+- [x] 3.4 Domyślny zestaw przechodzi przy nieustawionym `OPENROUTER_API_KEY` — add3345
+- [x] 3.5 Warstwa bramki uruchamia się osobno i widzi `astro:env/server`: `npm run test:gate` — add3345
+- [x] 3.6 Sędzia poprawnie ocenia wszystkie fixture'y kalibracyjne — add3345
+- [x] 3.7 Rubryka jest ładowana `?raw`, a nie zduplikowana w kodzie — add3345
+- [x] 3.8 Wykluczenia Vitesta rozszerzają `configDefaults.exclude`, a nie zastępują — add3345
 
 #### Manual
 
-- [x] 3.9 Rubryka czyta się jako spójny dokument normatywny
-- [x] 3.10 Werdykt na wyjściu DeepSeeka nazywa wosk i cytuje fragment
-- [x] 3.11 Werdykt na fixture polskiej fleksji nie zgłasza fałszywego naruszenia
+- [x] 3.9 Rubryka czyta się jako spójny dokument normatywny — add3345
+- [x] 3.10 Werdykt na wyjściu DeepSeeka nazywa wosk i cytuje fragment — add3345
+- [x] 3.11 Werdykt na fixture polskiej fleksji nie zgłasza fałszywego naruszenia — add3345
 
 ### Phase 4: Żywa bramka, CI i kontrola negatywna
 
 #### Automated
 
-- [ ] 4.1 Lint przechodzi: `npm run lint`
-- [ ] 4.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
-- [ ] 4.3 Domyślny zestaw przechodzi bez klucza i nie wciągnął bramki: `npm test`
-- [ ] 4.4 Build przechodzi: `npm run build`
-- [ ] 4.5 Bramka przechodzi na prompcie z repo: `npm run test:gate`
-- [ ] 4.6 Raport wymienia każdy identyfikator z `allowed-models.ts`
-- [ ] 4.7 Bramka pokryła wszystkie cztery osiągalne tryby
-- [ ] 4.8 Filtr ścieżek obejmuje oba kanały instrukcji (`.pl.md` i `.schema.json`)
-- [ ] 4.9 Istniejący job CI nietknięty (`npm test`, `npm run build` bez zmian)
-- [ ] 4.10 Martwy `OUT_DIR` w `scripts/compare-models.sh` naprawiony
-- [ ] 4.11 `test-plan.md §6.5` nie jest już „TBD"
+- [x] 4.1 Lint przechodzi: `npm run lint`
+- [x] 4.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit`
+- [x] 4.3 Domyślny zestaw przechodzi bez klucza i nie wciągnął bramki: `npm test`
+- [x] 4.4 Build przechodzi: `npm run build`
+- [ ] 4.5 Bramka przechodzi na prompcie z repo: `npm run test:gate` — **blocked**: konto dev (`.dev.vars`) wyczerpało się z $5 do $0.60 podczas debugowania współbieżności; kod naprawia trzy realne usterki (patrz test-plan.md §6.6) ale pełny zielony przebieg nie jest jeszcze potwierdzony na koncie z pełnym saldem
+- [ ] 4.6 Raport wymienia każdy identyfikator z `allowed-models.ts` — zależy od 4.5
+- [ ] 4.7 Bramka pokryła wszystkie cztery osiągalne tryby — zależy od 4.5
+- [x] 4.8 Filtr ścieżek obejmuje oba kanały instrukcji (`.pl.md` i `.schema.json`)
+- [x] 4.9 Istniejący job CI nietknięty (`npm test`, `npm run build` bez zmian)
+- [x] 4.10 Martwy `OUT_DIR` w `scripts/compare-models.sh` naprawiony
+- [x] 4.11 `test-plan.md §6.5` nie jest już „TBD"
 
 #### Manual
 

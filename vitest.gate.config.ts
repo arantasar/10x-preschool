@@ -20,6 +20,18 @@ export default getViteConfig(
       // Gate-tier tests are never in the per-edit or default-suite path, so a
       // longer ceiling here costs nothing but a slower `npm run test:gate`.
       testTimeout: 60_000,
+      // Vitest runs test *files* in parallel by default, in separate workers.
+      // With two real-network gate files (this calibration suite and Phase 4's
+      // `content-safety.gate.test.ts`), that meant this file's five sequential
+      // judge calls raced the other file's own calibration and matrix calls -
+      // invisible to either file on its own, since each one's *internal*
+      // concurrency was already deliberately low. Measured live: OpenRouter
+      // returns `402 "in_flight_budget_exhausted"` the moment those two files'
+      // concurrent Claude Opus calls exceed the account's in-flight credit
+      // reservation, even with a positive balance. `fileParallelism: false`
+      // serializes gate files against each other; each file's own test-level
+      // concurrency (see `GATE_CONCURRENCY` in the matrix file) is unaffected.
+      fileParallelism: false,
     },
   },
   // Same reason as `vitest.config.ts` - see `astro.config.test.mjs`.

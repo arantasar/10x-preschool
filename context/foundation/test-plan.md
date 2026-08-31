@@ -79,7 +79,7 @@ poniżej; orkiestrator aktualizuje Status, gdy artefakty pojawiają się na dysk
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Runner + granica model→kontrakt→zapis | Udowodnić, że odpowiedź spoza kontraktu i awaria dostawcy kończą się uczciwą porażką, a nie cichym pustym planem | #2, #5 | unit + integration | complete | context/changes/testing-generation-contract-boundary/ |
-| 2 | Powtarzalna bramka bezpieczeństwa treści | Wyjąć jedyną kontrolę guardrailu z jednorazowego skryptu i objąć nią każdy dopuszczony model oraz każdą zmianę promptu | #1, #6 | contract + AI-native judge | researched | context/changes/testing-content-safety-gate/ |
+| 2 | Powtarzalna bramka bezpieczeństwa treści | Wyjąć jedyną kontrolę guardrailu z jednorazowego skryptu i objąć nią każdy dopuszczony model oraz każdą zmianę promptu | #1, #6 | contract + AI-native judge | implementing | context/changes/testing-content-safety-gate/ |
 | 3 | Ochrona zapisu i własności | Zaakceptowany dzień przeżywa regenerację i generowanie tygodnia; endpoint odmawia dostępu do cudzego zasobu; **odmowa pustej partii (`U0003`) dostaje asercję pgTAP** — dziś niezapięta, patrz §6.4 | #3, #4, #7 | integration + pgTAP | not started | — |
 | 4 | Bramki jakości w CI + e2e ścieżki krytycznej | Zamknąć podłogę przed merge'em do `master`, który deployuje wprost na produkcję | przekrojowe | gates + e2e | not started | — |
 
@@ -229,8 +229,50 @@ dwoma kontami, asercja na odpowiedzi API, nie tylko na wyniku zapytania).
 
 ### 6.5 Dodanie przypadku do bramki bezpieczeństwa treści
 
-TBD — see §3 Phase 2 (gdzie żyje zbiór haseł kontrolnych, jak dopisać nowy
-model do zakresu bramki, jak zapisana jest rubryka oceny).
+- **Lokalizacja bramki**: `src/lib/services/content-safety.gate.test.ts` — macierz
+  żywych wywołań (każdy dopuszczony model × każde hasło z fixture'u × każdy
+  osiągalny tryb: `day`, `day-weekday`, `day-themed`, `week`). Kalibracja
+  sędziego mieszka osobno: `src/lib/services/content-safety-judge.gate.test.ts`.
+  Oba to warstwa bramki (`*.gate.test.ts`), poza `npm test`, uruchamiana przez
+  `npm run test:gate` (wymaga `OPENROUTER_API_KEY`).
+- **Zbiór haseł kontrolnych**: `src/lib/services/__fixtures__/content-safety.ts`,
+  eksporty `DANGEROUS_KEYWORDS` (wzięte wprost z sekcji przekierowania w
+  `day-plan.pl.md`/`week-outline.pl.md`) i `CONTROL_KEYWORDS` (pięć haseł
+  odziedziczonych z `scripts/compare-models.sh`, w tym „Andrzejki"). Dopisanie
+  nowego hasła to dopisanie stringa do jednej z tych list — jawnie oznaczonych
+  w komentarzu jako **próba, nie dowód**.
+- **Dopisanie modelu do zakresu bramki**: dopisz identyfikator do
+  `ALLOWED_MODELS` w `src/lib/services/allowed-models.ts` — bramka iteruje tę
+  listę bez zmian w sobie. Kolejność wymagana przed merge'em: (1) commit do
+  `allowed-models.ts`, (2) zielony przebieg `npm run test:gate` obejmujący nowy
+  model, (3) deploy. Podmiana `OPENROUTER_MODEL` w panelu Cloudflare na model
+  spoza tej listy jest od Fazy 1 błędem konfiguracji, nie cichym wejściem w
+  produkcję bez przebiegu bramki.
+- **Rubryka oceny**: `src/lib/services/prompts/content-safety-rubric.pl.md` —
+  jeden plik, ładowany `?raw` przez `content-safety-judge.ts`, dokładnie jak
+  prompty produkcyjne. Zmiana kryterium oceny to edycja tego pliku; automatycznie
+  wchodzi w zakres filtru ścieżek CI (`content-safety-gate` w `ci.yml` obserwuje
+  `src/lib/services/content-safety*`).
+- **Fixture'y kalibracyjne sędziego**: `src/lib/services/__fixtures__/content-safety.ts`,
+  eksport `CONTENT_SAFETY_FIXTURES` — cztery znane wyjścia o znanych werdyktach
+  (w tym prawdziwe wyjście DeepSeeka z „Laniem wosku" i kontrola negatywna na
+  polskiej fleksji). Dopisanie nowego przypadku kalibracyjnego to dopisanie
+  wpisu tutaj; `content-safety-judge.gate.test.ts` go automatycznie obejmuje.
+- **Dlaczego warstwa jest osobna od `npm test`**: zmierzone w Fazie 3 —
+  `test.projects` zdefiniowany inline w `vitest.config.ts` nie dziedziczy
+  pluginów Astro z `getViteConfig`, więc plik bramki wywraca się na
+  `Error: Cannot find package 'astro:env/server'`. Osobny plik konfiguracyjny
+  (`vitest.gate.config.ts`), wołający `getViteConfig` po swojemu, działa.
+  `vitest.config.ts` dostał też `exclude: [...configDefaults.exclude,
+  "src/**/*.gate.test.ts"]`, bo bez niego plik bramki wpadał do domyślnego
+  zestawu i uruchamiał się w CI bez klucza.
+- **Współbieżność między plikami bramki**: `vitest.gate.config.ts` ustawia
+  `fileParallelism: false` — zmierzone w Fazie 4: Vitest domyślnie uruchamia
+  pliki testowe równolegle, więc kalibracja sędziego i macierz żywych wywołań
+  ściągały jednocześnie ten sam limit rezerwacji kredytu OpenRouter
+  (`402 in_flight_budget_exhausted`), mimo dodatniego salda konta. Współbieżność
+  *wewnątrz* macierzy (`GATE_CONCURRENCY` w `content-safety.gate.test.ts`)
+  została osobno dobrana konserwatywnie z tego samego powodu — patrz §6.6.
 
 ### 6.6 Notatki z faz rolloutu
 
@@ -253,6 +295,37 @@ Ryzyko #5 wypadło gorzej, niż zakładano: `!choice` dzieliło gałąź z
 `finish_reason: "error"`, więc niepoprawne body dostawcy kupowało **płatne
 ponowienie** i pokazywało 503 „przeciążona". Wniosek na przyszłe fazy: research
 per fazę bywa ważniejszy od przesłanki, z którą fazę otwarto.
+
+**Faza 2 — powtarzalna bramka bezpieczeństwa treści (2026-08-31, w toku).**
+Przesłanka, z którą fazę otwarto, była w jednej trzeciej odwrotna do zapisanej:
+nie było czego „wyjmować" ze `scripts/compare-models.sh` — kontrola nie
+istniała nigdy, w żadnej formie. Zbiór dopuszczonych modeli, rubryka i sędzia
+musiały powstać od zera, zanim „każdy dopuszczony model" cokolwiek znaczyło.
+
+Ostatnia faza (żywa macierz + CI) znalazła dwie realne usterki produkcyjne,
+niezwiązane z treścią, które sama bramka odsłoniła dopiero pod obciążeniem:
+(1) `google/gemini-3.7-flash` był na liście dopuszczonych modeli, ale
+`buildRequestBody` bezwarunkowo wysyłał `reasoning: { enabled: false }`, a ten
+model twardo odrzuca to polem — każde wywołanie produkcyjne kończyłoby się
+`400`, nigdy niebezpieczną treścią. `scripts/compare-models.sh` miał na to
+obejście od dawna (ponów bez flagi); produkcja go nie miała. (2) sędzia LLM nie
+miał `max_tokens` — pojedyncze wywołanie nigdy tego nie ujawniało, ale pod
+współbieżnością macierzy OpenRouter odpowiadał `402
+"in_flight_budget_exhausted"`, bo rezerwacja kredytu na wywołanie w locie była
+nieograniczona. Do tego Vitest domyślnie uruchamia pliki testowe równolegle,
+więc plik kalibracyjny sędziego i plik macierzy ściągały ten sam limit
+rezerwacji jednocześnie, niewidocznie dla żadnego z osobna — naprawione przez
+`fileParallelism: false` w `vitest.gate.config.ts`. Wniosek: bramka, która woła
+prawdziwego dostawcę współbieżnie, testuje też mechanikę rozliczeń dostawcy, nie
+tylko treść — i pierwszy przebieg pod obciążeniem jest jedynym miejscem, gdzie
+to widać.
+
+**Otwarte na koniec fazy**: pełny przebieg macierzy (`npm run test:gate`) nie
+został jeszcze potwierdzony zielony na koncie z pełnym saldem — konto użyte do
+rozwoju wyczerpało się w trakcie debugowania współbieżności (od $5 do $0.60).
+Kod, lint, typy, build i domyślny zestaw testów są zweryfikowane; zielony
+przebieg pełnej macierzy, kontrola negatywna (`negative-control.md`) i sekret
+`OPENROUTER_API_KEY` w CI zostają jako otwarte kroki przed zamknięciem fazy.
 
 ## 7. What We Deliberately Don't Test
 

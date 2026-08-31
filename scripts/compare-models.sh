@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 #
-# The quality gate.
+# A decision aid for grading a *candidate* model before it is admitted to
+# `src/lib/services/allowed-models.ts` - not a gate. The actual content-safety
+# gate is the `*.gate.test.ts` tier (`src/lib/services/content-safety.gate.test.ts`,
+# run via `npm run test:gate`), added in the testing-content-safety-gate change:
+# it drives the production code path itself, judges every keyword × model × mode
+# combination against a written rubric, and runs in CI on prompt/model-set
+# changes. This script predates that gate, still reads prompts and schemas
+# straight from the same production tree, and stays useful for the job the gate
+# does not do - eyeballing several candidates side by side before deciding which
+# one, if any, is worth admitting.
 #
-# S-01 introduced it for one prompt. S-03 changed both the day prompt (it now
-# accepts a theme and a weekday) and added a second contract (the week outline),
-# so the gate covers both - lessons.md #3: when the prompt is the only layer
-# protecting content, the gate has to cover every model the configuration admits,
-# and any change to a prompt requires a fresh run before merge.
+# Its `exit 0` at the bottom (see the comment there) is deliberate *because* it
+# is not a gate: a failed call is a finding about a candidate, not a build
+# failure.
 #
 # Prompts and schemas are read straight out of src/lib/services/prompts/, never
 # copied: a run against a duplicated prompt would prove something about the
@@ -35,9 +42,12 @@
 # topic, and the week's summary), and five days x five keywords x three models
 # would be 75 calls to review by hand for a marginal gain in coverage.
 #
-# Deliberately outside CI. The project has no TS runner (package.json carries
-# only test:db), automated tests are Module 3, and this is a one-off decision
-# aid, not a regression guard.
+# Deliberately outside CI - and unlike when this comment was first written,
+# that is no longer because the project has no TS runner. It is because this
+# script is a one-off decision aid for a human comparing candidates, and the
+# gate that actually runs in CI (`npm run test:gate`) is a different program
+# with a different job: proving every *admitted* model stays safe, not helping
+# choose which model to admit.
 #
 # Usage:
 #   ./scripts/compare-models.sh [output-dir]
@@ -55,7 +65,13 @@ DAY_PROMPT_FILE="$PROMPTS/day-plan.pl.md"
 DAY_SCHEMA_FILE="$PROMPTS/day-plan.schema.json"
 OUTLINE_PROMPT_FILE="$PROMPTS/week-outline.pl.md"
 OUTLINE_SCHEMA_FILE="$PROMPTS/week-outline.schema.json"
-OUT_DIR="${1:-$REPO_ROOT/context/changes/week-generation/model-outputs}"
+# The default used to name a `context/changes/` folder for the week-generation
+# slice, which by then had already been archived - so a run with no
+# `[output-dir]` argument reconstructed a change folder that no longer existed.
+# Pointed instead at that slice's own archived `model-outputs/`, which already
+# holds every prior run's summary and is the one path this default can name
+# without recreating fiction.
+OUT_DIR="${1:-$REPO_ROOT/context/archive/2026-08-23-week-generation/model-outputs}"
 
 OPENROUTER_URL="https://openrouter.ai/api/v1/chat/completions"
 
@@ -83,6 +99,18 @@ TEMPERATURE=0.8
 MAX_TOKENS=4000
 MAX_TOKENS_REASONING=4000
 
+# The two admitted models from `src/lib/services/allowed-models.ts`
+# (`ALLOWED_MODELS`), plus `deepseek/deepseek-v4-flash` as a standing comparison
+# point - not a fourth admitted model, and not a candidate under active
+# consideration. It stays disqualified: the phase-5 comparison caught it
+# proposing melting wax to three-year-olds
+# (`context/archive/2026-08-22-first-day-generation/model-comparison.md`). It
+# remains in this list only so a future candidate is graded next to the model
+# that failed, not in isolation from it. This array is this script's own copy,
+# not read from `allowed-models.ts`: a bash script sourcing a TypeScript module
+# is more machinery than a three-line list justifies, and the two now agree by
+# comment rather than by import - drift here means updating the comment above,
+# not silently admitting a model this script never graded.
 MODELS=(
   "google/gemini-3.7-flash"
   "openai/gpt-5.6-luna"

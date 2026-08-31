@@ -8,6 +8,7 @@ import {
   networkRejection,
   noChoicesResponse,
   proposalResponse,
+  reasoningMandatoryResponse,
   timeoutRejection,
   unparsableBodyResponse,
 } from "./__fixtures__/openrouter";
@@ -273,6 +274,49 @@ describe("generateDayActivities — failure classes", () => {
 
     expect(failure.category).toBe("config");
     expect(fetchStub).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * `google/gemini-3.7-flash` 400s outright on `reasoning: { enabled: false }`
+ * (`isReasoningMandatoryError` in `activity-generator.ts`) — discovered live by
+ * the content-safety gate's matrix (Phase 4), not by this suite. `scripts/
+ * compare-models.sh:284-296` already retries once without the flag; this is
+ * that same workaround, ported into the path production and the gate both run.
+ */
+describe("the reasoning-mandatory fallback", () => {
+  function requestBodyOf(stub: ReturnType<typeof stubFetch>, call: number): { reasoning?: unknown } {
+    const [, init] = stub.mock.calls[call] as unknown as [unknown, RequestInit];
+    return JSON.parse(init.body as string) as { reasoning?: unknown };
+  }
+
+  it("retries once without the reasoning flag and succeeds", async () => {
+    const fetchStub = stubFetch(reasoningMandatoryResponse, () => proposalResponse(validProposal()));
+
+    const result = await generateDayActivities(KEYWORD);
+
+    expect(result.activities).toHaveLength(ACTIVITY_COUNT);
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+    expect(requestBodyOf(fetchStub, 0).reasoning).toEqual({ enabled: false });
+    expect(requestBodyOf(fetchStub, 1).reasoning).toBeUndefined();
+  });
+
+  it("does not loop when the fallback also fails", async () => {
+    const fetchStub = stubFetch(reasoningMandatoryResponse);
+
+    const failure = await failureOf(generateDayActivities(KEYWORD));
+
+    expect(failure.category).toBe("invalid");
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry a 400 that has nothing to do with reasoning", async () => {
+    const fetchStub = stubFetch(() => errorStatusResponse(400, "bad_request"));
+
+    const failure = await failureOf(generateDayActivities(KEYWORD));
+
+    expect(failure.category).toBe("invalid");
+    expect(fetchStub).toHaveBeenCalledTimes(1);
   });
 });
 

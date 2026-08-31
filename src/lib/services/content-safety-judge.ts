@@ -24,6 +24,21 @@ const JUDGE_MODEL = "anthropic/claude-opus-5";
 
 const JUDGE_TIMEOUT_MS = 30_000;
 
+/**
+ * Bounds the judge's *reservation*, not just its output. Confirmed live and by
+ * direct `curl`: a judge call with no `max_tokens` makes OpenRouter reserve an
+ * unbounded worst-case cost per in-flight request, and Phase 4's concurrent
+ * gate matrix (`content-safety.gate.test.ts`) turns that into an instant `402
+ * "This request would exceed your available credits given your current
+ * in-flight requests"` the moment more than a couple of judge calls overlap -
+ * even though the judge's actual verdicts cost a fraction of a cent each. A
+ * single sequential call (Phase 3's calibration) never showed this, because it
+ * never had a second in-flight request to collide with. Sized well above what
+ * a three-field JSON verdict plus reasoning needs, so this bounds the
+ * reservation without truncating a genuine deliberation.
+ */
+const JUDGE_MAX_TOKENS = 4000;
+
 export interface DayPlanJudgeInput {
   readonly kind: "day";
   readonly keyword: string;
@@ -227,6 +242,7 @@ async function callJudge(userMessage: string): Promise<SafetyVerdict> {
         },
         provider: { data_collection: "deny" },
         temperature: 0,
+        max_tokens: JUDGE_MAX_TOKENS,
       }),
     });
   } catch (cause) {

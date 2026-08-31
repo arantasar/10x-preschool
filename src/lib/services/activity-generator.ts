@@ -140,6 +140,7 @@ function buildRequestBody(
   systemMessage: string,
   schemaName: string,
   schema: unknown,
+  reasoningDisabled: boolean,
 ) {
   return {
     model,
@@ -169,11 +170,31 @@ function buildRequestBody(
       // time, and costs one wasted call when it happens.
     },
     // Reasoning tokens bill as output and add seconds of latency. This is a short
-    // creative task, so they are cost without benefit.
-    reasoning: { enabled: false },
+    // creative task, so they are cost without benefit - but some endpoints make
+    // reasoning mandatory and 400 outright on the disable flag (see
+    // `isReasoningMandatoryError`), so this is a parameter, not a constant.
+    ...(reasoningDisabled ? { reasoning: { enabled: false } } : {}),
     temperature: TEMPERATURE,
     max_tokens: MAX_TOKENS,
   };
+}
+
+/**
+ * `google/gemini-3.7-flash` rejects `reasoning: { enabled: false }` outright
+ * with a `400` whose body carries no `error_type` - only a human-readable
+ * message ("Reasoning is mandatory for this endpoint and cannot be disabled.").
+ * Detected on that message, exactly like `scripts/compare-models.sh:284-296`'s
+ * `grep -qi 'reasoning'`, whose workaround this ports into the path production
+ * (and the content-safety gate) actually run. Every other classified failure in
+ * this file is detected by HTTP status; this is the one exception, because
+ * OpenRouter gives it no status of its own.
+ */
+function isReasoningMandatoryError(errorBody: unknown): boolean {
+  if (!isRecord(errorBody) || !isRecord(errorBody.error)) {
+    return false;
+  }
+  const message = errorBody.error.message;
+  return typeof message === "string" && /reasoning/i.test(message);
 }
 
 /**
@@ -186,7 +207,11 @@ function buildRequestBody(
  * differs between a day and a week outline is only which zod schema the parsed
  * value is then held to - and that stays with the caller.
  */
-async function callOpenRouter(body: unknown, timeoutMs: number): Promise<OpenRouterCall> {
+async function callOpenRouter(
+  body: unknown,
+  timeoutMs: number,
+  onReasoningMandatory?: () => unknown,
+): Promise<OpenRouterCall> {
   let response: Response;
   try {
     response = await fetch(OPENROUTER_URL, {
@@ -206,6 +231,14 @@ async function callOpenRouter(body: unknown, timeoutMs: number): Promise<OpenRou
 
   if (!response.ok) {
     const errorBody: unknown = await response.json().catch(() => null);
+
+    // `onReasoningMandatory` is only supplied on the first attempt (see call
+    // sites below), so a second failure - reasoning-related or not - falls
+    // through to the normal categorized error rather than looping.
+    if (onReasoningMandatory && isReasoningMandatoryError(errorBody)) {
+      return callOpenRouter(onReasoningMandatory(), timeoutMs);
+    }
+
     const errorType = extractErrorType(errorBody);
     throw new GenerationError(categorizeStatus(response.status), `OpenRouter zwrócił status ${response.status}.`, {
       status: response.status,
@@ -412,16 +445,16 @@ export async function generateDayActivities(
     ATTEMPT_TIMEOUT_MS,
     TOTAL_BUDGET_MS,
     async (timeoutMs) => {
-      const call = await callOpenRouter(
+      const buildBody = (reasoningDisabled: boolean) =>
         buildRequestBody(
           model,
           buildDayUserMessage(keyword, context),
           dayPrompt,
           "propozycja_dnia",
           dayResponseJsonSchema,
-        ),
-        timeoutMs,
-      );
+          reasoningDisabled,
+        );
+      const call = await callOpenRouter(buildBody(true), timeoutMs, () => buildBody(false));
 
       // The JSON Schema steers the model; this is what actually guarantees the shape.
       const result = dayPlanProposalSchema.safeParse(call.parsed);
@@ -463,16 +496,16 @@ export async function generateWeekOutline(
     OUTLINE_ATTEMPT_TIMEOUT_MS,
     OUTLINE_TOTAL_BUDGET_MS,
     async (timeoutMs) => {
-      const call = await callOpenRouter(
+      const buildBody = (reasoningDisabled: boolean) =>
         buildRequestBody(
           model,
           buildOutlineUserMessage(keyword, dates),
           outlinePrompt,
           "szkic_tygodnia",
           outlineResponseJsonSchema,
-        ),
-        timeoutMs,
-      );
+          reasoningDisabled,
+        );
+      const call = await callOpenRouter(buildBody(true), timeoutMs, () => buildBody(false));
 
       const result = weekOutlineSchema.safeParse(call.parsed);
       if (!result.success) {
