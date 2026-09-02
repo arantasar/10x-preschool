@@ -1,10 +1,10 @@
 ---
 change_id: testing-content-safety-gate
 title: Powtarzalna bramka bezpieczeństwa treści dla każdego dopuszczonego modelu
-status: implementing
+status: archived
 created: 2026-08-31
-updated: 2026-08-31
-archived_at: null
+updated: 2026-09-02
+archived_at: 2026-09-02T10:20:26Z
 ---
 
 ## Notes
