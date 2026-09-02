@@ -18,17 +18,20 @@
 - **PR #20 zmergowany 2026-08-31** (`bed1c12`) — czyli wydany na produkcję przez Workers
   Builds. CI i Workers Builds były zielone przed merge'em. Gałąź `fix/supabase-error-copy`
   nadal istnieje zdalnie — do sprzątnięcia.
-- **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie. **Krok 2 jest
-  następny i nic go nie blokuje.**
+- **Krok 2 (`testing-content-safety-gate`) zmergowany 2026-09-02** — PR #21 (`92342d3`), czyli
+  wydany na produkcję przez Workers Builds. Archiwum:
+  `context/archive/2026-08-31-testing-content-safety-gate/`. **Krok 3 jest następny i nic go
+  nie blokuje.**
+- **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie.
 - **`M-01` zamknięty 2026-08-30** z ośmioma pozycjami `done` z dziewięciu. `S-07` jawnie
   wypisany z zakresu i przeniesiony do `M-02` — powód i koszt zapisane w `roadmap.md`
   §Milestone History.
 - `S-07` jest `ready`, decyzje zamknięte, czeka na FR z PRD v2. Żaden kamień nie jest teraz
   otwarty (`milestone_status: done`).
-- `test-plan.md` §3: faza 1 `complete`, fazy 2–4 `not started` — ani `pl-landing-copy`, ani
-  `supabase-error-copy` nie ruszyły żadnej fazy rolloutu. Ten drugi dołożył test jednostkowy
-  wprost wg wzorca §6.1 (`src/lib/auth-error-messages.test.ts`), ale to konsumpcja cookbooka,
-  nie postęp rolloutu.
+- `test-plan.md` §3: faza 1 i faza 2 `complete` (faza 2 przez Krok 2, `testing-content-safety-gate`),
+  fazy 3–4 `not started`. Ani `pl-landing-copy`, ani `supabase-error-copy` nie ruszyły żadnej
+  fazy rolloutu — ten drugi dołożył test jednostkowy wprost wg wzorca §6.1
+  (`src/lib/auth-error-messages.test.ts`), ale to konsumpcja cookbooka, nie postęp rolloutu.
 - PRD v1 wyczerpał się na `S-03`; `S-04`, `S-05`, `S-08` zarchiwizowane z pustą rubryką
   „PRD refs" (Open Roadmap Questions #3, wciąż otwarte).
 
@@ -110,16 +113,21 @@ z zainstalowanych typów.
 Zakres obejmuje więc `src/pages/auth/{signin,signup}.astro` obok dwóch tras API — czyli
 znów wyszedł szerszy niż bramka w §Otwarte ogony sugerowała. Patrz lekcja procesowa niżej.
 
-### Krok 2 — faza 2 test-planu (bramka bezpieczeństwa treści)
+### ✅ Krok 2 — faza 2 test-planu (bramka bezpieczeństwa treści) — ZROBIONE 2026-09-02
 
-```
-/10x-test-plan            # orkiestrator sam wybierze następny handoff i poda komendę
-/10x-test-plan --status   # sam podgląd stanu, nic nie robi
-```
+Łańcuch orkiestratora przeszedł przez `/10x-new` → `/10x-research` → `/10x-plan` →
+`/10x-implement` (4 fazy planu) → `/10x-impl-review` → `/10x-archive`. Gałąź
+`feat/testing-content-safety-gate`, PR #21 (`92342d3`), merge do `master` = deploy na
+produkcję. Archiwum: `context/archive/2026-08-31-testing-content-safety-gate/`.
 
-Orkiestrator prowadzi przez `/10x-new` → `/10x-research` → `/10x-plan` → `/10x-implement`
-i zatrzymuje się na każdym STOP-poincie. Po `/clear` wywołaj `/10x-test-plan` bez argumentów,
-żeby wznowić. Pokrywa Ryzyko #1 (najwyższe w mapie) i jest niezależna od reszty tej listy.
+Pokryło Ryzyko #1 (najwyższe w mapie) i #6. Dwa punkty planu zamknięte świadomie, nie w pełni:
+**4.12** (kontrola negatywna — próba wykonana, cel nie w pełni osiągnięty, koszt zatrzymał po
+dwóch próbach) i **4.17** (trzy dodatkowe zielone przebiegi — pominięte, koszt ~3× pełnego
+przebiegu uznany za nieuzasadniony). Oba zapisane jako zaakceptowane ryzyko w
+`test-plan.md` §6.6, nie jako dług.
+
+**Do sprzątnięcia**: gałąź `feat/testing-content-safety-gate` nadal istnieje zdalnie i
+lokalnie po merge'u (ten sam wzorzec co `fix/supabase-error-copy` po Kroku 1a).
 
 ### Krok 3 — PRD v2 i otwarcie `M-02` (zgłoszenia #3, #4, #5, #6, #9 + `S-07`)
 
@@ -216,6 +224,15 @@ nie zakresem — zakres ustala `/10x-plan` po przeczytaniu kodu. Nie traktuj wpi
 
 Dwa trafienia z rzędu to już wzorzec, nie zbieg okoliczności — **kandydat na `/10x-lesson`**
 obok F6 (patrz wiersz wyżej), gdyby powtórzył się po raz trzeci.
+
+## Otwarte ogony po Kroku 2
+
+Nie blokuje Kroku 3 ani żadnego dalszego kroku — do zrobienia w dowolnym momencie, najlepiej
+przed kolejnym pełnym przebiegiem `npm run test:gate` na żywo.
+
+| Co | Właściciel / bramka wejścia |
+| --- | --- |
+| **Ograniczenie liczby trybów w macierzy bramki bezpieczeństwa treści** — `GATE_MODES` w `content-safety.gate.test.ts` z czterech (`day`, `day-weekday`, `day-themed`, `week`) do dwóch: zostają `day-weekday` i `week`, odpadają `day` (nieprodukcyjny baseline — `activity-generator.ts:100-111` mówi wprost, że `/plan?date=` nigdy go nie wysyła) i `day-themed` (dzień w kontekście tygodnia, ze slotem „Temat dnia:”). Cel: 2x mniej realnych wywołań LLM na przebieg (z ~8 do ~4 na kombinację model×hasło), bez utraty jedynej konfiguracji odpowiadającej pojedynczemu dniu generowanemu w produkcji. **Świadomy koszt**: `day-themed` był jedyną konfiguracją bramki testującą slot „Temat dnia:”, który plan fazy 2 nazwał najbardziej wrażliwym na wstrzyknięcie (ryzyko #6) — to ubytek pokrycia, nie tylko oszczędność, i wart odnotowania przy zmianie | Brak formalnej bramki wejścia — zmiana lokalna w `content-safety.gate.test.ts` i `test-plan.md` §6.5 (opis macierzy). Rozważyć razem: `4.12`/`4.17` z Kroku 2 zakładają dziś macierz 4-trybową — commit message powinien to nazwać |
 
 ## Pułapki — cztery rzeczy, o które łatwo się potknąć
 
