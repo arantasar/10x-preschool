@@ -8,6 +8,7 @@ import {
   networkRejection,
   noChoicesResponse,
   proposalResponse,
+  reasoningMandatoryResponse,
   timeoutRejection,
   unparsableBodyResponse,
 } from "./__fixtures__/openrouter";
@@ -37,6 +38,7 @@ vi.mock("astro:env/server", () => ({
 }));
 
 const { GenerationError, generateDayActivities } = await import("./activity-generator");
+const { ALLOWED_MODELS, DEFAULT_MODEL } = await import("./allowed-models");
 
 const KEYWORD = "jesień w lesie";
 
@@ -269,6 +271,124 @@ describe("generateDayActivities — failure classes", () => {
     const fetchStub = stubFetch(() => proposalResponse(validProposal()));
 
     const failure = await failureOf(generateDayActivities(KEYWORD));
+
+    expect(failure.category).toBe("config");
+    expect(fetchStub).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * `google/gemini-3.7-flash` 400s outright on `reasoning: { enabled: false }`
+ * (`isReasoningMandatoryError` in `activity-generator.ts`) — discovered live by
+ * the content-safety gate's matrix (Phase 4), not by this suite. `scripts/
+ * compare-models.sh:284-296` already retries once without the flag; this is
+ * that same workaround, ported into the path production and the gate both run.
+ */
+describe("the reasoning-mandatory fallback", () => {
+  function requestBodyOf(stub: ReturnType<typeof stubFetch>, call: number): { reasoning?: unknown } {
+    const [, init] = stub.mock.calls[call] as unknown as [unknown, RequestInit];
+    return JSON.parse(init.body as string) as { reasoning?: unknown };
+  }
+
+  it("retries once without the reasoning flag and succeeds", async () => {
+    const fetchStub = stubFetch(reasoningMandatoryResponse, () => proposalResponse(validProposal()));
+
+    const result = await generateDayActivities(KEYWORD);
+
+    expect(result.activities).toHaveLength(ACTIVITY_COUNT);
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+    expect(requestBodyOf(fetchStub, 0).reasoning).toEqual({ enabled: false });
+    expect(requestBodyOf(fetchStub, 1).reasoning).toBeUndefined();
+  });
+
+  it("does not loop when the fallback also fails", async () => {
+    const fetchStub = stubFetch(reasoningMandatoryResponse);
+
+    const failure = await failureOf(generateDayActivities(KEYWORD));
+
+    expect(failure.category).toBe("invalid");
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry a 400 that has nothing to do with reasoning", async () => {
+    const fetchStub = stubFetch(() => errorStatusResponse(400, "bad_request"));
+
+    const failure = await failureOf(generateDayActivities(KEYWORD));
+
+    expect(failure.category).toBe("invalid");
+    expect(fetchStub).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * The allow-list on the wire.
+ *
+ * These exist so the content-safety gate can drive the production request path
+ * once per allowed model rather than rebuilding the request — and so an off-list
+ * model is refused before anyone pays for the call.
+ */
+describe("the model the request carries", () => {
+  // `stubFetch` declares no parameters, so `mock.calls` is typed as empty
+  // tuples; the request init has to be recovered through `unknown`.
+  function bodyOf(stub: ReturnType<typeof stubFetch>): { model: string } {
+    const [call] = stub.mock.calls as unknown as [unknown, RequestInit][];
+    return JSON.parse(call[1].body as string) as { model: string };
+  }
+
+  it("sends DEFAULT_MODEL when OPENROUTER_MODEL is unset", async () => {
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    await generateDayActivities(KEYWORD);
+
+    expect(bodyOf(fetchStub).model).toBe(DEFAULT_MODEL);
+  });
+
+  it.each(ALLOWED_MODELS)("sends %s when it is configured", async (model) => {
+    env.model = model;
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    await generateDayActivities(KEYWORD);
+
+    expect(bodyOf(fetchStub).model).toBe(model);
+  });
+
+  it.each(ALLOWED_MODELS)("sends %s when it is passed as a per-call override", async (model) => {
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    await generateDayActivities(KEYWORD, undefined, { model });
+
+    expect(bodyOf(fetchStub).model).toBe(model);
+  });
+
+  it("lets a per-call override win over the configured value", async () => {
+    env.model = DEFAULT_MODEL;
+    const other = ALLOWED_MODELS.find((candidate) => candidate !== DEFAULT_MODEL);
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    await generateDayActivities(KEYWORD, undefined, { model: other });
+
+    expect(bodyOf(fetchStub).model).toBe(other);
+  });
+
+  // A counter, not the absence of an exception: the point is that an off-list
+  // model costs nothing, not merely that it throws (test-plan.md §6.2).
+  it("refuses a configured model that is off the list before touching the network", async () => {
+    env.model = "deepseek/deepseek-v4-flash";
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const failure = await failureOf(generateDayActivities(KEYWORD));
+
+    expect(failure.category).toBe("config");
+    expect(failure.message).toContain("deepseek/deepseek-v4-flash");
+    expect(fetchStub).not.toHaveBeenCalled();
+  });
+
+  // The gate must not be able to certify a model production would refuse, so an
+  // override goes through the same predicate as a configured value.
+  it("refuses an off-list per-call override before touching the network", async () => {
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const failure = await failureOf(generateDayActivities(KEYWORD, undefined, { model: "meta/llama-4" }));
 
     expect(failure.category).toBe("config");
     expect(fetchStub).not.toHaveBeenCalled();

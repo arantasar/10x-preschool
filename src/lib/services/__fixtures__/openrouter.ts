@@ -51,6 +51,20 @@ export function errorStatusResponse(status: number, errorType = "rate_limit"): R
   return jsonResponse({ error: { code: status, metadata: { error_type: errorType } } }, status);
 }
 
+/**
+ * The exact 400 `google/gemini-3.7-flash` returns for `reasoning: { enabled:
+ * false } }` — reproduced verbatim from a live call, not paraphrased. Unlike
+ * every other error envelope in this file, this one carries no
+ * `metadata.error_type` — only the human-readable `message`, which is the only
+ * thing `isReasoningMandatoryError` has to detect it by.
+ */
+export function reasoningMandatoryResponse(): Response {
+  return jsonResponse(
+    { error: { message: "Reasoning is mandatory for this endpoint and cannot be disabled.", code: 400 } },
+    400,
+  );
+}
+
 /** A 200 whose body is not JSON at all — an edge proxy's HTML, typically. */
 export function unparsableBodyResponse(): Response {
   return new Response("<html><body>502 Bad Gateway</body></html>", {

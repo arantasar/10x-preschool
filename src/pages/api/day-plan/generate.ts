@@ -101,10 +101,13 @@ export const POST: APIRoute = async (context) => {
   // as string`. The bounds come from `day-plan-contract`, which mirrors the
   // CHECK constraints, so a hasło accepted here cannot become one S-02 refuses
   // to store. Zod's own error is logged-shaped, not user-shaped, so the client
-  // gets a written message instead of an issue tree.
+  // gets a written message instead of an issue tree - one message for every way
+  // the body can be wrong, including the single-line rule the schema now applies
+  // to `prompt` and `theme`, because naming the offending character would tell a
+  // caller probing the injection surface exactly which one to try next.
   const parsed = generateDayPlanRequestSchema.safeParse(payload);
   if (!parsed.success) {
-    return badRequest("Podaj poprawną datę oraz hasło o długości od 1 do 2000 znaków.");
+    return badRequest("Podaj poprawną datę oraz hasło — jedna linia tekstu, od 1 do 2000 znaków.");
   }
 
   const supabase = context.locals.supabase;

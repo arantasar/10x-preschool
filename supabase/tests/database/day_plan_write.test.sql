@@ -15,7 +15,7 @@
 
 begin;
 
-select plan(42);
+select plan(44);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (seeded as the owner, so rls is out of the picture here by design)
@@ -407,6 +407,54 @@ select throws_ok(
   '23514',
   null,
   'a theme longer than 200 characters is refused'
+);
+
+-- ---------------------------------------------------------------------------
+-- the two input bounds nothing above the database enforces
+-- ---------------------------------------------------------------------------
+--
+-- added by rollout phase 2 (risk #6), which is not the owner of this directory -
+-- phase 3 is. the trespass is deliberate and stops here: these are the two
+-- constraints 20260720162247 added and never got an assertion, and both of them
+-- are what risk #6 asks for proof of *below* the application. u0003 stays with
+-- phase 3, untouched. same mutation discipline as the rest of this file.
+--
+-- own date throughout, so neither assertion disturbs the plans above.
+
+-- the ordinal bound doubles as the per-batch row cap, which is the whole reason
+-- the migration calls it load-bearing: `with ordinality` numbers the batch, so a
+-- twenty-first element is a twenty-first ordinal. what needs proving is that the
+-- overflow *fails the call* rather than writing the first twenty and dropping the
+-- rest - a silent truncation would hand the teacher a plan the model did not
+-- propose, and nothing above this line counts the batch.
+select throws_ok(
+  format(
+    $$select public.save_day_plan_generation(
+        date '2026-05-07', 'nadmiarowa partia', %L::jsonb
+      )$$,
+    (select jsonb_agg(jsonb_build_object('title', 'a-' || i, 'description', 'opis ' || i))
+       from generate_series(1, 21) as i)
+  ),
+  '23514',
+  null,
+  'a batch of 21 activities is refused outright, not truncated to 20'
+);
+
+-- the haslo bound. PROMPT_MAX in day-plan-limits.ts is the same knob, and the
+-- route's schema mirrors it - but the route is not what holds it: an accepted
+-- value at 2001 characters would reach the teacher as a 500 on text the form had
+-- already told them was fine.
+select throws_ok(
+  format(
+    $$select public.save_day_plan_generation(
+        date '2026-05-07', %L,
+        '[{"title":"d-seven","description":"opis d7"}]'::jsonb
+      )$$,
+    repeat('x', 2001)
+  ),
+  '23514',
+  null,
+  'a haslo longer than 2000 characters is refused'
 );
 
 -- ---------------------------------------------------------------------------

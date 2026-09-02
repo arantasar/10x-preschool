@@ -58,7 +58,7 @@ export const POST: APIRoute = async (context) => {
 
   const parsed = weekOutlineRequestSchema.safeParse(payload);
   if (!parsed.success) {
-    return badRequest("Podaj hasło o długości od 1 do 2000 znaków oraz pięć dni roboczych.");
+    return badRequest("Podaj hasło — jedna linia tekstu, od 1 do 2000 znaków — oraz pięć dni roboczych.");
   }
 
   // Nothing here touches Supabase, but the check stays: a teacher whose database

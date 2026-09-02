@@ -23,3 +23,41 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
+  # Advisory, not blocking — branch protection needs GitHub Pro or a public repo
+  # (`gh api …/branches/master/protection` → 403), so this cannot stop a merge.
+  # Its only enforcement is a human reading the check before clicking merge
+  # (test-plan.md §5). A separate job, not a step in `ci` above: it needs its own
+  # `OPENROUTER_API_KEY` secret and must never run on every push - only when a
+  # prompt, the model allow-list, or the safety machinery itself changes.
+  content-safety-gate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check for gate-relevant changes
+        id: changes
+        run: |
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -qE \
+            '^src/lib/services/prompts/.*\.(pl\.md|schema\.json)$|^src/lib/services/allowed-models\.ts$|^src/lib/services/content-safety|^vitest\.gate\.config\.ts$'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.changes.outputs.run == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+        if: steps.changes.outputs.run == 'true'
+      - run: npx astro sync
+        if: steps.changes.outputs.run == 'true'
+      - run: npm run test:gate
+        if: steps.changes.outputs.run == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
