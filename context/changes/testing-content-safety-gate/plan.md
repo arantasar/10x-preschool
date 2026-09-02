@@ -1015,9 +1015,9 @@ Brak migracji danych — obie zmiany w `supabase/` to wyłącznie asercje testow
 - [x] 4.2 Typy przechodzą: `npx astro sync && npx tsc --noEmit` — 7b36117
 - [x] 4.3 Domyślny zestaw przechodzi bez klucza i nie wciągnął bramki: `npm test` — 7b36117
 - [x] 4.4 Build przechodzi: `npm run build` — 7b36117
-- [ ] 4.5 Bramka przechodzi na prompcie z repo: `npm run test:gate` — **blocked**: konto dev (`.dev.vars`) wyczerpało się z $5 do $0.60 podczas debugowania współbieżności; kod naprawia trzy realne usterki (patrz test-plan.md §6.6) ale pełny zielony przebieg nie jest jeszcze potwierdzony na koncie z pełnym saldem
-- [ ] 4.6 Raport wymienia każdy identyfikator z `allowed-models.ts` — zależy od 4.5
-- [ ] 4.7 Bramka pokryła wszystkie cztery osiągalne tryby — zależy od 4.5
+- [x] 4.5 Bramka przechodzi na prompcie z repo: `npm run test:gate` — pending commit. Po drugim doładowaniu (2026-09-02, saldo ~$6,27) przebieg **sekwencyjny** (`GATE_CONCURRENCY` tymczasowo 1, timeout tymczasowo 20 min — oba przywrócone do 3 / 10 min zaraz po zielonym wyniku) przeszedł czysto: 2 pliki, 6/6 testów, ~726 s, zero naruszeń, zero kolizji `402`. Dwie usterki znalezione i naprawione po drodze tego samego dnia: fałszywe trafienie na cytowanym „przepraszam" w treści (`content-safety-judge.ts`, `stripQuoted()`) i brak retry na `402 in_flight_budget_exhausted` z poziomu sędziego (`gate-retry.ts`, `retryGateCall()`) — obie pokryte bezpłatnymi testami jednostkowymi (`content-safety-judge.test.ts`, `gate-retry.test.ts`)
+- [x] 4.6 Raport wymienia każdy identyfikator z `allowed-models.ts` — pending commit. Asercja `expect(report).toContain(model)` w teście przeszła dla obu modeli
+- [x] 4.7 Bramka pokryła wszystkie cztery osiągalne tryby — pending commit. Asercja `expect(report).toContain(mode)` przeszła dla `day`, `day-weekday`, `day-themed`, `week`
 - [x] 4.8 Filtr ścieżek obejmuje oba kanały instrukcji (`.pl.md` i `.schema.json`) — 7b36117
 - [x] 4.9 Istniejący job CI nietknięty (`npm test`, `npm run build` bez zmian) — 7b36117
 - [x] 4.10 Martwy `OUT_DIR` w `scripts/compare-models.sh` naprawiony — 7b36117
@@ -1025,9 +1025,9 @@ Brak migracji danych — obie zmiany w `supabase/` to wyłącznie asercje testow
 
 #### Manual
 
-- [ ] 4.12 Kontrola negatywna przejechana, czerwona i zapisana w `negative-control.md`
+- [~] 4.12 Kontrola negatywna przejechana, czerwona i zapisana w `negative-control.md` — **próba wykonana, cel nie w pełni osiągnięty**: dwie próby (2026-09-02, „wojna" i „szkielet i śmierć", zawężone do jednego hasła na raz dla kosztu) po wycięciu sekcji „Hasło nieodpowiednie dla wieku" — pierwsza czerwona z powodu szumu transportowego (nie treści), druga w pełni zielona. Prompt i fixture przywrócone, potwierdzone pustym `git diff`. Zatrzymano po dwóch próbach ze względu na koszt; pełny raport i uzasadnienie w `negative-control.md`, łącznie z otwartym follow-upem
 - [ ] 4.13 `OPENROUTER_API_KEY` dodany jako repository secret; job przechodzi na prawdziwym PR-ze
-- [ ] 4.14 Job nie odpala się na PR-ze poza filtrem ścieżek
-- [ ] 4.15 Czas ścienny bramki mieści się w minutach
-- [ ] 4.16 Raport naruszenia czytelny bez wchodzenia w surowe logi
-- [ ] 4.17 Trzy kolejne przebiegi na niezmienionym prompcie są zielone
+- [ ] 4.14 Job nie odpala się na PR-ze poza filtrem ścieżek — wymaga prawdziwego PR-a
+- [x] 4.15 Czas ścienny bramki mieści się w minutach — obserwowane lokalnie w tej sesji: ~95–730s zależnie od zakresu i współbieżności, zawsze minuty, nigdy godziny; formalne potwierdzenie na runnerze CI zależy od 4.14
+- [x] 4.16 Raport naruszenia czytelny bez wchodzenia w surowe logi — potwierdzone bezpośrednią obserwacją kilku raportów w tej sesji (format „Klauzula: ... / Cytat: ..." czytelny samodzielnie)
+- [ ] 4.17 Trzy kolejne przebiegi na niezmienionym prompcie są zielone — **świadomie pominięte** (2026-09-02): koszt (~3× pełen przebieg) uznany za nieuzasadniony przy ograniczonym budżecie konta dev; odnotowane jako zaakceptowane ryzyko w `test-plan.md`

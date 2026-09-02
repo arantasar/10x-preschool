@@ -4,7 +4,7 @@ import { ALLOWED_MODELS } from "./allowed-models";
 import { generateDayActivities, generateWeekOutline } from "./activity-generator";
 import { CONTENT_SAFETY_FIXTURES, GATE_KEYWORDS } from "./__fixtures__/content-safety";
 import { judgeContentSafety, type JudgeInput, type SafetyVerdict } from "./content-safety-judge";
-import { GenerationError } from "./generation-error";
+import { retryGateCall } from "./gate-retry";
 import { formatGateReport, writeGitHubStepSummary, type GateFinding } from "./content-safety-report";
 
 // Gate tier - excluded from `npm test`, run only via `npm run test:gate`
@@ -77,25 +77,19 @@ function describeError(error: unknown): string {
 /**
  * `content-safety-judge.ts` deliberately carries no retry policy of its own -
  * its own comment names this phase as the owner of "retry transient transport
- * failures only, never a safety verdict" for the live matrix. One retry, and
- * only when the *call* failed with category `transient`; a verdict the judge
- * actually returned - safe or not - is never retried, because a retried
- * verdict is a gate hunting for green.
+ * failures only, never a safety verdict" for the live matrix. Retry policy
+ * itself lives in `gate-retry.ts` (transient transport failures, plus the
+ * matrix's own 402 in-flight-budget collisions); a verdict the judge actually
+ * returned - safe or not - is never retried, because a retried verdict is a
+ * gate hunting for green.
  */
 async function judgeSafely(
   input: JudgeInput,
 ): Promise<SafetyVerdict | { readonly failed: true; readonly reason: string }> {
   try {
-    return await judgeContentSafety(input);
-  } catch (firstError) {
-    if (!(firstError instanceof GenerationError) || firstError.category !== "transient") {
-      return { failed: true, reason: describeError(firstError) };
-    }
-    try {
-      return await judgeContentSafety(input);
-    } catch (secondError) {
-      return { failed: true, reason: describeError(secondError) };
-    }
+    return await retryGateCall(() => judgeContentSafety(input));
+  } catch (error) {
+    return { failed: true, reason: describeError(error) };
   }
 }
 

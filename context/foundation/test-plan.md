@@ -327,6 +327,66 @@ Kod, lint, typy, build i domyślny zestaw testów są zweryfikowane; zielony
 przebieg pełnej macierzy, kontrola negatywna (`negative-control.md`) i sekret
 `OPENROUTER_API_KEY` w CI zostają jako otwarte kroki przed zamknięciem fazy.
 
+**Dwa kolejne przebiegi po doładowaniu (2026-09-02)**, po naprawie trzech
+usterek wyżej, znalazły dwie **nowe** realne usterki — dopiero pod prawdziwym
+obciążeniem, dokładnie jak wcześniejsze trzy:
+
+(1) **Fałszywe trafienie na cytowanym słowie-znaczniku.** Luna × „wojna" ×
+`day-weekday` przekierowała hasło na zajęcia uczące dzieci mówić „przepraszam"
+i dzielić się — samo słowo w cudzysłowie, jako treść pedagogiczna, nie jako
+odmowa modelu. `REFUSAL_MARKERS`/`ENGLISH_MARKERS` dopasowywały słowo bez
+względu na to, czy jest cytowane czy wypowiedziane przez model. Naprawione
+funkcją `stripQuoted()` w `content-safety-judge.ts`, która usuwa fragmenty w
+cudzysłowie przed dopasowaniem znaczników — zweryfikowane bezpłatnie
+(jednostkowo w `content-safety-judge.test.ts`) plus jednym żywym powtórzeniem
+dokładnie tego przypadku.
+
+(2) **Brak retry na `402` sędziego.** `categorizeStatus` mapuje 402 na
+kategorię `config` (słusznie — dla prawdziwego braku środków retry marnowałby
+czas nauczyciela), więc istniejący retry-tylko-`transient` w `judgeSafely`
+nigdy nie ponawiał kolizji rezerwacji w locie, która jest z natury przejściowa
+w kontekście współbieżnej macierzy. Wydzielone do `gate-retry.ts`
+(`retryGateCall`) z jawnym wyjątkiem na status 402 (i tylko 402 — 401/403/404
+zostają nieponawiane); zweryfikowane bezpłatnie pięcioma testami jednostkowymi
+z mockowanym `fetch`, nie żywym wywołaniem.
+
+Drugi z tych dwóch przebiegów **sam się nie domknął zielono** — kaskada `402`
+objęła tym razem też wywołania generujące (nie tylko sędziego), na wielu
+kombinacjach naraz. Sprawdzone bezpośrednio przez `GET
+https://openrouter.ai/api/v1/credits`: konto miało `$10` doładowania i `$8.73`
+łącznego zużycia, czyli ~$1,28 zostało. Sufit rezerwacji w locie skaluje się z
+saldem (`test-plan.md` już to odnotowywało wcześniej) — przy tak niskim saldzie
+nawet `GATE_CONCURRENCY = 3` zderza się regularnie. To ograniczenie salda, nie
+kod: **pełny zielony przebieg czeka na kolejne doładowanie**, zaakceptowane
+świadomie zamiast dalszego, ślepego ponawiania na resztce środków.
+
+**Domknięcie po trzecim doładowaniu (2026-09-02, saldo ~$6,27).** Zamiast od
+razu wracać do `GATE_CONCURRENCY = 3`, przebieg zamówiony jako **w pełni
+sekwencyjny** (`GATE_CONCURRENCY` tymczasowo `1`, timeout testu tymczasowo
+podwojony do 20 min) — zero współbieżnych wywołań własnych, więc zero ryzyka
+kolizji rezerwacji ze swojej strony, kosztem czasu zamiast pieniędzy (~726 s,
+~12 min zamiast ~4–4.5 min przy współbieżności 3). Wynik: 2 pliki, 6/6 testów,
+zero naruszeń, zero `402`. Oba tymczasowe ustawienia przywrócone do wartości z
+Fazy 4 (`3` / 10 min) natychmiast po zielonym wyniku — wolniejszy tryb był
+środkiem ostrożności dla konkretnego niskiego salda tej sesji, nie trwałą
+zmianą strojenia dla konta CI. Faza 2 jest funkcjonalnie zamknięta: pozostają
+`negative-control.md` (4.12) i sekret `OPENROUTER_API_KEY` w CI (4.13) jako
+kroki poza samym kodem.
+
+**Kontrola negatywna (4.12) i decyzja o 4.17 (2026-09-02).** Wycięcie sekcji
+„Hasło nieodpowiednie dla wieku" i przebieg na dwóch pojedynczych hasłach
+(„wojna", „szkielet i śmierć") **nie wyprodukowało czerwieni treściowej** —
+oba dopuszczone modele trzymały się bezpiecznych tematów mimo braku
+jawnej instrukcji przekierowania. Pełny raport i interpretacja:
+`negative-control.md`. Wniosek zapisany tam jako otwarty follow-up, nie jako
+blokada: kalibracja sędziego z Fazy 3 (prawdziwe wyjście w kształcie odmowy)
+już dowodzi, że mechanizm wykrywa to, do czego został zbudowany — tego
+konkretnego rytuału na złożonej całości po prostu nie udało się wywołać na
+czerwono w granicach rozsądnego kosztu. Pozycja 4.17 (trzy kolejne zielone
+przebiegi) **świadomie pominięta** z tego samego powodu — koszt ~3× pełnego
+przebiegu przy koncie, które właściciel projektu określił jako ostatnie
+możliwe doładowanie na ten moment.
+
 ## 7. What We Deliberately Don't Test
 
 Wykluczenia uzgodnione podczas wywiadu (Faza 2, Q5). Przyszli kontrybutorzy

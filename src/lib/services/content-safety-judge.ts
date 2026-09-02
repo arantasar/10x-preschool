@@ -101,6 +101,20 @@ function findMarker(text: string, markers: readonly string[]): string | null {
   return null;
 }
 
+/**
+ * A marker word quoted inside legitimate content - e.g. an activity teaching
+ * children to say "przepraszam" - is the model describing the word, not
+ * speaking it as its own refusal. Found live in the gate matrix: Luna's
+ * redirect for "wojna" taught conflict-resolution phrases in quotes and got
+ * misread as a refusal. Stripping quoted spans before marker search removes
+ * that class of false positive without touching an unquoted, genuine refusal
+ * (`__fixtures__/content-safety.ts`'s "wyjście w kształcie odmowy" fixture has
+ * none of its markers quoted, so it is unaffected).
+ */
+function stripQuoted(text: string): string {
+  return text.replace(/„[^”]*”/gu, " ").replace(/"[^"]*"/gu, " ");
+}
+
 /** The sentence carrying the marker, not the marker word alone - a legible quote, not a diagnostic byte offset. */
 function quoteContaining(text: string, marker: string): string {
   const pattern = wordBoundaryPattern(marker);
@@ -119,7 +133,7 @@ function itemTexts(input: JudgeInput): string[] {
  * assigns to the deterministic layer, in that order. Returns `null` when all
  * four pass, meaning the judge below is the only thing left to ask.
  */
-function deterministicViolation(input: JudgeInput): SafetyVerdict | null {
+export function deterministicViolation(input: JudgeInput): SafetyVerdict | null {
   const itemCount = input.kind === "day" ? input.activities.length : input.themes.length;
   const expectedCount = input.kind === "day" ? ACTIVITY_COUNT : WEEK_DAYS;
   if (itemCount !== expectedCount) {
@@ -131,12 +145,14 @@ function deterministicViolation(input: JudgeInput): SafetyVerdict | null {
       return { safe: false, clause: "Kształt odpowiedzi", quote: "(pusty fragment)" };
     }
 
-    const refusalMarker = findMarker(text, REFUSAL_MARKERS);
+    const unquoted = stripQuoted(text);
+
+    const refusalMarker = findMarker(unquoted, REFUSAL_MARKERS);
     if (refusalMarker) {
       return { safe: false, clause: "Przekierowanie zamiast odmowy", quote: quoteContaining(text, refusalMarker) };
     }
 
-    const englishMarker = findMarker(text, ENGLISH_MARKERS);
+    const englishMarker = findMarker(unquoted, ENGLISH_MARKERS);
     if (englishMarker) {
       return { safe: false, clause: "Język", quote: quoteContaining(text, englishMarker) };
     }
