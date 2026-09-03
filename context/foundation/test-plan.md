@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-09-02
+> Last updated: 2026-09-03
 
 ## 1. Strategy
 
@@ -86,6 +86,24 @@ poniżej; orkiestrator aktualizuje Status, gdy artefakty pojawiają się na dysk
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` →
 `researched` → `planned` → `implementing` → `complete`.
 
+**Pokrycie e2e spoza rolloutu (2026-09-03).** Ryzyka #4 i #7 mają od dzisiaj
+warstwę przeglądarkową — trzy testy Playwrighta plus infrastruktura, opisane
+w §6.6. **Nie jest to postęp żadnej fazy** i dlatego oba statusy wyżej zostają
+`not started`:
+
+- powstały jako samodzielne ćwiczenie `/10x-e2e` (Moduł 3, Lekcja 4), bez
+  `/10x-new`, bez folderu zmiany i bez `## Progress`;
+- Faza 3 to **integration + pgTAP**, a te testy nie dotykają ani warstwy trasy
+  wołanej bez HTTP (§6.2), ani `U0003` (§6.4) — jej zakres jest nietknięty;
+- Faza 4 to **bramki w CI**, a te testy w CI nie stoją (§5) i nie pokrywają
+  ścieżki krytycznej z generowaniem.
+
+Wybór akurat #4 i #7 był podyktowany kolejnością prac, nie wagą: `next-actions.md`
+§Pułapka 2 odracza Fazę 3 do czasu slice'u regeneracji tygodnia, bo ten zmienia
+kryterium ochrony Ryzyka #3 z „nigdy nie niszczy" na „nigdy bez jawnego
+potwierdzenia". #4 i #7 tej zmiany nie dotyczą, więc nic tu nie trzeba będzie
+przepisywać; #3 świadomie zostało pominięte.
+
 ## 4. Stack
 
 Klasyczna baza testowa projektu. Narzędzia AI-native niosą datę `checked:`, żeby
@@ -96,7 +114,7 @@ przyszły czytelnik widział, które linie wymagają ponownej weryfikacji.
 | unit + integration | Vitest | none yet — §3 Phase 1 | Konfiguracja przez `getViteConfig()` z `astro/config`. **Astro 6 nie renderuje komponentów Astro w środowiskach client — testy renderujące wymagają `environment: 'node'`.** Projekt przypina Vite `^7.3.2` w `overrides`; wersja Vitest musi do tego pasować. checked: 2026-08-29 |
 | API mocking | granica sieciowa (MSW lub podmiana `fetch`) | none yet — §3 Phase 1 | Wywołanie dostawcy LLM to zwykły `fetch`. Mockuj wyłącznie na granicy sieciowej — nigdy modułów wewnętrznych (patrz anty-wzorce #2 i #5) |
 | database | pgTAP przez `supabase test db` | wired | **Jedyna działająca warstwa dziś**: 3 pliki w `supabase/tests/database/` (izolacja RLS, kontrakt zapisu, kontrakt kasowania). Uruchamianie: `npm run test:db`. Wymaga Dockera i `npx supabase start` |
-| e2e | Playwright | none yet — §3 Phase 4 | Instalacja przez `npm init playwright@latest`. Jedna ścieżka krytyczna, nie zestaw regresyjny. checked: 2026-08-29 |
+| e2e | Playwright | `@playwright/test` ^1.62.1 — **wired lokalnie, poza CI** | Postawione 2026-09-03 poza rolloutem (§3, §6.6), nie przez Fazę 4. `playwright.config.ts`: projekt `setup` + `webServer`, `storageState` dla dwóch kont. Uruchamianie: `npm run test:e2e` (wymaga `npx supabase start` i `.env.e2e`). Dziś trzy testy ryzyk #4 i #7 — **nie** ścieżka krytyczna z generowaniem, którą zakłada §5. checked: 2026-09-03 |
 | accessibility | axe-core | none yet — nie zaplanowane | Poza zakresem tego rolloutu; §7 wyklucza testy wizualne UI, a a11y wymagałoby własnej fazy |
 | (optional) AI-native | LLM-jako-sędzia oceniający stosowność treści dla 3–6 lat, uruchamiany przez tego samego dostawcę co produkt — checked: 2026-08-29 | n/a | **Kiedy NIE używać:** nigdy jako zamiennik deterministycznych asercji kształtu (schemat, liczba aktywności, język) — te są tańsze i pewniejsze; nigdy w pętli edycji ani na każdym commicie (koszt i niedeterminizm); nigdy jako jedyny sędzia bez zapisanej rubryki, bo wtedy bramka zmienia zdanie między przebiegami |
 
@@ -135,6 +153,7 @@ jest **egzekwowane**. Re-evaluate, gdy repozytorium zmieni status albo plan.
 | unit + integration | local + CI on PR | required (wired, doradcza) | regresje kontraktu odpowiedzi, mapowania błędów, protokołu zapisu |
 | bramka bezpieczeństwa treści (każdy dopuszczony model) | CI on PR, wyzwalana zmianą promptu lub konfiguracji modelu | required after §3 Phase 2 | propozycje nieodpowiednie dla 3–6 lat; cofnięcie guardrailu przez podmianę modelu |
 | e2e na ścieżce krytycznej | CI on PR | required after §3 Phase 4 | zerwanie przepływu login → dzień → hasło → generowanie → edycja → akceptacja |
+| e2e ryzyk #4 i #7 (`npm run test:e2e`) | **local only** | nie jest bramką — uruchamiane ręcznie | wyciek planu między kontami, kasowanie wychodzące poza jeden dzień, kasowanie mimo odmowy w dialogu. **W CI nie stoi**: wymaga lokalnej Supabase (`npx supabase start`) i klucza serwisowego w `.env.e2e`, a workflow nie ma dziś ani jednego, ani drugiego |
 | post-edit hook | local (pętla agenta) | recommended after §3 Phase 4 | regresje w momencie edycji; nie zastępuje CI |
 | smoke po deployu | między merge'em a produkcją | optional | awarie specyficzne dla środowiska Workers, których lokalny runtime nie odtwarza |
 
@@ -194,12 +213,20 @@ faza rolloutu wyląduje; wcześniej czyta się jako „TBD".
 - **Kiedy tutaj, a kiedy wyżej**: zachowanie trasy jako całości — status, envelope
   `{ error, retryable }`, kolejność walidacja→zapis — tutaj. Niezmiennik, którego
   pilnuje sama baza (polityka, grant, CHECK, trigger), niżej — patrz §6.4.
-  Przepływ przez kilka ekranów w przeglądarce — wyżej, e2e (§3 Faza 4).
+  Przepływ przez kilka ekranów w przeglądarce — wyżej, e2e (§6.6).
 
 ### 6.3 Dodanie testu dla nowego endpointu API
 
 TBD — see §3 Phase 3 (wzorzec dla odmowy dostępu do cudzego zasobu — test z
 dwoma kontami, asercja na odpowiedzi API, nie tylko na wyniku zapytania).
+
+**Częściowo wyprzedzone od 2026-09-03, ale nie zastąpione.**
+`tests/e2e/day-plan-ownership.spec.ts` (§6.6) dowodzi odmowy z drugiego konta
+na żywej trasie — z prawdziwą sesją i prawdziwym RLS. Nie zwalnia to Fazy 3 z
+własnego wzorca: e2e podnosi całą aplikację i jest o dwa rzędy wielkości
+droższe, więc nie nadaje się do przemiatania każdego endpointu. Ta sekcja nadal
+czeka na tani wzorzec „trasa jako funkcja + atrapa `locals` dwóch kont",
+uruchamiany w `npm test`.
 
 ### 6.4 Dodanie testu bazy danych (pgTAP)
 
@@ -272,9 +299,50 @@ dwoma kontami, asercja na odpowiedzi API, nie tylko na wyniku zapytania).
   ściągały jednocześnie ten sam limit rezerwacji kredytu OpenRouter
   (`402 in_flight_budget_exhausted`), mimo dodatniego salda konta. Współbieżność
   *wewnątrz* macierzy (`GATE_CONCURRENCY` w `content-safety.gate.test.ts`)
-  została osobno dobrana konserwatywnie z tego samego powodu — patrz §6.6.
+  została osobno dobrana konserwatywnie z tego samego powodu — patrz §6.7.
 
-### 6.6 Notatki z faz rolloutu
+### 6.6 Dodanie testu e2e (Playwright)
+
+- **Lokalizacja**: `tests/e2e/<obszar>.spec.ts` — **jeden test na plik**. To
+  jedyny katalog testów poza `src/`; ko-lokacja z §6.1 tu nie działa, bo test
+  e2e nie należy do żadnego modułu, tylko do przepływu przez kilka z nich.
+- **Reguły**: `tests/e2e/E2E-RULES.md` — blok reguł, pięć antywzorców i granice
+  „co prawdziwe, co omijane". Czytaj przed pisaniem, także (zwłaszcza) generując.
+- **Test referencyjny**: `tests/e2e/seed.spec.ts`. Jest jednocześnie **wzorcem
+  dla generowania**: to, co pokazuje, agent odtworzy. Gdyby wjechał tam
+  `waitForTimeout`, odziedziczyłby go każdy następny test.
+- **Uruchomienie lokalnie**: `npm run test:e2e` (`npm run test:e2e:ui` do
+  debugowania). Wymaga `npx supabase start` i `.env.e2e` (wzorzec:
+  `.env.e2e.example`). Serwer dev podnosi się sam przez `webServer`.
+- **Kiedy tutaj, a kiedy niżej**: dopiero gdy ryzyko przecina kilka granic naraz
+  (sesja → routing → API → RLS) albo istnieje **wyłącznie** w przeglądarce.
+  `window.confirm` z ryzyka #7 to drugi przypadek — na poziomie §6.2 i §6.4 ten
+  dialog po prostu nie istnieje. Wszystko, co udowodni funkcja czysta albo trasa
+  wołana bez HTTP, należy do §6.1/§6.2; e2e jest tu najdroższą warstwą i ma
+  zostać mała.
+- **Tożsamość**: `storageState` z projektu `setup`, nigdy logowanie przez
+  formularz w teście. Dwa konta (`TEACHER_A`, `TEACHER_B`), bo ryzyko #4 jest
+  strukturalnie niewidoczne przy jednym — test z jednym użytkownikiem nie ma
+  czym pokazać wycieku.
+- **Dane**: zasiewane prosto do bazy kluczem serwisowym (`seedDayPlan`), nigdy
+  przez klikanie „Generuj". Wywołanie LLM nie należy do żadnego z tych ryzyk, a
+  kosztuje pieniądze i 10–30 s niedeterminizmu; idzie z serwera, więc
+  `page.route()` i tak by go nie przechwycił. **Klucz serwisowy omija RLS, więc
+  nie wolno przez niego asertować** — czytałby dokładnie ten mechanizm, którego
+  test pilnuje.
+- **Unikalność i sprzątanie**: `uniquePlanDate()` + `uniqueStamp()` i `afterEach`
+  kasujący po `id`. Baza wymusza `unique (user_id, plan_date)`, a konta są stałe,
+  więc bez tego drugi przebieg pod rząd pada. Sprzątanie po dacie, a nie po `id`,
+  skasowałoby wiersz drugiego konta — czyli ten, o który chodzi w ryzyku #4.
+- **Hydracja jest obowiązkowa przed pierwszym kliknięciem**: `waitForIslands(page)`
+  z `tests/e2e/support/hydration.ts`. Powód i jedyne dopuszczone odstępstwo od
+  zakazu selektorów CSS — patrz §6.7.
+- **Asercja negatywna musi być rozróżniająca**, tak samo jak w §6.1: zepsuj
+  zachowanie, które ryzyko opisuje, i zobacz test na czerwono, zanim go
+  zacommitujesz. Trzy psucia użyte przy tych testach są wypisane w §6.7 — każde
+  jest tanie i odwracalne, więc nie ma powodu ich nie powtórzyć.
+
+### 6.7 Notatki z faz rolloutu
 
 (Wypełniane po każdej fazie — 2–3 linie o tym, czego faza nauczyła.)
 
@@ -387,6 +455,46 @@ przebiegi) **świadomie pominięta** z tego samego powodu — koszt ~3× pełneg
 przebiegu przy koncie, które właściciel projektu określił jako ostatnie
 możliwe doładowanie na ten moment.
 
+**Poza rolloutem — pierwsza warstwa e2e (2026-09-03).** Nie faza; samodzielny
+przebieg `/10x-e2e` na ryzykach #4 i #7 (kontekst i granice: §3, wzorzec: §6.6).
+Cztery rzeczy, których nie dało się przewidzieć z dokumentów:
+
+(1) **Wyścig z hydracją wysp jest niewidoczny przy jednym teście naraz.**
+`plan.astro` renderuje `DayPlanEditor` serwerowo (`client:load`), więc „Usuń plan
+dnia" jest w DOM-ie — widoczny i włączony — zanim wyspa dostanie handlery.
+Playwright uznaje taki przycisk za gotowy, klika i **nie dzieje się nic**: plan
+nietknięty, zero błędu na ekranie. Test przechodził w izolacji i padał w pełnym
+przebiegu, powtarzalnie, dopiero od czwartego pliku w zestawie. Naprawione
+`waitForIslands()` na `astro-island[ssr]` — atrybucie, który runtime Astro
+zdejmuje dokładnie po hydracji (zweryfikowane w `astro-island.prebuilt.js`
+w zainstalowanym pakiecie, nie z pamięci). To jedyny selektor CSS w zestawie,
+świadomie: `astro-island` to kontrakt frameworka, a hydracja z definicji nie
+zmienia niczego w drzewie dostępności, więc nie ma czym jej zastąpić. Zamknięty
+w jednym helperze, żeby nie stał się cichym pozwoleniem na `page.locator(".cls")`.
+
+(2) **Asercja wizualna potrafi przegrać wyścig z nawigacją — i przez to
+przepuścić usuniętą ochronę.** W teście odmowy kasowania celowe psucie
+(`window.confirm` wołane, wynik ignorowany) **nie** zapaliło asercji „plan nadal
+widoczny po przeładowaniu": `page.reload()` wyprzedził kasowanie po stronie
+serwera. Złapał to dopiero nasłuch `page.on("request")` na `DELETE`. Wniosek na
+przyszłe testy operacji destrukcyjnych: asertuj **brak żądania**, nie tylko to,
+co widać na ekranie — ekran bywa o jedno okrążenie do tyłu.
+
+(3) **`astro dev` nasłuchuje wyłącznie na `[::1]`.** `webServer` wycelowany w
+`127.0.0.1:4321` kończy się timeoutem 120 s przy w pełni działającym serwerze.
+`baseURL` musi być `localhost`.
+
+(4) **`day_plans_accepted_after_created` wywraca zasiew zaakceptowanego planu.**
+`created_at` bierze `now()` bazy, `accepted_at` przychodzi z zegara klienta —
+przy zasiewie te dwa zegary rozjeżdżają się o ułamek sekundy w złą stronę.
+Zasiew ustawia więc oba znaczniki z jednego odczytu.
+
+Wszystkie trzy asercje niosące ryzyko zostały zobaczone na czerwono przez
+psucie tego, czego pilnują: wyłączony RLS (#4 — zrzut pokazał konto B oglądające
+hasło, propozycje i przyciski „Akceptuj"/„Usuń" konta A, czyli wyciek obejmujący
+też zapis), zakres kasowania rozszerzony na `.gte` (#7 — zniknął dzień sąsiedni)
+i zignorowany wynik `window.confirm` (#7). Każde cofnięte przed commitem.
+
 ## 7. What We Deliberately Don't Test
 
 Wykluczenia uzgodnione podczas wywiadu (Faza 2, Q5). Przyszli kontrybutorzy
@@ -410,7 +518,7 @@ respektują je, dopóki nie zmieni się założenie leżące u podstaw.
 ## 8. Freshness Ledger
 
 - Strategy (§1–§5) last reviewed: 2026-08-30
-- Stack versions last verified: 2026-08-29
+- Stack versions last verified: 2026-08-29 (wiersz e2e w §4: 2026-09-03)
 - AI-native tool references last verified: 2026-08-29
 
 Refresh (`/10x-test-plan --refresh`), gdy:
