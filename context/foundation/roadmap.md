@@ -176,7 +176,62 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 - **Outcome:** Nauczyciel może wylogować się z aplikacji z dowolnego ekranu, na którym pracuje, a nie tylko ze strony startowej dla niezalogowanych.
 - **Change ID:** sign-out
-- **PRD refs:** FR-003 (nice-to-have; odparkowane 2026-08-26 — pozycja znika z `## Kandydaci do następnego kamienia (M-02)
+- **PRD refs:** FR-003 (nice-to-have; odparkowane 2026-08-26 — pozycja znika z `## Parked`)
+- **Prerequisites:** S-04
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Najmniejszy z czwórki i w dużej części już zbudowany: `POST /api/auth/signout` działa (`src/pages/api/auth/signout.ts`), a przycisk istnieje w `src/components/Topbar.astro` — tyle że Topbar renderuje się wyłącznie wewnątrz `Welcome.astro`, czyli na stronie dla **nie**zalogowanych, a drugie wejście stoi na `/dashboard`. Praca jest więc powłoką i umiejscowieniem, nie endpointem. Sekwencjonowany po `S-04`, bo dopiero tam powstaje trwała powłoka zalogowanej aplikacji; odwrotna kolejność znaczyłaby budowanie kontrolki w pulpicie, który `S-04` wygasza. Zagrożenie odwrotne niż zwykle: slice jest na tyle mały, że łatwo go dorzucić „przy okazji" do `S-04` — wtedy FR-003 nigdy nie dostaje własnego wpisu w `## Done`.
+- **Status:** done — dostarczone 2026-08-26 wewnątrz `S-04` (`month-home`), faza 1: powłoka `src/components/AppHeader.astro` niesie przycisk „Wyloguj się" na `/plan`, `/plan/week` i `/plan/month`, czyli na każdym ekranie zalogowanej aplikacji. FR-003 skonsumowane tam, nie tutaj; slice nie dostaje własnego change-id ani własnego archiwum. Zagrożenie opisane wyżej — „łatwo go dorzucić przy okazji, wtedy FR-003 nigdy nie dostaje wpisu w `## Done`" — zmaterializowało się co do kształtu; ten wpis jest tym, co je rozbraja.
+
+### S-07: Podgląd aktywności w siatce miesiąca
+
+- **Outcome:** Nauczyciel widzi, co jest zaplanowane na dany dzień, bez opuszczania siatki miesiąca — dziś kafelek pokazuje wyłącznie hasło, nie aktywności.
+- **Change ID:** month-day-preview
+- **Kamień:** **wypisany z `M-01` 2026-08-30, należy do `M-02`** — patrz §Milestone §Zmiana zakresu. Wiersz zostaje tutaj do czasu, aż `/10x-roadmap` zregeneruje roadmapę pod `M-02` i przeniesie go do nowej dekompozycji.
+- **PRD refs:** FR-004, US-01 — sam podgląd nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
+- **Prerequisites:** S-04
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** — (obie rozstrzygnięte 2026-08-30, patrz Decyzje poniżej)
+- **Decyzje ustalone 2026-08-30 (user):**
+  - **Wzorzec interakcji: podgląd na `:hover` oraz `:focus-visible`; kliknięcie kafelka otwiera dzień.** Zarzut „hover nie istnieje na dotyku i nie jest osiągalny z klawiatury" zostaje zdjęty nie przez drugie wejście do podglądu, tylko przez uznanie, że **podgląd jest akceleratorem, a nie jedyną drogą do informacji**: na każdym wejściu kliknięcie/Enter otwiera dzień, gdzie widać komplet. Nikt nie traci dostępu do treści — traci skrót. `:focus-visible` domyka lukę klawiatury niskim kosztem, bo kafelek jest już `<a>` i stoi w kolejności tabulacji.
+  - **Podgląd jest wyłącznie do odczytu** — żadnej edycji na hoverze.
+  - **Dane podglądu dociągane na żądanie (na hover), nie z góry dla całego miesiąca.** Preload (np. bieżącego tygodnia) świadomie odłożony jako możliwa przyszła optymalizacja, nie zakres tego slice'a. Do ugruntowania przez `/10x-research`: opóźnienie na najechaniu, anulowanie żądania przy zejściu z kafelka, pamięć podręczna już pobranych dni.
+- **Zakres zawężony przez stan kodu (2026-08-30):** kliknięcie kafelka **już** prowadzi do `/plan?date=` — ta ścieżka istnieje i nie jest budowana od nowa. To, co dziś wygląda jak tooltip, to natywny atrybut `title`; slice go zastępuje. Ucięcie podtytułu to jednolinijkowy `truncate` — kafelek musi dostać więcej wysokości na `theme`, i to jest ta sama zmiana, co pozycja „kafelek mieści cały podtytuł" z listy poprawek z 2026-08-30 (wchodzi tutaj, nie osobno: powiększony kafelek i panel podglądu konkurują o tę samą siatkę siedmiu kolumn).
+- **Dług PRD:** `PRD refs` tego slice'a zostają puste do czasu przejścia PRD v2 (Open Roadmap Questions #3). Slice można planować i implementować wcześniej, ale **nie archiwizować z pustą rubryką** — v2 obejmuje `S-04`…`S-08` jednym przebiegiem.
+- **Risk:** Jedyny z czwórki naprawdę otwarty — użytkownik nazwał go „do przegadania i poszukania najlepszych pomysłów". Ryzyko nie leży w kodzie, tylko w tym, że hover jako pierwszy pomysł jest wygodny do zbudowania i słaby w użyciu: gęsta siatka 7 kolumn, dotyk bez hovera, klawiatura bez ścieżki. Sekwencjonowany po `S-04`, bo dopiero wtedy siatka jest ekranem, na którym nauczyciel faktycznie spędza czas — wcześniej podgląd optymalizowałby widok, do którego prawie się nie zagląda. Interakcja z `S-05`: dzień skreślony miękko nie może mieć podglądu, więc kolejność `S-05` → `S-07` jest tańsza niż odwrotna. Interakcja z `S-08`: podtytuł dnia zdejmuje z tego slice'a część ciężaru — jeśli kafelek już odróżnia pięć dni jednego hasła, podgląd aktywności przestaje być jedynym sposobem, żeby zobaczyć, czym te dni się różnią, i można go projektować spokojniej. Odblokowany 2026-08-30: rozstrzygnięcie wzorca interakcji zdjęło jedyny blokujący unknown.
+- **Status:** ready
+
+### S-08: Widoczny podtytuł dnia
+
+- **Outcome:** Nauczyciel odróżnia od siebie dni jednego hasła bez wchodzenia w każdy z nich — kafelek w siatce miesiąca i nagłówek widoku dnia pokazują podtytuł dnia („Dinozaury — co jadły dinozaury"), a nie pięć razy to samo hasło.
+- **Change ID:** visible-day-theme
+- **PRD refs:** FR-004, US-01 — czytelność planu miesiąca nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
+- **Prerequisites:** S-03 (temat dzienny powstaje w szkicu tygodnia i jest zapisywany w wierszu planu), S-04 (siatka miesiąca jest ekranem, na którym problem boli)
+- **Parallel with:** S-05
+- **Blockers:** —
+- **Unknowns:**
+  - Co pokazuje kafelek dnia, który tematu nie ma — dzień wygenerowany pojedynczo z `/plan?date=`, bez przejścia przez szkic tygodnia, nigdy go nie dostał. Owner: Janusz. Block: nie — wariant domyślny to zachowanie dzisiejsze (hasło jako jedyna linia); decyzja o kształcie należy do `/10x-plan`.
+- **Zakres ustalony 2026-08-26 (user):** slice jest **wyłącznie odczytowy**. Generator i prompty zostają nietknięte — szkic tygodnia już produkuje pięć rozłącznych ujęć hasła i już zapisuje je w wierszu planu; brakuje wyłącznie ich pokazania poza tablicą tygodnia. Dwa rozszerzenia zostały jawnie odrzucone przy wyborze zakresu i **nie wchodzą** do tego slice'a: (1) nadanie tematu dniowi generowanemu pojedynczo — wymagałoby dotknięcia ścieżki generowania dnia i promptu; (2) iteracja jakościowa na promptcie szkicu tygodnia, żeby tematy lepiej czytały się jako podtytuł. Oba pozostają otwarte jako możliwa przyszła pozycja, żadne nie blokuje tego slice'a.
+- **Risk:** Najtańsza pozycja w roadmapie i jedyna czysto odczytowa — cała treść już istnieje, więc ryzyko nie leży w generowaniu, tylko w niespójności ekranów. Trzy znane ostrza. **(1) Temat jest nullowalny i to nie jest przypadek brzegowy, tylko normalny stan** — dzień wygenerowany poza tygodniem nigdy tematu nie miał, a dzień, którego generowanie w tygodniu padło, nie ma nawet wiersza (szkic tygodnia świadomie nic nie zapisuje — patrz komentarz projektowy w trasie szkicu). Każda powierzchnia musi mieć zdefiniowane zachowanie dla braku tematu, inaczej kafelek traci linię tekstu, którą dziś ma. **(2) Tablica tygodnia pokazuje temat już dziś** i robi to z dwóch źródeł — z zapisanego planu albo z kopii trzymanej w wyspie — więc nowe powierzchnie muszą pokazywać to samo co ona, a nie własną interpretację; rozjazd między tygodniem a miesiącem byłby gorszy niż dzisiejsze pięć razy „Dinozaury". **(3) To ta sama ścieżka odczytu miesiąca, którą `S-05` będzie musiał nauczyć skreślenia miękkiego, a `S-07` rozszerzyć o aktywności** — trzy slice'y dokładają do jednego zapytania, więc kolejność ma znaczenie. `S-08` idzie pierwszy, bo ustala, co kafelek pokazuje w stanie spoczynku, zanim `S-07` zdecyduje, co pokazuje po interakcji.
+- **Status:** done
+
+## Backlog Handoff
+
+| Roadmap ID | Change ID                 | Suggested issue title                                | Ready for `/10x-plan` | Notes                                                           |
+| ---------- | ------------------------- | ---------------------------------------------------- | --------------------- | --------------------------------------------------------------- |
+| F-01       | plan-persistence-baseline | Minimalny schemat planów + RLS izolacji per konto    | yes                   | Może iść równolegle do S-01                                     |
+| S-01       | first-day-generation      | Generowanie propozycji aktywności dla jednego dnia   | yes                   | Gwiazda przewodnia — `/10x-plan first-day-generation`           |
+| S-02       | edit-accept-day-plan      | Edycja, akceptacja i zapis planu dnia                | no                    | Czeka na S-01 + F-01                                            |
+| S-03       | week-generation           | Generowanie planu dla całego tygodnia roboczego      | no                    | Czeka na S-01 + F-01                                            |
+| S-04       | month-home                | Widok miesiąca jako ekran główny aplikacji           | yes                   | `/10x-plan month-home`                                          |
+| S-05       | delete-day-plan           | Usunięcie zapisanego planu dnia                      | yes                   | `/10x-plan delete-day-plan`; może iść równolegle do S-04        |
+| S-06       | sign-out                  | Wylogowanie dostępne z powłoki zalogowanej aplikacji | —                     | Dostarczone w S-04 (`month-home`, faza 1) — nie planować osobno |
+| S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | po PRD v2             | odblokowany 2026-08-30, wypisany z `M-01`; planować jako pierwszy slice `M-02` |
+| S-08       | visible-day-theme         | Widoczny podtytuł dnia w miesiącu i w widoku dnia    | yes                   | `/10x-plan visible-day-theme`; może iść równolegle do S-05      |
+
+## Kandydaci do następnego kamienia (M-02)
 
 > **Sekcja tymczasowa.** Nie należy do schematu roadmapy — `/10x-roadmap` przy
 > regeneracji pod `M-02` odtwarza plik z sekcji wymaganych i **tę usunie**. Musi
@@ -235,61 +290,6 @@ wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap
   `context/archive/2026-08-30-pl-landing-copy/`. Otwarty ogon: angielskie komunikaty błędów
   z Supabase na ekranach auth — follow-up z właścicielem, wejście przy najbliższej zmianie
   w `src/pages/api/auth/*` (`next-actions.md` §Otwarte ogony po Kroku 1).
-
-## Parked`)
-- **Prerequisites:** S-04
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** Najmniejszy z czwórki i w dużej części już zbudowany: `POST /api/auth/signout` działa (`src/pages/api/auth/signout.ts`), a przycisk istnieje w `src/components/Topbar.astro` — tyle że Topbar renderuje się wyłącznie wewnątrz `Welcome.astro`, czyli na stronie dla **nie**zalogowanych, a drugie wejście stoi na `/dashboard`. Praca jest więc powłoką i umiejscowieniem, nie endpointem. Sekwencjonowany po `S-04`, bo dopiero tam powstaje trwała powłoka zalogowanej aplikacji; odwrotna kolejność znaczyłaby budowanie kontrolki w pulpicie, który `S-04` wygasza. Zagrożenie odwrotne niż zwykle: slice jest na tyle mały, że łatwo go dorzucić „przy okazji" do `S-04` — wtedy FR-003 nigdy nie dostaje własnego wpisu w `## Done`.
-- **Status:** done — dostarczone 2026-08-26 wewnątrz `S-04` (`month-home`), faza 1: powłoka `src/components/AppHeader.astro` niesie przycisk „Wyloguj się" na `/plan`, `/plan/week` i `/plan/month`, czyli na każdym ekranie zalogowanej aplikacji. FR-003 skonsumowane tam, nie tutaj; slice nie dostaje własnego change-id ani własnego archiwum. Zagrożenie opisane wyżej — „łatwo go dorzucić przy okazji, wtedy FR-003 nigdy nie dostaje wpisu w `## Done`" — zmaterializowało się co do kształtu; ten wpis jest tym, co je rozbraja.
-
-### S-07: Podgląd aktywności w siatce miesiąca
-
-- **Outcome:** Nauczyciel widzi, co jest zaplanowane na dany dzień, bez opuszczania siatki miesiąca — dziś kafelek pokazuje wyłącznie hasło, nie aktywności.
-- **Change ID:** month-day-preview
-- **Kamień:** **wypisany z `M-01` 2026-08-30, należy do `M-02`** — patrz §Milestone §Zmiana zakresu. Wiersz zostaje tutaj do czasu, aż `/10x-roadmap` zregeneruje roadmapę pod `M-02` i przeniesie go do nowej dekompozycji.
-- **PRD refs:** FR-004, US-01 — sam podgląd nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
-- **Prerequisites:** S-04
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** — (obie rozstrzygnięte 2026-08-30, patrz Decyzje poniżej)
-- **Decyzje ustalone 2026-08-30 (user):**
-  - **Wzorzec interakcji: podgląd na `:hover` oraz `:focus-visible`; kliknięcie kafelka otwiera dzień.** Zarzut „hover nie istnieje na dotyku i nie jest osiągalny z klawiatury" zostaje zdjęty nie przez drugie wejście do podglądu, tylko przez uznanie, że **podgląd jest akceleratorem, a nie jedyną drogą do informacji**: na każdym wejściu kliknięcie/Enter otwiera dzień, gdzie widać komplet. Nikt nie traci dostępu do treści — traci skrót. `:focus-visible` domyka lukę klawiatury niskim kosztem, bo kafelek jest już `<a>` i stoi w kolejności tabulacji.
-  - **Podgląd jest wyłącznie do odczytu** — żadnej edycji na hoverze.
-  - **Dane podglądu dociągane na żądanie (na hover), nie z góry dla całego miesiąca.** Preload (np. bieżącego tygodnia) świadomie odłożony jako możliwa przyszła optymalizacja, nie zakres tego slice'a. Do ugruntowania przez `/10x-research`: opóźnienie na najechaniu, anulowanie żądania przy zejściu z kafelka, pamięć podręczna już pobranych dni.
-- **Zakres zawężony przez stan kodu (2026-08-30):** kliknięcie kafelka **już** prowadzi do `/plan?date=` — ta ścieżka istnieje i nie jest budowana od nowa. To, co dziś wygląda jak tooltip, to natywny atrybut `title`; slice go zastępuje. Ucięcie podtytułu to jednolinijkowy `truncate` — kafelek musi dostać więcej wysokości na `theme`, i to jest ta sama zmiana, co pozycja „kafelek mieści cały podtytuł" z listy poprawek z 2026-08-30 (wchodzi tutaj, nie osobno: powiększony kafelek i panel podglądu konkurują o tę samą siatkę siedmiu kolumn).
-- **Dług PRD:** `PRD refs` tego slice'a zostają puste do czasu przejścia PRD v2 (Open Roadmap Questions #3). Slice można planować i implementować wcześniej, ale **nie archiwizować z pustą rubryką** — v2 obejmuje `S-04`…`S-08` jednym przebiegiem.
-- **Risk:** Jedyny z czwórki naprawdę otwarty — użytkownik nazwał go „do przegadania i poszukania najlepszych pomysłów". Ryzyko nie leży w kodzie, tylko w tym, że hover jako pierwszy pomysł jest wygodny do zbudowania i słaby w użyciu: gęsta siatka 7 kolumn, dotyk bez hovera, klawiatura bez ścieżki. Sekwencjonowany po `S-04`, bo dopiero wtedy siatka jest ekranem, na którym nauczyciel faktycznie spędza czas — wcześniej podgląd optymalizowałby widok, do którego prawie się nie zagląda. Interakcja z `S-05`: dzień skreślony miękko nie może mieć podglądu, więc kolejność `S-05` → `S-07` jest tańsza niż odwrotna. Interakcja z `S-08`: podtytuł dnia zdejmuje z tego slice'a część ciężaru — jeśli kafelek już odróżnia pięć dni jednego hasła, podgląd aktywności przestaje być jedynym sposobem, żeby zobaczyć, czym te dni się różnią, i można go projektować spokojniej. Odblokowany 2026-08-30: rozstrzygnięcie wzorca interakcji zdjęło jedyny blokujący unknown.
-- **Status:** ready
-
-### S-08: Widoczny podtytuł dnia
-
-- **Outcome:** Nauczyciel odróżnia od siebie dni jednego hasła bez wchodzenia w każdy z nich — kafelek w siatce miesiąca i nagłówek widoku dnia pokazują podtytuł dnia („Dinozaury — co jadły dinozaury"), a nie pięć razy to samo hasło.
-- **Change ID:** visible-day-theme
-- **PRD refs:** FR-004, US-01 — czytelność planu miesiąca nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
-- **Prerequisites:** S-03 (temat dzienny powstaje w szkicu tygodnia i jest zapisywany w wierszu planu), S-04 (siatka miesiąca jest ekranem, na którym problem boli)
-- **Parallel with:** S-05
-- **Blockers:** —
-- **Unknowns:**
-  - Co pokazuje kafelek dnia, który tematu nie ma — dzień wygenerowany pojedynczo z `/plan?date=`, bez przejścia przez szkic tygodnia, nigdy go nie dostał. Owner: Janusz. Block: nie — wariant domyślny to zachowanie dzisiejsze (hasło jako jedyna linia); decyzja o kształcie należy do `/10x-plan`.
-- **Zakres ustalony 2026-08-26 (user):** slice jest **wyłącznie odczytowy**. Generator i prompty zostają nietknięte — szkic tygodnia już produkuje pięć rozłącznych ujęć hasła i już zapisuje je w wierszu planu; brakuje wyłącznie ich pokazania poza tablicą tygodnia. Dwa rozszerzenia zostały jawnie odrzucone przy wyborze zakresu i **nie wchodzą** do tego slice'a: (1) nadanie tematu dniowi generowanemu pojedynczo — wymagałoby dotknięcia ścieżki generowania dnia i promptu; (2) iteracja jakościowa na promptcie szkicu tygodnia, żeby tematy lepiej czytały się jako podtytuł. Oba pozostają otwarte jako możliwa przyszła pozycja, żadne nie blokuje tego slice'a.
-- **Risk:** Najtańsza pozycja w roadmapie i jedyna czysto odczytowa — cała treść już istnieje, więc ryzyko nie leży w generowaniu, tylko w niespójności ekranów. Trzy znane ostrza. **(1) Temat jest nullowalny i to nie jest przypadek brzegowy, tylko normalny stan** — dzień wygenerowany poza tygodniem nigdy tematu nie miał, a dzień, którego generowanie w tygodniu padło, nie ma nawet wiersza (szkic tygodnia świadomie nic nie zapisuje — patrz komentarz projektowy w trasie szkicu). Każda powierzchnia musi mieć zdefiniowane zachowanie dla braku tematu, inaczej kafelek traci linię tekstu, którą dziś ma. **(2) Tablica tygodnia pokazuje temat już dziś** i robi to z dwóch źródeł — z zapisanego planu albo z kopii trzymanej w wyspie — więc nowe powierzchnie muszą pokazywać to samo co ona, a nie własną interpretację; rozjazd między tygodniem a miesiącem byłby gorszy niż dzisiejsze pięć razy „Dinozaury". **(3) To ta sama ścieżka odczytu miesiąca, którą `S-05` będzie musiał nauczyć skreślenia miękkiego, a `S-07` rozszerzyć o aktywności** — trzy slice'y dokładają do jednego zapytania, więc kolejność ma znaczenie. `S-08` idzie pierwszy, bo ustala, co kafelek pokazuje w stanie spoczynku, zanim `S-07` zdecyduje, co pokazuje po interakcji.
-- **Status:** done
-
-## Backlog Handoff
-
-| Roadmap ID | Change ID                 | Suggested issue title                                | Ready for `/10x-plan` | Notes                                                           |
-| ---------- | ------------------------- | ---------------------------------------------------- | --------------------- | --------------------------------------------------------------- |
-| F-01       | plan-persistence-baseline | Minimalny schemat planów + RLS izolacji per konto    | yes                   | Może iść równolegle do S-01                                     |
-| S-01       | first-day-generation      | Generowanie propozycji aktywności dla jednego dnia   | yes                   | Gwiazda przewodnia — `/10x-plan first-day-generation`           |
-| S-02       | edit-accept-day-plan      | Edycja, akceptacja i zapis planu dnia                | no                    | Czeka na S-01 + F-01                                            |
-| S-03       | week-generation           | Generowanie planu dla całego tygodnia roboczego      | no                    | Czeka na S-01 + F-01                                            |
-| S-04       | month-home                | Widok miesiąca jako ekran główny aplikacji           | yes                   | `/10x-plan month-home`                                          |
-| S-05       | delete-day-plan           | Usunięcie zapisanego planu dnia                      | yes                   | `/10x-plan delete-day-plan`; może iść równolegle do S-04        |
-| S-06       | sign-out                  | Wylogowanie dostępne z powłoki zalogowanej aplikacji | —                     | Dostarczone w S-04 (`month-home`, faza 1) — nie planować osobno |
-| S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | po PRD v2             | odblokowany 2026-08-30, wypisany z `M-01`; planować jako pierwszy slice `M-02` |
-| S-08       | visible-day-theme         | Widoczny podtytuł dnia w miesiącu i w widoku dnia    | yes                   | `/10x-plan visible-day-theme`; może iść równolegle do S-05      |
 
 ## Open Roadmap Questions
 
