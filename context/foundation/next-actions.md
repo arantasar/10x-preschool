@@ -1,11 +1,11 @@
-# Next Actions — ustalenia z 2026-08-30, stan na 2026-08-31
+# Next Actions — ustalenia z 2026-08-30, stan na 2026-09-03
 
 > Runbook kolejności prac i komend 10x. Dokument roboczy, edytowany w miejscu:
 > odhaczaj kroki i dopisuj nowe zgłoszenia. Decyzje produktowe mieszkają w
 > `roadmap.md` (S-07 §Decyzje, §Kandydaci do następnego kamienia) — tutaj jest
 > **kolejność i to, co uruchomić**, nie druga kopia tamtych decyzji.
 
-## Stan (2026-08-31)
+## Stan (2026-09-03)
 
 - **Krok 1 (`pl-landing-copy`) zamknięty 2026-08-30**, PR #19 zmergowany do `master` —
   czyli wydany na produkcję. Archiwum: `context/archive/2026-08-30-pl-landing-copy/`.
@@ -32,6 +32,13 @@
   fazy 3–4 `not started`. Ani `pl-landing-copy`, ani `supabase-error-copy` nie ruszyły żadnej
   fazy rolloutu — ten drugi dołożył test jednostkowy wprost wg wzorca §6.1
   (`src/lib/auth-error-messages.test.ts`), ale to konsumpcja cookbooka, nie postęp rolloutu.
+- **Warstwa e2e postawiona 2026-09-03 poza rolloutem** — ćwiczenie kursowe `/10x-e2e`
+  (Moduł 3, Lekcja 4), bez `/10x-new` i bez folderu zmiany. Playwright + trzy testy ryzyk
+  **#4** (wyciek planu między kontami) i **#7** (zakres kasowania, odmowa w dialogu).
+  Gałąź `test/e2e-ownership-delete`, commit `5ba1d12` — **niezmergowana, bez PR-a**.
+  Statusy faz 3 i 4 celowo bez zmian; dlaczego to nie jest postęp rolloutu — `test-plan.md`
+  §3 („Pokrycie e2e spoza rolloutu"). Wzorzec dla kolejnych testów: `test-plan.md` §6.6,
+  wnioski: §6.7.
 - PRD v1 wyczerpał się na `S-03`; `S-04`, `S-05`, `S-08` zarchiwizowane z pustą rubryką
   „PRD refs" (Open Roadmap Questions #3, wciąż otwarte).
 
@@ -124,7 +131,7 @@ Pokryło Ryzyko #1 (najwyższe w mapie) i #6. Dwa punkty planu zamknięte świad
 **4.12** (kontrola negatywna — próba wykonana, cel nie w pełni osiągnięty, koszt zatrzymał po
 dwóch próbach) i **4.17** (trzy dodatkowe zielone przebiegi — pominięte, koszt ~3× pełnego
 przebiegu uznany za nieuzasadniony). Oba zapisane jako zaakceptowane ryzyko w
-`test-plan.md` §6.6, nie jako dług.
+`test-plan.md` §6.7, nie jako dług.
 
 **Do sprzątnięcia**: gałąź `feat/testing-content-safety-gate` nadal istnieje zdalnie i
 lokalnie po merge'u (ten sam wzorzec co `fix/supabase-error-copy` po Kroku 1a).
@@ -181,6 +188,18 @@ Zacznij od **regeneracji tygodnia z zastępowaniem** — reszta paczki się o ni
 
 **Dopiero po** slice'ie regeneracji tygodnia — patrz Pułapka 2.
 
+**Zakres zmniejszył się, ale nie zniknął.** Ryzyka #4 i #7 mają od 2026-09-03
+warstwę przeglądarkową (gałąź `test/e2e-ownership-delete`), więc faza wchodzi w nie
+z dowodem, że izolacja kont i zakres kasowania działają na żywej aplikacji. Nie
+zwalnia jej to z niczego, co ma w opisie:
+
+- **`U0003`** (odmowa pustej partii) nadal bez żadnej asercji — `test-plan.md` §6.4
+  nazywa fazę 3 właścicielem tego długu i podaje wymagany kształt;
+- **Ryzyko #3** (zaakceptowany dzień vs regeneracja i generowanie tygodnia) e2e
+  **nie dotyka** — celowo, patrz Pułapka 2;
+- **tani wzorzec z §6.3** („trasa jako funkcja + atrapa `locals` dwóch kont") wciąż
+  jest TBD; e2e podnosi całą aplikację i nie nadaje się do przemiatania endpointów.
+
 ### Krok 7 — rodzaje aktywności (zgłoszenie #8)
 
 ```
@@ -201,6 +220,20 @@ Wymaga powrotu do `infrastructure.md`.
 ```
 
 Na końcu, gdy ścieżki krytyczne są już stabilne.
+
+**Runner i konwencje są już postawione** (2026-09-03, poza rolloutem): konfiguracja,
+`storageState` dla dwóch kont, zasiew danych, reguły i test wzorcowy —
+`test-plan.md` §6.6. Fazie zostaje to, co jest jej właściwą treścią i czego dziś
+nie ma:
+
+- **wpięcie e2e do CI** — dziś `npm run test:e2e` chodzi wyłącznie lokalnie, bo
+  wymaga `npx supabase start` i klucza serwisowego w `.env.e2e`; workflow nie ma ani
+  jednego, ani drugiego (patrz §Otwarte ogony po warstwie e2e);
+- **ścieżka krytyczna z generowaniem** (login → dzień → hasło → generowanie → edycja
+  → akceptacja) — istniejące testy jej nie pokrywają i celowo omijają wywołanie LLM;
+  w CI trzeba będzie zdecydować, czym je zastąpić, bo `page.route()` nie przechwyci
+  wywołania idącego z serwera;
+- **pozostałe bramki** przed merge'em do `master`, który deployuje wprost na produkcję.
 
 
 ## Otwarte ogony po Kroku 1
@@ -233,6 +266,18 @@ przed kolejnym pełnym przebiegiem `npm run test:gate` na żywo.
 | Co | Właściciel / bramka wejścia |
 | --- | --- |
 | **Ograniczenie liczby trybów w macierzy bramki bezpieczeństwa treści** — `GATE_MODES` w `content-safety.gate.test.ts` z czterech (`day`, `day-weekday`, `day-themed`, `week`) do dwóch: zostają `day-weekday` i `week`, odpadają `day` (nieprodukcyjny baseline — `activity-generator.ts:100-111` mówi wprost, że `/plan?date=` nigdy go nie wysyła) i `day-themed` (dzień w kontekście tygodnia, ze slotem „Temat dnia:”). Cel: 2x mniej realnych wywołań LLM na przebieg (z ~8 do ~4 na kombinację model×hasło), bez utraty jedynej konfiguracji odpowiadającej pojedynczemu dniu generowanemu w produkcji. **Świadomy koszt**: `day-themed` był jedyną konfiguracją bramki testującą slot „Temat dnia:”, który plan fazy 2 nazwał najbardziej wrażliwym na wstrzyknięcie (ryzyko #6) — to ubytek pokrycia, nie tylko oszczędność, i wart odnotowania przy zmianie | Brak formalnej bramki wejścia — zmiana lokalna w `content-safety.gate.test.ts` i `test-plan.md` §6.5 (opis macierzy). Rozważyć razem: `4.12`/`4.17` z Kroku 2 zakładają dziś macierz 4-trybową — commit message powinien to nazwać |
+
+## Otwarte ogony po warstwie e2e (2026-09-03)
+
+Nie blokują żadnego kroku. Pierwszy jest jedynym, który wymaga decyzji **przed**
+Krokiem 9 — reszta to sprzątanie.
+
+| Co | Właściciel / bramka wejścia |
+| --- | --- |
+| **Gałąź `test/e2e-ownership-delete` niezmergowana, bez PR-a** (commit `5ba1d12`). Testy istnieją tylko tam — na `master` nie ma ani Playwrighta, ani reguł z `E2E-RULES.md`. Dopóki tak zostanie, `test-plan.md` §4 i §6.6 opisują stan, którego na `master` nie widać | Decyzja: PR teraz czy trzymać do Kroku 9. Argument za teraz — reguły i test wzorcowy są leverem jakości dla **każdego** kolejnego testu, więc leżąc na gałęzi nie działają. Argument za czekaniem — merge do `master` = deploy na produkcję, a to zmiana bez wartości dla nauczyciela |
+| **e2e nie stoi w CI** — wymaga `npx supabase start` (Docker) i klucza serwisowego. `.env.e2e` jest gitignorowany, `.env.e2e.example` opisuje kształt | **Krok 9** (faza 4) — to jest dokładnie jej treść, nie ogon do zrobienia po drodze. Nie wpinaj tego doraźnie: sekret serwisowy w CI to decyzja o zakresie uprawnień, nie linijka w YAML-u |
+| **Ścieżka krytyczna z generowaniem bez pokrycia** — istniejące testy celowo omijają LLM (zasiew prosto do bazy), a §5 zakłada bramkę na pełnym przepływie | **Krok 9.** Wymaga rozstrzygnięcia, czym zastąpić dostawcę: `page.route()` nie zadziała, bo wywołanie idzie z serwera — kandydaci to atrapa na poziomie `webServer` (osobny tryb env) albo dopuszczenie jednego prawdziwego wywołania na przebieg |
+| **Ryzyko #5 (postęp przy 10–30 s) bez pokrycia przeglądarkowego** — jedyne pozostałe ryzyko, które jest w istotnej części widoczne wyłącznie w UI (`GenerationProgress`) | Naturalnie razem z poprzednim wierszem: oba potrzebują sterowalnego dostawcy, więc wstrzyknięcie opóźnienia i awarii to ta sama robota co atrapa generowania |
 
 ## Pułapki — cztery rzeczy, o które łatwo się potknąć
 
@@ -269,6 +314,9 @@ przed kolejnym pełnym przebiegiem `npm run test:gate` na żywo.
 | Dlaczego `M-01` zamknął się bez odczytu z siatki      | `roadmap.md` → §Milestone History                                         |
 | Dług PRD dla `S-04`…`S-08`                            | `roadmap.md` → §Open Roadmap Questions #3                                 |
 | Stan rolloutu testów                                  | `test-plan.md` §3 (`/10x-test-plan --status`)                             |
+| Jak dopisać test e2e (lokalizacja, tożsamość, dane)  | `test-plan.md` §6.6 + `tests/e2e/E2E-RULES.md`                            |
+| Wzorzec, na którym modelują się generowane testy e2e | `tests/e2e/seed.spec.ts`                                                  |
+| Czego nauczyła pierwsza warstwa e2e (hydracja, `[::1]`) | `test-plan.md` §6.7 („Poza rolloutem — pierwsza warstwa e2e")           |
 | Co dokładnie zmienił `pl-landing-copy` i dlaczego     | `context/archive/2026-08-30-pl-landing-copy/plan.md`                      |
 | Findingi i decyzje z przeglądu `pl-landing-copy`      | `context/archive/2026-08-30-pl-landing-copy/reviews/impl-review.md`       |
 | Odroczone tłumaczenie błędów Supabase — pierwotny opis | `context/archive/2026-08-30-pl-landing-copy/follow-ups/supabase-error-copy.md` |
