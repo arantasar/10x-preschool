@@ -7,7 +7,13 @@ import type { DayTheme } from "@/types";
 export const prerender = false;
 
 /**
- * Splits one hasło into a theme per working day (S-03).
+ * Splits one hasło into a theme per requested day (S-03, narrowed in S-09).
+ *
+ * The request carries the days it wants themes for, one to five of them. It is
+ * a subset whenever part of the week is accepted and therefore out of reach:
+ * `S-09` replaces only the unaccepted days, and outlining the rest would be
+ * paying for themes nothing will ever use. The count travels no further than
+ * `parsed.data.dates` - `generateWeekOutline` reads it off the array.
  *
  * Writes nothing, and that is the design rather than an omission. A theme
  * belongs to a `day_plans` row, and that row is created by the generation it
@@ -58,7 +64,7 @@ export const POST: APIRoute = async (context) => {
 
   const parsed = weekOutlineRequestSchema.safeParse(payload);
   if (!parsed.success) {
-    return badRequest("Podaj hasło — jedna linia tekstu, od 1 do 2000 znaków — oraz pięć dni roboczych.");
+    return badRequest("Podaj hasło — jedna linia tekstu, od 1 do 2000 znaków — oraz od 1 do 5 dni roboczych.");
   }
 
   // Nothing here touches Supabase, but the check stays: a teacher whose database

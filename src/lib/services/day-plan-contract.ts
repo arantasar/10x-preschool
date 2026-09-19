@@ -62,40 +62,55 @@ export function toActivityDrafts(proposal: DayPlanProposal): ActivityDraft[] {
  *
  * Same division of labour as {@link dayPlanProposalSchema}: the JSON Schema in
  * `week-outline.schema.json` steers the model, and this decides what is actually
- * accepted. `WEEK_DAYS` is restated here for the reason `ACTIVITY_COUNT` is —
+ * accepted. The count is restated here for the reason `ACTIVITY_COUNT` is —
  * `minItems`/`maxItems` are among the constructs strict mode may drop.
  *
- * The uniqueness check is the one this schema needs and the day's does not. Five
- * items with `dzien` of 1, 2, 2, 4, 5 satisfy every bound in the JSON Schema and
+ * A factory rather than a constant, because from `S-09` the outline is bought
+ * for the days actually being replaced — one to five of them — and a static
+ * schema cannot know which. The count is the caller's `dates.length`, so the
+ * schema that validates the response is built from the same number the request
+ * was built from; there is no second place for them to drift apart.
+ *
+ * The uniqueness check is the one this schema needs and the day's does not.
+ * Items with `dzien` of 1, 2, 2, 4, 5 satisfy every bound in the JSON Schema and
  * still leave Wednesday with no theme and Tuesday with two. Since the themes are
  * mapped onto dates by their day number, that lands as a week where one day
  * silently generates from the hasło alone — the exact failure this whole outline
- * step exists to prevent.
+ * step exists to prevent. It compares against `count` rather than `WEEK_DAYS`
+ * for the same reason the bounds do: at a count of two, three distinct numbers
+ * are as wrong as two duplicated ones.
  */
-export const weekOutlineSchema = z.object({
-  tematy: z
-    .array(
-      z.object({
-        dzien: z.number().int().min(1).max(WEEK_DAYS),
-        temat: z.string().min(1).max(THEME_MAX),
+export function weekOutlineSchemaFor(count: number) {
+  return z.object({
+    tematy: z
+      .array(
+        z.object({
+          // Bounded by `count`, not by `WEEK_DAYS`: `toDayThemes` indexes
+          // `dates` by `dzien - 1`, so a `dzien` of 5 against a two-day request
+          // reads past the end of the array and pins a theme to `undefined`.
+          dzien: z.number().int().min(1).max(count),
+          temat: z.string().min(1).max(THEME_MAX),
+        }),
+      )
+      .length(count)
+      .refine((items) => new Set(items.map((item) => item.dzien)).size === count, {
+        message: "each requested day must appear exactly once",
       }),
-    )
-    .length(WEEK_DAYS)
-    .refine((items) => new Set(items.map((item) => item.dzien)).size === WEEK_DAYS, {
-      message: "each working day must appear exactly once",
-    }),
-});
+  });
+}
 
-export type WeekOutline = z.infer<typeof weekOutlineSchema>;
+export type WeekOutline = z.infer<ReturnType<typeof weekOutlineSchemaFor>>;
 
 /**
  * Pins each theme to the date it belongs to.
  *
  * Sorted by `dzien` rather than trusting array order: the schema guarantees the
- * five numbers are distinct, not that the model listed them in order, and an
- * out-of-order response would otherwise pin Friday's theme to Monday.
+ * numbers are distinct, not that the model listed them in order, and an
+ * out-of-order response would otherwise pin the last day's theme to the first.
  *
- * `dates` is the working week in calendar order, so `dzien - 1` indexes it.
+ * `dates` is the requested days in calendar order, so `dzien - 1` indexes it —
+ * which holds for a two-day subset exactly as it held for the whole week, since
+ * `weekOutlineSchemaFor` bounds `dzien` by the same count `dates` has.
  */
 export function toDayThemes(outline: WeekOutline, dates: readonly string[]): DayTheme[] {
   return [...outline.tematy]
@@ -182,13 +197,19 @@ export type GenerateDayPlanRequest = z.infer<typeof generateDayPlanRequestSchema
  *
  * The dates travel with the hasło rather than being derived server-side from a
  * week start, because the model is shown them: it plans "poniedziałek, 14
- * września" and not "day 1". Held to `WEEK_DAYS` so a caller cannot ask for a
- * three-day or ten-day outline that the schema downstream would then refuse
- * after the model had already been paid for.
+ * września" and not "day 1".
+ *
+ * A range rather than exactly `WEEK_DAYS` since `S-09`: a run that replaces two
+ * unaccepted days buys two themes, not five, and paying for three the teacher
+ * will never see is the cost the old bound imposed. The upper bound stays, and
+ * stays for its original reason — a caller must not be able to ask for a
+ * ten-day outline the response schema would then refuse after the model had
+ * already been paid. The lower bound is `1` rather than `0` for the same shape
+ * of reason: an outline over no days is a request with nothing to answer.
  */
 export const weekOutlineRequestSchema = z.object({
   prompt: singleLineText(PROMPT_MAX),
-  dates: z.array(z.iso.date()).length(WEEK_DAYS),
+  dates: z.array(z.iso.date()).min(1).max(WEEK_DAYS),
 });
 
 export type WeekOutlineRequest = z.infer<typeof weekOutlineRequestSchema>;

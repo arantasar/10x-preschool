@@ -580,11 +580,11 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly against a reset local database: `npx supabase db reset`
-- [x] 1.2 Existing database suites still pass: `npm run test:db`
-- [x] 1.3 The function is not executable by `anon`
-- [x] 1.4 Type checking passes: `npm run build`
-- [x] 1.5 Linting passes: `npm run lint`
+- [x] 1.1 Migration applies cleanly against a reset local database: `npx supabase db reset` — 728d76b
+- [x] 1.2 Existing database suites still pass: `npm run test:db` — 728d76b
+- [x] 1.3 The function is not executable by `anon` — 728d76b
+- [x] 1.4 Type checking passes: `npm run build` — 728d76b
+- [x] 1.5 Linting passes: `npm run lint` — 728d76b
 
 #### Manual
 
@@ -595,12 +595,12 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Automated
 
-- [ ] 2.1 `weekOutlineSchemaFor` unit tests at counts 1, 3, 5 pass: `npm run test`
-- [ ] 2.2 `toDayThemes` maps a 2-date request onto those 2 dates in calendar order
-- [ ] 2.3 Request schema rejects an empty `dates` array and rejects 6 dates
-- [ ] 2.4 Content-safety gate passes across every allowed model: `npm run test:gate`
-- [ ] 2.5 Type checking passes: `npm run build`
-- [ ] 2.6 Linting passes: `npm run lint`
+- [x] 2.1 `weekOutlineSchemaFor` unit tests at counts 1, 3, 5 pass: `npm run test`
+- [x] 2.2 `toDayThemes` maps a 2-date request onto those 2 dates in calendar order
+- [x] 2.3 Request schema rejects an empty `dates` array and rejects 6 dates
+- [ ] 2.4 Content-safety gate passes across every allowed model: `npm run test:gate` — UCHYLONE decyzją 2026-09-19 (koszt); bramka zawieszona, patrz change.md
+- [x] 2.5 Type checking passes: `npm run build`
+- [x] 2.6 Linting passes: `npm run lint`
 
 #### Manual
 

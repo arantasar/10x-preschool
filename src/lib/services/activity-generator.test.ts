@@ -37,7 +37,7 @@ vi.mock("astro:env/server", () => ({
   },
 }));
 
-const { GenerationError, generateDayActivities } = await import("./activity-generator");
+const { GenerationError, generateDayActivities, buildOutlineSystemMessage } = await import("./activity-generator");
 const { ALLOWED_MODELS, DEFAULT_MODEL } = await import("./allowed-models");
 
 const KEYWORD = "jesień w lesie";
@@ -392,5 +392,48 @@ describe("the model the request carries", () => {
 
     expect(failure.category).toBe("config");
     expect(fetchStub).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The outline prompt's count placeholders
+// ---------------------------------------------------------------------------
+//
+// The prompt is the only content-safety layer there is (`lessons.md`), so what
+// reaches the model is worth asserting directly rather than inferring from a
+// generation that happened to succeed. These run no request.
+
+describe("buildOutlineSystemMessage", () => {
+  it.each([
+    [1, "jeden temat dzienny", "jeden temat"],
+    [2, "dwa tematy dzienne", "dwa tematy"],
+    [5, "pięć tematów dziennych", "pięć tematów"],
+  ])("uses the Polish agreement for %i days", (count, daily, plain) => {
+    const message = buildOutlineSystemMessage(count);
+
+    expect(message).toContain(daily);
+    expect(message).toContain(plain);
+    expect(message).toContain(`od 1 do ${String(count)}`);
+  });
+
+  it("leaves no placeholder unfilled at any supported count", () => {
+    for (const count of [1, 2, 3, 4, 5]) {
+      expect(buildOutlineSystemMessage(count)).not.toContain("{{");
+    }
+  });
+
+  // The safety and language sections are the reason this file is reviewed at
+  // all; the count edit must not have moved a word of them.
+  it("keeps the age, safety and language instruction intact", () => {
+    const message = buildOutlineSystemMessage(2);
+
+    expect(message).toContain("dzieci w wieku **3–6 lat**");
+    expect(message).toContain("**bezpieczny**");
+    expect(message).toContain("Piszesz **wyłącznie po polsku**");
+    expect(message).toContain("## Hasło nieodpowiednie dla wieku");
+  });
+
+  it.each([[0], [6]])("refuses a count of %i rather than sending an unfilled prompt", (count) => {
+    expect(() => buildOutlineSystemMessage(count)).toThrow(GenerationError);
   });
 });
