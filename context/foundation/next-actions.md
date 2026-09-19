@@ -1,11 +1,11 @@
-# Next Actions — ustalenia z 2026-08-30, stan na 2026-09-03
+# Next Actions — ustalenia z 2026-08-30, stan na 2026-09-19
 
 > Runbook kolejności prac i komend 10x. Dokument roboczy, edytowany w miejscu:
 > odhaczaj kroki i dopisuj nowe zgłoszenia. Decyzje produktowe mieszkają w
 > `roadmap.md` (S-07 §Decyzje, §Kandydaci do następnego kamienia) — tutaj jest
 > **kolejność i to, co uruchomić**, nie druga kopia tamtych decyzji.
 
-## Stan (2026-09-03)
+## Stan (2026-09-19)
 
 - **Krok 1 (`pl-landing-copy`) zamknięty 2026-08-30**, PR #19 zmergowany do `master` —
   czyli wydany na produkcję. Archiwum: `context/archive/2026-08-30-pl-landing-copy/`.
@@ -32,11 +32,13 @@
   fazy 3–4 `not started`. Ani `pl-landing-copy`, ani `supabase-error-copy` nie ruszyły żadnej
   fazy rolloutu — ten drugi dołożył test jednostkowy wprost wg wzorca §6.1
   (`src/lib/auth-error-messages.test.ts`), ale to konsumpcja cookbooka, nie postęp rolloutu.
-- **Warstwa e2e postawiona 2026-09-03 poza rolloutem** — ćwiczenie kursowe `/10x-e2e`
-  (Moduł 3, Lekcja 4), bez `/10x-new` i bez folderu zmiany. Playwright + trzy testy ryzyk
-  **#4** (wyciek planu między kontami) i **#7** (zakres kasowania, odmowa w dialogu).
-  Gałąź `test/e2e-ownership-delete`, commit `5ba1d12` — **niezmergowana, bez PR-a**.
-  Statusy faz 3 i 4 celowo bez zmian; dlaczego to nie jest postęp rolloutu — `test-plan.md`
+- **Warstwa e2e postawiona 2026-09-03 poza rolloutem, zmergowana 2026-09-05** — ćwiczenie
+  kursowe `/10x-e2e` (Moduł 3, Lekcja 4), bez `/10x-new` i bez folderu zmiany. Playwright +
+  trzy testy ryzyk **#4** (wyciek planu między kontami) i **#7** (zakres kasowania, odmowa
+  w dialogu). Gałąź `test/e2e-ownership-delete`, commit `5ba1d12`, **PR #22 zmergowany
+  2026-09-05** (`1282ea2`) — czyli wydany na produkcję przez Workers Builds. Na `master`
+  stoją `@playwright/test`, skrypty `test:e2e` / `test:e2e:ui` oraz `tests/e2e/` razem
+  z `E2E-RULES.md`. Statusy faz 3 i 4 celowo bez zmian; dlaczego to nie jest postęp rolloutu — `test-plan.md`
   §3 („Pokrycie e2e spoza rolloutu"). Wzorzec dla kolejnych testów: `test-plan.md` §6.6,
   wnioski: §6.7.
 - PRD v1 wyczerpał się na `S-03`; `S-04`, `S-05`, `S-08` zarchiwizowane z pustą rubryką
@@ -140,8 +142,11 @@ lokalnie po merge'u (ten sam wzorzec co `fix/supabase-error-copy` po Kroku 1a).
 
 ```
 /10x-shape           # UWAGA: wybierz "Restart from scratch" — patrz niżej
-/10x-prd             # v2 z nowymi FR + bump prd_version; domyka Open Roadmap Questions #3
-/10x-roadmap         # milestone_status: done → skill otworzy M-02 i zdekomponuje go
+/10x-prd             # v2 z nowymi FR; na kolizji wybierz "Save as prd-v2.md"
+                     # domyka Open Roadmap Questions #3
+/10x-roadmap context/foundation/prd-v2.md    # ŚCIEŻKA JAWNIE; na kolizji "Archive
+                                             # and replace"; potem ręczne odtworzenie
+                                             # warstwy kamieni — patrz niżej
 ```
 
 **`/10x-shape` zapyta, czy wznowić poprzednią sesję — odpowiedz „Restart from scratch".**
@@ -151,6 +156,36 @@ Istniejący `shape-notes.md` pochodzi z lipcowej sesji greenfieldowej i ma we fr
 stary plik do `context/foundation/archive/shape-notes-<data>.md` (nic nie ginie), po czym
 detekcja poleci na czysto: repo trafia w Tier 1 (historia gita) i Tier 2
 (`package-lock.json`), więc skill zaproponuje brownfield i poprosi o potwierdzenie.
+
+**`/10x-prd` zapyta, co zrobić z istniejącym `prd.md` — odpowiedz „Save as prd-v2.md".**
+Skill pisze całe pliki, nie edytuje chirurgicznie; zapis wersjonowany zostawia v1 nietknięte
+i podbija `version:` w nowym pliku na `2`. Nowy plik to `context/foundation/prd-v2.md` —
+zapamiętaj tę ścieżkę, bo potrzebuje jej następna komenda.
+
+**`/10x-roadmap` musi dostać ścieżkę do PRD v2 jawnie.** Bez argumentu czyta
+`context/foundation/prd.md`, czyli v1, i zregeneruje roadmapę ze starego PRD, nie mówiąc
+o tym ani słowa. Na kolizji z istniejącą roadmapą wybierz **„Archive and replace"** —
+dotychczasowy plik trafia do `context/foundation/archive/<data>-roadmap.md` i to z niego
+odtwarzasz to, co niżej.
+
+**`/10x-roadmap` nic nie wie o kamieniach milowych — po regeneracji trzeba je wpisać ręcznie.**
+Sprawdzone w skillu 2026-09-19: nie ma w nim ani `milestone_id`, ani `milestone_status`, ani
+sekcji `## Milestone` / `## Milestone History`. Emituje 8 kluczy frontmatteru i 10–11 sekcji,
+a o `## Done` mówi wprost „Empty on first generation. Do NOT pre-populate". Warstwa kamieni
+w `roadmap.md` została adoptowana wstecznie **ręcznie** (wpis z 2026-08-26 w §Milestone) i
+regeneracja ją zdejmie. Zdanie „skill otworzy `M-02` i zdekomponuje go", które stało w tym
+bloku do 2026-09-19, było nieprawdą — stąd ta poprawka. Do odtworzenia z archiwum zaraz po
+zapisie nowej roadmapy:
+
+- klucze `milestone_id`, `milestone_seq: 2`, `milestone_status: active` we frontmatterze;
+- sekcja `## Milestone` — intent `M-02` i jego „Done when";
+- `## Milestone History` **verbatim** — plik sam mówi „Append-only. Przenoszone verbatim do
+  roadmapy każdego kolejnego kamienia";
+- osiem wpisów w `## Done` (F-01, S-01…S-06, S-08) wraz ze statusami `done` w §At a glance;
+  bez tego nowa roadmapa wygląda, jakby `M-01` nigdy się nie wydarzył.
+
+To edycja `context/foundation/*`, więc idzie wprost na `master` — ale **zrób ją w tej samej
+sesji co regeneracja**. Odłożona na później znaczy roadmapę bez historii `M-01` w repo.
 
 **PRD v2 musi objąć również `S-07`** — to jedyny sposób, żeby wszedł do `M-02` z własnym FR.
 Oraz spłacić wstecz brakujące FR dla `S-04`, `S-05` i `S-08`.
@@ -188,8 +223,8 @@ Zacznij od **regeneracji tygodnia z zastępowaniem** — reszta paczki się o ni
 
 **Dopiero po** slice'ie regeneracji tygodnia — patrz Pułapka 2.
 
-**Zakres zmniejszył się, ale nie zniknął.** Ryzyka #4 i #7 mają od 2026-09-03
-warstwę przeglądarkową (gałąź `test/e2e-ownership-delete`), więc faza wchodzi w nie
+**Zakres zmniejszył się, ale nie zniknął.** Ryzyka #4 i #7 mają od 2026-09-03 warstwę
+przeglądarkową, a od 2026-09-05 (PR #22) stoi ona na `master`, więc faza wchodzi w nie
 z dowodem, że izolacja kont i zakres kasowania działają na żywej aplikacji. Nie
 zwalnia jej to z niczego, co ma w opisie:
 
@@ -267,23 +302,22 @@ przed kolejnym pełnym przebiegiem `npm run test:gate` na żywo.
 | --- | --- |
 | **Ograniczenie liczby trybów w macierzy bramki bezpieczeństwa treści** — `GATE_MODES` w `content-safety.gate.test.ts` z czterech (`day`, `day-weekday`, `day-themed`, `week`) do dwóch: zostają `day-weekday` i `week`, odpadają `day` (nieprodukcyjny baseline — `activity-generator.ts:100-111` mówi wprost, że `/plan?date=` nigdy go nie wysyła) i `day-themed` (dzień w kontekście tygodnia, ze slotem „Temat dnia:”). Cel: 2x mniej realnych wywołań LLM na przebieg (z ~8 do ~4 na kombinację model×hasło), bez utraty jedynej konfiguracji odpowiadającej pojedynczemu dniu generowanemu w produkcji. **Świadomy koszt**: `day-themed` był jedyną konfiguracją bramki testującą slot „Temat dnia:”, który plan fazy 2 nazwał najbardziej wrażliwym na wstrzyknięcie (ryzyko #6) — to ubytek pokrycia, nie tylko oszczędność, i wart odnotowania przy zmianie | Brak formalnej bramki wejścia — zmiana lokalna w `content-safety.gate.test.ts` i `test-plan.md` §6.5 (opis macierzy). Rozważyć razem: `4.12`/`4.17` z Kroku 2 zakładają dziś macierz 4-trybową — commit message powinien to nazwać |
 
-## Otwarte ogony po warstwie e2e (2026-09-03)
+## Otwarte ogony po warstwie e2e (2026-09-03, odświeżone 2026-09-19)
 
-Nie blokują żadnego kroku. Pierwszy jest jedynym, który wymaga decyzji **przed**
-Krokiem 9 — reszta to sprzątanie.
+Nie blokują żadnego kroku. Pierwszy wiersz jest domknięty — decyzja zapadła i została
+wykonana; pozostałe trzy należą do Kroku 9.
 
 | Co | Właściciel / bramka wejścia |
 | --- | --- |
-| **Gałąź `test/e2e-ownership-delete` niezmergowana, bez PR-a** (commit `5ba1d12`). Testy istnieją tylko tam — na `master` nie ma ani Playwrighta, ani reguł z `E2E-RULES.md`. Dopóki tak zostanie, `test-plan.md` §4 i §6.6 opisują stan, którego na `master` nie widać | Decyzja: PR teraz czy trzymać do Kroku 9. Argument za teraz — reguły i test wzorcowy są leverem jakości dla **każdego** kolejnego testu, więc leżąc na gałęzi nie działają. Argument za czekaniem — merge do `master` = deploy na produkcję, a to zmiana bez wartości dla nauczyciela |
+| ~~**Gałąź `test/e2e-ownership-delete` niezmergowana, bez PR-a** (commit `5ba1d12`)~~ | ✅ **Zamknięte 2026-09-05** — PR #22 zmergowany (`1282ea2`), czyli wydany na produkcję przez Workers Builds. Decyzja wypadła na „PR teraz", zgodnie z argumentem, że reguły i test wzorcowy leżąc na gałęzi nie działają jako lever jakości dla kolejnych testów. Na `master` stoją Playwright, skrypty `test:e2e` / `test:e2e:ui` i `tests/e2e/E2E-RULES.md`, więc `test-plan.md` §4 i §6.6 opisują stan, który na `master` widać |
 | **e2e nie stoi w CI** — wymaga `npx supabase start` (Docker) i klucza serwisowego. `.env.e2e` jest gitignorowany, `.env.e2e.example` opisuje kształt | **Krok 9** (faza 4) — to jest dokładnie jej treść, nie ogon do zrobienia po drodze. Nie wpinaj tego doraźnie: sekret serwisowy w CI to decyzja o zakresie uprawnień, nie linijka w YAML-u |
 | **Ścieżka krytyczna z generowaniem bez pokrycia** — istniejące testy celowo omijają LLM (zasiew prosto do bazy), a §5 zakłada bramkę na pełnym przepływie | **Krok 9.** Wymaga rozstrzygnięcia, czym zastąpić dostawcę: `page.route()` nie zadziała, bo wywołanie idzie z serwera — kandydaci to atrapa na poziomie `webServer` (osobny tryb env) albo dopuszczenie jednego prawdziwego wywołania na przebieg |
 | **Ryzyko #5 (postęp przy 10–30 s) bez pokrycia przeglądarkowego** — jedyne pozostałe ryzyko, które jest w istotnej części widoczne wyłącznie w UI (`GenerationProgress`) | Naturalnie razem z poprzednim wierszem: oba potrzebują sterowalnego dostawcy, więc wstrzyknięcie opóźnienia i awarii to ta sama robota co atrapa generowania |
 
-## Pułapki — cztery rzeczy, o które łatwo się potknąć
+## Pułapki — pięć rzeczy, o które łatwo się potknąć
 
 1. **Sekcja §Kandydaci do M-02 w `roadmap.md` jest tymczasowa.** Nie należy do schematu
-   roadmapy, a `/10x-roadmap` przy otwieraniu `M-02` odtwarza plik z sekcji wymaganych i tę
-   usunie. Decyzje o regeneracji tygodnia muszą przejść do `shape-notes.md` w kroku 3,
+   roadmapy, a `/10x-roadmap` odtwarza plik z sekcji wymaganych i tę usunie. Decyzje o regeneracji tygodnia muszą przejść do `shape-notes.md` w kroku 3,
    **zanim** uruchomisz `/10x-roadmap`.
 2. **Faza 3 test-planu idzie PO regeneracji tygodnia.** Faza 3 pokrywa Ryzyko #3
    („zaakceptowany dzień przeżywa regenerację"), a ten slice zmienia kryterium ochrony z
@@ -294,6 +328,10 @@ Krokiem 9 — reszta to sprzątanie.
    (inaczej przesuwasz te same przyciski dwa razy).
 4. **Research dziedzinowy ≠ `/10x-research`.** Przy #8 pytanie „jakie są typowe aktywności
    przedszkolne" należy do `/10x-shape`; `/10x-research` czyta kodebazę, nie dziedzinę.
+5. **`/10x-roadmap` nie jest świadomy kamieni milowych.** Regeneracja zdejmuje z `roadmap.md`
+   frontmatterowe `milestone_*`, sekcje `## Milestone` i `## Milestone History` oraz
+   wypełnione `## Done` — ta warstwa jest w tym projekcie ręczna, nie skillowa. Odtwórz ją
+   z `context/foundation/archive/<data>-roadmap.md` w tej samej sesji; pełna lista w Kroku 3.
 
 ## Reguły obowiązujące w każdym kroku
 
@@ -322,4 +360,5 @@ Krokiem 9 — reszta to sprzątanie.
 | Odroczone tłumaczenie błędów Supabase — pierwotny opis | `context/archive/2026-08-30-pl-landing-copy/follow-ups/supabase-error-copy.md` |
 | Decyzje o mapowaniu błędów auth i o kontrakcie `?error=` | `context/archive/2026-08-31-supabase-error-copy/change.md` §Notes |
 | Findingi i decyzje z przeglądu `supabase-error-copy` | `context/archive/2026-08-31-supabase-error-copy/reviews/impl-review.md` |
+| Czego `/10x-roadmap` **nie** zrobi sam przy regeneracji | ten plik → Krok 3 + Pułapka 5                                          |
 | Kolejność prac i komendy                              | ten plik                                                                  |
