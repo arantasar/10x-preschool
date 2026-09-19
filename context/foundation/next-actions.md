@@ -188,7 +188,14 @@ To edycja `context/foundation/*`, więc idzie wprost na `master` — ale **zrób
 sesji co regeneracja**. Odłożona na później znaczy roadmapę bez historii `M-01` w repo.
 
 **PRD v2 musi objąć również `S-07`** — to jedyny sposób, żeby wszedł do `M-02` z własnym FR.
-Oraz spłacić wstecz brakujące FR dla `S-04`, `S-05` i `S-08`.
+Dostał go: FR-010 i FR-011 w `shape-notes.md`.
+
+**Nie spłaca natomiast długu za `S-04`, `S-05` i `S-08` — decyzja użytkownika z 2026-09-19**
+podjęta w fazie 4 `/10x-shape`. PRD v2 obejmuje wyłącznie `M-02`; wsteczne dopisywanie FR do
+wydanego kodu było dokładnie tym, czego unikano, zamykając `M-01` skróconym zakresem.
+**Open Roadmap Questions #3 zostaje otwarte** i przechodzi do następnego kamienia — trzy
+zarchiwizowane slice'y zostają z pustą rubryką „PRD refs". Uzasadnienie i konsekwencja:
+`shape-notes.md` §Open Questions #3 oraz §Quality cross-check (luka 2).
 
 Wejście merytoryczne: `roadmap.md` §Kandydaci do następnego kamienia (M-02) — **skonsumuj tę
 sekcję w `/10x-shape`, zanim `/10x-roadmap` zregeneruje plik i ją usunie** (Pułapka 1).
