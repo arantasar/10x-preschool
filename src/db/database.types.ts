@@ -127,6 +127,10 @@ export type Database = {
         }
         Returns: string
       }
+      save_week_plan_generation: {
+        Args: { p_confirm_replace?: boolean; p_days: Json; p_prompt: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

@@ -174,3 +174,40 @@ export type GenerateDayPlanCommand = Pick<DayPlanInsert, "plan_date" | "prompt">
    */
   readonly require_absent?: boolean;
 };
+
+/**
+ * One day inside a week write: which day, the proposals it holds, and the
+ * theme the outline gave it.
+ *
+ * `theme` is optional on the same reasoning as {@link GenerateDayPlanCommand}'s
+ * — absent means "keep whatever theme this day already has", not "clear it".
+ * In practice the week path always has one, because the outline runs first;
+ * the option exists so the writer's contract does not differ between the two
+ * paths.
+ */
+export type GenerateWeekDayCommand = Pick<DayPlanInsert, "plan_date"> & {
+  readonly activities: readonly ActivityDraft[];
+  readonly theme?: string;
+};
+
+/**
+ * Replace several days of one week with freshly generated batches, as one
+ * transaction.
+ *
+ * The hasło is the week's, not the day's — every day in a week run carries the
+ * same one, which is why it sits here rather than on
+ * {@link GenerateWeekDayCommand}.
+ *
+ * The per-day member reuses `ActivityDraft` deliberately: the week path must
+ * not be able to accept a proposal shape the day path would reject.
+ *
+ * There is no `require_absent` counterpart. This command replaces by design —
+ * the caller chooses which days to send by acceptance, and a day it does not
+ * send is a day the writer never touches. `confirm_replace` is the accepted-day
+ * gate, and in this slice nothing ever sets it to `true`.
+ */
+export type GenerateWeekPlanCommand = Pick<DayPlanInsert, "prompt"> & {
+  readonly days: readonly GenerateWeekDayCommand[];
+  /** The teacher has agreed to lose the accepted days' batches and acceptance. */
+  readonly confirm_replace: boolean;
+};

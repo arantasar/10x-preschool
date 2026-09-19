@@ -8,6 +8,7 @@ import type {
   DayPlanSummary,
   DayPlanWithCurrentActivities,
   GenerateDayPlanCommand,
+  GenerateWeekPlanCommand,
 } from "@/types";
 
 /**
@@ -246,6 +247,63 @@ export async function saveGeneration(supabase: DayPlanClient, command: GenerateD
       throw firstFailure;
     }
     return callSaveGeneration(supabase, command);
+  }
+}
+
+async function callSaveWeekGeneration(supabase: DayPlanClient, command: GenerateWeekPlanCommand): Promise<void> {
+  const { error } = await supabase.rpc("save_week_plan_generation", {
+    p_prompt: command.prompt,
+    p_days: command.days.map((day) => ({
+      plan_date: day.plan_date,
+      // Omitted rather than nulled when the caller has nothing to say, exactly
+      // as `p_theme` is on the single-day path: the writer coalesces an absent
+      // theme onto the one the day already carries, and a null would erase it.
+      ...(day.theme === undefined ? {} : { theme: day.theme }),
+      activities: toJsonActivities(day.activities),
+    })),
+    p_confirm_replace: command.confirm_replace,
+  });
+
+  if (error) {
+    // The message carries the `plan_date` the function refused on, and that is
+    // the point: across five days "a plan is accepted" names nothing the
+    // teacher can act on. `toStoreError` keeps it, and the route passes it on.
+    throw toStoreError(error, "Nie udało się zapisać planów tygodnia");
+  }
+}
+
+/**
+ * Writes a whole week's generation batches as one transaction.
+ *
+ * Returns nothing, unlike {@link saveGeneration}: the week's caller reads the
+ * days back through `readWeekPlans` rather than holding plan ids, so handing
+ * back a list of ids would only invite the island to trust its own copy of what
+ * was written instead of the database's.
+ *
+ * Retried once on anything but a `conflict`, on the same asymmetry
+ * {@link saveGeneration} records and for a sharper version of the same reason:
+ * this write lands after the teacher has waited for — and paid for — up to five
+ * generations, so losing the set to a connection blip is the expensive outcome
+ * and a second round trip is the cheap one. Not idempotent, knowingly: a lost
+ * response followed by a successful retry leaves every day one generation
+ * higher than the teacher pressed for, showing the right plan.
+ *
+ * `conflict` is the exception because it is a refusal rather than a failure —
+ * an accepted day nobody confirmed. Repeating it would ask the same question
+ * twice and tell the teacher nothing new.
+ */
+export async function saveWeekGeneration(supabase: DayPlanClient, command: GenerateWeekPlanCommand): Promise<void> {
+  try {
+    await callSaveWeekGeneration(supabase, command);
+    return;
+  } catch (firstFailure) {
+    if (!(firstFailure instanceof StoreError)) {
+      throw firstFailure;
+    }
+    if (firstFailure.category === "conflict") {
+      throw firstFailure;
+    }
+    return callSaveWeekGeneration(supabase, command);
   }
 }
 
