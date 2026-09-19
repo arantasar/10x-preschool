@@ -125,7 +125,7 @@ export function isGeneratedDayBody(
  * means the read-back found none of what was just committed, and rendering that
  * as success would blank the board.
  */
-export function isSaveWeekBody(body: unknown): body is { plans: Record<string, DayPlanView> } {
+export function isSaveWeekBody(body: unknown): body is { plans: Partial<Record<string, DayPlanView>> } {
   if (!isRecord(body) || !isRecord(body.plans)) {
     return false;
   }

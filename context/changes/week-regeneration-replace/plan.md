@@ -611,12 +611,12 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Automated
 
-- [x] 3.1 New route tests pass for auth, malformed body, unconfigured client, generation failures
-- [x] 3.2 Write route rejects over-long activity arrays and titles with 400 before any store call
-- [x] 3.3 Write route surfaces a store `conflict` as 409
-- [x] 3.4 Exactly one copy of the generation-error tables remains in the tree
-- [x] 3.5 Type checking passes: `npm run build`
-- [x] 3.6 Linting passes: `npm run lint`
+- [x] 3.1 New route tests pass for auth, malformed body, unconfigured client, generation failures — 50c220e
+- [x] 3.2 Write route rejects over-long activity arrays and titles with 400 before any store call — 50c220e
+- [x] 3.3 Write route surfaces a store `conflict` as 409 — 50c220e
+- [x] 3.4 Exactly one copy of the generation-error tables remains in the tree — 50c220e
+- [x] 3.5 Type checking passes: `npm run build` — 50c220e
+- [x] 3.6 Linting passes: `npm run lint` — 50c220e
 
 #### Manual
 
@@ -627,12 +627,12 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Automated
 
-- [ ] 4.1 Unit tests cover the partition and confirmation sentence across four week compositions
-- [ ] 4.2 No `only_if_absent` remains in the week path; the day route's schema field survives
-- [ ] 4.3 The week board no longer calls the writing generate route
-- [ ] 4.4 Type checking passes: `npm run build`
-- [ ] 4.5 Linting passes: `npm run lint`
-- [ ] 4.6 Existing Playwright specs still pass: `npm run test:e2e`
+- [x] 4.1 Unit tests cover the partition and confirmation sentence across four week compositions
+- [x] 4.2 No `only_if_absent` remains in the week path; the day route's schema field survives
+- [x] 4.3 The week board no longer calls the writing generate route
+- [x] 4.4 Type checking passes: `npm run build`
+- [x] 4.5 Linting passes: `npm run lint`
+- [x] 4.6 Existing Playwright specs still pass: `npm run test:e2e`
 
 #### Manual
 

@@ -37,9 +37,16 @@ export const prerender = false;
  * thing that cannot be.
  */
 
-/** The written days, read back from the database rather than echoed. */
+/**
+ * The written days, read back from the database rather than echoed.
+ *
+ * `Partial` is load-bearing for the same reason it is on `WeekPlanView.plans`:
+ * without it the index signature promises a `DayPlanView` for every string, and
+ * the island's check for a day the write did not return reads to the compiler
+ * as dead code.
+ */
 export interface SaveWeekResponse {
-  readonly plans: Readonly<Record<string, DayPlanView>>;
+  readonly plans: Readonly<Partial<Record<string, DayPlanView>>>;
 }
 
 export const POST: APIRoute = async (context) => {

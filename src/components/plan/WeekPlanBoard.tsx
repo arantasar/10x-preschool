@@ -4,25 +4,48 @@ import { WeekDayCard, type DayState } from "@/components/plan/WeekDayCard";
 import { Button } from "@/components/ui/button";
 import { PROMPT_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
 import { cn } from "@/lib/utils";
-import { isDayPlanBody, isErrorBody, isOutlineBody } from "@/lib/day-plan-guards";
-import type { DayPlanView, WeekPlanView } from "@/types";
+import { isDayPlanBody, isErrorBody, isGeneratedDayBody, isOutlineBody, isSaveWeekBody } from "@/lib/day-plan-guards";
+import {
+  ALL_ACCEPTED_MESSAGE,
+  isWeekEmpty,
+  partitionWeek,
+  replacementConfirmation,
+  type WeekDayAcceptance,
+} from "@/lib/week-generation";
+import type { ActivityDraft, DayPlanView, WeekPlanView } from "@/types";
 
 /**
- * The orchestrator. One hasło in, five saved days out.
+ * The orchestrator. One hasło in, one week replaced - or none of it.
  *
- * Every request it makes already existed before this slice: the outline route is
- * new, but generation, acceptance and the read-back are the same three endpoints
- * `/plan?date=` has been using since S-02. What is new is that there are five of
- * them in flight at once, which is the whole reason this is a separate island
- * rather than a mode of `DayPlanEditor`:
+ * Reshaped at `S-09`. It used to generate only the days that had no row at all,
+ * badge the rest `pominięty`, and treat "three saved, two failed" as a normal
+ * outcome. Both of those stopped being true:
  *
- *   * `DayPlanEditor` guards concurrency with a single `inFlight` ref, because
- *     its mutations all touch one plan. Here a global guard would mean the first
- *     day to start blocks the other four, so the guard is per day and the global
- *     one covers only the outline and the week-level buttons.
- *   * Failure is per day too. Three days saved and two failed is a normal
- *     outcome, not an error state - the successes are already written and the
- *     retry costs only the days that are missing.
+ *   * **Targets are chosen by acceptance, not by emptiness.** A draft is
+ *     replaceable; an accepted day is not (until `S-10`). See
+ *     `@/lib/week-generation`, where the partition and the confirmation
+ *     sentence live so they can be tested without rendering anything.
+ *   * **The write is all-or-nothing.** Days are generated through
+ *     `/api/day-plan/week/day`, which writes nothing, and the batches are held
+ *     *here* until every target has one. Only then does
+ *     `/api/day-plan/week/save` fire, once, and commit them in a single
+ *     transaction. A run that dies halfway leaves every row exactly as it was.
+ *
+ * What that buys, and what it costs, in one place:
+ *
+ *   * Per-day progress and per-day retry survive - the island still drives, so
+ *     one transient rate limit does not discard four generations the teacher
+ *     already paid for. That is why the orchestration did not move into a
+ *     single server route.
+ *   * Between generation and the write, the proposals exist **only in this
+ *     island's memory**. Closing the tab loses them, and nothing was written,
+ *     which is the correct outcome - but it has to be on screen rather than
+ *     discovered, which is what the `held` status and the banner below are for.
+ *
+ * Concurrency is per day, as before: `DayPlanEditor` guards with a single
+ * `inFlight` ref because its mutations touch one plan, and a global guard here
+ * would make the first day block the other four. The week-level ref still
+ * covers the outline, the write and the week buttons.
  *
  * Nothing here retries by itself. `generateDayActivities` already retries once
  * inside the route, and a second layer of automatic retries on top of five
@@ -33,11 +56,18 @@ interface WeekPlanBoardProps {
   readonly week: WeekPlanView;
 }
 
-type Busy = "idle" | "outlining" | "generating" | "accepting";
+type Busy = "idle" | "outlining" | "generating" | "saving" | "accepting";
 
 interface Failure {
   readonly message: string;
   readonly signInRequired: boolean;
+}
+
+/** One day of the payload `/api/day-plan/week/save` expects. */
+interface WeekWriteDay {
+  readonly plan_date: string;
+  readonly theme?: string;
+  readonly activities: readonly ActivityDraft[];
 }
 
 export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
@@ -56,66 +86,73 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
 
   const isBusy = busy !== "idle";
   const dayList = week.days.map((date) => days[date]);
+  // `plan !== null` throughout: a held batch has no row, so it is not a ready
+  // day and is not acceptable. Counting it would offer "Akceptuj tydzień" for
+  // proposals the database has never seen.
   const readyCount = dayList.filter((day) => day.plan !== null).length;
   const acceptableCount = dayList.filter((day) => day.plan !== null && !day.plan.plan.accepted_at).length;
+  const heldCount = dayList.filter((day) => day.batch !== null).length;
+  // Every day this run could target - i.e. every unaccepted day - must be
+  // holding a batch before the write may be re-issued. Writing whatever happens
+  // to be held while one day is still failed would commit a partial week, which
+  // is the one outcome this whole slice exists to make impossible.
+  const heldSetIsComplete =
+    heldCount > 0 && dayList.every((day) => day.plan?.plan.accepted_at != null || day.batch !== null);
 
   function patchDay(planDate: string, patch: Partial<DayState>): void {
     setDays((current) => ({ ...current, [planDate]: { ...current[planDate], ...patch } }));
   }
 
   /**
-   * Generates one day and folds the answer into that day's row.
+   * Generates one day and holds the batch. Writes nothing.
    *
-   * Returns rather than throws: the caller is `Promise.allSettled` over five of
-   * these, and a rejection there would say nothing the row does not already say.
+   * Returns rather than throws: the caller is `Promise.allSettled` over up to
+   * five of these, and a rejection there would say nothing the row does not
+   * already say.
+   *
+   * The 409 branch this used to have is gone with the route it belonged to.
+   * `/api/day-plan/week/day` touches no row, so it has no conflict to report,
+   * and "skipped" is no longer an outcome of generating - a day is either a
+   * target or it was never in the run.
    */
   async function generateDay(planDate: string, theme: string | null, keyword: string): Promise<void> {
     if (inFlight.current.has(planDate)) return;
     inFlight.current.add(planDate);
-    patchDay(planDate, { status: "generating", error: null, retryable: false, theme });
+    // `batch: null` clears any batch this day was already holding. The day is
+    // being regenerated, so that batch is superseded - and leaving it would let
+    // a *failed* regeneration fall back to stale proposals that the write would
+    // then commit as if they were this run's.
+    patchDay(planDate, { status: "generating", batch: null, error: null, retryable: false, theme });
 
     try {
-      const response = await fetch("/api/day-plan/generate", {
+      const response = await fetch("/api/day-plan/week/day", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           plan_date: planDate,
           prompt: keyword,
-          // The week never overwrites. A day that gained a plan between the page
-          // render and this request - another tab, or a slower sibling of this
-          // very batch - comes back 409 and keeps what it has.
-          only_if_absent: true,
           ...(theme === null ? {} : { theme }),
         }),
       });
       const body: unknown = await response.json().catch(() => null);
 
-      if (response.ok && isDayPlanBody(body)) {
-        patchDay(planDate, { status: "done", plan: body, error: null, retryable: false });
+      if (response.ok && isGeneratedDayBody(body)) {
+        // Into `batch`, never into `plan`: there is no row behind these yet,
+        // and the distinction is what keeps `readyCount` and "Akceptuj
+        // tydzień" from counting a day nothing has written.
+        patchDay(planDate, {
+          status: "held",
+          batch: body.activities,
+          theme: body.theme,
+          error: null,
+          retryable: false,
+        });
         return;
       }
 
       if (response.status === 401) {
         setFailure({ message: "Twoja sesja wygasła. Zaloguj się ponownie.", signInRequired: true });
         patchDay(planDate, { status: "failed", error: "Sesja wygasła.", retryable: false });
-        return;
-      }
-
-      // 409 on this route means the day was taken, which is the skip policy
-      // working rather than a failure to report as one. *Which* writer took it
-      // decides what the card should show, and only a read can tell them apart:
-      // a sibling tab, another device, or this day's own write whose response
-      // was lost. In that last case the day is saved and the card would
-      // otherwise sit here claiming "pominięty" with no proposals - outside
-      // `readyCount`, and silently skipped by "Akceptuj tydzień".
-      if (response.status === 409) {
-        const existing = await readDay(planDate);
-        patchDay(planDate, {
-          status: "skipped",
-          error: null,
-          retryable: false,
-          ...(existing === null ? {} : { plan: existing }),
-        });
         return;
       }
 
@@ -135,6 +172,122 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
     }
   }
 
+  /**
+   * Commits every held batch as one transaction, once the set is complete.
+   *
+   * Reads the batches out of `setDays` rather than taking them as an argument,
+   * because the two callers reach this from different places - the end of a
+   * week run, and the retry of a single failed day - and both must see the same
+   * state React actually holds rather than a copy captured earlier.
+   *
+   * Returns without writing if any target is still missing a batch. That is the
+   * guard that keeps the transaction whole: a write fired as batches arrive
+   * would be one day wide again, which is exactly the partial week this slice
+   * removes.
+   */
+  async function writeWeek(targets: readonly string[], keyword: string): Promise<void> {
+    const held = await new Promise<WeekWriteDay[] | null>((resolve) => {
+      // Read through `setDays` rather than from the `days` closure: the two
+      // callers reach this from different places - the end of a week run and
+      // the retry of a single day - and both must see the state React actually
+      // holds, not a copy captured before the last batch landed. The updater
+      // returns `current` unchanged; it is a read, not a write.
+      setDays((current) => {
+        const entries: WeekWriteDay[] = [];
+        for (const date of targets) {
+          const batch = current[date].batch;
+          if (batch === null) {
+            resolve(null);
+            return current;
+          }
+          const theme = current[date].theme;
+          entries.push({
+            plan_date: date,
+            ...(theme === null ? {} : { theme }),
+            activities: batch,
+          });
+        }
+        resolve(entries);
+        return current;
+      });
+    });
+
+    if (held === null) {
+      return;
+    }
+
+    setBusy("saving");
+    for (const date of targets) {
+      patchDay(date, { status: "saving" });
+    }
+
+    try {
+      const response = await fetch("/api/day-plan/week/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: keyword, days: held }),
+      });
+      const body: unknown = await response.json().catch(() => null);
+
+      if (response.ok && isSaveWeekBody(body)) {
+        // The response replaces the rows wholesale. It was read back from the
+        // database, so it is the only thing that knows the new
+        // `current_generation` - and the island's own copy of what it sent is
+        // exactly the optimism this is here to discard.
+        const saved = body.plans;
+        setDays((current) => {
+          const next = { ...current };
+          for (const date of targets) {
+            const plan = saved[date];
+            next[date] = plan
+              ? {
+                  ...next[date],
+                  status: "done",
+                  plan,
+                  batch: null,
+                  theme: plan.plan.theme,
+                  error: null,
+                  retryable: false,
+                }
+              : // A target the write did not return. Nothing to show and
+                // nothing was lost that is not already gone; say so rather than
+                // leave the row claiming "Zapisuję…".
+                {
+                  ...next[date],
+                  status: "failed",
+                  error: "Ten dzień nie wrócił z zapisu. Odśwież stronę.",
+                  retryable: false,
+                };
+          }
+          return next;
+        });
+        return;
+      }
+
+      // The write failed, so *nothing* was written - the transaction saw to
+      // that. The batches are still held, so the rows go back to `held` rather
+      // than to `failed`, and the "Zapisz tydzień" button below can re-issue
+      // the write alone. Pressing "Generuj tydzień" would regenerate and charge
+      // for it again, which is exactly what holding the batches is meant to
+      // avoid.
+      setFailure({
+        message: isErrorBody(body) ? body.error : "Nie udało się zapisać tygodnia.",
+        signInRequired: response.status === 401,
+      });
+      for (const date of targets) {
+        patchDay(date, { status: "held" });
+      }
+    } catch {
+      setFailure({
+        message: "Brak połączenia z serwerem. Tydzień nie został zapisany — propozycje wciąż są na ekranie.",
+        signInRequired: false,
+      });
+      for (const date of targets) {
+        patchDay(date, { status: "held" });
+      }
+    }
+  }
+
   function generateWeek(): void {
     const trimmed = prompt.trim();
     if (!trimmed) {
@@ -148,31 +301,43 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
     setPromptError(undefined);
     if (weekInFlight.current) return;
 
-    const free = week.days.filter((date) => days[date].plan === null);
-    if (free.length === 0) {
-      setFailure({
-        message: "Wszystkie dni tego tygodnia mają już plan. Otwórz dzień, żeby go zmienić.",
-        signInRequired: false,
-      });
+    // Acceptance decides, not emptiness. See `@/lib/week-generation`.
+    const acceptance = weekAcceptance(week.days, days);
+    const partition = partitionWeek(acceptance);
+
+    // The only condition that can refuse a whole week now. "Wszystkie dni mają
+    // już plan" was the old test and is no longer true of anything: a week of
+    // drafts generates.
+    if (partition.targets.length === 0) {
+      setFailure({ message: ALL_ACCEPTED_MESSAGE, signInRequired: false });
       return;
     }
+
+    // An affordance, not the guard. The island's `accepted_at` can be stale, so
+    // `save_week_plan_generation` still refuses an unconfirmed accepted day
+    // with U0001 - the dialog is what makes that refusal rare, not what makes
+    // it safe. Same division as `DayPlanEditor.generate()`.
+    const confirmation = replacementConfirmation(partition, isWeekEmpty(acceptance));
+    if (confirmation !== null && !window.confirm(confirmation)) {
+      return;
+    }
+
+    const targets = partition.targets;
+    const untouched = partition.untouched;
 
     weekInFlight.current = true;
     setFailure(null);
     setBusy("outlining");
 
-    const skipped = week.days.filter((date) => days[date].plan !== null);
-
     void (async () => {
       try {
-        // The outline is asked for the whole week, including days that already
-        // have a plan: the model is arranging an arc, and hiding two of its five
-        // days would have it arrange a different one. Only the free days are then
-        // generated.
+        // Outlined for the targets only, which is what `S-09` narrowed the
+        // route's contract to 1..5 for. Asking for the whole week would buy
+        // themes for accepted days that nothing will ever apply them to.
         const response = await fetch("/api/day-plan/week/outline", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt, dates: week.days }),
+          body: JSON.stringify({ prompt, dates: targets }),
         });
         const body: unknown = await response.json().catch(() => null);
 
@@ -187,25 +352,28 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
         const themeByDate = new Map(body.themes.map((theme) => [theme.plan_date, theme.theme]));
         setDays((current) => {
           const next = { ...current };
-          for (const date of week.days) {
-            const theme = themeByDate.get(date) ?? null;
-            next[date] = { ...next[date], theme: next[date].plan === null ? theme : next[date].theme };
+          for (const date of targets) {
+            next[date] = { ...next[date], theme: themeByDate.get(date) ?? null };
           }
-          // Days that already had a plan are marked only once the week
-          // generation is genuinely under way, so the badge means what it says:
-          // this run reached them and deliberately left them alone. Marking them
-          // before the outline would have a failed outline - which generates
-          // nothing at all - report five successful skips.
-          for (const date of skipped) {
+          // Marked only once the run is genuinely under way, so the badge means
+          // what it says: this run reached them and deliberately left them
+          // alone. Marking them before the outline would have a failed outline
+          // report successful skips.
+          for (const date of untouched) {
             next[date] = { ...next[date], status: "skipped" };
           }
           return next;
         });
 
         setBusy("generating");
-        // All five at once. The week then costs the slowest day rather than the
-        // sum of five, which is the difference between ~20s and ~2 minutes.
-        await Promise.allSettled(free.map((date) => generateDay(date, themeByDate.get(date) ?? null, prompt)));
+        // All targets at once, so the week costs the slowest day rather than
+        // the sum. Nothing is written by any of them.
+        await Promise.allSettled(targets.map((date) => generateDay(date, themeByDate.get(date) ?? null, prompt)));
+
+        // One write, after the whole set is in hand. `writeWeek` returns
+        // without writing if any target failed, leaving the successes held for
+        // a per-day retry.
+        await writeWeek(targets, prompt);
       } catch {
         // The outline's own `fetch` - `response.json()` is already guarded. Left
         // uncaught this rejects the void-ed promise and the button simply returns
@@ -222,17 +390,67 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
   }
 
   /**
-   * Retries one day, and only that day.
+   * Retries one day, and only that day - then writes the week if that completed
+   * the set.
    *
-   * Deliberately does not take `weekInFlight` or move `busy`: two days failing on
-   * one rate limit is the ordinary case, and a global lock here would make the
-   * teacher retry them one after another. `generateDay` already refuses a second
-   * run of the same day, which is the only collision that matters. The week-level
-   * lock is still *read*, so a retry cannot start on top of a running week.
+   * Deliberately does not take `weekInFlight` while generating: two days
+   * failing on one rate limit is the ordinary case, and a global lock here would
+   * make the teacher retry them one after another. `generateDay` already
+   * refuses a second run of the same day, which is the only collision that
+   * matters. The week-level lock is still *read*, so a retry cannot start on top
+   * of a running week.
+   *
+   * The write it may trigger is what makes a partial run recoverable: four days
+   * paid for and one rate-limited is one retry away from a committed week,
+   * rather than four generations thrown away.
    */
   function retryDay(planDate: string): void {
     if (weekInFlight.current) return;
-    void generateDay(planDate, days[planDate].theme, prompt);
+    const keyword = prompt;
+    void (async () => {
+      await generateDay(planDate, days[planDate].theme, keyword);
+
+      // The set this day belongs to, recomputed from the board: the accepted
+      // days are still out, and every other day either holds a batch or is the
+      // one that just failed again.
+      const targets = weekAcceptance(week.days, days)
+        .filter((day) => !day.accepted)
+        .map((day) => day.planDate);
+
+      weekInFlight.current = true;
+      try {
+        await writeWeek(targets, keyword);
+      } finally {
+        weekInFlight.current = false;
+        setBusy("idle");
+      }
+    })();
+  }
+
+  /**
+   * Re-issues the write for a set that is already generated and still held.
+   *
+   * The counterpart to `retryDay` for the other half of a run: a write can fail
+   * on a connection blip after every day has been paid for, and the batches are
+   * right there. Regenerating them to recover would burn five generations to
+   * work around one failed round trip.
+   */
+  function retryWrite(): void {
+    if (weekInFlight.current) return;
+    const targets = weekAcceptance(week.days, days)
+      .filter((day) => !day.accepted)
+      .map((day) => day.planDate);
+
+    weekInFlight.current = true;
+    setFailure(null);
+    void (async () => {
+      try {
+        await writeWeek(targets, prompt);
+      } finally {
+        weekInFlight.current = false;
+        setBusy("idle");
+      }
+    })();
   }
 
   function acceptWeek(): void {
@@ -347,13 +565,19 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
             ? "Układam plan tygodnia…"
             : busy === "generating"
               ? "Generuję dni…"
-              : "Generuj tydzień"}
+              : busy === "saving"
+                ? "Zapisuję tydzień…"
+                : "Generuj tydzień"}
         </Button>
         {/* The teacher is spending their own credits; the count is not a detail
-            to bury. One outline plus one call per free day. */}
+            to bury. "Pusty dzień" stopped being the divisor at S-09 - every
+            unaccepted day is regenerated now, so the worst case rose from
+            "however many days were empty" to five. This is the only answer this
+            slice gives to the open question about a generation limit, and that
+            is deliberate. */}
         <p className="text-xs text-blue-100/50">
-          Generowanie tygodnia to jedno wywołanie na plan tygodnia i po jednym na każdy pusty dzień. Dni, które już mają
-          plan, zostają nietknięte.
+          Generowanie tygodnia to jedno wywołanie na plan tygodnia i po jednym na każdy zastępowany dzień. Zaakceptowane
+          dni zostają nietknięte.
         </p>
       </form>
 
@@ -374,6 +598,25 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
         </div>
       )}
 
+      {/* Said on screen rather than discovered. Between generation and the
+          write the proposals exist only here, so a closed tab loses them - and
+          because nothing was written, that is the correct outcome rather than a
+          failure. The teacher still has to know it before it happens. */}
+      {heldCount > 0 && (
+        <div
+          role="status"
+          className="flex items-start gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-100"
+        >
+          <CircleAlert className="mt-0.5 size-4 shrink-0" />
+          <span>
+            {heldCount === 1
+              ? "1 dzień czeka na zapis i istnieje tylko na tej stronie."
+              : `${String(heldCount)} dni czeka na zapis i istnieje tylko na tej stronie.`}{" "}
+            Zamknięcie karty albo odświeżenie strony je odrzuci — w planie nic się wtedy nie zmieni.
+          </span>
+        </div>
+      )}
+
       <p className="text-sm text-blue-100/70">
         Gotowe {readyCount} z {WEEK_DAYS} dni.
       </p>
@@ -390,6 +633,20 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
           />
         ))}
       </ol>
+
+      {heldSetIsComplete && (
+        <Button
+          type="button"
+          disabled={isBusy}
+          onClick={() => {
+            retryWrite();
+          }}
+          className="w-full rounded-lg bg-amber-600 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-500"
+        >
+          <Sparkles className="size-4" />
+          {busy === "saving" ? "Zapisuję tydzień…" : "Zapisz tydzień"}
+        </Button>
+      )}
 
       {acceptableCount > 0 && (
         <Button
@@ -425,6 +682,9 @@ function initialDays(week: WeekPlanView): Record<string, DayState> {
       planDate,
       status: plan ? "done" : "empty",
       plan,
+      // Nothing is ever held on first render: a batch only exists between a
+      // generation and its write, and both happen in this island's lifetime.
+      batch: null,
       theme: plan?.plan.theme ?? null,
       error: null,
       retryable: false,
@@ -453,19 +713,17 @@ function firstPrompt(week: WeekPlanView): string {
 }
 
 /**
- * Reads one day back, for the 409 branch above.
+ * The board's rows as `@/lib/week-generation` needs to see them.
  *
- * `null` covers every "nothing to show" answer alike - a 404, a failed read, a
- * dropped connection. The caller folds a plan in when there is one and leaves
- * the row untouched otherwise, which is the same rule `DayPlanEditor.reconcile`
- * follows: never blank a row on a second failure.
+ * Reads `accepted_at` off the **saved** plan only. A held batch has no
+ * acceptance and cannot have one - it has no row - so a day holding proposals
+ * over an accepted plan would still read as accepted here, which is correct:
+ * until the write lands, the accepted plan is what exists.
  */
-async function readDay(planDate: string): Promise<DayPlanView | null> {
-  try {
-    const response = await fetch(`/api/day-plan?date=${planDate}`);
-    const body: unknown = await response.json().catch(() => null);
-    return response.ok && isDayPlanBody(body) ? body : null;
-  } catch {
-    return null;
-  }
+function weekAcceptance(dates: readonly string[], days: Record<string, DayState>): WeekDayAcceptance[] {
+  return dates.map((planDate) => ({
+    planDate,
+    planned: days[planDate].plan !== null,
+    accepted: days[planDate].plan?.plan.accepted_at != null,
+  }));
 }
