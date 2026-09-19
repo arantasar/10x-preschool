@@ -1,3 +1,4 @@
+import { GenerationError, type GenerationErrorCategory } from "./generation-error";
 import { StoreError, type StoreErrorCategory } from "./day-plan-store";
 import type { DayPlanWithCurrentActivities } from "@/types";
 
@@ -154,6 +155,73 @@ export function storeFailure(error: unknown): Response {
     { error: failure.userMessage ?? MESSAGE_BY_CATEGORY[failure.category], retryable: failure.retryable },
     STATUS_BY_CATEGORY[failure.category],
   );
+}
+
+// ---------------------------------------------------------------------------
+// Generation failures
+// ---------------------------------------------------------------------------
+
+/**
+ * The generation half of the same envelope, moved here from the routes.
+ *
+ * It lived as a copy in `generate.ts` and a second copy in `outline.ts`, and
+ * the third route added by `S-09` is what made that a pattern rather than a
+ * duplication. The store half above has been shared since three routes needed
+ * it; this is the same argument arriving later. Same rule as the top of this
+ * file: these must be indistinguishable to the island, which has one response
+ * handler and cannot have a status mean two things depending on which route
+ * answered.
+ *
+ * One status per category, so a server log can tell them apart without reading
+ * bodies: 500 needs an operator (key, credits), 503 will pass on its own, 502
+ * means the model answered with something off-contract.
+ */
+const GENERATION_STATUS_BY_CATEGORY: Record<GenerationErrorCategory, number> = {
+  config: 500,
+  transient: 503,
+  invalid: 502,
+};
+
+/**
+ * What the teacher reads. Deliberately not `GenerationError.message`: that one
+ * carries upstream status codes and provider wording, which belongs in the log,
+ * not on a preschool teacher's screen.
+ */
+const GENERATION_MESSAGE_BY_CATEGORY: Record<GenerationErrorCategory, string> = {
+  config: "Generowanie propozycji jest teraz niedostępne. Skontaktuj się z administratorem.",
+  transient: "Usługa generowania jest chwilowo przeciążona. Spróbuj ponownie za chwilę.",
+  invalid: "Coś poszło nie tak podczas generowania. Spróbuj ponownie.",
+};
+
+/**
+ * Turns any failure from the generation layer into the envelope.
+ *
+ * `invalidMessage` is the one entry that legitimately differs between the two
+ * surfaces and is therefore the only one a caller may override: a failed
+ * outline is "nie udało się ułożyć tematów na tydzień", which would be wrong on
+ * a day route, and "coś poszło nie tak podczas generowania" is wrong on the
+ * outline. `config` and `transient` say the same thing everywhere and are not
+ * negotiable - if they ever needed to differ, that would be a sign the two
+ * routes had stopped being the same operation.
+ *
+ * Nothing is logged here, unlike {@link storeFailure}. `generateDayActivities`
+ * and `generateWeekOutline` already log every failure with its status and
+ * `errorType` before it reaches a route, so a second record would double every
+ * generation failure in the log.
+ */
+export function generationFailure(error: unknown, invalidMessage?: string): Response {
+  const failure =
+    error instanceof GenerationError
+      ? error
+      : new GenerationError("invalid", "Nieoczekiwany błąd trasy generowania.", { cause: error });
+
+  const message =
+    failure.category === "invalid" && invalidMessage !== undefined
+      ? invalidMessage
+      : GENERATION_MESSAGE_BY_CATEGORY[failure.category];
+
+  const body: DayPlanErrorBody = { error: message, retryable: failure.retryable };
+  return json(body, GENERATION_STATUS_BY_CATEGORY[failure.category]);
 }
 
 /**

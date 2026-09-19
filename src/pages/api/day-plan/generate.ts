@@ -1,19 +1,15 @@
 import type { APIRoute } from "astro";
-import {
-  generateDayActivities,
-  GenerationError,
-  type GenerationErrorCategory,
-} from "@/lib/services/activity-generator";
+import { generateDayActivities } from "@/lib/services/activity-generator";
 import { generateDayPlanRequestSchema } from "@/lib/services/day-plan-contract";
 import { readDayPlan, saveGeneration, StoreError } from "@/lib/services/day-plan-store";
 import {
   json,
   requireSaved,
   badRequest,
+  generationFailure,
   storeFailure,
   unauthorized,
   unconfigured,
-  type DayPlanErrorBody,
 } from "@/lib/services/day-plan-http";
 
 export const prerender = false;
@@ -32,43 +28,10 @@ export const prerender = false;
  * here is what only this route can fail at: the model.
  */
 
-/**
- * One status per category, so a server log can tell the three apart without
- * reading response bodies: 500 needs an operator (key, credits), 503 will pass
- * on its own, 502 means the model answered with something off-contract.
- */
-const STATUS_BY_CATEGORY: Record<GenerationErrorCategory, number> = {
-  config: 500,
-  transient: 503,
-  invalid: 502,
-};
-
-/**
- * What the teacher reads. Deliberately not `GenerationError.message`: that one
- * carries upstream status codes and provider wording, which belongs in the log,
- * not on a preschool teacher's screen.
- */
-const MESSAGE_BY_CATEGORY: Record<GenerationErrorCategory, string> = {
-  config: "Generowanie propozycji jest teraz niedostępne. Skontaktuj się z administratorem.",
-  transient: "Usługa generowania jest chwilowo przeciążona. Spróbuj ponownie za chwilę.",
-  invalid: "Coś poszło nie tak podczas generowania. Spróbuj ponownie.",
-};
-
-function generationFailure(error: unknown): Response {
-  // `generateDayActivities` already logged this one with its status and
-  // error_type. Store failures are logged by `toStoreError`, not here - the two
-  // layers each record their own, so this route adds nothing on either path.
-  const failure =
-    error instanceof GenerationError
-      ? error
-      : new GenerationError("invalid", "Nieoczekiwany błąd trasy generowania.", { cause: error });
-
-  const body: DayPlanErrorBody = {
-    error: MESSAGE_BY_CATEGORY[failure.category],
-    retryable: failure.retryable,
-  };
-  return json(body, STATUS_BY_CATEGORY[failure.category]);
-}
+// The status and message tables this route used to carry now live in
+// `day-plan-http.ts` next to the store's, and `generationFailure` is shared with
+// `week/outline.ts` and `week/day.ts`. Three copies was the point at which the
+// duplication stopped being cheaper than the indirection.
 
 // ---------------------------------------------------------------------------
 // Route

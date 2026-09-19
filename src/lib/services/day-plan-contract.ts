@@ -215,6 +215,79 @@ export const weekOutlineRequestSchema = z.object({
 export type WeekOutlineRequest = z.infer<typeof weekOutlineRequestSchema>;
 
 /**
+ * The deferred-write day route's request body (`/api/day-plan/week/day`).
+ *
+ * The same three fields `generateDayPlanRequestSchema` accepts, minus the two
+ * that only mean something to a writer: there is no `confirm_replace` and no
+ * `only_if_absent`, because that route writes nothing and so has nothing to
+ * confirm or to refuse. The bounds are `singleLineText` for the same reason
+ * they are there — reached through the same helper rather than restated, so a
+ * hasło this route accepts cannot be one the write then refuses.
+ */
+export const generateWeekDayRequestSchema = z.object({
+  plan_date: z.iso.date(),
+  prompt: singleLineText(PROMPT_MAX),
+  // Optional, not nullable, exactly as on the day route: this day's slice of
+  // the week outline when there is one, absent when the outline failed and the
+  // day is going on the hasło alone.
+  theme: singleLineText(THEME_MAX).optional(),
+});
+
+export type GenerateWeekDayRequest = z.infer<typeof generateWeekDayRequestSchema>;
+
+/**
+ * One day inside a week write.
+ *
+ * These batches come from the *client*, which is the whole reason this schema
+ * is as strict as it is. Everything else the model produces is validated the
+ * moment it leaves `generateDayActivities`; this arrives over HTTP from an
+ * island holding whatever it holds, and sits on the same trust boundary
+ * `/api/day-plan/activity/[id]` already has for FR-008 edits. `ACTIVITY_COUNT`
+ * rather than a range, because that is what the day path enforces and a week
+ * write must not be the cheaper door into the same table.
+ */
+const weekDayBatchSchema = z.object({
+  plan_date: z.iso.date(),
+  theme: singleLineText(THEME_MAX).optional(),
+  activities: z
+    .array(
+      z.object({
+        title: z.string().min(1).max(TITLE_MAX),
+        description: z.string().min(1).max(DESCRIPTION_MAX),
+      }),
+    )
+    .length(ACTIVITY_COUNT),
+});
+
+/**
+ * The atomic week write's request body (`/api/day-plan/week/save`).
+ *
+ * `days` is bounded `1..WEEK_DAYS` on both sides: a write with no days has
+ * nothing to commit, and one with six is not a working week. The writer refuses
+ * both on its own (`U0003`), but reaching it costs a round trip to say what a
+ * schema can say here.
+ *
+ * The uniqueness refine is the same guard `weekOutlineSchemaFor` carries, for
+ * the same class of bug one layer down: the writer upserts per element, so the
+ * same `plan_date` twice would bump that day's `current_generation` twice and
+ * delete the batch the first pass had just inserted. The day would end up
+ * correct and its counter would not, which is the kind of wrong that surfaces
+ * much later, in `expected_generation`.
+ */
+export const saveWeekPlanRequestSchema = z.object({
+  prompt: singleLineText(PROMPT_MAX),
+  days: z
+    .array(weekDayBatchSchema)
+    .min(1)
+    .max(WEEK_DAYS)
+    .refine((days) => new Set(days.map((day) => day.plan_date)).size === days.length, {
+      message: "each plan_date must appear at most once",
+    }),
+});
+
+export type SaveWeekPlanRequest = z.infer<typeof saveWeekPlanRequestSchema>;
+
+/**
  * The edit route's request body (FR-008).
  *
  * The bounds are `activities_title_length` and `activities_description_length`

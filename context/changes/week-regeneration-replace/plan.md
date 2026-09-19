@@ -595,12 +595,12 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Automated
 
-- [x] 2.1 `weekOutlineSchemaFor` unit tests at counts 1, 3, 5 pass: `npm run test`
-- [x] 2.2 `toDayThemes` maps a 2-date request onto those 2 dates in calendar order
-- [x] 2.3 Request schema rejects an empty `dates` array and rejects 6 dates
+- [x] 2.1 `weekOutlineSchemaFor` unit tests at counts 1, 3, 5 pass: `npm run test` — ab7f734
+- [x] 2.2 `toDayThemes` maps a 2-date request onto those 2 dates in calendar order — ab7f734
+- [x] 2.3 Request schema rejects an empty `dates` array and rejects 6 dates — ab7f734
 - [ ] 2.4 Content-safety gate passes across every allowed model: `npm run test:gate` — UCHYLONE decyzją 2026-09-19 (koszt); bramka zawieszona, patrz change.md
-- [x] 2.5 Type checking passes: `npm run build`
-- [x] 2.6 Linting passes: `npm run lint`
+- [x] 2.5 Type checking passes: `npm run build` — ab7f734
+- [x] 2.6 Linting passes: `npm run lint` — ab7f734
 
 #### Manual
 
@@ -611,12 +611,12 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Automated
 
-- [ ] 3.1 New route tests pass for auth, malformed body, unconfigured client, generation failures
-- [ ] 3.2 Write route rejects over-long activity arrays and titles with 400 before any store call
-- [ ] 3.3 Write route surfaces a store `conflict` as 409
-- [ ] 3.4 Exactly one copy of the generation-error tables remains in the tree
-- [ ] 3.5 Type checking passes: `npm run build`
-- [ ] 3.6 Linting passes: `npm run lint`
+- [x] 3.1 New route tests pass for auth, malformed body, unconfigured client, generation failures
+- [x] 3.2 Write route rejects over-long activity arrays and titles with 400 before any store call
+- [x] 3.3 Write route surfaces a store `conflict` as 409
+- [x] 3.4 Exactly one copy of the generation-error tables remains in the tree
+- [x] 3.5 Type checking passes: `npm run build`
+- [x] 3.6 Linting passes: `npm run lint`
 
 #### Manual
 
