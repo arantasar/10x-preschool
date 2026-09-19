@@ -627,12 +627,12 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Automated
 
-- [x] 4.1 Unit tests cover the partition and confirmation sentence across four week compositions
-- [x] 4.2 No `only_if_absent` remains in the week path; the day route's schema field survives
-- [x] 4.3 The week board no longer calls the writing generate route
-- [x] 4.4 Type checking passes: `npm run build`
-- [x] 4.5 Linting passes: `npm run lint`
-- [x] 4.6 Existing Playwright specs still pass: `npm run test:e2e`
+- [x] 4.1 Unit tests cover the partition and confirmation sentence across four week compositions — dc007d5
+- [x] 4.2 No `only_if_absent` remains in the week path; the day route's schema field survives — dc007d5
+- [x] 4.3 The week board no longer calls the writing generate route — dc007d5
+- [x] 4.4 Type checking passes: `npm run build` — dc007d5
+- [x] 4.5 Linting passes: `npm run lint` — dc007d5
+- [x] 4.6 Existing Playwright specs still pass: `npm run test:e2e` — dc007d5
 
 #### Manual
 
