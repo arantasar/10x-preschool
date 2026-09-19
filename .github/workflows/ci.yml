@@ -30,6 +30,14 @@ jobs:
   # (test-plan.md §5). A separate job, not a step in `ci` above: it needs its own
   # `OPENROUTER_API_KEY` secret and must never run on every push - only when a
   # prompt, the model allow-list, or the safety machinery itself changes.
+  #
+  # SUSPENDED on 2026-09-19, on cost — see `src/lib/services/gate-suspension.ts`.
+  # The change detection below is deliberately KEPT: a PR that touches a prompt
+  # still gets a loud warning annotation saying the gate did not grade it. That
+  # is the difference between a gate that is off and a gate that is gone, and it
+  # is the whole reason this job was not simply deleted. Turning it back on is
+  # two edits: set `RUN_CONTENT_SAFETY_GATE: "1"` in the env below and swap the
+  # notice step back for `npm run test:gate`.
   content-safety-gate:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
@@ -46,18 +54,21 @@ jobs:
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/setup-node@v4
+      # No npm install, no model calls, no spend. Just the notice — which is the
+      # point: this PR changed something the gate exists to grade, and nothing
+      # graded it.
+      - name: Report that the gate is suspended
         if: steps.changes.outputs.run == 'true'
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-        if: steps.changes.outputs.run == 'true'
-      - run: npx astro sync
-        if: steps.changes.outputs.run == 'true'
-      - run: npm run test:gate
-        if: steps.changes.outputs.run == 'true'
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          NOTICE="Bramka bezpieczenstwa tresci jest ZAWIESZONA (decyzja 2026-09-19, koszt). Ten PR zmienia prompt, liste modeli albo sama bramke, i NIC tego nie ocenilo. Uruchom lokalnie: RUN_CONTENT_SAFETY_GATE=1 npm run test:gate"
+          echo "::warning title=Content-safety gate suspended::$NOTICE"
+          {
+            echo "### ⚠️ Content-safety gate suspended"
+            echo
+            echo "$NOTICE"
+            echo
+            echo "Zmienione pliki objete bramka:"
+            git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -E \
+              '^src/lib/services/prompts/.*\.(pl\.md|schema\.json)$|^src/lib/services/allowed-models\.ts$|^src/lib/services/content-safety|^vitest\.gate\.config\.ts$' \
+              | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -19,8 +19,23 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
  * ten sam model"). Chosen outside the OpenAI/Google/DeepSeek families the
  * product already uses, so a family-specific blind spot in the graded model is
  * not also a blind spot in its judge.
+ *
+ * Moved off `anthropic/claude-opus-5` on 2026-09-19, on cost. Opus 5 sits in
+ * OpenRouter's top pricing tier at $5/$25 per Mtok, and the gate calls the
+ * judge once per {model × keyword × mode} cell - it was the single largest
+ * line in the account that ran dry mid-slice. Haiku 4.5 is $1/$5, a 5x cut on
+ * both halves, and the constraint that actually matters here is unchanged: it
+ * is still outside the families the product generates with, so the
+ * family-independence argument above still holds.
+ *
+ * What the swap does cost is judging *power* on the hardest inputs. The
+ * calibration suite in `content-safety-judge.gate.test.ts` is what would
+ * measure that - it runs `CONTENT_SAFETY_FIXTURES` and fails on judge drift -
+ * and it is suspended with the rest of the gate, so this model has not been
+ * calibrated. Re-run it before trusting a verdict from it:
+ * `RUN_CONTENT_SAFETY_GATE=1 npm run test:gate`.
  */
-const JUDGE_MODEL = "anthropic/claude-opus-5";
+const JUDGE_MODEL = "anthropic/claude-haiku-4.5";
 
 const JUDGE_TIMEOUT_MS = 30_000;
 
