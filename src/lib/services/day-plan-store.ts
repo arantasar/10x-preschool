@@ -1,5 +1,6 @@
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/db/database.types";
+import { formatPlanDate } from "@/lib/day-plan-dates";
 import { selectCurrentGeneration } from "@/lib/day-plans";
 import type {
   ActivityDraft,
@@ -147,6 +148,15 @@ function categorize(error: PostgrestError): StoreErrorCategory {
     case "23503":
     case "22001":
       return "invalid";
+    // invalid_datetime_format and datetime_field_overflow. Only the week writer
+    // can raise these - it casts `plan_date` out of jsonb, where the single-day
+    // writer gets a typed argument PostgREST has already checked. Named here
+    // rather than left to the `default` below for the reason U0003 is: the
+    // default leans retryable, and "spróbuj ponownie za chwilę" about a date
+    // that will never parse is a lie the teacher waits out twice.
+    case "22007":
+    case "22008":
+      return "invalid";
     default:
       // Unknown codes lean retryable on purpose. A retry costs milliseconds; a
       // wrongly-terminal error costs the teacher a whole generation.
@@ -250,6 +260,36 @@ export async function saveGeneration(supabase: DayPlanClient, command: GenerateD
   }
 }
 
+/**
+ * The date the week writer refused on, lifted out of its exception message.
+ *
+ * The function raises `plan for 2026-05-11 is accepted; …`, and that date is
+ * the only thing in the refusal a teacher can act on. Anchored on the
+ * surrounding prose rather than on a bare date, so an id or a timestamp
+ * elsewhere in the message cannot be mistaken for it.
+ */
+const REFUSED_PLAN_DATE = /plan for (\d{4}-\d{2}-\d{2}) is accepted/;
+
+/**
+ * `conflict` on the week path, said with the day it happened on.
+ *
+ * The category default - "Ten plan zmienił się w innym miejscu" - is written
+ * for one day and is close to useless for five: it tells the teacher something
+ * was refused and not which day to go and look at. Falls back to `undefined`
+ * (i.e. to that default) when the message is not the shape we expect, because a
+ * wrong date on screen is worse than a vague sentence.
+ */
+function weekConflictMessage(error: PostgrestError): string | undefined {
+  if (error.code !== "U0001") {
+    return undefined;
+  }
+  const isoDate = REFUSED_PLAN_DATE.exec(error.message)?.[1];
+  if (isoDate === undefined) {
+    return undefined;
+  }
+  return `${formatPlanDate(isoDate)} — ten dzień jest zaakceptowany, więc nic nie zostało zapisane. Cofnij jego akceptację albo wygeneruj tydzień bez niego.`;
+}
+
 async function callSaveWeekGeneration(supabase: DayPlanClient, command: GenerateWeekPlanCommand): Promise<void> {
   const { error } = await supabase.rpc("save_week_plan_generation", {
     p_prompt: command.prompt,
@@ -267,8 +307,19 @@ async function callSaveWeekGeneration(supabase: DayPlanClient, command: Generate
   if (error) {
     // The message carries the `plan_date` the function refused on, and that is
     // the point: across five days "a plan is accepted" names nothing the
-    // teacher can act on. `toStoreError` keeps it, and the route passes it on.
-    throw toStoreError(error, "Nie udało się zapisać planów tygodnia");
+    // teacher can act on. `toStoreError` keeps it in `message`, which is for
+    // the log only - `storeFailure` never puts `message` on a screen - so the
+    // date reaches the teacher through `userMessage` or not at all.
+    const failure = toStoreError(error, "Nie udało się zapisać planów tygodnia");
+    const named = weekConflictMessage(error);
+    if (named === undefined) {
+      throw failure;
+    }
+    throw new StoreError(failure.category, failure.message, {
+      code: failure.code,
+      cause: error,
+      userMessage: named,
+    });
   }
 }
 
