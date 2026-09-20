@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DESCRIPTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
 import { formatAcceptedAt, formatPlanDate } from "@/lib/day-plan-dates";
 import { cn } from "@/lib/utils";
-import { isDayPlanBody, isErrorBody } from "@/lib/day-plan-guards";
+import { isDayPlanBody, isErrorBody, readAcceptanceCleared } from "@/lib/day-plan-guards";
 import type { Activity, DayPlanView } from "@/types";
 
 /**
@@ -50,6 +50,14 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
   const [busy, setBusy] = useState<Busy>("idle");
   const [failure, setFailure] = useState<Failure | null>(null);
   const [draft, setDraftState] = useState<Draft | null>(null);
+  // Whether the *last* mutation is the one that took the acceptance away.
+  //
+  // Read from the response, never from `accepted`: this island's copy of the
+  // truth can be minutes old, and the case this whole change exists for is
+  // exactly the one where it is wrong. Local and deliberately not persisted -
+  // it is a sentence about something that just happened on this screen, and a
+  // reload has nothing to explain.
+  const [clearedByEdit, setClearedByEdit] = useState(false);
   // A live mirror of `draft`, read by the retry path. `draft` itself is captured
   // by whichever closure was built at the first attempt, and the teacher goes on
   // typing after a failure - the editor stays open precisely so they can. Reading
@@ -126,6 +134,12 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
       });
     setBusy(busyKind);
     setFailure(null);
+    // Cleared at the *start* of every mutation, not only when one succeeds.
+    // "Ten plan wrócił do roboczego, bo zmieniłeś treść" must not outlive the
+    // operation it describes: an acceptance made right afterwards would leave
+    // that sentence standing directly under a green "Plan zaakceptowany" badge,
+    // contradicting it.
+    setClearedByEdit(false);
 
     try {
       const response = await request();
@@ -161,6 +175,10 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
           setPrompt(body.plan.prompt);
         }
         setDraft(null);
+        // The server's answer to "did this write take an acceptance away", not
+        // this island's guess. Only the edit route ever sets it, so generate and
+        // accept read as `false` without either route having to say so.
+        setClearedByEdit(readAcceptanceCleared(body));
         return;
       }
 
@@ -237,7 +255,36 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
     );
   }
 
+  /**
+   * Saves one proposal, asking first when that save costs an acceptance (FR-017).
+   *
+   * The question belongs at "Zapisz" and not at "Edytuj": the acceptance dies at
+   * the moment of the write, and asking when the editor opens would name a
+   * consequence that may never happen - while "Anuluj przywróci poprzedni tekst
+   * — nic nie zostanie zapisane" would need an exception written next to it.
+   *
+   * Gated on `accepted`, the same field `generate()` gates on. That gate also
+   * settles the second edit for free: the first save cleared the acceptance, so
+   * there is nothing left to ask about.
+   *
+   * Unlike `generate()`, nothing refuses behind this dialog - no
+   * `confirm_replace`, no 409. That asymmetry is deliberate. Regeneration
+   * destroys a batch the teacher paid 10-30 seconds and tokens for and cannot
+   * get back; losing an acceptance costs one click to undo. The honesty that
+   * *is* owed regardless lives after the fact, in `clearedByEdit`, which is read
+   * from the server rather than from this dialog - because the stale-copy case
+   * is precisely the one where the dialog never appears.
+   */
   function saveDraft(current: Draft): void {
+    if (accepted) {
+      const consequence =
+        "Ten dzień jest zaakceptowany. Zapisanie zmiany cofnie akceptację i plan wróci do roboczego. " +
+        "Akceptację można przywrócić jednym kliknięciem.";
+      if (!window.confirm(consequence)) {
+        return;
+      }
+    }
+
     void mutate(
       () =>
         fetch(`/api/day-plan/activity/${current.id}`, {
@@ -251,6 +298,11 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
       // save the older text and then close the editor over the newer, with no
       // error to show for it. "Spróbuj ponownie" and "Zapisz" sit next to each
       // other, so they had better mean the same thing.
+      //
+      // Which is also why it re-enters `saveDraft` rather than `mutate`: a
+      // failed save left the acceptance standing, so the dialog is asked again.
+      // That is the same operation with the same consequence, not a
+      // continuation of consent already given.
       () => {
         const live = draftRef.current;
         if (live) saveDraft(live);
@@ -420,7 +472,14 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
 
       {plan && hasActivities && (
         <section className="space-y-4" aria-label={`Plan na ${formatPlanDate(planDate)}`}>
-          <AcceptanceBanner acceptedAt={accepted} />
+          <AcceptanceBanner
+            acceptedAt={accepted}
+            clearedByEdit={clearedByEdit}
+            disabled={isBusy || draft !== null}
+            onReaccept={() => {
+              setAcceptance(true);
+            }}
+          />
 
           <ol className="space-y-3">
             {plan.activities.map((activity, index) => (
@@ -501,8 +560,50 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
   );
 }
 
-/** Draft or accepted, said in words and in colour rather than only in colour. */
-function AcceptanceBanner({ acceptedAt }: { acceptedAt: string | null }) {
+/**
+ * Draft or accepted, said in words and in colour rather than only in colour.
+ *
+ * Three states, not two. The third is the second half of FR-017: after a save
+ * that cost an acceptance, "Plan roboczy" is true and useless - it describes the
+ * day without mentioning that this screen is what changed it, so the green badge
+ * simply disappears and the teacher is left to work out why. `clearedByEdit`
+ * replaces it with the reason and the way back.
+ *
+ * It is `clearedByEdit` and not `!acceptedAt && justSaved`, because the fact is
+ * the server's: see `readAcceptanceCleared`.
+ */
+function AcceptanceBanner({
+  acceptedAt,
+  clearedByEdit,
+  disabled,
+  onReaccept,
+}: {
+  acceptedAt: string | null;
+  clearedByEdit: boolean;
+  disabled: boolean;
+  onReaccept: () => void;
+}) {
+  if (!acceptedAt && clearedByEdit) {
+    return (
+      <div className="space-y-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+        <p className="flex items-start gap-2">
+          <CircleAlert className="mt-0.5 size-4 shrink-0" />
+          {/* Bezosobowo, jak reszta kopii w tej wyspie — komunikat nie zgaduje
+              rodzaju czytającej osoby. */}
+          Akceptacja została cofnięta, bo zmieniła się treść propozycji. Plan wrócił do roboczego.
+        </p>
+        <Button
+          type="button"
+          disabled={disabled}
+          onClick={onReaccept}
+          className="rounded-lg bg-emerald-600 px-4 py-2 text-white transition-colors hover:bg-emerald-500"
+        >
+          <Check className="size-4" />
+          Akceptuj ponownie
+        </Button>
+      </div>
+    );
+  }
   if (!acceptedAt) {
     return (
       <p className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-blue-100/70">

@@ -347,12 +347,12 @@ Brak migracji. Brak przepisania danych — uzasadnienie w §Current State Analys
 
 #### Automated
 
-- [x] 1.1 Typy i build przechodzą: `npm run build`
-- [x] 1.2 Lint przechodzi: `npm run lint`
-- [x] 1.3 Pakiet testów przechodzi, wraz z nowym plikiem: `npm test`
-- [x] 1.4 Nowy plik testowy istnieje i wypisuje cztery przypadki
-- [x] 1.5 Znacznik nie wycieka do pozostałych tras (grep)
-- [x] 1.6 Podpowiedź nazwy FK jest w kodzie (grep)
+- [x] 1.1 Typy i build przechodzą: `npm run build` — baf8182
+- [x] 1.2 Lint przechodzi: `npm run lint` — baf8182
+- [x] 1.3 Pakiet testów przechodzi, wraz z nowym plikiem: `npm test` — baf8182
+- [x] 1.4 Nowy plik testowy istnieje i wypisuje cztery przypadki — baf8182
+- [x] 1.5 Znacznik nie wycieka do pozostałych tras (grep) — baf8182
+- [x] 1.6 Podpowiedź nazwy FK jest w kodzie (grep) — baf8182
 
 #### Manual
 
@@ -363,11 +363,11 @@ Brak migracji. Brak przepisania danych — uzasadnienie w §Current State Analys
 
 #### Automated
 
-- [ ] 2.1 Build przechodzi: `npm run build`
-- [ ] 2.2 Lint przechodzi: `npm run lint`
-- [ ] 2.3 Pakiet testów przechodzi bez regresji: `npm test`
-- [ ] 2.4 Dialog jest bramkowany na `accepted`, nie bezwarunkowy (grep)
-- [ ] 2.5 Banner ustawiany z odpowiedzi, nie z kopii stanu (grep)
+- [x] 2.1 Build przechodzi: `npm run build`
+- [x] 2.2 Lint przechodzi: `npm run lint`
+- [x] 2.3 Pakiet testów przechodzi bez regresji: `npm test`
+- [x] 2.4 Dialog jest bramkowany na `accepted`, nie bezwarunkowy (grep)
+- [x] 2.5 Banner ustawiany z odpowiedzi, nie z kopii stanu (grep)
 
 #### Manual
 
