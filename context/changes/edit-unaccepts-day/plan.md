@@ -382,12 +382,12 @@ Brak migracji. Brak przepisania danych — uzasadnienie w §Current State Analys
 
 #### Automated
 
-- [x] 3.1 Build przechodzi: `npm run build`
-- [x] 3.2 Lint przechodzi: `npm run lint`
-- [x] 3.3 Pakiet testów przechodzi: `npm test`
-- [x] 3.4 Przycisk akceptacji ma `type="button"` (grep)
-- [x] 3.5 Przycisk usuwania nie został przeniesiony: `git diff -w master..HEAD` zwraca `0`
-- [x] 3.6 Istniejące testy e2e przechodzą: `npm run test:e2e`
+- [x] 3.1 Build przechodzi: `npm run build` — 69e5948
+- [x] 3.2 Lint przechodzi: `npm run lint` — 69e5948
+- [x] 3.3 Pakiet testów przechodzi: `npm test` — 69e5948
+- [x] 3.4 Przycisk akceptacji ma `type="button"` (grep) — 69e5948
+- [x] 3.5 Przycisk usuwania nie został przeniesiony: `git diff -w master..HEAD` zwraca `0` — 69e5948
+- [x] 3.6 Istniejące testy e2e przechodzą: `npm run test:e2e` — 69e5948
 
 #### Manual
 
@@ -402,12 +402,12 @@ Brak migracji. Brak przepisania danych — uzasadnienie w §Current State Analys
 
 #### Automated
 
-- [ ] 4.1 Nowy test przechodzi
-- [ ] 4.2 Cały zestaw e2e przechodzi bez regresji
-- [ ] 4.3 Test przechodzi przy `--repeat-each=2`
-- [ ] 4.4 Test zobaczony na czerwono przy usuniętym `window.confirm`
-- [ ] 4.5 Brak zakazanych konstrukcji w pliku testu (grep)
-- [ ] 4.6 Lint przechodzi: `npm run lint`
+- [x] 4.1 Nowy test przechodzi
+- [x] 4.2 Cały zestaw e2e przechodzi bez regresji
+- [x] 4.3 Test przechodzi przy `--repeat-each=2`
+- [x] 4.4 Test zobaczony na czerwono przy usuniętym `window.confirm`
+- [x] 4.5 Brak zakazanych konstrukcji w pliku testu (grep)
+- [x] 4.6 Lint przechodzi: `npm run lint`
 
 #### Manual
 
