@@ -14,13 +14,23 @@ const { supabase } = Astro.locals;
 // bookmark and the back button all mean the same day.
 const planDate = resolvePlanDate(Astro.url.searchParams.get("date"));
 
-// The plan is also what the header's subtitle comes from. Rendering the theme
-// as static SSR text - rather than passing it into the island - is safe rather
-// than lucky: this page never sends a theme when it regenerates (DayPlanEditor
-// posts plan_date, prompt and confirm_replace, nothing else) and the writer's
-// coalesce keeps the stored one. From `/plan?date=` the theme therefore cannot
-// change, so the line cannot go stale. A day without one renders nothing, which
-// is the same silence the month tile and the week board keep.
+// The plan is also what the header's subtitle comes from, and it is rendered as
+// static SSR text rather than passed into the island.
+//
+// That used to be justified here with "the theme cannot change from this page,
+// so the line cannot go stale". It could, and it did: this page posts no theme
+// (DayPlanEditor sends plan_date, prompt and confirm_replace, nothing else),
+// the writer's coalesce kept the stored one, and a teacher who regenerated
+// monday from "kuchnia włoska" to "Urodziny Moniki" kept the italian subtitle
+// through five generations. Reported from production 2026-09-20 and fixed in
+// the writer (20260920110000): a theme the caller does not resupply survives a
+// re-roll of the same hasło and is cleared when the hasło changes.
+//
+// So the static rendering is still correct, but for a different and narrower
+// reason: every path that can change this line is a full page navigation - a
+// regeneration reloads, and the island never mutates the theme. A day without
+// one renders nothing, which is the same silence the month tile and the week
+// board keep.
 //
 // "No plan" and "could not read the plan" are different answers and must not
 // render the same way. Collapsing them showed the empty-day state - an invitation

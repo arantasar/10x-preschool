@@ -15,7 +15,7 @@
 
 begin;
 
-select plan(44);
+select plan(50);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (seeded as the owner, so rls is out of the picture here by design)
@@ -278,12 +278,19 @@ select is(
 );
 
 -- the single-day route sends no theme. this is the assertion that fails when
--- the coalesce in the upsert is replaced by a plain excluded.theme - and the
+-- the theme rule in the upsert is replaced by a plain excluded.theme - and the
 -- failure it stands for has no runtime symptom at all: the day simply stops
 -- belonging to its week, silently, on the teacher's next regeneration.
+--
+-- the hasło is held constant here, and that is the point rather than a detail.
+-- this case used to regenerate as 'dinozaury inaczej' and still assert the
+-- theme survived, which is precisely the bug reported from production on
+-- 2026-09-20 (20260920110000): a changed hasło left the old narrowing standing
+-- on three surfaces. "keep the theme" is now the same-hasło rule only, and the
+-- changed-hasło half is asserted further down.
 select lives_ok(
   $$select public.save_day_plan_generation(
-      date '2026-05-04', 'dinozaury inaczej',
+      date '2026-05-04', 'dinozaury',
       '[{"title":"d-two","description":"opis d2"}]'::jsonb
     )$$,
   'a day with a theme can be regenerated without supplying one'
@@ -293,7 +300,7 @@ select is(
   (select theme from public.day_plans
     where id = (select plan_id from saved where label = 'themed')),
   'tropy i slady',
-  'regenerating without a theme keeps the theme the week assigned'
+  'regenerating the same hasło without a theme keeps the theme the week assigned'
 );
 
 select lives_ok(
@@ -630,6 +637,86 @@ select throws_ok(
   '42501',
   null,
   'anon calling the batch writer is refused'
+);
+
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- a theme does not outlive the hasło it was a narrowing of
+-- ---------------------------------------------------------------------------
+--
+-- Reported from production 2026-09-20: a week generated for "kuchnia włoska",
+-- monday then regenerated as "Urodziny Moniki", and the italian theme survived
+-- five regenerations on three surfaces. The old rule was an unconditional
+-- coalesce; the rule now depends on whether the hasło moved.
+
+set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+set local role authenticated;
+
+-- A day pinned to a week, exactly as the week generation leaves it.
+select public.save_day_plan_generation(
+  date '2026-05-11', 'kuchnia włoska', '[{"title":"Pizza","description":"Lepimy"}]'::jsonb,
+  false, 'Włochy na mapie i charakterystyczne potrawy'
+);
+
+select is(
+  (select theme from public.day_plans where plan_date = date '2026-05-11'),
+  'Włochy na mapie i charakterystyczne potrawy',
+  'the theme the caller supplied is stored'
+);
+
+-- Branch 3: same hasło, no theme supplied. The teacher wants different
+-- activities for the same idea, so the day stays pinned to its week.
+select public.save_day_plan_generation(
+  date '2026-05-11', 'kuchnia włoska', '[{"title":"Makaron","description":"Gotujemy"}]'::jsonb
+);
+
+select is(
+  (select theme from public.day_plans where plan_date = date '2026-05-11'),
+  'Włochy na mapie i charakterystyczne potrawy',
+  're-rolling the same hasło keeps the day pinned to its week'
+);
+
+-- Branch 2: the hasło changes. The narrowing is not stale, it is false.
+select public.save_day_plan_generation(
+  date '2026-05-11', 'Urodziny Moniki', '[{"title":"Tort","description":"Dekorujemy"}]'::jsonb
+);
+
+select is(
+  (select theme from public.day_plans where plan_date = date '2026-05-11'),
+  null,
+  'changing the hasło clears a theme the caller did not resupply'
+);
+
+select is(
+  (select prompt from public.day_plans where plan_date = date '2026-05-11'),
+  'Urodziny Moniki',
+  'the new hasło is stored'
+);
+
+-- Branch 1: a supplied theme wins even when the hasło changes - the week path,
+-- which sends one per day from the outline.
+select public.save_day_plan_generation(
+  date '2026-05-11', 'Wiosna w ogrodzie', '[{"title":"Sadzimy","description":"Nasiona"}]'::jsonb,
+  false, 'Co rośnie na grządce'
+);
+
+select is(
+  (select theme from public.day_plans where plan_date = date '2026-05-11'),
+  'Co rośnie na grządce',
+  'a supplied theme wins over both the stored one and the clearing rule'
+);
+
+-- The same rule in the week writer, so the two cannot drift apart.
+select public.save_week_plan_generation(
+  'Urodziny Moniki',
+  '[{"plan_date":"2026-05-11","activities":[{"title":"Balony","description":"Nadmuchujemy"}]}]'::jsonb
+);
+
+select is(
+  (select theme from public.day_plans where plan_date = date '2026-05-11'),
+  null,
+  'the week writer clears a theme on a changed hasło too'
 );
 
 reset role;
