@@ -424,14 +424,53 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
           </div>
         </div>
 
-        <Button
-          type="submit"
-          disabled={isBusy}
-          className="w-full rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-500"
-        >
-          {hasActivities ? <RotateCcw className="size-4" /> : <Sparkles className="size-4" />}
-          {busy === "generating" ? "Generuję…" : hasActivities ? "Generuj ponownie" : "Generuj"}
-        </Button>
+        {/* The control row `prd-v2.md` §Constraints „Warunek układu" asks for:
+            hasło, then generowanie, then akceptacja, in that order in the DOM so
+            the tab order is the reading order. Stacked on a phone, side by side
+            from `sm` up.
+
+            The acceptance button stays `type="button"`. Inside a `<form>` a
+            bare button submits, so dropping that attribute would silently make
+            accepting run `generate()` - the one operation on this screen that
+            destroys the batch it replaces. `AcceptanceBanner` deliberately did
+            *not* come along: it describes the proposals and belongs next to
+            them, not in a row of controls.
+
+            The labels are not repeated in this comment on purpose: a grep gate
+            anchored on one of them must find the button, not this paragraph
+            (`lessons.md`, "Bramka grepowa musi celować w konstrukcję"). */}
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="submit"
+            disabled={isBusy}
+            className="w-full rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-500 sm:flex-1"
+          >
+            {hasActivities ? <RotateCcw className="size-4" /> : <Sparkles className="size-4" />}
+            {busy === "generating" ? "Generuję…" : hasActivities ? "Generuj ponownie" : "Generuj"}
+          </Button>
+
+          {/* Same visibility gate as before the move: a day with no proposals
+              has nothing to accept, while the hasło form renders on an empty day
+              too - so this is gated on the batch and the form is not. */}
+          {plan && hasActivities && (
+            <Button
+              type="button"
+              disabled={isBusy || draft !== null}
+              onClick={() => {
+                setAcceptance(accepted === null);
+              }}
+              className={cn(
+                "w-full rounded-lg px-4 py-2 font-medium text-white transition-colors sm:flex-1",
+                accepted
+                  ? "border border-white/20 bg-white/10 hover:bg-white/20"
+                  : "bg-emerald-600 hover:bg-emerald-500",
+              )}
+            >
+              {accepted ? <Undo2 className="size-4" /> : <Check className="size-4" />}
+              {accepted ? "Cofnij akceptację" : "Akceptuj plan"}
+            </Button>
+          )}
+        </div>
       </form>
 
       {busy === "generating" && <GenerationProgress />}
@@ -516,21 +555,6 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
               </li>
             ))}
           </ol>
-
-          <Button
-            type="button"
-            disabled={isBusy || draft !== null}
-            onClick={() => {
-              setAcceptance(accepted === null);
-            }}
-            className={cn(
-              "w-full rounded-lg px-4 py-2 font-medium text-white transition-colors",
-              accepted ? "border border-white/20 bg-white/10 hover:bg-white/20" : "bg-emerald-600 hover:bg-emerald-500",
-            )}
-          >
-            {accepted ? <Undo2 className="size-4" /> : <Check className="size-4" />}
-            {accepted ? "Cofnij akceptację" : "Akceptuj plan"}
-          </Button>
         </section>
       )}
 
@@ -540,11 +564,19 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
           visible as a plan anywhere, and still occupying `unique (user_id,
           plan_date)` so week generation skips over it.
 
-          Placed below the acceptance button and deliberately quieter than it -
-          an outline rather than a fill. This is not an action the eye should
-          fall into. Disabled during an open proposal edit for the same reason
-          the acceptance button is: deleting mid-edit would drop unsaved text
-          without a word. */}
+          Left at the bottom, alone, and deliberately quieter than everything
+          above it - an outline rather than a fill. This is not an action the eye
+          should fall into. Disabled during an open proposal edit for the same
+          reason the acceptance button is: deleting mid-edit would drop unsaved
+          text without a word.
+
+          It stayed here when `prd-v2.md` §Constraints „Warunek układu" moved
+          acceptance up to the control row, and the separation is the point
+          rather than an unfinished move. The generate button is pressed many
+          times in one sitting; seating an irreversible delete beside something
+          clicked that often would satisfy the condition's letter against its
+          substance. Acceptance is reversible in one click and belongs next to
+          the operation it follows - deleting a day is neither. */}
       {plan && (
         <Button
           type="button"

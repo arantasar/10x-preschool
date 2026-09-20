@@ -363,11 +363,11 @@ Brak migracji. Brak przepisania danych — uzasadnienie w §Current State Analys
 
 #### Automated
 
-- [x] 2.1 Build przechodzi: `npm run build`
-- [x] 2.2 Lint przechodzi: `npm run lint`
-- [x] 2.3 Pakiet testów przechodzi bez regresji: `npm test`
-- [x] 2.4 Dialog jest bramkowany na `accepted`, nie bezwarunkowy (grep)
-- [x] 2.5 Banner ustawiany z odpowiedzi, nie z kopii stanu (grep)
+- [x] 2.1 Build przechodzi: `npm run build` — ab2902f
+- [x] 2.2 Lint przechodzi: `npm run lint` — ab2902f
+- [x] 2.3 Pakiet testów przechodzi bez regresji: `npm test` — ab2902f
+- [x] 2.4 Dialog jest bramkowany na `accepted`, nie bezwarunkowy (grep) — ab2902f
+- [x] 2.5 Banner ustawiany z odpowiedzi, nie z kopii stanu (grep) — ab2902f
 
 #### Manual
 
@@ -382,12 +382,12 @@ Brak migracji. Brak przepisania danych — uzasadnienie w §Current State Analys
 
 #### Automated
 
-- [ ] 3.1 Build przechodzi: `npm run build`
-- [ ] 3.2 Lint przechodzi: `npm run lint`
-- [ ] 3.3 Pakiet testów przechodzi: `npm test`
-- [ ] 3.4 Przycisk akceptacji ma `type="button"` (grep)
-- [ ] 3.5 Przycisk usuwania nie został przeniesiony: `git diff -w master..HEAD` zwraca `0`
-- [ ] 3.6 Istniejące testy e2e przechodzą: `npm run test:e2e`
+- [x] 3.1 Build przechodzi: `npm run build`
+- [x] 3.2 Lint przechodzi: `npm run lint`
+- [x] 3.3 Pakiet testów przechodzi: `npm test`
+- [x] 3.4 Przycisk akceptacji ma `type="button"` (grep)
+- [x] 3.5 Przycisk usuwania nie został przeniesiony: `git diff -w master..HEAD` zwraca `0`
+- [x] 3.6 Istniejące testy e2e przechodzą: `npm run test:e2e`
 
 #### Manual
 
