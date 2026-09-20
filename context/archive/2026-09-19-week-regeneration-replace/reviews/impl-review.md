@@ -208,7 +208,7 @@ violated, `confirm_replace: true` is passed nowhere, and the day route keeps its
   4.9 forced failure leaves every day on its old plan after reload.
 - **Fix**: Run the 11 manual steps against local Supabase and check them off, or record explicitly in
   `change.md` which ones are being waived and why — as was done for 2.4.
-- **Decision**: **SKIPPED** — Progress left as it stands.
+- **Decision**: **SKIPPED przy triage'u, ROZWIĄZANE 2026-09-20** — właściciel wykonał przebieg ręczny po wdrożeniu poprawek i potwierdził, że tablica tygodnia działa. Wszystkie 11 kryteriów manualnych jest odhaczonych w `plan.md` §Progress, z odnotowaniem źródła dowodu: 1.6/1.7 zweryfikowane na bazie podczas tego przeglądu (sonda do F5), 2.8 grepem, pozostałe osiem przebiegiem ręcznym właściciela. Nieodhaczone zostaje tylko 2.4 — uchylona bramka treści.
 
 ### F8 — First ungraded prompt edit merged under the gate suspension
 

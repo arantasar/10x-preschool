@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 2
 status: draft
 created: 2026-09-19
-updated: 2026-09-19
+updated: 2026-09-20
 prd_version: 2
 main_goal: quality
 top_blocker: decisions
@@ -57,7 +57,7 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 
 | ID    | Change ID                 | Outcome (user can …)                                                                        | Prerequisites        | PRD refs             | Status   |
 | ----- | ------------------------- | ------------------------------------------------------------------------------------------- | -------------------- | -------------------- | -------- |
-| S-09  | week-regeneration-replace | wygenerować tydzień na nowo, zastępując dni niezaakceptowane, po uczciwym potwierdzeniu     | S-03 (done, M-01)    | FR-012, FR-014, US-02 | ready    |
+| S-09  | week-regeneration-replace | wygenerować tydzień na nowo, zastępując dni niezaakceptowane, po uczciwym potwierdzeniu     | S-03 (done, M-01)    | FR-012, FR-014, US-02 | done     |
 | S-12  | edit-unaccepts-day        | poprawić treść dnia zaakceptowanego po potwierdzeniu, które zdejmuje akceptację             | S-02 (done, M-01)    | FR-017               | ready    |
 | S-11  | week-level-plan-controls  | cofnąć akceptację i usunąć zapisany plan dnia z poziomu widoku tygodnia                     | S-05 (done, M-01)    | FR-015, FR-016       | ready    |
 | S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | ready    |
@@ -127,7 +127,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
   - Czy zastępowanie obejmuje dni zaakceptowane — **rozstrzygnięte w PRD, nie tutaj**: nie obejmuje, dopóki nauczyciel nie rozszerzy operacji jawnie (`S-10`, FR-013, nice-to-have). Owner: rozstrzygnięte. Block: nie.
   - Limit regeneracji — ta operacja mnoży wywołania generowania przez pięć na jedno kliknięcie i czyni je łatwiejszymi do powtórzenia. Owner: decyzja techniczno-biznesowa. Block: nie (patrz Open Roadmap Questions #5).
 - **Risk:** Pierwsza w kolejności, bo jest gwiazdą przewodnią i bo cel `quality` nie pozwala odkładać pozycji ryzykownej za wygodne. Trzy ostrza. **(1)** Dzisiejsza polityka pominięcia jest w kodzie (`WeekPlanBoard.tsx:104-117` — 409 na zajętym dniu daje `status: "skipped"`), a pomija **każdy** dzień z jakimkolwiek planem, także roboczy szkic — więc to nowa zdolność, nie zmiana komunikatu. **(2)** Kolejność operacji jest warunkiem, nie preferencją: stary tydzień nie może zniknąć, zanim nowy nie jest gotowy, inaczej awaria dostawcy LLM zostawia pięć pustych dni zamiast pięciu starych. **(3)** Guardrail #3 (spójność zapisanej partii) dziedziczy się tu po raz pierwszy na pięciu dniach naraz — `save_day_plan_generation` jest dziś jedynym pisarzem partii i umie jeden dzień. Kryterium akceptacji `S-03` („regeneracja jednego dnia nie wpływa na pozostałe") wymaga przeformułowania: ta operacja rusza pięć dni świadomie. **Następstwo dla rolloutu testów:** Faza 3 (`test-plan.md`) idzie **po** tej pozycji — wcześniej zabetonowałaby w asercjach semantykę „nigdy nie niszczy", którą FR-012 celowo zastępuje semantyką „nigdy bez jawnego potwierdzenia".
-- **Status:** ready
+- **Status:** done
 
 ### S-12: Edycja dnia zaakceptowanego zdejmuje akceptację
 
@@ -247,4 +247,5 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **S-06: Nauczyciel może wylogować się z aplikacji z dowolnego ekranu, na którym pracuje, a nie tylko ze strony startowej dla niezalogowanych (FR-003).** — Delivered 2026-08-26 wewnątrz `S-04` (`month-home`, faza 1: `src/components/AppHeader.astro`); bez własnego change-id i bez własnego archiwum. Lesson: —.
 - **S-04: Zalogowany nauczyciel po wejściu do aplikacji ląduje w widoku miesiąca i z niego wchodzi w tydzień oraz w pojedynczy dzień — bez osobnego pulpitu jako przystanku.** — Archived 2026-08-26 → `context/archive/2026-08-26-month-home/`. Lesson: —.
 - **S-08: Nauczyciel odróżnia od siebie dni jednego hasła bez wchodzenia w każdy z nich — kafelek w siatce miesiąca i nagłówek widoku dnia pokazują podtytuł dnia („Dinozaury — co jadły dinozaury"), a nie pięć razy to samo hasło.** — Archived 2026-08-27 → `context/archive/2026-08-27-visible-day-theme/`. Lesson: „Kryterium weryfikacji musi móc nie przejść".
+- **S-09: Nauczyciel może wygenerować tydzień na nowo pod nowym hasłem i dostać komplet nowych dni w miejsce dotychczasowych dni niezaakceptowanych — po potwierdzeniu, które uczciwie podaje, ile dni zostanie zastąpionych i ile z nich jest zaakceptowanych.** — Archived 2026-09-20 → `context/archive/2026-09-19-week-regeneration-replace/`. Lesson: —.
 - **S-05: Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; wiersz `day_plans` i jego aktywności są usuwane trwale (kasowanie twarde), a dzień wraca do stanu **nieodróżnialnego od dnia nigdy nieplanowanego** — na wszystkich powierzchniach, na których jest pokazywany, i dla generowania tygodnia, które obejmuje go ponownie zamiast pominąć.** — Archived 2026-08-29 → `context/archive/2026-08-27-delete-day-plan/`. Lesson: „Kryterium »poza X nietknięte« musi być odporne na przerównanie".
