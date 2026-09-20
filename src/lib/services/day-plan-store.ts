@@ -359,24 +359,68 @@ export async function saveWeekGeneration(supabase: DayPlanClient, command: Gener
 }
 
 /**
+ * What {@link updateActivityText} hands back: the plan to read again, and
+ * whether that plan was accepted a moment before the write.
+ *
+ * `wasAccepted` cannot be recovered afterwards - `accepted_at` is null both
+ * after a withdrawal and when there never was one - which is the whole reason
+ * the read runs first.
+ */
+export interface ActivityTextUpdate {
+  readonly planId: string;
+  /** The plan's acceptance state immediately before the write. */
+  readonly wasAccepted: boolean;
+}
+
+/**
  * Rewrites the text of one proposal and returns the id of the plan it belongs
- * to, so the caller can read the plan back.
+ * to, so the caller can read the plan back - together with whether this edit is
+ * the one that took an acceptance away.
  *
  * Nothing here clears the plan's acceptance. That is
  * `activities_edit_clears_acceptance`'s job, and it is a trigger rather than a
  * second statement precisely so a partial failure cannot leave corrected text
- * sitting on an accepted plan.
+ * sitting on an accepted plan. What this function adds is only the *report*: the
+ * acceptance state is read before the update because after it the information is
+ * gone for good, `accepted_at` being null in both of the cases that matter.
  *
- * A row belonging to another account is invisible under RLS, so the update
- * affects nothing and no error is raised - which is why the empty result is
- * checked explicitly. It answers `not_found`, not a privilege error: telling a
- * caller "that exists but is not yours" is an existence oracle.
+ * The read reaches `day_plans` through the composite key
+ * `activities_plan_id_user_id_fkey` on `(plan_id, user_id)`. PostgREST cannot
+ * resolve a bare `day_plans(...)` embed across a two-column foreign key, so the
+ * constraint is named in the select rather than left to inference.
+ *
+ * A row belonging to another account is invisible under RLS, so both statements
+ * see nothing and no error is raised - which is why the empty results are
+ * checked explicitly. They answer `not_found`, not a privilege error: telling a
+ * caller "that exists but is not yours" is an existence oracle. The refusal now
+ * arrives from the read, i.e. *before* the write, rather than from an update
+ * that touched nothing.
+ *
+ * The gap between the read and the update is knowingly not a transaction:
+ * another tab accepting or withdrawing in between changes what the teacher is
+ * *told*, never what is written, because the zeroing is the trigger's decision
+ * on the row's actual state.
  */
 export async function updateActivityText(
   supabase: DayPlanClient,
   activityId: string,
   text: { title: string; description: string },
-): Promise<string> {
+): Promise<ActivityTextUpdate> {
+  const { data: before, error: beforeError } = await supabase
+    .from("activities")
+    .select("plan_id, day_plans!activities_plan_id_user_id_fkey(accepted_at)")
+    .eq("id", activityId)
+    .maybeSingle();
+
+  if (beforeError) {
+    throw toStoreError(beforeError, "Nie udało się odczytać propozycji");
+  }
+  if (!before) {
+    throw new StoreError("not_found", `Activity ${activityId} is not visible to the caller.`, {
+      userMessage: "Nie znaleziono tej propozycji.",
+    });
+  }
+
   const { data, error } = await supabase
     .from("activities")
     .update({ title: text.title, description: text.description })
@@ -392,7 +436,20 @@ export async function updateActivityText(
       userMessage: "Nie znaleziono tej propozycji.",
     });
   }
-  return data.plan_id;
+  return { planId: data.plan_id, wasAccepted: acceptedAtOf(before.day_plans) !== null };
+}
+
+/**
+ * The `accepted_at` out of the embedded plan, whichever shape PostgREST's
+ * typings give the embed.
+ *
+ * A forward embed across a non-unique foreign key is typed as a to-one object
+ * here, but the same select would be an array if the constraint's uniqueness
+ * ever changed. Reading both shapes costs two lines and means a regenerated
+ * `database.types.ts` cannot turn this into a silent `undefined`.
+ */
+function acceptedAtOf(embedded: { accepted_at: string | null } | { accepted_at: string | null }[]): string | null {
+  return Array.isArray(embedded) ? (embedded[0]?.accepted_at ?? null) : embedded.accepted_at;
 }
 
 /**

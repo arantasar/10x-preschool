@@ -14,9 +14,15 @@ import type { DayPlanClient } from "@/lib/services/day-plan-store";
  * It reproduces PostgREST exactly as deep as the functions actually called need
  * it: `from("day_plans").select().eq().maybeSingle()`,
  * `from("activities").select().eq().order()`, `.in(…)` on both for
- * `readWeekPlans`, and `rpc()`. Nothing more. A deeper imitation would start
- * being a second implementation of PostgREST, and a test that passes against it
- * would stop meaning anything about the real one.
+ * `readWeekPlans`, `from("activities").select().eq().maybeSingle()` and
+ * `from("activities").update().eq().select().maybeSingle()` for
+ * `updateActivityText`, and `rpc()`. Nothing more. A deeper imitation would
+ * start being a second implementation of PostgREST, and a test that passes
+ * against it would stop meaning anything about the real one.
+ *
+ * In particular it does not parse select strings, so it cannot tell you whether
+ * the foreign-key hint in `updateActivityText`'s embed is spelled right. That
+ * claim belongs to `npm run build` and to the database, not here.
  */
 
 export type DayPlanRow = Database["public"]["Tables"]["day_plans"]["Row"];
@@ -48,12 +54,30 @@ export interface SupabaseStubOptions {
    */
   weekPlans?: DayPlanRow[];
   weekActivities?: ActivityRow[];
+  /**
+   * What `updateActivityText`'s pre-write read finds on `activities`.
+   *
+   * The embedded `day_plans` is the acceptance state *before* the edit, which
+   * is the one fact the route cannot recover afterwards. `null` expresses the
+   * third state: the proposal is not visible under RLS, so the route must
+   * refuse before writing anything.
+   */
+  activityBeforeEdit?: { plan_id: string; day_plans: { accepted_at: string | null } } | null;
+  /** The row `update()` hands back. `null` means the update matched nothing. */
+  updatedActivity?: { plan_id: string } | null;
 }
 
 export interface SupabaseStub {
   client: DayPlanClient;
   /** Every `save_day_plan_generation` call, in order. Assertions run on this. */
   rpc: ReturnType<typeof vi.fn>;
+  /**
+   * Every `from("activities").update(…)` call. "The route did not write" is a
+   * claim about this spy, not about the response body.
+   */
+  update: ReturnType<typeof vi.fn>;
+  /** Every `from(…)` call, so a test can assert a route never reached the database. */
+  from: ReturnType<typeof vi.fn>;
 }
 
 export function planRow(overrides: Partial<DayPlanRow> = {}): DayPlanRow {
@@ -92,6 +116,8 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
     rpcError,
     weekPlans = [],
     weekActivities = [],
+    activityBeforeEdit = null,
+    updatedActivity = null,
   } = options;
 
   const rpc = vi.fn(() =>
@@ -102,30 +128,47 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
     ),
   );
 
-  // The same date is read twice on the happy path — once as the pre-check before
-  // the model is called, once to build the response — and the two must not
-  // answer alike, or the test could not tell a write that happened from one that
-  // did not.
+  const update = vi.fn(() => ({
+    eq: () => ({
+      select: () => ({ maybeSingle: () => Promise.resolve({ data: updatedActivity, error: null }) }),
+    }),
+  }));
+
+  // The same day is read twice on the happy path — once before the write, once
+  // to build the response — and the two must not answer alike, or the test could
+  // not tell a write that happened from one that did not. Counting `update`
+  // alongside `rpc` is what extends that to the edit route; the generation tests
+  // never call `update`, so their behaviour is unchanged.
+  const wrote = () => rpc.mock.calls.length + update.mock.calls.length > 0;
   const dayPlanResult = () => ({
-    data: rpc.mock.calls.length === 0 ? existingPlan : savedPlan,
+    data: wrote() ? savedPlan : existingPlan,
     error: null,
   });
 
-  const client = {
-    rpc,
-    from: (table: string) => ({
-      select: () =>
-        table === "day_plans"
-          ? {
-              eq: () => ({ maybeSingle: () => Promise.resolve(dayPlanResult()) }),
-              in: () => Promise.resolve({ data: weekPlans, error: null }),
-            }
-          : {
-              eq: () => ({ order: () => Promise.resolve({ data: savedActivities, error: null }) }),
-              in: () => ({ order: () => Promise.resolve({ data: weekActivities, error: null }) }),
-            },
-    }),
-  };
+  const from = vi.fn((table: string) =>
+    table === "day_plans"
+      ? {
+          select: () => ({
+            eq: () => ({ maybeSingle: () => Promise.resolve(dayPlanResult()) }),
+            in: () => Promise.resolve({ data: weekPlans, error: null }),
+          }),
+        }
+      : {
+          update,
+          select: () => ({
+            // `order` serves `readCurrentActivities`, `maybeSingle` the
+            // pre-write acceptance read. Both hang off the same `eq` because
+            // PostgREST's builder does too; each answers from its own option.
+            eq: () => ({
+              order: () => Promise.resolve({ data: savedActivities, error: null }),
+              maybeSingle: () => Promise.resolve({ data: activityBeforeEdit, error: null }),
+            }),
+            in: () => ({ order: () => Promise.resolve({ data: weekActivities, error: null }) }),
+          }),
+        },
+  );
 
-  return { client: client as unknown as DayPlanClient, rpc };
+  const client = { rpc, from };
+
+  return { client: client as unknown as DayPlanClient, rpc, update, from };
 }

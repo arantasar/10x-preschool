@@ -136,6 +136,22 @@ export function isSaveWeekBody(body: unknown): body is { plans: Partial<Record<s
   return entries.every((plan) => isDayPlanBody(plan));
 }
 
+/**
+ * The edit route's additive marker: did *this* write clear the acceptance?
+ *
+ * A separate reader rather than a field on {@link isDayPlanBody}, because the
+ * marker is optional by contract - `generate` and `accept` never set it, and a
+ * predicate that demanded it would reject two of the three bodies the island
+ * shares one handler for. It narrows rather than asserting, and everything that
+ * is not a literal `true` is `false`: a missing field, a string, a body from a
+ * route that predates this contract. Guessing "probably cleared" from anything
+ * softer would put the sentence explaining the loss on a day that never lost
+ * anything.
+ */
+export function readAcceptanceCleared(body: unknown): boolean {
+  return isRecord(body) && body.acceptance_cleared === true;
+}
+
 export function isErrorBody(body: unknown): body is { error: string; retryable: boolean } {
   return isRecord(body) && typeof body.error === "string" && typeof body.retryable === "boolean";
 }
