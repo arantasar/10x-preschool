@@ -22,6 +22,12 @@
  * suspended gate reads as suspended everywhere it is looked at, which is the
  * one property that makes it safe to leave off on purpose.
  *
+ * That property held for a human reading the output and not for anything
+ * reading the exit code: Vitest exits `0` on an all-skipped run, so
+ * `npm run test:gate` answered "green" to any script that asked. The script
+ * now exits `2` while this flag is on - distinct from Vitest's `1`, so
+ * "suspended" and "a gate test failed" stay different answers.
+ *
  * To run it for real, locally or in CI:
  *
  * ```sh

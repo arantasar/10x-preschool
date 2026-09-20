@@ -1,9 +1,9 @@
 ---
 change_id: week-regeneration-replace
 title: Week regeneration replace
-status: implemented
+status: impl_reviewed
 created: 2026-09-19
-updated: 2026-09-19
+updated: 2026-09-20
 archived_at: null
 ---
 
