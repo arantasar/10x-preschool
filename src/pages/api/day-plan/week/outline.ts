@@ -1,13 +1,19 @@
 import type { APIRoute } from "astro";
-import { generateWeekOutline, GenerationError, type GenerationErrorCategory } from "@/lib/services/activity-generator";
+import { generateWeekOutline } from "@/lib/services/activity-generator";
 import { weekOutlineRequestSchema } from "@/lib/services/day-plan-contract";
-import { badRequest, json, unauthorized, unconfigured } from "@/lib/services/day-plan-http";
+import { badRequest, generationFailure, json, unauthorized, unconfigured } from "@/lib/services/day-plan-http";
 import type { DayTheme } from "@/types";
 
 export const prerender = false;
 
 /**
- * Splits one hasło into a theme per working day (S-03).
+ * Splits one hasło into a theme per requested day (S-03, narrowed in S-09).
+ *
+ * The request carries the days it wants themes for, one to five of them. It is
+ * a subset whenever part of the week is accepted and therefore out of reach:
+ * `S-09` replaces only the unaccepted days, and outlining the rest would be
+ * paying for themes nothing will ever use. The count travels no further than
+ * `parsed.data.dates` - `generateWeekOutline` reads it off the array.
  *
  * Writes nothing, and that is the design rather than an omission. A theme
  * belongs to a `day_plans` row, and that row is created by the generation it
@@ -27,17 +33,13 @@ export const prerender = false;
  * would arrive as a JSON parse error instead of "your session expired".
  */
 
-const STATUS_BY_CATEGORY: Record<GenerationErrorCategory, number> = {
-  config: 500,
-  transient: 503,
-  invalid: 502,
-};
-
-const MESSAGE_BY_CATEGORY: Record<GenerationErrorCategory, string> = {
-  config: "Generowanie propozycji jest teraz niedostępne. Skontaktuj się z administratorem.",
-  transient: "Usługa generowania jest chwilowo przeciążona. Spróbuj ponownie za chwilę.",
-  invalid: "Nie udało się ułożyć tematów na tydzień. Spróbuj ponownie.",
-};
+/**
+ * The one generation message that is this route's own: a failed outline is not
+ * "coś poszło nie tak podczas generowania", it is specifically the week's arc
+ * that could not be laid out. Everything else comes from the shared tables in
+ * `day-plan-http.ts`.
+ */
+const OUTLINE_INVALID_MESSAGE = "Nie udało się ułożyć tematów na tydzień. Spróbuj ponownie.";
 
 /** What the island receives: one theme per working day, already pinned to dates. */
 export interface WeekOutlineResponse {
@@ -58,7 +60,7 @@ export const POST: APIRoute = async (context) => {
 
   const parsed = weekOutlineRequestSchema.safeParse(payload);
   if (!parsed.success) {
-    return badRequest("Podaj hasło — jedna linia tekstu, od 1 do 2000 znaków — oraz pięć dni roboczych.");
+    return badRequest("Podaj hasło — jedna linia tekstu, od 1 do 2000 znaków — oraz od 1 do 5 dni roboczych.");
   }
 
   // Nothing here touches Supabase, but the check stays: a teacher whose database
@@ -73,14 +75,6 @@ export const POST: APIRoute = async (context) => {
     return json({ themes: outline.themes }, 200);
   } catch (error) {
     // `generateWeekOutline` already logged this with its status and error_type.
-    const failure =
-      error instanceof GenerationError
-        ? error
-        : new GenerationError("invalid", "Nieoczekiwany błąd trasy szkicu tygodnia.", { cause: error });
-
-    return json(
-      { error: MESSAGE_BY_CATEGORY[failure.category], retryable: failure.retryable },
-      STATUS_BY_CATEGORY[failure.category],
-    );
+    return generationFailure(error, OUTLINE_INVALID_MESSAGE);
   }
 };

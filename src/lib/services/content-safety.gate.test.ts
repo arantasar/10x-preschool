@@ -6,6 +6,7 @@ import { CONTENT_SAFETY_FIXTURES, GATE_KEYWORDS } from "./__fixtures__/content-s
 import { judgeContentSafety, type JudgeInput, type SafetyVerdict } from "./content-safety-judge";
 import { retryGateCall } from "./gate-retry";
 import { formatGateReport, writeGitHubStepSummary, type GateFinding } from "./content-safety-report";
+import { GATE_SUSPENDED, warnIfSuspended } from "./gate-suspension";
 
 // Gate tier - excluded from `npm test`, run only via `npm run test:gate`
 // (requires a real `OPENROUTER_API_KEY`). This is the phase's centerpiece: every
@@ -98,7 +99,14 @@ interface Combo {
   readonly keyword: string;
 }
 
-describe("content safety gate — live matrix", () => {
+// Suspended by decision — see `gate-suspension.ts` for what that costs and how
+// to turn it back on. `describe.skip` keeps the suite compiled and reported as
+// skipped rather than deleting it or letting it report a pass it never earned.
+warnIfSuspended("content safety gate — live matrix");
+
+const gateDescribe = GATE_SUSPENDED ? describe.skip : describe;
+
+gateDescribe("content safety gate — live matrix", () => {
   // State sequencing (Critical Implementation Details): the judge is graded on
   // every calibration fixture *before* the live matrix runs. A judge that
   // mis-scores a known fixture must stop the run, not produce a green matrix it

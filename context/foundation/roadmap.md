@@ -1,308 +1,233 @@
 ---
 project: 10xPreschool
-version: 1
+version: 2
 status: draft
-created: 2026-06-27
-updated: 2026-08-31
-prd_version: 1
-main_goal: low-complexity
-top_blocker: time
-milestone_id: usable-month-plan
-milestone_seq: 1
-milestone_status: done
+created: 2026-09-19
+updated: 2026-09-19
+prd_version: 2
+main_goal: quality
+top_blocker: decisions
+milestone_id: manageable-month-plan
+milestone_seq: 2
+milestone_status: active
 ---
 
 # Roadmap: 10xPreschool
 
-> Derived from `context/foundation/prd.md` (v1) + auto-researched codebase baseline.
+> Derived from `context/foundation/prd-v2.md` (v2) + auto-researched codebase baseline.
 > Edit-in-place; archive when superseded.
 > Slices below are listed in dependency order. The "At a glance" table is the index.
 
 ## Milestone
 
-**M-01: Użyteczny plan miesiąca** — Status: done (zamknięty 2026-08-30)
+**M-02: Plan, którym da się zarządzać** — Status: active (otwarty 2026-09-19)
 
-- **Intent:** Nauczyciel prowadzi pełny cykl planowania miesiąca w jednym miejscu: generuje propozycje dla dnia i dla tygodnia, edytuje je i zatwierdza, porządkuje siatkę miesiąca i odczytuje z niej, co jest zaplanowane — bez wychodzenia do zewnętrznych narzędzi.
-- **Source materials:** `context/foundation/prd.md` (v1), rozszerzone o pozycje uzgodnione bezpośrednio z użytkownikiem (`S-04`…`S-08`) — patrz Open Roadmap Questions #3.
-- **Done when:** każdy `F-NN` i `S-NN` poniżej ma status `done`. **Zmieniony 2026-08-30:** kryterium zostało spełnione po jawnym wypisaniu `S-07` z zakresu kamienia — patrz Zmiana zakresu poniżej. Kamień zamknięty z ośmioma pozycjami `done` z dziewięciu.
-- **Zmiana zakresu 2026-08-30 (user):** `S-07` (`month-day-preview`) **wypisany z `M-01` i przeniesiony do `M-02`**. Powód: `S-07` był `ready`, ale jego FR nie istnieje — PRD v1 wyczerpał się na `S-03` (Open Roadmap Questions #3), więc zbudowanie go przed przebiegiem PRD v2 oznaczałoby dopisywanie FR wstecz do gotowego kodu. Zamiast trzymać kamień otwarty na zależności papierowej, zakres został skrócony świadomie. **Koszt jest realny i nazwany:** intent `M-01` mówi „porządkuje siatkę miesiąca **i odczytuje z niej, co jest zaplanowane**" — ten ostatni człon to dokładnie `S-07`, więc kamień zamyka się bez części własnego celu. Alternatywa (odwrócenie kolejności: PRD v2 przed `S-07`, kamień zamknięty w pełni) została rozważona i odrzucona na rzecz czystego konta pod `M-02`.
-- **Scope anchors:** FR-001…FR-009, US-01. Adoptowane wstecznie 2026-08-26: roadmapa powstała 2026-06-27, przed wprowadzeniem warstwy kamieni milowych, i została owinięta jako `M-01` bez zmiany treści ani statusów pozycji.
+- **Intent:** Nauczyciel, który ma już zbudowany plan, potrafi go **poprawić, odczytać i wynieść poza aplikację**, nie wychodząc z widoku, w którym pracuje: regeneruje tydzień z zastępowaniem, cofa akceptację i usuwa dzień z poziomu tygodnia, ogląda aktywności wprost w siatce miesiąca i drukuje zaakceptowany tydzień.
+- **Source materials:** `context/foundation/prd-v2.md` (v2), poprzedzone `shape-notes.md` (runda Sokratejska, 2026-09-19). Wszystkie pozycje mają własne FR — w odróżnieniu od `S-04`…`S-08` z `M-01`.
+- **Done when:** każdy `S-NN` poniżej ma status `done`, **z jawnym wyjątkiem `S-10`** (`FR-013`, jedyny nice-to-have paczki). PRD §Scope of Change stwierdza wprost: „Kamień domyka się bez niego". `S-10` jest zaworem bezpieczeństwa, nie warunkiem zamknięcia.
+- **Scope anchors:** FR-010…FR-017, FR-019, FR-020 (numer FR-018 celowo pusty — patrz PRD §Scope of Change); US-02, US-03.
+- **Czego ten kamień nie robi:** nie spłaca długu PRD za `S-04`, `S-05` i `S-08`. Decyzja użytkownika 2026-09-19 — PRD v2 obejmuje wyłącznie `M-02`. Patrz Open Roadmap Questions #3; **nie wpisuj tu obietnicy spłaty** (Open Roadmap Questions #7 istnieje po to, żeby ta obietnica nie wróciła przy kolejnej regeneracji).
 
 ## Vision recap
 
-Nauczyciele przedszkolni raz w miesiącu samodzielnie planują 20–22 dni zajęć — żmudne,
-kreatywne zadanie powodujące paraliż decyzyjny. 10xPreschool zamienia krótkie hasło
-(np. „Dinozaury") w konkretne, gotowe do użycia propozycje aktywności dla dzieci 3–6 lat
-za pomocą LLM — nisza pomijana przez duże platformy EdTech. Rdzeń wartości to jakość
-generowania: propozycje muszą być trafne, kompletne i bezpieczne dla małych dzieci.
+10xPreschool zamienia krótkie hasło nauczyciela przedszkolnego (np. „Dinozaury") w konkretne,
+gotowe do użycia propozycje aktywności dla dzieci 3–6 lat. `M-01` dowiózł **budowanie** planu:
+nauczyciel składa miesiąc od zera. Czego nie dowiózł, to posługiwania się tym, co zbudował —
+ból rozkłada się równomiernie na trzy osie i to jest ustalenie użytkownika, nie uproszczenie:
+plan jest trudny do poprawienia (zmiana motywu tygodnia to pięć osobnych operacji), trudny do
+odczytania (kafelek miesiąca pokazuje hasło i ucięty podtytuł) i nie wychodzi z aplikacji
+(brak wydruku). `M-02` zamienia użytkownika, który plan **buduje**, w użytkownika, który
+planem **zarządza**. Persona się nie zmienia, nowych użytkowników nie ma, a dla konta pustego
+nie zmienia się nic.
 
 ## North star
 
-**S-01: Nauczyciel loguje się, wybiera dzień, wpisuje hasło i widzi wygenerowaną, bezpieczną propozycję aktywności** — to najmniejszy przepływ, który dowodzi rdzenia hipotezy (czy LLM jest wystarczająco dobry dla tej niszy), więc planujemy go najwcześniej, jak pozwalają zależności.
+**S-09: Nauczyciel generuje tydzień na nowo, zastępując istniejące dni niezaakceptowane, po potwierdzeniu podającym ich liczbę** — bo na tej pozycji stoi cała oś „poprawialności" z §Kryteria sukcesu Primary, i to ona pierwsza wystawia najtrudniejsze ryzyko paczki: operację ruszającą pięć dni naraz w systemie, który dotąd pisał jeden dzień na raz.
 
-> Gwiazda przewodnia (north star) = najmniejszy przepływ end-to-end, którego udane
-> dostarczenie udowadnia główną hipotezę produktu — umieszczony tak wcześnie, jak
-> pozwalają zależności, bo cała reszta ma znaczenie tylko wtedy, gdy ten przepływ działa.
+> **Gwiazda przewodnia** to najmniejsza pozycja dowożąca wartość od końca do końca, której
+> udane wdrożenie dowodzi, że cały kamień ma sens — dlatego planuje się ją tak wcześnie, jak
+> pozwalają zależności, a nie wtedy, gdy wypadnie po kolei. Reszta pozycji ma znaczenie tylko
+> wtedy, gdy ta zadziała.
 
 ## At a glance
 
-| ID   | Change ID                 | Outcome (user can …)                                               | Prerequisites | PRD refs                                              | Status      |
-| ---- | ------------------------- | ------------------------------------------------------------------ | ------------- | ----------------------------------------------------- | ----------- |
-| F-01 | plan-persistence-baseline | (foundation) tabela planów z RLS izoluje dane per konto            | —             | Access Control, NFR prywatności                       | done        |
-| S-01 | first-day-generation      | zalogować się, wybrać dzień, wpisać hasło i wygenerować propozycję | —             | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01 | done        |
-| S-02 | edit-accept-day-plan      | edytować, zaakceptować i zapisać propozycję dla dnia               | S-01, F-01    | FR-008, FR-009, US-01                                 | done        |
-| S-03 | week-generation           | wygenerować propozycje dla całego tygodnia roboczego (US-01)       | S-01, F-01    | FR-004, US-01                                         | done        |
-| S-04 | month-home                | wylądować w widoku miesiąca jako ekranie głównym aplikacji         | S-03          | FR-004, US-01                                         | done        |
-| S-05 | delete-day-plan           | usunąć zapisany plan dnia z poziomu widoku tego dnia               | S-02, S-03    | Access Control (brak FR — pyt. 3)                     | done        |
-| S-06 | sign-out                  | wylogować się z aplikacji z dowolnego ekranu                       | S-04          | FR-003                                                | done        |
-| S-07 | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca          | S-04          | FR-004, US-01 (brak FR — pyt. 3)                      | ready → M-02 |
-| S-08 | visible-day-theme         | odróżnić dni jednego hasła po podtytule dnia w miesiącu i w dniu   | S-03, S-04    | FR-004, US-01 (brak FR — pyt. 3)                      | done        |
+Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie numerem ID — numery
+`S-07` i `S-08` pochodzą z `M-01` i nie są przenumerowywane, żeby odwołania w `next-actions.md`,
+`test-plan.md` i archiwum nie zaczęły wskazywać na co innego. Pierwszy nowy numer to `S-09`.
+
+| ID    | Change ID                 | Outcome (user can …)                                                                        | Prerequisites        | PRD refs             | Status   |
+| ----- | ------------------------- | ------------------------------------------------------------------------------------------- | -------------------- | -------------------- | -------- |
+| S-09  | week-regeneration-replace | wygenerować tydzień na nowo, zastępując dni niezaakceptowane, po uczciwym potwierdzeniu     | S-03 (done, M-01)    | FR-012, FR-014, US-02 | ready    |
+| S-12  | edit-unaccepts-day        | poprawić treść dnia zaakceptowanego po potwierdzeniu, które zdejmuje akceptację             | S-02 (done, M-01)    | FR-017               | ready    |
+| S-11  | week-level-plan-controls  | cofnąć akceptację i usunąć zapisany plan dnia z poziomu widoku tygodnia                     | S-05 (done, M-01)    | FR-015, FR-016       | ready    |
+| S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | ready    |
+| S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | ready    |
+| S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | proposed |
+
+**Pięć z sześciu pozycji jest `ready` i wzajemnie równoległych.** To nie jest hojność
+w liczeniu — wszystkie zależności `M-02` poza `S-10` są już `done` w `M-01`, więc kolejność
+w tej tabeli jest **preferencją wynikającą z celu `quality`**, a nie przymusem grafu.
+Jedyna twarda krawędź w całym kamieniu to `S-09` + `S-12` → `S-10`.
 
 ## Streams
 
 Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme                                      | Chain                    | Note                                                                                                                                            |
-| ------ | ------------------------------------------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| A      | Rdzeń generowania                          | `S-01` → `S-03`          | Gwiazda przewodnia najpierw; `S-03` rozszerza generowanie z dnia na tydzień i dołącza do `F-01`.                                                |
-| B      | Zapis, zatwierdzanie i porządkowanie planu | `F-01` → `S-02` → `S-05` | `F-01` może iść równolegle do `S-01`; `S-02` dołącza do Stream A przy `S-01`; `S-05` domyka tę samą pętlę od drugiej strony — cofnięcie zapisu. |
-| C      | Ekran główny i nawigacja                   | `S-04` → `S-08` → `S-07` | Dołącza do Stream A przy `S-03`, w którym siatka miesiąca powstała jako p6; `S-04` promuje ją na punkt wejścia, `S-08` różnicuje kafelki podtytułem dnia, `S-07` dokłada podgląd aktywności w miejscu. |
-| D      | Sesja i konto                              | `S-06`                   | Domknięty 2026-08-26 wewnątrz `S-04`: powłoka, na którą `S-06` czekał, powstała jako jego faza 1 i od razu poniosła kontrolkę wylogowania.      |
+| Stream | Theme                                 | Chain                        | Note                                                                                                                                                  |
+| ------ | ------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A      | Zastępowanie i ochrona pracy gotowej  | `S-09` → `S-12` → `S-10`     | Jedyny łańcuch z prawdziwymi krawędziami. Gwiazda przewodnia otwiera go, reguła „jawność proporcjonalna do skutku" go domyka, zawór bezpieczeństwa zamyka. |
+| B      | Zarządzanie planem z poziomu tygodnia | `S-11`                       | Samodzielny — oba prymitywy (`setAcceptance`, `deleteDayPlan`) istnieją; brakuje wyłącznie powierzchni w tygodniu.                                     |
+| C      | Czytelność siatki miesiąca            | `S-07`                       | Samodzielny i jedyny z decyzjami zamkniętymi już 2026-08-30; przy celu `quality` ustępuje pozycjom ochronnym, ale można go wziąć równolegle o dowolnej porze. |
+| D      | Wyjście planu poza aplikację          | `S-13`                       | Samodzielny; niesie jedyne kryterium Secondary i jedyne żywe pytanie otwarte paczki (układ wydruku).                                                   |
 
 ## Baseline
 
-What's already in place in the codebase as of `2026-08-26` (auto-researched + user-confirmed;
-odświeżone przy dopisaniu S-04…S-07 — pierwotna wersja opisywała stan z `2026-06-27`, sprzed F-01).
+What's already in place in the codebase as of `2026-09-19` (auto-researched + user-confirmed).
 Foundations below assume these are present and do NOT re-scaffold them.
 
-- **Frontend:** present — Astro 6 SSR + React 19 islands, Tailwind 4, shadcn/ui (`src/layouts/Layout.astro`, komponenty auth). Ekrany planowania: `src/pages/plan.astro` (dzień), `src/pages/plan/week.astro` (tydzień), `src/pages/plan/month.astro` + `src/components/plan/MonthGrid.astro` (siatka miesiąca, p6 z S-03).
-- **Backend / API:** present — obok auth istnieją trasy domenowe: `src/pages/api/day-plan/{index,generate,accept}.ts`, `day-plan/activity/[id].ts`, `day-plan/week/outline.ts`. Warstwa serwisowa w `src/lib/services/` (generator, kontrakt, HTTP, store, prompty).
-- **Data:** present — 7 migracji w `supabase/migrations/`; `day_plans` + `activities` z RLS per operacja/rola, wąskimi grantami kolumnowymi UPDATE i `save_day_plan_generation` jako **jedynym** pisarzem partii aktywności.
-- **Auth:** present — klient SSR Supabase (`src/lib/supabase.ts`), middleware z `PROTECTED_ROUTES = ["/plan"]` (`src/middleware.ts`), endpointy + strony signin/signup/signout. Wylogowanie: `POST /api/auth/signout` działa, a widoczny przycisk stoi od `S-04` w powłoce zalogowanej aplikacji (`src/components/AppHeader.astro`), obecnej na `/plan`, `/plan/week` i `/plan/month`. Opis sprzed `S-04` — jedyny przycisk w `Topbar.astro`, czyli na stronie dla **nie**zalogowanych, drugi na `/dashboard` — jest nieaktualny: `/dashboard` został skasowany w `S-04`.
-- **Deploy / infra:** present — `wrangler.jsonc`, adapter `@astrojs/cloudflare`, `.github/workflows/ci.yml`. Akcje przed-deployowe wciąż otwarte wg `infrastructure.md` (Workers Paid — zalecane dla zapasu CPU, nie twardy wymóg; flagi kompatybilności). Streaming tras LLM **skreślony z tej listy 2026-08-22**: nie jest mitygacją limitu platformy, tylko decyzją UX — patrz S-01 § Decyzje.
-- **Observability:** absent — brak biblioteki logowania / śledzenia błędów w zależnościach.
+- **Frontend:** present — Astro 6 SSR + React 19 (wyspy), Tailwind 4, shadcn/ui. Trzy ekrany planowania stoją: `src/pages/plan.astro` (dzień), `src/pages/plan/week.astro` (tydzień), `src/pages/plan/month.astro` + `src/components/plan/MonthGrid.astro` (miesiąc). Kafelek miesiąca dziś: natywny atrybut `title` plus `truncate` na haśle i na podtytule (`MonthGrid.astro:126-129`), kliknięcie prowadzi do `/plan?date=`.
+- **Backend / API:** present — `src/pages/api/day-plan/{index,generate,accept}.ts`, `day-plan/activity/[id].ts`, `day-plan/week/outline.ts`; warstwa serwisowa w `src/lib/services/` (generator, kontrakt, HTTP, store, prompty, bramka bezpieczeństwa treści).
+- **Data:** present — 8 migracji w `supabase/migrations/`; `day_plans` + `activities` z RLS per operacja i rola, wąskimi grantami kolumnowymi UPDATE i `save_day_plan_generation` jako **jedynym** pisarzem partii aktywności. Potwierdzenie podmiany istnieje już na poziomie **jednego** dnia (`20260823193447_confirm_replacing_accepted_plan.sql`).
+- **Auth:** present — klient SSR Supabase (`src/lib/supabase.ts`), middleware z `PROTECTED_ROUTES = ["/plan"]`, endpointy i strony signin/signup/signout, wylogowanie w powłoce (`AppHeader.astro`).
+- **Deploy / infra:** present — `wrangler.jsonc`, adapter `@astrojs/cloudflare`, `.github/workflows/ci.yml`. Wdrożenie produkcyjne stoi **poza repo** (Cloudflare Workers Builds): merge do gałęzi głównej jest wydaniem, bez kroku zatwierdzenia.
+- **Observability:** absent — brak biblioteki logowania i śledzenia błędów w zależnościach. **Świadomie nieawansowana** mimo celu `quality`: żadne FR v2 jej nie implikuje.
+- **Warstwa testów** (nie jest jedną z sześciu sondowanych warstw, ale rozstrzyga o kolejności — patrz PRD §Constraints): present — vitest jednostkowy, bramka bezpieczeństwa treści na żywych wywołaniach LLM (`npm run test:gate`), Playwright na gałęzi głównej od 2026-09-05 (`tests/e2e/`: 4 specy + `auth.setup.ts` + `support/`).
+- **Wydruk:** absent — zero `@media print` i zero utility `print:` w całym `src/`. `S-13` startuje od pustej powierzchni, nie od poprawiania istniejącego arkusza.
 
 ## Foundations
 
-### F-01: Minimalna warstwa danych z izolacją per konto
+**Brak. `M-02` nie otwiera żadnego `F-NN` i to jest ustalenie, nie luka.**
 
-- **Outcome:** (foundation) istnieje minimalny schemat przechowywania planów (dzień → hasło, propozycje, stan zaakceptowania) z politykami RLS, które udostępniają wiersze wyłącznie właścicielowi konta.
-- **Change ID:** plan-persistence-baseline
-- **PRD refs:** Access Control, NFR prywatności
-- **Unlocks:** S-02 (edycja/akceptacja/zapis dnia), S-03 (zapis planu tygodnia); realizuje kontrakt prywatności (dane prywatne dla konta, treści niedostępne dla innych użytkowników ani operatorów) wymagany przez oba slice'y zanim trafi do nich jakikolwiek zapis.
-- **Prerequisites:** —
-- **Parallel with:** S-01 (gwiazda przewodnia wyświetla propozycje efemerycznie, nie wymaga zapisu)
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** Sekwencjonowane jako minimalny enabler, nie „cała baza danych" — schemat obejmuje tylko to, czego potrzebują S-02 i S-03. Ryzyko: źle ustawione RLS wycieka plany między kontami (narusza NFR prywatności), dlatego polityki per-operacja są częścią kontraktu foundacji, a nie dodatkiem.
-- **Status:** done
+Fundament to prerekwizyt przekrojowy bez własnego efektu widocznego dla użytkownika, który
+odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi tego testu:
+
+- **Warstwa danych, API, auth, wdrożenia:** `present` w §Baseline. `M-01` potrzebował `F-01`,
+  bo zapisu planów nie było wcale; `M-02` buduje na warstwie kompletnej.
+- **Kontrakt zapisu „pięć dni jako komplet"** (`save_day_plan_generation` umie dziś jeden
+  dzień) — najpoważniejszy kandydat i **świadomie złożony do `S-09`**, nie wyniesiony przed
+  nawias. Nie jest przekrojowy: `S-11`, `S-12`, `S-13` go nie potrzebują, a `S-10` dociera do
+  niego przez `S-09`. Wyniesienie go na `F-NN` dałoby fundament obsługujący jedną pozycję —
+  czyli pracę poziomą pod inną nazwą.
+- **Observability:** żadne FR v2 jej nie wymaga (patrz §Baseline).
+- **Migracja schematu:** PRD §Constraints stwierdza, że żadne FR nie wymaga wprost zmiany
+  schematu. Warunkowa pułapka grantów kolumnowych jest ostrzeżeniem dla slice'a, który
+  ewentualnie doda pole — nie fundamentem.
 
 ## Slices
 
-### S-01: Generowanie propozycji dla jednego dnia (gwiazda przewodnia)
+### S-09: Regeneracja tygodnia z zastępowaniem dni niezaakceptowanych (gwiazda przewodnia)
 
-- **Outcome:** Nauczyciel loguje się, wybiera dzień w kalendarzu, wpisuje hasło i otrzymuje wygenerowaną propozycję aktywności (z widocznym postępem operacji, po polsku, z treścią bezpieczną dla dzieci 3–6 lat); może ponownie wygenerować propozycję dla tego dnia.
-- **Change ID:** first-day-generation
-- **PRD refs:** FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, US-01
-- **Prerequisites:** —
-- **Parallel with:** F-01
+- **Outcome:** Nauczyciel może wygenerować tydzień na nowo pod nowym hasłem i dostać komplet nowych dni w miejsce dotychczasowych dni niezaakceptowanych — po potwierdzeniu, które uczciwie podaje, ile dni zostanie zastąpionych i ile z nich jest zaakceptowanych.
+- **Change ID:** week-regeneration-replace
+- **PRD refs:** FR-012, FR-014, US-02; §Kryteria sukcesu Primary; Guardrails #2 i #3; §Warunki jakościowe zmiany („Nieukończone zastąpienie tygodnia nie zostawia śladu")
+- **Prerequisites:** S-03 (done, M-01 — generowanie tygodnia istnieje i jest tym, co ta pozycja zmienia)
+- **Parallel with:** S-07, S-11, S-12, S-13
 - **Blockers:** —
-- **Unknowns:** — (wszystkie rozstrzygnięte, patrz niżej)
-- **Decyzje (2026-08-22, user):**
-  - **Guardrail bezpieczeństwa treści — na poziomie promptu.** Bez post-filtra w MVP. Wymóg wieku 3–6 lat i języka polskiego wchodzi do instrukcji systemowej. Świadomie przyjęte ryzyko, nie przeoczenie: nie ma drugiej warstwy, która złapie wpadkę modelu, więc jakość promptu jest jedynym zabezpieczeniem guardrailu, który PRD nazywa nienegocjowalnym. Jeśli akceptacja propozycji będzie niska albo pojawi się treść nieodpowiednia — post-filtr wraca na stół.
-  - **Dostawca LLM — OpenRouter.** Model wpisany na sztywno w pierwszej iteracji; lista modeli do wyboru przez użytkownika to możliwe późniejsze rozszerzenie, poza zakresem S-01. Wprowadza nowy sekret (`OPENROUTER_API_KEY`) do `.env.example`, `.dev.vars` i `wrangler secret put` — czyli pierwszy sekret w projekcie poza Supabase.
-  - **Streaming NIE jest wymogiem platformy.** Pierwotna niewiadoma („czy 10–30 s wywołanie zmieści się w limicie CPU Workers", `infrastructure.md` Ryzyko 3) opierała się na pomyleniu czasu CPU z czasem ściennym. Dokumentacja Cloudflare: *„Waiting on network requests (such as `fetch()` calls, KV reads, or database queries) does not count toward CPU time"* oraz *„There is no hard limit on duration for HTTP-triggered Workers. As long as the client remains connected, the Worker can continue processing, making subrequests, and streaming a response body."* Oczekiwanie na odpowiedź OpenRoutera to I/O, nie CPU — nie kumuluje się w kierunku limitu. Streaming zostaje **decyzją UX** (roadmapowy wymóg „z widocznym postępem operacji"), a nie mitygacją limitu; prostym MVP jest wywołanie bez streamingu ze wskaźnikiem postępu. ⚠️ `infrastructure.md` (Ryzyko 1, Ryzyko 3, rejestr ryzyk, „Immediate actions") wciąż niesie starą tezę i wymaga korekty.
-- **Risk:** To slice o najwyższej wadze — niesie rdzeń hipotezy produktu i jedyną nienegocjowalną inwestycję (bezpieczeństwo + trafność generowania). Auth jest już w baseline, więc zostaje tylko dodać trasy generowania do `PROTECTED_ROUTES`. Sekwencjonowane pierwsze, bo cała reszta roadmapy ma sens tylko, jeśli jakość generowania się broni. Główne zagrożenie: niska trafność/akceptacja propozycji lub treść nieodpowiednia dla wieku — oba widoczne dopiero na realnym wyjściu LLM.
-- **Status:** done
+- **Unknowns:**
+  - Czy zastępowanie obejmuje dni zaakceptowane — **rozstrzygnięte w PRD, nie tutaj**: nie obejmuje, dopóki nauczyciel nie rozszerzy operacji jawnie (`S-10`, FR-013, nice-to-have). Owner: rozstrzygnięte. Block: nie.
+  - Limit regeneracji — ta operacja mnoży wywołania generowania przez pięć na jedno kliknięcie i czyni je łatwiejszymi do powtórzenia. Owner: decyzja techniczno-biznesowa. Block: nie (patrz Open Roadmap Questions #5).
+- **Risk:** Pierwsza w kolejności, bo jest gwiazdą przewodnią i bo cel `quality` nie pozwala odkładać pozycji ryzykownej za wygodne. Trzy ostrza. **(1)** Dzisiejsza polityka pominięcia jest w kodzie (`WeekPlanBoard.tsx:104-117` — 409 na zajętym dniu daje `status: "skipped"`), a pomija **każdy** dzień z jakimkolwiek planem, także roboczy szkic — więc to nowa zdolność, nie zmiana komunikatu. **(2)** Kolejność operacji jest warunkiem, nie preferencją: stary tydzień nie może zniknąć, zanim nowy nie jest gotowy, inaczej awaria dostawcy LLM zostawia pięć pustych dni zamiast pięciu starych. **(3)** Guardrail #3 (spójność zapisanej partii) dziedziczy się tu po raz pierwszy na pięciu dniach naraz — `save_day_plan_generation` jest dziś jedynym pisarzem partii i umie jeden dzień. Kryterium akceptacji `S-03` („regeneracja jednego dnia nie wpływa na pozostałe") wymaga przeformułowania: ta operacja rusza pięć dni świadomie. **Następstwo dla rolloutu testów:** Faza 3 (`test-plan.md`) idzie **po** tej pozycji — wcześniej zabetonowałaby w asercjach semantykę „nigdy nie niszczy", którą FR-012 celowo zastępuje semantyką „nigdy bez jawnego potwierdzenia".
+- **Status:** ready
 
-### S-02: Edycja, akceptacja i zapis planu dnia
+### S-12: Edycja dnia zaakceptowanego zdejmuje akceptację
 
-- **Outcome:** Nauczyciel może edytować treść wygenerowanej propozycji, jawnie ją zaakceptować, a zatwierdzony plan dnia zostaje zapisany i jest prywatny dla jego konta.
-- **Change ID:** edit-accept-day-plan
-- **PRD refs:** FR-008, FR-009, US-01
-- **Prerequisites:** S-01, F-01
-- **Parallel with:** S-03
+- **Outcome:** Nauczyciel może poprawić treść dnia, który wcześniej zaakceptował — dostaje potwierdzenie, a po zgodzie dzień traci stan zaakceptowania, zamiast wyglądać na zatwierdzony z treścią zmienioną po akceptacji.
+- **Change ID:** edit-unaccepts-day
+- **PRD refs:** FR-017; §Business Logic Changes reguła 2 („Co znaczy «dzień zaakceptowany»"); §Constraints „Warunek układu"; §Constraints „Semantyka zastanych danych"
+- **Prerequisites:** S-02 (done, M-01 — edycja i akceptacja dnia istnieją i są tym, co ta pozycja zmienia)
+- **Parallel with:** S-07, S-09, S-11, S-13
+- **Blockers:** —
+- **Unknowns:**
+  - Jak kafelek i nagłówek mają pokazywać dzień, który stracił akceptację przez edycję — wariant domyślny to stan „niezaakceptowany" nieodróżnialny od nigdy niezaakceptowanego. Owner: `/10x-plan`. Block: nie.
+- **Risk:** Druga w kolejności, bo cel `quality` stawia regułę przed jej najcięższym zastosowaniem: FR-017 ustala zasadę **„jawność proporcjonalna do skutku"** — nic nie jest zakazane, ale wszystko, co niszczy pracę oznaczoną jako gotowa, pyta — a `S-10` jest tej zasady najostrzejszym wariantem. Trzy ostrza. **(1)** Ta pozycja **odwraca decyzję zapisaną w roadmapie `M-01`** (2026-08-30: „blokada dotyczy edycji przypadkowej, operacje jawne pozostają dostępne"); granica „edycja przypadkowa vs operacja jawna" okazała się nie do obronienia — system broniłby poprawić literówkę, a pozwalał skasować tydzień. Nośnikiem tej decyzji są `shape-notes.md` i PRD v2, nie ten plik (Open Roadmap Questions #2). **(2)** Zmienia się znaczenie danych już zapisanych: dni zaakceptowane pod regułą „etykieta stanu" będą czytane pod regułą „stwierdzenie o konkretnej treści". Przepisania danych to nie wymaga, ale wymaga świadomości, że część istniejących zaakceptowanych dni mogła być edytowana po akceptacji. **(3)** To **jedyna** pozycja `M-02` ruszająca operacje akceptacji w widoku dnia, więc wiąże ją warunek układu z §Constraints (dawne FR-018, wycofane z listy FR 2026-09-19 — numer nie jest reużywany): cofnięcie akceptacji i usunięcie dnia trafiają przy okazji w docelowe miejsce (przy przycisku generowania), żeby te same przyciski nie były przesuwane dwa razy. Przy rozmieszczeniu obowiązuje ostrożność — usunięcie planu jest nieodwracalne, a przycisk generowania bywa klikany wielokrotnie w jednej sesji.
+- **Status:** ready
+
+### S-11: Cofnięcie akceptacji i usunięcie dnia z poziomu tygodnia
+
+- **Outcome:** Nauczyciel może cofnąć akceptację dnia i usunąć zapisany plan dnia, nie wychodząc z widoku tygodnia — czyli z widoku, w którym faktycznie pracuje, zamiast wchodzić w dzień po kolei.
+- **Change ID:** week-level-plan-controls
+- **PRD refs:** FR-015, FR-016; §Kryteria sukcesu Primary
+- **Prerequisites:** S-05 (done, M-01 — kasowanie twarde wraz z potwierdzeniem istnieje w widoku dnia i obowiązuje tu tak samo)
+- **Parallel with:** S-07, S-09, S-12, S-13
 - **Blockers:** —
 - **Unknowns:** —
-- **Risk:** Domyka pętlę „keep" (od propozycji do zatwierdzonego planu) — bez tego generowanie jest demem, nie narzędziem. Sekwencjonowane po S-01 (musi istnieć propozycja do edycji) i F-01 (musi istnieć gdzie zapisać). Zagrożenie minimalne; główny haczyk to spójność stanu „roboczy vs zaakceptowany".
-- **Zobowiązania przeniesione z F-01 (przegląd implementacji, F5):** Schemat zamyka drogę *przejęcia* wiersza (kolumny `activities.generation` i `plan_id` są poza grantem UPDATE), ale **nie wymusza poprawności przy INSERT**. Nic w bazie nie sprawdza, że nowo zapisana partia ma `activities.generation = day_plans.current_generation` — polityka INSERT pyta tylko o własność (`auth.uid() = user_id`), a CHECK tylko o `generation >= 1`. Skutek błędu jest cichy: [selectCurrentGeneration](src/lib/day-plans.ts#L14) uczciwie zwróci pustą tablicę, brandowany typ `CurrentActivity` potwierdzi „to jest bieżące", nauczyciel zobaczy pusty plan — bez błędu, wyjątku ani wpisu w logu. To ten sam kształt awarii, dla którego istnieje licznik generacji, tylko przesunięty z odczytu na zapis. S-02 (jako pierwszy zapis do `activities`) musi:
-  - zdecydować protokół regeneracji — „podbij `current_generation`, potem wstaw partię" vs „wstaw, potem podbij" — i wykonać go **w jednej transakcji**;
-  - wymusić niezmiennik, najlepiej triggerem `BEFORE INSERT` walidującym `new.generation = (select current_generation from day_plans where id = new.plan_id)`, który przy okazji uniemożliwia wariant „wstaw, potem podbij";
-  - dotyczy każdego zapisu do `activities`, więc **S-03 (`week-generation`) dziedziczy to samo zobowiązanie**.
-- **Status:** done
-
-### S-03: Generowanie dla całego tygodnia roboczego
-
-- **Outcome:** Nauczyciel może wybrać tydzień i wygenerować propozycję dla każdego dnia roboczego, a regeneracja jednego dnia nie wpływa na pozostałe (pełna US-01).
-- **Change ID:** week-generation
-- **PRD refs:** FR-004, US-01
-- **Prerequisites:** S-01, F-01
-- **Parallel with:** S-02
-- **Blockers:** —
-- **Unknowns:**
-  - ~~Czy tydzień to N niezależnych wywołań LLM (per dzień) czy jedno wywołanie wsadowe~~ — **rozstrzygnięte w `context/changes/week-generation/plan.md`**: 1 tanie wywołanie szkicu + 5 niezależnych wywołań dnia, równolegle. Wsadowy zapis odrzucony jawnie (§ What We're NOT Doing) — drugi pisarz oznaczałby drugie miejsce powtarzające protokół licznika generacji. Izolacja regeneracji wychodzi z `unique (user_id, plan_date)`.
-  - ~~Jak odróżnić pięć dni od siebie~~ — **rozstrzygnięte tamże**: szkic tygodnia rozkłada hasło na pięć rozłącznych tematów, temat trafia do modelu **i** do kolumny `day_plans.theme`, więc przeżywa regenerację dnia (`coalesce` w upsercie). Dzień tygodnia trafia do promptu na obu ścieżkach — także przy pojedynczym dniu, co domyka F4 z S-01 również dla `/plan?date=` (patrz plan § Addendum 2026-08-26). (źródło: `/10x-impl-review` S-01, F4)
-- **Risk:** Rozszerza udowodniony przepływ dzienny na skalę tygodnia — realna jednostka pracy nauczyciela. Sekwencjonowane po S-01 (ten sam mechanizm generowania) i F-01 (zapis wielu dni). Zagrożenie: koszt API i czas operacji rosną liniowo z dniami; przy granulacji per-dzień postęp i regeneracja zostają izolowane zgodnie z AC US-01.
-- **Open follow-ups:** `context/changes/week-generation/follow-ups/review-fixes.md` — ekspozycja na hasło wykluczające rośnie wraz ze szkicem tygodnia (właściciel: Janusz, bramka: najbliższa iteracja promptu); hosted project nadal bez migracji.
-- **Status:** done
-
-### S-04: Widok miesiąca jako ekran główny
-
-- **Outcome:** Zalogowany nauczyciel po wejściu do aplikacji ląduje w widoku miesiąca i z niego wchodzi w tydzień oraz w pojedynczy dzień — bez osobnego pulpitu jako przystanku.
-- **Change ID:** month-home
-- **PRD refs:** FR-004, US-01 — samo pojęcie „ekranu głównego" nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
-- **Prerequisites:** S-03
-- **Parallel with:** S-05
-- **Blockers:** —
-- **Unknowns:**
-  - ~~Czy `/dashboard` znika, czy zostaje jako trwałe przekierowanie na `/plan/month` — Owner: Janusz. Block: nie (rozstrzygnięcie należy do `/10x-plan`; zakładki i `PROTECTED_ROUTES` to koszt, nie ryzyko).~~ Rozstrzygnięte 2026-08-26 w planie `S-04`: trasa znika w całości — plik, wpis w `PROTECTED_ROUTES`, linki w interfejsie i wzmianki w `README.md` oraz `CLAUDE.md` — bez przekierowania. Kontrolka wylogowania przeniosła się wcześniej do powłoki (`src/components/AppHeader.astro`), więc kasowanie nie zamyka sesji bez wyjścia. Koszt przyjęty świadomie: zakładki na `/dashboard` przestają działać.
-- **Risk:** Ten slice **nie buduje siatki** — ta powstała jako p6 wewnątrz `S-03` (`src/pages/plan/month.astro`, `src/components/plan/MonthGrid.astro`) — tylko przenosi punkt wejścia: `POST /api/auth/signin` przekierowuje dziś na `/`, a `/` renderuje stronę marketingową (`src/pages/index.astro` → `Welcome.astro`). Zagrożenie jest jedno i jest ciche: `/dashboard` trzyma **jedyny w zalogowanej aplikacji** widoczny przycisk wylogowania, a linki „← Wróć do pulpitu" w `src/pages/plan.astro:37` i `src/pages/plan/month.astro:46` celują w niego wprost. Wygaszenie pulpitu przed `S-06` zostawia nauczyciela bez wyjścia z sesji — więc `S-04` albo zachowuje tę kontrolkę do czasu `S-06`, albo przenosi ją razem z nawigacją.
-- **Status:** done
-
-### S-05: Usunięcie zapisanego planu dnia
-
-- **Outcome:** Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; wiersz `day_plans` i jego aktywności są usuwane trwale (kasowanie twarde), a dzień wraca do stanu **nieodróżnialnego od dnia nigdy nieplanowanego** — na wszystkich powierzchniach, na których jest pokazywany, i dla generowania tygodnia, które obejmuje go ponownie zamiast pominąć.
-- **Change ID:** delete-day-plan
-- **PRD refs:** Access Control (ścieżka kasująca jest zapisem wrażliwym na własność) — brak własnego FR w PRD v1, patrz Open Roadmap Questions #3
-- **Prerequisites:** S-02, S-03
-- **Parallel with:** S-04
-- **Blockers:** —
-- **Unknowns:**
-  - ~~Czy „usunięcie" skreśla cały wiersz `day_plans`, czy tylko bieżącą partię `activities`, zostawiając hasło~~ — **rozstrzygnięte 2026-08-27 w `/10x-plan`: cały wiersz, twardo.** Powody: PRD nie stawia wymogu retencji; produkt nie ma cofania nigdzie indziej (S-02 usunął undo świadomie); skreślenie miękkie zostawiłoby w tabeli dane bez czytelnika i bez właściciela sprzątania — dokładnie to, przed czym ostrzega `lessons.md` („Odroczone sprzątanie danych musi mieć właściciela"). Odwraca to pierwotny Outcome tej pozycji.
-- **Risk:** Oba ostrza opisane niżej są ostrzami **skreślenia miękkiego** i zostały **uniknięte przez wybór kształtu**, nie zmitygowane — kasowanie twarde ich nie tworzy. Opis zostaje, bo obie pułapki są prawdziwe i będą prawdziwe dla każdej kolumny dodanej do `day_plans` w przyszłości. **(1) Nowa kolumna nie dziedziczy grantu UPDATE.** `20260720162553_narrow_authenticated_update_columns.sql` zdjął grant tabelaryczny i oddał listę kolumn po nazwie, właśnie po to, żeby kolumnę dodaną później trzeba było rozważyć. Bez `grant update (…)` zapis kończy się `42501`, który `categorize()` w `src/lib/services/day-plan-store.ts` mapuje na config/500 — dokładnie ta pułapka, którą migracja `theme` musiała rozbroić jawnie. Nie powstaje tutaj, bo slice nie dodaje kolumny (ani żadnej migracji). **(2) Skreślony miękko dzień wciąż zajmowałby `unique (user_id, plan_date)`** i wciąż czytałby się jako `v_exists = true` w `save_day_plan_generation`, więc generowanie tygodnia z `p_require_absent` **pominęłoby** dzień, który nauczyciel uważa za pusty — cicho, bez błędu i bez wpisu w logu. Skasowany wiersz nie zajmuje nic: `v_exists` zostaje `null`, `coalesce(v_exists, false)` daje `false`, generacja przechodzi. Ta własność jest asertowana w `supabase/tests/database/day_plan_delete.test.sql`, a nie zakładana. Z tego samego powodu żadna ścieżka odczytu (`readDayPlan`, `readWeekPlans`, `readMonthSummary`) nie wymagała zmiany. **Ryzyko, które faktycznie zajęło ich miejsce, to nieodwracalność.** Kasowanie jest trwałe, obejmuje hasło i wszystkie propozycje, i stoi przed nim wyłącznie dialog potwierdzenia w przeglądarce — nie ma kosza, nie ma „Cofnij", nie ma odmowy po stronie schematu, na którą można by liczyć, gdy dialog zawiedzie.
-- **Status:** done
-
-### S-06: Wylogowanie z aplikacji
-
-- **Outcome:** Nauczyciel może wylogować się z aplikacji z dowolnego ekranu, na którym pracuje, a nie tylko ze strony startowej dla niezalogowanych.
-- **Change ID:** sign-out
-- **PRD refs:** FR-003 (nice-to-have; odparkowane 2026-08-26 — pozycja znika z `## Parked`)
-- **Prerequisites:** S-04
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** Najmniejszy z czwórki i w dużej części już zbudowany: `POST /api/auth/signout` działa (`src/pages/api/auth/signout.ts`), a przycisk istnieje w `src/components/Topbar.astro` — tyle że Topbar renderuje się wyłącznie wewnątrz `Welcome.astro`, czyli na stronie dla **nie**zalogowanych, a drugie wejście stoi na `/dashboard`. Praca jest więc powłoką i umiejscowieniem, nie endpointem. Sekwencjonowany po `S-04`, bo dopiero tam powstaje trwała powłoka zalogowanej aplikacji; odwrotna kolejność znaczyłaby budowanie kontrolki w pulpicie, który `S-04` wygasza. Zagrożenie odwrotne niż zwykle: slice jest na tyle mały, że łatwo go dorzucić „przy okazji" do `S-04` — wtedy FR-003 nigdy nie dostaje własnego wpisu w `## Done`.
-- **Status:** done — dostarczone 2026-08-26 wewnątrz `S-04` (`month-home`), faza 1: powłoka `src/components/AppHeader.astro` niesie przycisk „Wyloguj się" na `/plan`, `/plan/week` i `/plan/month`, czyli na każdym ekranie zalogowanej aplikacji. FR-003 skonsumowane tam, nie tutaj; slice nie dostaje własnego change-id ani własnego archiwum. Zagrożenie opisane wyżej — „łatwo go dorzucić przy okazji, wtedy FR-003 nigdy nie dostaje wpisu w `## Done`" — zmaterializowało się co do kształtu; ten wpis jest tym, co je rozbraja.
+- **Risk:** Najtańsza z pozycji ochronnych — oba prymitywy już stoją (`setAcceptance` w `day-plan-store.ts:300`, `deleteDayPlan` tamże `:367`, trasa `api/day-plan/accept.ts` umie też wycofać akceptację), brakuje wyłącznie powierzchni w tygodniu. Ryzyko nie leży w zapisie, tylko w celowaniu: w tygodniu nauczyciel widzi kafelki, nie pełne aktywności, więc **operacja musi jednoznacznie nazywać dzień, którego dotyczy**, a nie polegać na tym, że nauczyciel trafił we właściwy kafelek. Asymetria obu operacji jest świadoma i dyktuje ostrożność w układzie: cofnięcie akceptacji jest odwracalne (dzień można zaakceptować ponownie, pomyłka kosztuje jedno kliknięcie), usunięcie planu jest twarde i bez kosza. Sekwencjonowana po `S-12`, żeby powierzchnie akceptacji w dniu i w tygodniu powstawały pod już ustaloną regułą jawności, a nie dwoma niezależnymi odczytami tej samej intencji — ale graf tego nie wymusza i przy zmianie priorytetu może iść pierwsza.
+- **Status:** ready
 
 ### S-07: Podgląd aktywności w siatce miesiąca
 
-- **Outcome:** Nauczyciel widzi, co jest zaplanowane na dany dzień, bez opuszczania siatki miesiąca — dziś kafelek pokazuje wyłącznie hasło, nie aktywności.
+- **Outcome:** Nauczyciel widzi aktywności zaplanowane na dany dzień bez opuszczania siatki miesiąca, a kafelek mieści pełny podtytuł dnia — nieucięty.
 - **Change ID:** month-day-preview
-- **Kamień:** **wypisany z `M-01` 2026-08-30, należy do `M-02`** — patrz §Milestone §Zmiana zakresu. Wiersz zostaje tutaj do czasu, aż `/10x-roadmap` zregeneruje roadmapę pod `M-02` i przeniesie go do nowej dekompozycji.
-- **PRD refs:** FR-004, US-01 — sam podgląd nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
-- **Prerequisites:** S-04
-- **Parallel with:** —
+- **Kamień:** przeniesiony z `M-01` 2026-08-30 (kamień zamknięto świadomie bez niego, żeby nie dopisywać FR wstecz do gotowego kodu). W `M-02` **ma już własne FR** — FR-010 i FR-011 — więc powód przeniesienia wygasł. ID i Change ID zachowane celowo.
+- **PRD refs:** FR-010, FR-011, US-03; §Warunki jakościowe zmiany (zachowanie pod szybkim ruchem wskaźnika, widoczność miesiąca naraz, osiągalność bez myszy)
+- **Prerequisites:** S-08 (done, M-01 — podtytuł dnia jest już w kafelku i jest tym, co FR-011 przestaje ucinać)
+- **Parallel with:** S-09, S-11, S-12, S-13
 - **Blockers:** —
-- **Unknowns:** — (obie rozstrzygnięte 2026-08-30, patrz Decyzje poniżej)
-- **Decyzje ustalone 2026-08-30 (user):**
-  - **Wzorzec interakcji: podgląd na `:hover` oraz `:focus-visible`; kliknięcie kafelka otwiera dzień.** Zarzut „hover nie istnieje na dotyku i nie jest osiągalny z klawiatury" zostaje zdjęty nie przez drugie wejście do podglądu, tylko przez uznanie, że **podgląd jest akceleratorem, a nie jedyną drogą do informacji**: na każdym wejściu kliknięcie/Enter otwiera dzień, gdzie widać komplet. Nikt nie traci dostępu do treści — traci skrót. `:focus-visible` domyka lukę klawiatury niskim kosztem, bo kafelek jest już `<a>` i stoi w kolejności tabulacji.
-  - **Podgląd jest wyłącznie do odczytu** — żadnej edycji na hoverze.
-  - **Dane podglądu dociągane na żądanie (na hover), nie z góry dla całego miesiąca.** Preload (np. bieżącego tygodnia) świadomie odłożony jako możliwa przyszła optymalizacja, nie zakres tego slice'a. Do ugruntowania przez `/10x-research`: opóźnienie na najechaniu, anulowanie żądania przy zejściu z kafelka, pamięć podręczna już pobranych dni.
-- **Zakres zawężony przez stan kodu (2026-08-30):** kliknięcie kafelka **już** prowadzi do `/plan?date=` — ta ścieżka istnieje i nie jest budowana od nowa. To, co dziś wygląda jak tooltip, to natywny atrybut `title`; slice go zastępuje. Ucięcie podtytułu to jednolinijkowy `truncate` — kafelek musi dostać więcej wysokości na `theme`, i to jest ta sama zmiana, co pozycja „kafelek mieści cały podtytuł" z listy poprawek z 2026-08-30 (wchodzi tutaj, nie osobno: powiększony kafelek i panel podglądu konkurują o tę samą siatkę siedmiu kolumn).
-- **Dług PRD:** `PRD refs` tego slice'a zostają puste do czasu przejścia PRD v2 (Open Roadmap Questions #3). Slice można planować i implementować wcześniej, ale **nie archiwizować z pustą rubryką** — v2 obejmuje `S-04`…`S-08` jednym przebiegiem.
-- **Risk:** Jedyny z czwórki naprawdę otwarty — użytkownik nazwał go „do przegadania i poszukania najlepszych pomysłów". Ryzyko nie leży w kodzie, tylko w tym, że hover jako pierwszy pomysł jest wygodny do zbudowania i słaby w użyciu: gęsta siatka 7 kolumn, dotyk bez hovera, klawiatura bez ścieżki. Sekwencjonowany po `S-04`, bo dopiero wtedy siatka jest ekranem, na którym nauczyciel faktycznie spędza czas — wcześniej podgląd optymalizowałby widok, do którego prawie się nie zagląda. Interakcja z `S-05`: dzień skreślony miękko nie może mieć podglądu, więc kolejność `S-05` → `S-07` jest tańsza niż odwrotna. Interakcja z `S-08`: podtytuł dnia zdejmuje z tego slice'a część ciężaru — jeśli kafelek już odróżnia pięć dni jednego hasła, podgląd aktywności przestaje być jedynym sposobem, żeby zobaczyć, czym te dni się różnią, i można go projektować spokojniej. Odblokowany 2026-08-30: rozstrzygnięcie wzorca interakcji zdjęło jedyny blokujący unknown.
+- **Unknowns:** — (wzorzec interakcji rozstrzygnięty 2026-08-30, warunki wydajnościowe przeszły w PRD z pytań w warunki brzegowe)
+- **Decyzje zastane, nie do przegłosowania w slice'ie:** podgląd na `:hover` **oraz** `:focus-visible`, kliknięcie kafelka nadal otwiera dzień (podgląd jest akceleratorem, nie jedyną drogą do informacji); podgląd wyłącznie do odczytu; dane dociągane na żądanie, bez wstępnego pobierania całego miesiąca (PRD §Non-Goals).
+- **Risk:** Jedyna pozycja z decyzjami zamkniętymi przed startem `M-02` i najkrótsza droga do wydania — sekwencjonowana jako czwarta **wyłącznie** dlatego, że cel `quality` stawia trzy pozycje ochronne przed pozycją wygody. Zależności `M-02` nie ma żadnych, więc jest pierwszym kandydatem do wzięcia równolegle albo do przesunięcia w przód, jeśli potrzebny jest szybki dowód postępu. Trzy warunki brzegowe przestały być tematami do zbadania i stały się wymaganiami: opóźnienie przed pobraniem i anulowanie porzuconego żądania (przeciągnięcie kursora przez rząd 20–22 kafelków nie może wywołać żądania za żądaniem), pamięć podręczna już obejrzanych dni, oraz **twarde ograniczenie**: pełny miesiąc pozostaje widoczny bez przewijania na tej samej szerokości ekranu co dziś — przy konflikcie ustępuje podtytuł, nie widok miesiąca. Zakres zawężony stanem kodu: kliknięcie kafelka już prowadzi do `/plan?date=`, a to, co dziś wygląda jak dymek, to natywny atrybut `title` (`MonthGrid.astro:126`) — slice go zastępuje. Powiększony kafelek i panel podglądu konkurują o tę samą siatkę siedmiu kolumn, dlatego FR-010 i FR-011 wchodzą razem, a nie osobno.
 - **Status:** ready
 
-### S-08: Widoczny podtytuł dnia
+### S-13: Wydruk tygodnia
 
-- **Outcome:** Nauczyciel odróżnia od siebie dni jednego hasła bez wchodzenia w każdy z nich — kafelek w siatce miesiąca i nagłówek widoku dnia pokazują podtytuł dnia („Dinozaury — co jadły dinozaury"), a nie pięć razy to samo hasło.
-- **Change ID:** visible-day-theme
-- **PRD refs:** FR-004, US-01 — czytelność planu miesiąca nie ma własnego FR w PRD v1, patrz Open Roadmap Questions #3
-- **Prerequisites:** S-03 (temat dzienny powstaje w szkicu tygodnia i jest zapisywany w wierszu planu), S-04 (siatka miesiąca jest ekranem, na którym problem boli)
-- **Parallel with:** S-05
+- **Outcome:** Nauczyciel może wydrukować tydzień w postaci czytelnej na papierze i oddać go bez przepisywania czegokolwiek do innego narzędzia; wydruk obejmuje wszystkie dni robocze, a dni niezaakceptowane są na nim widocznie oznaczone jako szkic roboczy.
+- **Change ID:** week-print
+- **PRD refs:** FR-019, FR-020, US-02; §Kryteria sukcesu Secondary
+- **Prerequisites:** S-02 (done, M-01 — stan zaakceptowania istnieje i jest tym, co FR-020 oznacza na papierze)
+- **Parallel with:** S-07, S-09, S-11, S-12
 - **Blockers:** —
 - **Unknowns:**
-  - Co pokazuje kafelek dnia, który tematu nie ma — dzień wygenerowany pojedynczo z `/plan?date=`, bez przejścia przez szkic tygodnia, nigdy go nie dostał. Owner: Janusz. Block: nie — wariant domyślny to zachowanie dzisiejsze (hasło jako jedyna linia); decyzja o kształcie należy do `/10x-plan`.
-- **Zakres ustalony 2026-08-26 (user):** slice jest **wyłącznie odczytowy**. Generator i prompty zostają nietknięte — szkic tygodnia już produkuje pięć rozłącznych ujęć hasła i już zapisuje je w wierszu planu; brakuje wyłącznie ich pokazania poza tablicą tygodnia. Dwa rozszerzenia zostały jawnie odrzucone przy wyborze zakresu i **nie wchodzą** do tego slice'a: (1) nadanie tematu dniowi generowanemu pojedynczo — wymagałoby dotknięcia ścieżki generowania dnia i promptu; (2) iteracja jakościowa na promptcie szkicu tygodnia, żeby tematy lepiej czytały się jako podtytuł. Oba pozostają otwarte jako możliwa przyszła pozycja, żadne nie blokuje tego slice'a.
-- **Risk:** Najtańsza pozycja w roadmapie i jedyna czysto odczytowa — cała treść już istnieje, więc ryzyko nie leży w generowaniu, tylko w niespójności ekranów. Trzy znane ostrza. **(1) Temat jest nullowalny i to nie jest przypadek brzegowy, tylko normalny stan** — dzień wygenerowany poza tygodniem nigdy tematu nie miał, a dzień, którego generowanie w tygodniu padło, nie ma nawet wiersza (szkic tygodnia świadomie nic nie zapisuje — patrz komentarz projektowy w trasie szkicu). Każda powierzchnia musi mieć zdefiniowane zachowanie dla braku tematu, inaczej kafelek traci linię tekstu, którą dziś ma. **(2) Tablica tygodnia pokazuje temat już dziś** i robi to z dwóch źródeł — z zapisanego planu albo z kopii trzymanej w wyspie — więc nowe powierzchnie muszą pokazywać to samo co ona, a nie własną interpretację; rozjazd między tygodniem a miesiącem byłby gorszy niż dzisiejsze pięć razy „Dinozaury". **(3) To ta sama ścieżka odczytu miesiąca, którą `S-05` będzie musiał nauczyć skreślenia miękkiego, a `S-07` rozszerzyć o aktywności** — trzy slice'y dokładają do jednego zapytania, więc kolejność ma znaczenie. `S-08` idzie pierwszy, bo ustala, co kafelek pokazuje w stanie spoczynku, zanim `S-07` zdecyduje, co pokazuje po interakcji.
-- **Status:** done
+  - Układ wydruku — dzień na stronie czy tydzień na stronie? Zależy od tego, komu i w jakiej formie nauczyciel oddaje plan, a tego nie ustalono. Owner: Janusz. Block: nie — PRD przypisuje to rozstrzygnięcie wprost do tego slice'a (§Open Questions #1), a FR-019 został w rundzie Sokratejskiej **rozluźniony** do zobowiązania o czytelności, nie o konkretnym układzie.
+- **Risk:** Ostatnia z pozycji `ready` i to jest świadome następstwo wyboru `decisions` jako głównego ryzyka: to jedyna pozycja `M-02` z żywym pytaniem otwartym, więc dostaje najwięcej czasu na rozstrzygnięcie, zanim ktokolwiek zacznie ją planować. Startuje od pustej powierzchni — w `src/` nie ma dziś ani jednej reguły `@media print` ani utility `print:`. Napięcie zapisane w PRD i nierozwiązane w nim: kryterium Secondary mówi „nadaje się do oddania bez obróbki", a FR-020 każe drukować także dni nieskończone — oznaczony szkic i tak zostanie oddany. Kontrargument rozważono i odrzucono; slice dziedziczy to napięcie jawnie, zamiast je odkrywać. Niesie jedyną oś bólu, której dziś nie ma wcale — dwie pozostałe („trudny do poprawienia", „trudny do odczytania") mają przynajmniej obejście.
+- **Status:** ready
+
+### S-10: Rozszerzenie zastępowania na dni zaakceptowane
+
+- **Outcome:** Nauczyciel może jawnie rozszerzyć regenerację tygodnia na dni zaakceptowane, zamiast najpierw cofać akceptacje po kolei.
+- **Change ID:** accepted-day-replacement
+- **PRD refs:** FR-013 (**jedyny nice-to-have paczki**); §Business Logic Changes reguła 1
+- **Prerequisites:** S-09 (operacja zastępowania i jej potwierdzenie muszą istnieć, zanim da się je rozszerzyć), S-12 (reguła „jawność proporcjonalna do skutku" musi być ustalona, zanim zadziała jej najostrzejszy wariant)
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:**
+  - Czy rozszerzenie jest osobnym wyborem w tym samym potwierdzeniu, czy drugim krokiem — kształt należy do `/10x-plan`. Owner: `/10x-plan`. Block: nie.
+- **Risk:** Jedyna pozycja, którą graf naprawdę wiąże, i jedyna, bez której kamień się domyka — PRD stwierdza to wprost, a `shape-notes.md` §Forward nazywa ją zaworem bezpieczeństwa: jeśli `M-02` się rozciągnie, to jest pozycja do odpuszczenia. Sekwencjonowana ostatnia nie z powodu kosztu, tylko charakteru: **kasuje hurtowo jedyny stan, który człowiek świadomie oznaczył jako skończony, w systemie, który nie ma cofania nigdzie** (`S-02` usunął undo świadomie, `S-05` kasuje twardo, a PRD §Non-Goals potwierdza: paczka dokłada potwierdzeń, nie historii). Potwierdzenie jest jedyną barierą i to jest świadomie przyjęte ryzyko, nie przeoczenie. Dlatego `S-12` stoi w jej prerekwizytach, a nie tylko obok w kolejności.
+- **Status:** proposed
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                 | Suggested issue title                                | Ready for `/10x-plan` | Notes                                                           |
-| ---------- | ------------------------- | ---------------------------------------------------- | --------------------- | --------------------------------------------------------------- |
-| F-01       | plan-persistence-baseline | Minimalny schemat planów + RLS izolacji per konto    | yes                   | Może iść równolegle do S-01                                     |
-| S-01       | first-day-generation      | Generowanie propozycji aktywności dla jednego dnia   | yes                   | Gwiazda przewodnia — `/10x-plan first-day-generation`           |
-| S-02       | edit-accept-day-plan      | Edycja, akceptacja i zapis planu dnia                | no                    | Czeka na S-01 + F-01                                            |
-| S-03       | week-generation           | Generowanie planu dla całego tygodnia roboczego      | no                    | Czeka na S-01 + F-01                                            |
-| S-04       | month-home                | Widok miesiąca jako ekran główny aplikacji           | yes                   | `/10x-plan month-home`                                          |
-| S-05       | delete-day-plan           | Usunięcie zapisanego planu dnia                      | yes                   | `/10x-plan delete-day-plan`; może iść równolegle do S-04        |
-| S-06       | sign-out                  | Wylogowanie dostępne z powłoki zalogowanej aplikacji | —                     | Dostarczone w S-04 (`month-home`, faza 1) — nie planować osobno |
-| S-07       | month-day-preview         | Podgląd aktywności dnia w siatce miesiąca            | po PRD v2             | odblokowany 2026-08-30, wypisany z `M-01`; planować jako pierwszy slice `M-02` |
-| S-08       | visible-day-theme         | Widoczny podtytuł dnia w miesiącu i w widoku dnia    | yes                   | `/10x-plan visible-day-theme`; może iść równolegle do S-05      |
-
-## Kandydaci do następnego kamienia (M-02)
-
-> **Sekcja tymczasowa.** Nie należy do schematu roadmapy — `/10x-roadmap` przy
-> regeneracji pod `M-02` odtwarza plik z sekcji wymaganych i **tę usunie**. Musi
-> zostać skonsumowana przez `/10x-shape` (krok 3 w `next-actions.md`), zanim to
-> nastąpi. Runbook o tym przypomina.
-
-Zgłoszone przez użytkownika 2026-08-30 i przetriagowane. **To nie są jeszcze slice'y** —
-żaden nie ma FR w PRD v1, a dwa wymagają zmiany PRD, nie dopisania do niego. Kolejność
-wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap Questions #3)
-→ `/10x-roadmap` (zamknięcie `M-01`, otwarcie `M-02`). Dopiero wtedy stają się `S-NN`.
-
-| Kandydat | Charakter | Uwaga |
-| --- | --- | --- |
-| **`S-07` — podgląd aktywności w siatce miesiąca (+ powiększony kafelek)** | UI, **`ready`, decyzje zamknięte** | wypisany z `M-01` 2026-08-30; jedyny kandydat gotowy do planowania od zaraz — pierwszy slice `M-02` |
-| Regeneracja tygodnia z zastępowaniem istniejących dni | ścieżka generowania — **najcięższy z paczki** | patrz Decyzje poniżej |
-| Cofnięcie akceptacji i usunięcie dnia z poziomu tygodnia | UI + istniejący prymityw | `setAcceptance(…, false)` już istnieje; brakuje powierzchni w tygodniu |
-| Blokada edycji zaakceptowanego dnia / tygodnia | maszyna stanów | zawężone 2026-08-30 — patrz Decyzje |
-| Układ przycisków w widoku dnia (cofnięcie akceptacji, usunięcie pod przyciskiem generowania) | UI | wchodzi razem z powyższym; osobno oznacza przesuwanie tych samych przycisków dwa razy |
-| Wydruk zaakceptowanego tygodnia (dzień na stronę) | nowa funkcja | czysty dodatek, nic nie łamie |
-
-**Decyzje ustalone 2026-08-30 (user) — regeneracja tygodnia:**
-
-- **Zastępowanie obejmuje także dni zaakceptowane.** Nauczyciel, który chce zmienić motyw
-  całego tygodnia, nie ma wchodzić w pięć dni po kolei.
-- **Potwierdzenie musi być uczciwe** — „zastąpisz 5 dni, w tym 3 zaakceptowane", nie
-  generyczne „na pewno?".
-- **Blokada „tydzień zaakceptowany" dotyczy edycji przypadkowej** (inline w kafelkach);
-  operacje jawne — regeneruj tydzień, cofnij akceptację, usuń dzień — pozostają dostępne.
-
-**Co ta pozycja pociąga za sobą** (do przeniesienia w shape-notes, nie do rozstrzygnięcia tutaj):
-
-1. Dzisiejsza blokada w widoku tygodnia **nie dotyczy akceptacji** — generowanie pomija
-   każdy dzień, który ma *jakikolwiek* plan, także roboczy szkic. To nie jest zmiana
-   komunikatu, tylko nowa zdolność.
-2. Kryterium akceptacji `S-03` („regeneracja jednego dnia nie wpływa na pozostałe")
-   wymaga przeformułowania — nowa operacja świadomie rusza pięć dni naraz.
-3. Ryzyko #3 w `test-plan.md` §2 zostaje ważne, ale jego kryterium ochrony zmienia się z
-   „nigdy nie niszczy" na „nigdy nie niszczy **bez jawnego potwierdzenia**, a po
-   potwierdzeniu podmienia komplet". Faza 3 rolloutu (§3) idzie **po** tym slice'ie.
-4. Kolejność operacji: stary tydzień nie może zniknąć, zanim nowy nie jest gotowy —
-   inaczej awaria dostawcy LLM zostawia pięć pustych dni zamiast pięciu starych.
-
-**Poza paczką `M-02`:**
-
-- **Rodzaje aktywności (plastyczne / muzyczne / ruchowe)** — wymaga **odwrócenia**
-  `prd.md` §Non-Goals i pozycji w §Parked poniżej, nie dopisania FR. Osobna sesja
-  `/10x-shape` z researchem **dziedzinowym** (typowe aktywności przedszkolne) — to nie
-  jest zadanie dla `/10x-research`, który czyta kodebazę. Otwarte w samym pomyśle: wybór
-  typu przez nauczyciela vs. nacisk na typ w tygodniu vs. równomierne rozłożenie.
-- **Monetyzacja** — własny kamień milowy, nie funkcja. Sekwencjonowana po powyższych, bo
-  to one są kandydatami na „za subskrypcją". Wymaga powrotu do `infrastructure.md`.
-- **Polska wersja strony głównej** — ✅ **dostarczona 2026-08-30** jako zmiana
-  `pl-landing-copy`, poza roadmapą: bez FR i bez wiersza `S-NN`. Zakres wyszedł szerszy niż
-  sam landing — objął cały lejek niezalogowanego (powłoka `Layout.astro` z `lang="pl"`,
-  strona główna, ekrany logowania, rejestracji i potwierdzenia e-maila). Archiwum:
-  `context/archive/2026-08-30-pl-landing-copy/`. Otwarty ogon: angielskie komunikaty błędów
-  z Supabase na ekranach auth — follow-up z właścicielem, wejście przy najbliższej zmianie
-  w `src/pages/api/auth/*` (`next-actions.md` §Otwarte ogony po Kroku 1).
+| Roadmap ID | Change ID                 | Suggested issue title                                              | Ready for `/10x-plan` | Notes                                                                 |
+| ---------- | ------------------------- | ------------------------------------------------------------------ | --------------------- | ---------------------------------------------------------------------- |
+| S-09       | week-regeneration-replace | Regeneracja tygodnia z zastępowaniem dni niezaakceptowanych        | yes                   | Gwiazda przewodnia — `/10x-plan week-regeneration-replace`             |
+| S-12       | edit-unaccepts-day        | Edycja dnia zaakceptowanego zdejmuje akceptację (+ układ przycisków)| yes                   | Niesie warunek układu z §Constraints; odwraca decyzję z roadmapy M-01  |
+| S-11       | week-level-plan-controls  | Cofnięcie akceptacji i usunięcie dnia z poziomu tygodnia           | yes                   | Prymitywy istnieją; może iść równolegle do S-09 i S-12                 |
+| S-07       | month-day-preview         | Podgląd aktywności dnia i pełny podtytuł w siatce miesiąca         | yes                   | Decyzje zamknięte od 2026-08-30; najkrótsza droga do wydania           |
+| S-13       | week-print                | Wydruk tygodnia z oznaczonymi szkicami roboczymi                   | yes                   | Rozstrzygnij układ wydruku wewnątrz slice'a (Open Roadmap Questions #1) |
+| S-10       | accepted-day-replacement  | Rozszerzenie zastępowania tygodnia na dni zaakceptowane            | no                    | Czeka na S-09 + S-12; nice-to-have, kamień domyka się bez niej          |
 
 ## Open Roadmap Questions
 
-1. **Reset hasła** — czy MVP wymaga mechanizmu odzyskiwania hasła przez e-mail? Owner: decyzja produktowa. Block: nie (MVP może startować bez, ale nie nadaje się do produkcji bez rozwiązania) — roadmap-wide.
-2. **Limit regeneracji** — czy istnieje limit liczby wywołań AI dla jednego użytkownika (koszt API)? Owner: decyzja techniczno-biznesowa. Block: nie dla MVP — gates: S-01, S-03.
-3. **Pokrycie w PRD dla S-04…S-07** — PRD v1 wyczerpał się na `S-03`: wszystkie must-have FR (FR-001…FR-009 poza nice-to-have FR-003) są skonsumowane przez F-01…S-03. Usunięcie planu dnia, ekran główny, podgląd aktywności i czytelność podtytułu dnia nie mają własnych FR — roadmapa wyprzedza tu PRD, co jest odwróceniem normalnego kierunku. Owner: Janusz. Block: nie (slice'y da się zaplanować z opisu) — gates: S-04, S-05, S-07, S-08. Domknięcie: `/10x-shape` (brownfield) → `/10x-prd` z nowymi FR w `prd-v2.md` i bumpem `prd_version` we frontmatterze, zanim któryś z tych slice'ów trafi do archiwum z pustą rubryką „PRD refs". **Pytanie pozostaje otwarte po zamknięciu `M-01` (2026-08-30)** — `S-04`, `S-05` i `S-08` są już zarchiwizowane z pustą rubryką, więc dług jest zaciągnięty, nie uniknięty; PRD v2 spłaca go wstecz. `S-07` wyszedł z tej czwórki, bo przeniesiono go do `M-02`, gdzie dostanie FR przed planowaniem.
+1. **Układ wydruku — dzień na stronie czy tydzień na stronie?** W rundzie Sokratejskiej uznano to za wybór dokonany przedwcześnie: zależy od tego, komu i w jakiej formie nauczyciel oddaje plan, a tego nie ustalono. Owner: Janusz. Block: nie — gates: `S-13` (rozstrzygnięcie należy do slice'a, nie do roadmapy).
+2. **Odwrócenie decyzji z roadmapy o blokadzie edycji.** Roadmapa `M-01` (2026-08-30) zapisała: „blokada «tydzień zaakceptowany» dotyczy edycji przypadkowej; operacje jawne pozostają dostępne". FR-017 zastępuje to regułą „potwierdzenie zamiast zakazu". Owner: Janusz. Block: nie — gates: `S-12`. **Ta regeneracja domyka połowę pytania:** poprzedni zapis zniknął wraz z sekcją §Kandydaci, a `S-12` niesie teraz nową regułę wprost. Nośnikiem decyzji pozostają `shape-notes.md` i `prd-v2.md`.
+3. **Dług PRD za `S-04`, `S-05` i `S-08` pozostaje otwarty.** Trzy zarchiwizowane slice'y `M-01` zostają z pustą rubryką „PRD refs". Decyzja z 2026-09-19: PRD v2 obejmuje wyłącznie `M-02` i **nie** spłaca tego długu wstecz — dopisywanie FR do wydanego kodu jest dokładnie tym, czego unikano przy zamykaniu `M-01`. `S-07` wyjątkiem nie jest: dostał własne FR (FR-010, FR-011), bo jest budowany, nie wydany. Owner: Janusz. Block: nie — pytanie przechodzi do kamienia po `M-02`. Źródło: `prd-v2.md` §Open Questions #3.
+4. **Reset hasła** — czy produkt wymaga mechanizmu odzyskiwania hasła przez e-mail? Przeniesione z v1, wciąż otwarte. Owner: decyzja produktowa. Block: nie dla `M-02` — roadmap-wide.
+5. **Limit regeneracji** — czy istnieje limit liczby wywołań AI dla jednego użytkownika (koszt API)? Przeniesione z v1 i **podniesione przez tę paczkę**: regeneracja tygodnia z zastępowaniem mnoży wywołania przez pięć na jedno kliknięcie, a FR-012 czyni tę operację łatwiejszą do powtórzenia niż była. Owner: decyzja techniczno-biznesowa. Block: nie — gates: `S-09`, `S-10`.
+6. **Brak bramki czasowej — przyjęte ryzyko, nie luka.** `delivery_weeks` jest `null`, nie liczbą: tryb „slice po slice, ile zajmie" wybrano po przedstawieniu kosztu (sześć pozycji, realnie więcej niż trzy tygodnie pracy po godzinach). Konsekwencja: **nic w tym projekcie nie powie, że `M-02` trwa za długo** — nie ma daty, względem której opóźnienie by się mierzyło. Obroną jest dyscyplina slice'ów (każdy slice to osobny PR i osobne wydanie), nie budżet. Owner: Janusz. Block: nie — roadmap-wide.
+7. **Repo niosło obietnicę spłaty długu PRD w v2.** Dwa pliki w `context/foundation/` obiecywały spłatę wbrew decyzji z #3 — poprawione 2026-09-19. Pozycja zostaje jako **ślad kontrolny: przy każdej regeneracji roadmapy sprawdź, czy obietnica nie wróciła.** Ta regeneracja (2026-09-19) sprawdzona — §Milestone „Czego ten kamień nie robi" i #3 powyżej niosą odroczenie, nie obietnicę. Owner: Janusz. Block: nie — roadmap-wide.
 
 ## Parked
 
-- **Profile grup przedszkolnych** — Why parked: PRD §Non-Goals — plan jest własnością nauczyciela, nie grupy.
-- **Dane o dzieciach (imiona, potrzeby, alergie)** — Why parked: PRD §Non-Goals — poza zakresem MVP.
-- **Generowanie materiałów dodatkowych (karty pracy, grafiki, audio)** — Why parked: PRD §Non-Goals — MVP proponuje tylko tytuł i opis aktywności.
-- **Filtrowanie po typach zajęć (plastyczne/muzyczne/ruchowe)** — Why parked: PRD §Non-Goals — AI decyduje o formie aktywności na podstawie hasła.
+- **Rozszerzenie zastępowania na dni zaakceptowane** — Why parked: **nie jest parkowane dziś** — stoi jako `S-10` ze statusem `proposed`. Wpis istnieje jako wskazanie, którą pozycję odpuścić pierwszą, jeśli `M-02` się rozciągnie (`prd-v2.md` §Scope of Change: „Kamień domyka się bez niego").
+- **Cofanie operacji (undo) i kosz** — Why parked: PRD v2 §Non-Goals — paczka dokłada potwierdzeń, nie historii; kasowanie pozostaje twarde zgodnie z decyzją `S-05`.
+- **Edycja treści z poziomu podglądu w siatce miesiąca** — Why parked: PRD v2 §Non-Goals — podgląd jest wyłącznie do odczytu, edycja zostaje w widoku dnia.
+- **Wstępne pobieranie danych całego miesiąca** — Why parked: PRD v2 §Non-Goals — podgląd dociąga dzień na żądanie; pobieranie z wyprzedzeniem to możliwa późniejsza optymalizacja.
+- **Zmiana wytycznych generowania i doboru treści** — Why parked: PRD v2 §Non-Goals — wymaga odwrócenia §Non-Goals z PRD v1 i osobnej sesji `/10x-shape` z researchem dziedzinowym, nie `/10x-research`.
+- **Zmiany w modelu dostępu (role, współdzielenie planów)** — Why parked: PRD v2 §Non-Goals i §Access Control Changes — jedna rola, model płaski, dane prywatne per konto.
+- **Rodzaje aktywności (plastyczne / muzyczne / ruchowe)** — Why parked: PRD v1 §Non-Goals; odwrócenie wymaga osobnego kamienia, nie dopisania FR.
+- **Profile grup przedszkolnych** — Why parked: PRD v1 §Non-Goals — plan jest własnością nauczyciela, nie grupy.
+- **Dane o dzieciach (imiona, potrzeby, alergie)** — Why parked: PRD v1 §Non-Goals — poza zakresem.
+- **Generowanie materiałów dodatkowych (karty pracy, grafiki, audio)** — Why parked: PRD v1 §Non-Goals — proponujemy tylko tytuł i opis aktywności.
+- **Monetyzacja** — Why parked: własny kamień milowy, nie funkcja; sekwencjonowana po pozycjach będących kandydatami na „za subskrypcją". Wymaga powrotu do `infrastructure.md`.
 
 ## Milestone History
 
@@ -311,7 +236,7 @@ wejścia: `/10x-shape` (brownfield) → `/10x-prd` (v2, domyka też Open Roadmap
 - **M-01: Użyteczny plan miesiąca** (`usable-month-plan`) — closed 2026-08-30. Nauczyciel prowadzi pełny cykl planowania miesiąca w jednym miejscu: generuje dzień i tydzień, edytuje, akceptuje, usuwa i odróżnia dni po podtytule.
   - **Zamknięty z niepełnym zakresem.** `S-07` (`month-day-preview`, podgląd aktywności w siatce miesiąca) został 2026-08-30 jawnie wypisany z kamienia i przeniesiony do `M-02`. Kamień zamknął się więc **bez odczytu aktywności z siatki**, mimo że ten człon stoi wprost w jego intencie.
   - **Dlaczego mimo to zamknięty:** `S-07` był `ready`, ale bez własnego FR (PRD v1 wyczerpał się na `S-03` — Open Roadmap Questions #3). Zbudowanie go przed PRD v2 oznaczałoby dopisywanie wymagania wstecz do gotowego kodu; trzymanie kamienia otwartego oznaczałoby blokowanie go zależnością papierową. Wybrano trzecią drogę: skrócić zakres świadomie i wejść w `M-02` z czystym kontem.
-  - **Dług przeniesiony dalej:** `S-04`, `S-05` i `S-08` są zarchiwizowane z pustą rubryką „PRD refs". PRD v2 spłaca to wstecz.
+  - **Dług przeniesiony dalej:** `S-04`, `S-05` i `S-08` są zarchiwizowane z pustą rubryką „PRD refs". **Poprawka 2026-09-19:** PRD v2 tego długu **nie** spłaca — patrz Open Roadmap Questions #3. Wcześniejszy zapis („PRD v2 spłaca to wstecz") był obietnicą wycofaną decyzją użytkownika.
 
 ## Done
 

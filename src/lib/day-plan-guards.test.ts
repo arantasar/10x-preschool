@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { isDayPlanBody, isErrorBody, isOutlineBody, isRecord } from "./day-plan-guards";
+import {
+  isDayPlanBody,
+  isErrorBody,
+  isGeneratedDayBody,
+  isOutlineBody,
+  isRecord,
+  isSaveWeekBody,
+} from "./day-plan-guards";
 
 // These are the island's last line of defence against a body that says
 // "generation succeeded" and carries nothing. `[].every(...)` is `true`, so an
@@ -96,5 +103,79 @@ describe("isRecord", () => {
     expect(isRecord({})).toBe(true);
     expect(isRecord(null)).toBe(false);
     expect(isRecord("x")).toBe(false);
+  });
+});
+
+describe("isGeneratedDayBody", () => {
+  function generated(overrides: Record<string, unknown> = {}) {
+    return {
+      plan_date: "2026-09-14",
+      theme: "Liście",
+      activities: [
+        { title: "Tytuł 1", description: "Opis 1" },
+        { title: "Tytuł 2", description: "Opis 2" },
+      ],
+      ...overrides,
+    };
+  }
+
+  it("accepts a held batch", () => {
+    expect(isGeneratedDayBody(generated())).toBe(true);
+  });
+
+  it("accepts a null theme — the outline can legitimately have failed", () => {
+    expect(isGeneratedDayBody(generated({ theme: null }))).toBe(true);
+  });
+
+  it("rejects an empty batch, which would otherwise count towards a complete set", () => {
+    expect(isGeneratedDayBody(generated({ activities: [] }))).toBe(false);
+  });
+
+  it.each([
+    ["a missing plan_date", generated({ plan_date: undefined })],
+    ["a numeric theme", generated({ theme: 3 })],
+    ["activities that are not an array", generated({ activities: "trzy" })],
+    ["an activity without a description", { ...generated(), activities: [{ title: "Tytuł" }] }],
+    ["null", null],
+  ])("rejects %s", (_name, value) => {
+    expect(isGeneratedDayBody(value)).toBe(false);
+  });
+
+  // The distinction the whole slice turns on: a held batch is not a saved day,
+  // and the two predicates must not accept each other's bodies.
+  it("does not accept a saved day plan, which carries a row it does not", () => {
+    expect(isGeneratedDayBody(dayPlanBody())).toBe(false);
+  });
+
+  it("is not accepted by isDayPlanBody either", () => {
+    expect(isDayPlanBody(generated())).toBe(false);
+  });
+});
+
+describe("isSaveWeekBody", () => {
+  it("accepts a map of saved days", () => {
+    expect(isSaveWeekBody({ plans: { "2026-09-14": dayPlanBody(), "2026-09-15": dayPlanBody() } })).toBe(true);
+  });
+
+  it("rejects an empty map — nothing came back from a write that wrote something", () => {
+    expect(isSaveWeekBody({ plans: {} })).toBe(false);
+  });
+
+  it("rejects a day whose batch is empty", () => {
+    expect(isSaveWeekBody({ plans: { "2026-09-14": dayPlanBody({ activities: [] }) } })).toBe(false);
+  });
+
+  it("rejects a day missing current_generation, which accept would later attest to", () => {
+    expect(isSaveWeekBody({ plans: { "2026-09-14": dayPlanBody({ plan: { current_generation: undefined } }) } })).toBe(
+      false,
+    );
+  });
+
+  it.each([
+    ["no plans key", { days: {} }],
+    ["null", null],
+    ["an array", { plans: [] }],
+  ])("rejects %s", (_name, value) => {
+    expect(isSaveWeekBody(value)).toBe(false);
   });
 });

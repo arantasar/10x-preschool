@@ -7,10 +7,11 @@ import {
   OUTLINE_TOTAL_BUDGET_MS,
   RETRY_BACKOFF_MS,
   TOTAL_BUDGET_MS,
+  WEEK_DAYS,
 } from "@/lib/day-plan-limits";
 import { formatPlanDate, weekdayLabel } from "@/lib/day-plan-dates";
 import { type AllowedModel, resolveModel } from "./allowed-models";
-import { dayPlanProposalSchema, toActivityDrafts, toDayThemes, weekOutlineSchema } from "./day-plan-contract";
+import { dayPlanProposalSchema, toActivityDrafts, toDayThemes, weekOutlineSchemaFor } from "./day-plan-contract";
 import { categorizeStatus, GenerationError } from "./generation-error";
 import dayResponseJsonSchema from "./prompts/day-plan.schema.json";
 import dayPrompt from "./prompts/day-plan.pl.md?raw";
@@ -346,7 +347,87 @@ function buildDayUserMessage(keyword: string, context?: DayGenerationContext): s
 
 function buildOutlineUserMessage(keyword: string, dates: readonly string[]): string {
   const days = dates.map((date, index) => `${String(index + 1)}. ${formatPlanDate(date)}`).join("\n");
-  return `Hasło: ${keyword}\nDni robocze tygodnia:\n${days}`;
+  // "Dni do zaplanowania", not "Dni robocze tygodnia": since S-09 this list can
+  // be a subset - the unaccepted days of a week whose other days the teacher has
+  // already signed off. Calling two days "the working week" is the same lie the
+  // prompt's own "dokładnie pięć" was, one line further down the request.
+  return `Hasło: ${keyword}\nDni do zaplanowania:\n${days}`;
+}
+
+/**
+ * The Polish for "N themes", in the two forms the outline prompt needs.
+ *
+ * A table of five rather than a pluralisation function, because Polish needs
+ * three different forms across exactly this range - singular at 1, nominative
+ * plural at 2-4, genitive plural at 5 - and each one drags its adjective with
+ * it ("jeden temat dzienny", "dwa tematy dzienne", "pięć tematów dziennych").
+ * At five entries the table is shorter than the rule, and it is readable by
+ * someone checking the prompt who does not want to evaluate a function to find
+ * out what the model was told.
+ */
+// `Partial`, so indexing yields `| undefined` and the guard below is a real
+// branch rather than one the linter can prove dead. The table covers 1..5 and
+// nothing else; a count outside that range is exactly what has to be caught.
+const OUTLINE_COUNT_PHRASES: Readonly<Partial<Record<number, { plain: string; daily: string }>>> = {
+  1: { plain: "jeden temat", daily: "jeden temat dzienny" },
+  2: { plain: "dwa tematy", daily: "dwa tematy dzienne" },
+  3: { plain: "trzy tematy", daily: "trzy tematy dzienne" },
+  4: { plain: "cztery tematy", daily: "cztery tematy dzienne" },
+  5: { plain: "pięć tematów", daily: "pięć tematów dziennych" },
+};
+
+/**
+ * Fills the outline prompt's three count placeholders.
+ *
+ * The prompt file keeps its prose and carries `{{...}}` only where a number or
+ * its Polish agreement belongs, so the safety and language sections - the only
+ * layer standing between a teacher's hasło and a three-year-old, per
+ * `lessons.md` - stay readable in the file as the model receives them. A
+ * placeholder is deliberately *not* used anywhere inside §Odbiorca, §Język or
+ * §Hasło nieodpowiednie dla wieku.
+ *
+ * The leftover check is the gate. A renamed placeholder would otherwise reach
+ * the model as the literal text `{{TEMATY}}`, which no schema downstream can
+ * catch - the response would be well-formed and simply wrong - so it is caught
+ * here, before the request is paid for.
+ */
+export function buildOutlineSystemMessage(count: number): string {
+  const phrases = OUTLINE_COUNT_PHRASES[count];
+  if (!phrases) {
+    throw new GenerationError("invalid", `Szkic tygodnia obejmuje od 1 do ${String(WEEK_DAYS)} dni.`);
+  }
+
+  const filled = outlinePrompt
+    .replaceAll("{{TEMATY_DZIENNE}}", phrases.daily)
+    .replaceAll("{{TEMATY}}", phrases.plain)
+    .replaceAll("{{LICZBA}}", String(count));
+
+  if (filled.includes("{{")) {
+    throw new GenerationError("config", "Szablon szkicu tygodnia ma nieuzupełnione pole.");
+  }
+  return filled;
+}
+
+/**
+ * The `response_format` schema for a request covering `count` days.
+ *
+ * The file stays static and keeps five, rather than carrying a placeholder:
+ * `scripts/compare-models.sh` reads it verbatim with `cat` and would send
+ * `{{...}}` to the model. The three numbers that encode the count are overridden
+ * on a clone here instead, so the file on disk is always a valid schema and the
+ * script keeps working unchanged.
+ *
+ * The `description` strings moved with the numbers in the file itself - they no
+ * longer name a count at all, and defer to `minItems`/`maxItems`. Leaving them
+ * saying "pięć" while these bounds said two is how a model gets told two
+ * different things and picks the wrong one.
+ */
+function buildOutlineResponseSchema(count: number): unknown {
+  const schema = structuredClone(outlineResponseJsonSchema);
+  schema.properties.tematy.minItems = count;
+  schema.properties.tematy.maxItems = count;
+  schema.properties.tematy.items.properties.dzien.maximum = count;
+  return schema;
 }
 
 /**
@@ -473,16 +554,20 @@ export async function generateDayActivities(
 }
 
 /**
- * Splits one hasło into a theme per working day (S-03).
+ * Splits one hasło into a theme per requested day (S-03, narrowed in S-09).
  *
- * Deliberately cheap and short: five clauses, not fifteen paragraphs. It runs
- * before the five day generations and every second it takes is a second none of
- * them has started, which is why it carries its own, tighter budget rather than
- * the day's.
+ * Deliberately cheap and short: a few clauses, not fifteen paragraphs. It runs
+ * before the day generations and every second it takes is a second none of them
+ * has started, which is why it carries its own, tighter budget rather than the
+ * day's.
  *
- * Returns themes already pinned to dates - `dates` is the working week in
- * calendar order and the model's day numbers index it, so nothing downstream has
- * to know what "day 3" meant.
+ * `dates` is one to five days in calendar order and need not be a whole week:
+ * a run replacing two unaccepted days buys two themes. The count reaches both
+ * the prompt and the `response_format` schema, and the same count validates the
+ * response.
+ *
+ * Returns themes already pinned to dates - the model's day numbers index
+ * `dates`, so nothing downstream has to know what "day 3" meant.
  */
 export async function generateWeekOutline(
   keyword: string,
@@ -500,14 +585,17 @@ export async function generateWeekOutline(
         buildRequestBody(
           model,
           buildOutlineUserMessage(keyword, dates),
-          outlinePrompt,
+          buildOutlineSystemMessage(dates.length),
           "szkic_tygodnia",
-          outlineResponseJsonSchema,
+          buildOutlineResponseSchema(dates.length),
           reasoningDisabled,
         );
       const call = await callOpenRouter(buildBody(true), timeoutMs, () => buildBody(false));
 
-      const result = weekOutlineSchema.safeParse(call.parsed);
+      // Built from `dates.length`, the same number the request was built from,
+      // so the schema that validates the answer cannot drift from the schema
+      // that asked the question.
+      const result = weekOutlineSchemaFor(dates.length).safeParse(call.parsed);
       if (!result.success) {
         throw new GenerationError("invalid", "Szkic tygodnia nie spełnia kontraktu.", { cause: result.error });
       }

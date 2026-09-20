@@ -1,4 +1,4 @@
-import type { DayPlanView, DayTheme } from "@/types";
+import type { ActivityDraft, DayPlanView, DayTheme } from "@/types";
 
 /**
  * The narrowing predicates both islands use on the bodies they fetch.
@@ -79,6 +79,61 @@ export function isOutlineBody(body: unknown): body is { themes: DayTheme[] } {
   return body.themes.every(
     (item: unknown) => isRecord(item) && typeof item.plan_date === "string" && typeof item.theme === "string",
   );
+}
+
+/**
+ * The deferred-write day route's body: proposals with no row behind them.
+ *
+ * `DayPlanView`'s predicate cannot be reused and must not be: that one checks
+ * `plan.id` and `current_generation`, which is precisely what an unwritten
+ * batch does not have. Conflating the two would let the board render a held
+ * batch as a saved day, which is the one distinction this whole slice turns on.
+ *
+ * The empty-array check carries the same weight it does in
+ * {@link isDayPlanBody}: `[].every(...)` is `true`, so without it a day holding
+ * nothing would count towards "the set is complete" and the week would be
+ * written with a batch the database then refuses with `U0003` - after the
+ * teacher had paid for every other day.
+ */
+export function isGeneratedDayBody(
+  body: unknown,
+): body is { plan_date: string; theme: string | null; activities: ActivityDraft[] } {
+  if (!isRecord(body) || typeof body.plan_date !== "string" || !Array.isArray(body.activities)) {
+    return false;
+  }
+  if (body.theme !== null && typeof body.theme !== "string") {
+    return false;
+  }
+  if (body.activities.length === 0) {
+    return false;
+  }
+  return body.activities.every(
+    (item: unknown) => isRecord(item) && typeof item.title === "string" && typeof item.description === "string",
+  );
+}
+
+/**
+ * The atomic write's body: the days it committed, read back from the database.
+ *
+ * Each value is checked with {@link isDayPlanBody} rather than by hand - these
+ * are saved plans and must carry everything a saved plan carries, including the
+ * `current_generation` that a later "Akceptuj tydzień" builds
+ * `expected_generation` from.
+ *
+ * An empty `plans` object is refused for the same reason the arrays are: the
+ * write route is only ever called with at least one day, so nothing coming back
+ * means the read-back found none of what was just committed, and rendering that
+ * as success would blank the board.
+ */
+export function isSaveWeekBody(body: unknown): body is { plans: Partial<Record<string, DayPlanView>> } {
+  if (!isRecord(body) || !isRecord(body.plans)) {
+    return false;
+  }
+  const entries = Object.values(body.plans);
+  if (entries.length === 0) {
+    return false;
+  }
+  return entries.every((plan) => isDayPlanBody(plan));
 }
 
 export function isErrorBody(body: unknown): body is { error: string; retryable: boolean } {

@@ -3,7 +3,7 @@
   "properties": {
     "tematy": {
       "type": "array",
-      "description": "Dokładnie pięć tematów dziennych dla polskiej grupy przedszkolnej, dzieci w wieku 3-6 lat - po jednym na każdy dzień roboczy tygodnia. Tematy to pięć różnych ujęć jednego hasła, a nie pięć wariantów tej samej aktywności.",
+      "description": "Tematy dzienne dla polskiej grupy przedszkolnej, dzieci w wieku 3-6 lat - dokładnie po jednym na każdy dzień wymieniony w wiadomości, w liczbie narzuconej przez minItems i maxItems. Każdy temat to inne ujęcie jednego hasła, a nie wariant tej samej aktywności.",
       "minItems": 5,
       "maxItems": 5,
       "items": {
@@ -11,7 +11,7 @@
         "properties": {
           "dzien": {
             "type": "integer",
-            "description": "Numer dnia roboczego: 1 to poniedziałek, 5 to piątek. Każdy numer występuje dokładnie raz.",
+            "description": "Numer dnia z listy w wiadomości, liczony od 1 w kolejności jej wypisania. Każdy numer występuje dokładnie raz.",
             "minimum": 1,
             "maximum": 5
           },

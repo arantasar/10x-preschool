@@ -5,7 +5,7 @@ import {
   generateDayPlanRequestSchema,
   toDayThemes,
   weekOutlineRequestSchema,
-  weekOutlineSchema,
+  weekOutlineSchemaFor,
 } from "./day-plan-contract";
 import { ACTIVITY_COUNT, DESCRIPTION_MAX, PROMPT_MAX, THEME_MAX, TITLE_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
 
@@ -64,21 +64,48 @@ describe("dayPlanProposalSchema", () => {
   });
 });
 
-describe("weekOutlineSchema", () => {
+describe("weekOutlineSchemaFor", () => {
   function themes(days: readonly number[]) {
     return { tematy: days.map((dzien) => ({ dzien, temat: `Temat ${String(dzien)}` })) };
   }
 
-  it("accepts each working day exactly once", () => {
-    expect(weekOutlineSchema.safeParse(themes([1, 2, 3, 4, 5])).success).toBe(true);
+  it("accepts each requested day exactly once", () => {
+    expect(weekOutlineSchemaFor(WEEK_DAYS).safeParse(themes([1, 2, 3, 4, 5])).success).toBe(true);
   });
 
   it("rejects a duplicated day, which would leave Wednesday with no theme", () => {
-    expect(weekOutlineSchema.safeParse(themes([1, 2, 2, 4, 5])).success).toBe(false);
+    expect(weekOutlineSchemaFor(WEEK_DAYS).safeParse(themes([1, 2, 2, 4, 5])).success).toBe(false);
   });
 
-  it(`rejects fewer than ${String(WEEK_DAYS)} themes`, () => {
-    expect(weekOutlineSchema.safeParse(themes([1, 2, 3, 4])).success).toBe(false);
+  it(`rejects fewer than ${String(WEEK_DAYS)} themes when ${String(WEEK_DAYS)} were asked for`, () => {
+    expect(weekOutlineSchemaFor(WEEK_DAYS).safeParse(themes([1, 2, 3, 4])).success).toBe(false);
+  });
+
+  // S-09 buys an outline for the days actually being replaced, so the schema is
+  // built per request. Each count has to accept its own shape and refuse both
+  // neighbours - a schema that accepted five themes for a two-day request would
+  // let `toDayThemes` index past the end of `dates`.
+  it.each([[1], [3], [WEEK_DAYS]])("accepts exactly %i themes at count %i", (count) => {
+    const days = Array.from({ length: count }, (_, index) => index + 1);
+
+    expect(weekOutlineSchemaFor(count).safeParse(themes(days)).success).toBe(true);
+  });
+
+  it.each([[1], [3]])("rejects one theme too many at count %i", (count) => {
+    const days = Array.from({ length: count + 1 }, (_, index) => index + 1);
+
+    expect(weekOutlineSchemaFor(count).safeParse(themes(days)).success).toBe(false);
+  });
+
+  // The bound that matters most: `dzien` above the requested count is the value
+  // `toDayThemes` would turn into `{ plan_date: undefined }`. The count is
+  // right, so only the per-item maximum can catch it.
+  it("rejects a dzien above the requested count", () => {
+    expect(weekOutlineSchemaFor(2).safeParse(themes([1, 5])).success).toBe(false);
+  });
+
+  it("rejects duplicated days below the full week too", () => {
+    expect(weekOutlineSchemaFor(3).safeParse(themes([1, 2, 2])).success).toBe(false);
   });
 });
 
@@ -90,7 +117,7 @@ describe("toDayThemes", () => {
   // that the model listed them in order, and an out-of-order response would
   // otherwise put Friday's theme on Monday.
   it("pins each theme to its date, whatever order the model listed them in", () => {
-    const parsed = weekOutlineSchema.parse({
+    const parsed = weekOutlineSchemaFor(WEEK_DAYS).parse({
       tematy: [
         { dzien: 3, temat: "Środa" },
         { dzien: 1, temat: "Poniedziałek" },
@@ -106,6 +133,25 @@ describe("toDayThemes", () => {
       { plan_date: "2026-09-16", theme: "Środa" },
       { plan_date: "2026-09-17", theme: "Czwartek" },
       { plan_date: "2026-09-18", theme: "Piątek" },
+    ]);
+  });
+
+  // The S-09 case: a week where Monday, Wednesday and Friday are accepted asks
+  // for two themes, and they belong to Tuesday and Thursday - not to the first
+  // two days of the week. `dates` carries that, and `dzien` indexes `dates`,
+  // never the calendar.
+  it("maps a two-date request onto those two dates in calendar order", () => {
+    const subset = ["2026-09-15", "2026-09-17"];
+    const parsed = weekOutlineSchemaFor(subset.length).parse({
+      tematy: [
+        { dzien: 2, temat: "Czwartkowy" },
+        { dzien: 1, temat: "Wtorkowy" },
+      ],
+    });
+
+    expect(toDayThemes(parsed, subset)).toEqual([
+      { plan_date: "2026-09-15", theme: "Wtorkowy" },
+      { plan_date: "2026-09-17", theme: "Czwartkowy" },
     ]);
   });
 });
@@ -191,5 +237,24 @@ describe("weekOutlineRequestSchema — the same hasło, the same rule", () => {
 
     expect(result.success).toBe(true);
     expect(result.data?.prompt).toBe("jesień w lesie");
+  });
+
+  // The bound is a range from S-09, not a fixed five, but it is still a bound:
+  // the upper one is what stops a caller buying a ten-day outline the response
+  // schema would then refuse after the model had been paid.
+  it.each([[1], [2], [WEEK_DAYS]])("accepts %i working days", (count) => {
+    const result = weekOutlineRequestSchema.safeParse({ prompt: "jesień", dates: DATES.slice(0, count) });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an empty dates array — an outline over no days answers nothing", () => {
+    expect(weekOutlineRequestSchema.safeParse({ prompt: "jesień", dates: [] }).success).toBe(false);
+  });
+
+  it(`rejects more than ${String(WEEK_DAYS)} dates`, () => {
+    const tooMany = [...DATES, "2026-09-19"];
+
+    expect(weekOutlineRequestSchema.safeParse({ prompt: "jesień", dates: tooMany }).success).toBe(false);
   });
 });

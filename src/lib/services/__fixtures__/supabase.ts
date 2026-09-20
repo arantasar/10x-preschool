@@ -13,9 +13,10 @@ import type { DayPlanClient } from "@/lib/services/day-plan-store";
  *
  * It reproduces PostgREST exactly as deep as the functions actually called need
  * it: `from("day_plans").select().eq().maybeSingle()`,
- * `from("activities").select().eq().order()`, and `rpc()`. Nothing more. A
- * deeper imitation would start being a second implementation of PostgREST, and a
- * test that passes against it would stop meaning anything about the real one.
+ * `from("activities").select().eq().order()`, `.in(…)` on both for
+ * `readWeekPlans`, and `rpc()`. Nothing more. A deeper imitation would start
+ * being a second implementation of PostgREST, and a test that passes against it
+ * would stop meaning anything about the real one.
  */
 
 export type DayPlanRow = Database["public"]["Tables"]["day_plans"]["Row"];
@@ -39,6 +40,14 @@ export interface SupabaseStubOptions {
   savedActivities?: ActivityRow[];
   /** Makes `rpc` answer with a refusal instead of a plan id. */
   rpcError?: StubPostgrestError;
+  /**
+   * What `readWeekPlans` finds — the `.in("plan_date", …)` read the week write
+   * route ends with. Separate from `savedPlan`/`savedActivities`, which serve
+   * the single-day `.eq().maybeSingle()` path: a stub that answered both from
+   * one field could not express "the write landed on three days".
+   */
+  weekPlans?: DayPlanRow[];
+  weekActivities?: ActivityRow[];
 }
 
 export interface SupabaseStub {
@@ -76,7 +85,14 @@ export function activityRow(ordinal: number, plan: DayPlanRow): ActivityRow {
 }
 
 export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
-  const { existingPlan = null, savedPlan = null, savedActivities = [], rpcError } = options;
+  const {
+    existingPlan = null,
+    savedPlan = null,
+    savedActivities = [],
+    rpcError,
+    weekPlans = [],
+    weekActivities = [],
+  } = options;
 
   const rpc = vi.fn(() =>
     Promise.resolve(
@@ -100,8 +116,14 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
     from: (table: string) => ({
       select: () =>
         table === "day_plans"
-          ? { eq: () => ({ maybeSingle: () => Promise.resolve(dayPlanResult()) }) }
-          : { eq: () => ({ order: () => Promise.resolve({ data: savedActivities, error: null }) }) },
+          ? {
+              eq: () => ({ maybeSingle: () => Promise.resolve(dayPlanResult()) }),
+              in: () => Promise.resolve({ data: weekPlans, error: null }),
+            }
+          : {
+              eq: () => ({ order: () => Promise.resolve({ data: savedActivities, error: null }) }),
+              in: () => ({ order: () => Promise.resolve({ data: weekActivities, error: null }) }),
+            },
     }),
   };
 
