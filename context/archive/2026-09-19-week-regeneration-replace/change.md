@@ -1,10 +1,10 @@
 ---
 change_id: week-regeneration-replace
 title: Week regeneration replace
-status: impl_reviewed
+status: archived
 created: 2026-09-19
 updated: 2026-09-20
-archived_at: null
+archived_at: 2026-09-20T13:32:00Z
 ---
 
 ## Notes
