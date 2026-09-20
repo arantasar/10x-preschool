@@ -383,7 +383,10 @@ client bundle — these stay hand-written predicates, as the existing ones are.
   rejected with 400 before any store call: `npm run test`
 - A write-route test asserts a store `conflict` surfaces as 409: `npm run test`
 - Exactly one copy of the generation-error tables remains in the tree:
-  `grep -rn "MESSAGE_BY_CATEGORY" src --include='*.ts' -l` returns one file
+  `grep -rn "MESSAGE_BY_CATEGORY" src --include='*.ts' --include='*.tsx' -l` returns one file.
+  `.tsx` is included deliberately: it is where a copy would actually be written — `DayPlanEditor.tsx`
+  already carries its own hardcoded fallback sentence — and a gate that cannot see the place the
+  duplication happens is not watching the invariant it names
 - Type checking passes: `npm run build`
 - Linting passes: `npm run lint`
 
@@ -479,12 +482,18 @@ answer this slice gives to Open Roadmap Question #5, and it is deliberate.
 
 - Unit tests cover the target/untouched partition and the confirmation sentence for the cases
   (5 empty), (3 draft + 2 accepted), (5 accepted), (0 planned): `npm run test`
-- No `only_if_absent` remains in the week path:
-  `grep -n "only_if_absent" src/components/plan/WeekPlanBoard.tsx` returns nothing, while
-  `grep -rn "only_if_absent" src/lib/services/day-plan-contract.ts` still returns the schema field
-  (the day route keeps it)
+- The board's day request goes to the deferred-write route:
+  `grep -nE '"/api/day-plan/week/day"' src/components/plan/WeekPlanBoard.tsx` returns the `fetch`.
+  Stated as a positive rather than as „`only_if_absent` nie występuje w WeekPlanBoard.tsx", which was
+  the first draft of this criterion and could not fail: once the board stops calling
+  `/api/day-plan/generate` at all, no code path could reintroduce that request field, so the grep
+  was green by construction rather than by state. `grep -rn "only_if_absent"
+  src/lib/services/day-plan-contract.ts` still returns the schema field (the day route keeps it)
 - The week board no longer calls the writing generate route:
-  `grep -n '"/api/day-plan/generate"' src/components/plan/WeekPlanBoard.tsx` returns nothing
+  ``grep -nE "/api/day-plan/generate['\"`]" src/components/plan/WeekPlanBoard.tsx`` returns nothing.
+  The trailing quote class is what makes this anchor on the construct: a bare
+  `grep '"/api/day-plan/generate"'` matches only the double-quoted spelling, so a regression written
+  as ``fetch(`/api/day-plan/generate`)`` would walk straight through it
 - Type checking passes: `npm run build`
 - Linting passes: `npm run lint`
 - Existing Playwright specs still pass: `npm run test:e2e`
@@ -614,7 +623,7 @@ undoing, because what it writes is shape-identical to what the single-day writer
 - [x] 3.1 New route tests pass for auth, malformed body, unconfigured client, generation failures — 50c220e
 - [x] 3.2 Write route rejects over-long activity arrays and titles with 400 before any store call — 50c220e
 - [x] 3.3 Write route surfaces a store `conflict` as 409 — 50c220e
-- [x] 3.4 Exactly one copy of the generation-error tables remains in the tree — 50c220e
+- [x] 3.4 Exactly one copy of the generation-error tables remains in the tree (`.ts` and `.tsx`) — 50c220e, gate widened at impl-review
 - [x] 3.5 Type checking passes: `npm run build` — 50c220e
 - [x] 3.6 Linting passes: `npm run lint` — 50c220e
 
@@ -628,8 +637,8 @@ undoing, because what it writes is shape-identical to what the single-day writer
 #### Automated
 
 - [x] 4.1 Unit tests cover the partition and confirmation sentence across four week compositions — dc007d5
-- [x] 4.2 No `only_if_absent` remains in the week path; the day route's schema field survives — dc007d5
-- [x] 4.3 The week board no longer calls the writing generate route — dc007d5
+- [x] 4.2 The board's day request goes to `/api/day-plan/week/day`; the day route's schema field survives — dc007d5, gate restated as a positive at impl-review
+- [x] 4.3 The week board no longer calls the writing generate route, in any quote style — dc007d5, gate tightened at impl-review
 - [x] 4.4 Type checking passes: `npm run build` — dc007d5
 - [x] 4.5 Linting passes: `npm run lint` — dc007d5
 - [x] 4.6 Existing Playwright specs still pass: `npm run test:e2e` — dc007d5

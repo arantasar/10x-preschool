@@ -195,6 +195,27 @@ describe("POST /api/day-plan/week/save — refusals and failures", () => {
     expect(response.status).toBe(409);
     expect(parsed.retryable).toBe(false);
     expect(supabase.rpc).toHaveBeenCalledTimes(1);
+    // The refused day reaches the teacher, not just the log. Across five days
+    // the category default ("Ten plan zmienił się w innym miejscu") names
+    // nothing to go and look at, which is the whole reason the function
+    // interpolates the date into its exception.
+    expect(parsed.error).toContain("15 września 2026");
+  });
+
+  // The date is lifted out of the function's prose with a regex, so the two can
+  // drift apart. When they do, the teacher must get the vague sentence rather
+  // than a wrong date.
+  it("falls back to the category default when the refusal does not name a date", async () => {
+    const supabase = supabaseStub({
+      rpcError: { code: "U0001", message: "plan is accepted; regeneration must be confirmed", details: "", hint: "" },
+    });
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+    const parsed = (await response.json()) as { error: string; retryable: boolean };
+
+    expect(response.status).toBe(409);
+    expect(parsed.error).toBe("Ten plan zmienił się w innym miejscu. Odśwież stronę i spróbuj ponownie.");
+    expect(supabase.rpc).toHaveBeenCalledTimes(1);
   });
 
   // U0003 is `invalid`, and `invalid` *is* retried once — the asymmetry

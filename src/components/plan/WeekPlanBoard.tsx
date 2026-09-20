@@ -83,6 +83,19 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
   // Guards the outline and the two week-level buttons - the operations that
   // really are one-at-a-time.
   const weekInFlight = useRef(false);
+  // Guards the write alone, and is taken synchronously by `writeWeek` itself.
+  // `weekInFlight` cannot do this job: `retryDay` deliberately does not hold it
+  // while generating, so two retries finishing close together would both see a
+  // complete held set and both POST the write. Two transactions bump every
+  // day's `current_generation` twice, which strands the island's
+  // `expected_generation` and 409s the whole week on accept.
+  const writeInFlight = useRef(false);
+  // How many single-day retries are generating right now. `retryDay` may run
+  // several at once by design, but a *week* run must not start on top of them:
+  // it would regenerate under a new hasło while a retry still holds the old one
+  // captured at its call, and whichever write lands last decides `prompt` for
+  // every day.
+  const retriesInFlight = useRef(0);
 
   const isBusy = busy !== "idle";
   const dayList = week.days.map((date) => days[date]);
@@ -184,8 +197,24 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
    * guard that keeps the transaction whole: a write fired as batches arrive
    * would be one day wide again, which is exactly the partial week this slice
    * removes.
+   *
+   * Takes `writeInFlight` here rather than at the call sites, and takes it
+   * before the first `await` so it is set for every later caller in this tick
+   * and every later microtask. The call sites cannot do this themselves:
+   * `retryDay` reaches this after a 10-30s generation, so a check it made
+   * before that generation says nothing about now.
    */
   async function writeWeek(targets: readonly string[], keyword: string): Promise<void> {
+    if (writeInFlight.current) return;
+    writeInFlight.current = true;
+    try {
+      await writeWeekOnce(targets, keyword);
+    } finally {
+      writeInFlight.current = false;
+    }
+  }
+
+  async function writeWeekOnce(targets: readonly string[], keyword: string): Promise<void> {
     const held = await new Promise<WeekWriteDay[] | null>((resolve) => {
       // Read through `setDays` rather than from the `days` closure: the two
       // callers reach this from different places - the end of a week run and
@@ -300,6 +329,10 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
     }
     setPromptError(undefined);
     if (weekInFlight.current) return;
+    // A retry generating right now holds the *old* hasło, captured when it was
+    // pressed. Letting a week run start alongside it means two hasła in flight
+    // over one week, and the write that lands last sets `prompt` for every day.
+    if (retriesInFlight.current > 0) return;
 
     // Acceptance decides, not emptiness. See `@/lib/week-generation`.
     const acceptance = weekAcceptance(week.days, days);
@@ -395,10 +428,17 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
    *
    * Deliberately does not take `weekInFlight` while generating: two days
    * failing on one rate limit is the ordinary case, and a global lock here would
-   * make the teacher retry them one after another. `generateDay` already
-   * refuses a second run of the same day, which is the only collision that
-   * matters. The week-level lock is still *read*, so a retry cannot start on top
-   * of a running week.
+   * make the teacher retry them one after another. The week-level lock is still
+   * *read*, so a retry cannot start on top of a running week.
+   *
+   * `generateDay`'s per-day guard is *not* the only collision that matters,
+   * which is what this function used to assume. Two retries own different days
+   * and so never meet there, but they converge on one week-level write, and a
+   * week run started alongside them carries a different hasło. Those two are
+   * held off by `writeInFlight` (taken inside `writeWeek`) and by
+   * `retriesInFlight` (read by `generateWeek`) respectively - not by a check
+   * made here before a 10-30s generation, which says nothing about the state
+   * that generation returns into.
    *
    * The write it may trigger is what makes a partial run recoverable: four days
    * paid for and one rate-limited is one retry away from a committed week,
@@ -407,22 +447,35 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
   function retryDay(planDate: string): void {
     if (weekInFlight.current) return;
     const keyword = prompt;
+
+    // Registered synchronously, before the generation starts. A week run
+    // checks this counter, so the window between "this retry began" and "this
+    // retry wrote" is never one a `generateWeek` can start inside.
+    retriesInFlight.current += 1;
+    setBusy("generating");
+
     void (async () => {
-      await generateDay(planDate, days[planDate].theme, keyword);
-
-      // The set this day belongs to, recomputed from the board: the accepted
-      // days are still out, and every other day either holds a batch or is the
-      // one that just failed again.
-      const targets = weekAcceptance(week.days, days)
-        .filter((day) => !day.accepted)
-        .map((day) => day.planDate);
-
-      weekInFlight.current = true;
       try {
+        await generateDay(planDate, days[planDate].theme, keyword);
+
+        // The set this day belongs to, recomputed from the board: the accepted
+        // days are still out, and every other day either holds a batch or is the
+        // one that just failed again.
+        const targets = weekAcceptance(week.days, days)
+          .filter((day) => !day.accepted)
+          .map((day) => day.planDate);
+
+        // `writeWeek` takes `writeInFlight` itself, so two retries completing
+        // together produce one write, not two.
         await writeWeek(targets, keyword);
       } finally {
-        weekInFlight.current = false;
-        setBusy("idle");
+        retriesInFlight.current -= 1;
+        // Only the last retry standing clears the banner. Clearing it
+        // unconditionally would re-enable every control while a sibling retry
+        // was still generating.
+        if (retriesInFlight.current === 0) {
+          setBusy("idle");
+        }
       }
     })();
   }

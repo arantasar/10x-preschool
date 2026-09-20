@@ -28,7 +28,12 @@
 --
 -- every refusal names the offending `plan_date`. across five days "plan is
 -- accepted" without a date tells the teacher nothing they can act on, so the
--- date travels in the message and out through `StoreError` to the route.
+-- date travels in the message and out through `StoreError`. note that
+-- `StoreError.message` is for the log only - `storeFailure` never renders it -
+-- so getting the date onto a screen takes a `userMessage`, which
+-- `weekConflictMessage` in day-plan-store.ts builds for u0001. a refusal whose
+-- wording changes here and is not matched there degrades to the generic
+-- conflict sentence rather than showing a wrong date.
 
 create function public.save_week_plan_generation(
   p_prompt text,

@@ -8,7 +8,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
-    "test:gate": "vitest run --config vitest.gate.config.ts",
+    "test:gate": "vitest run --config vitest.gate.config.ts && node -e \"if (process.env.RUN_CONTENT_SAFETY_GATE !== '1') { console.error('\\n⚠️  Gate suspended - nothing was graded. Exit 2, not 0, so no automation reads this as a pass. Run: RUN_CONTENT_SAFETY_GATE=1 npm run test:gate\\n'); process.exit(2); }\"",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lint": "eslint .",
