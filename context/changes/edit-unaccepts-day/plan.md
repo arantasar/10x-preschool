@@ -402,12 +402,12 @@ Brak migracji. Brak przepisania danych — uzasadnienie w §Current State Analys
 
 #### Automated
 
-- [x] 4.1 Nowy test przechodzi
-- [x] 4.2 Cały zestaw e2e przechodzi bez regresji
-- [x] 4.3 Test przechodzi przy `--repeat-each=2`
-- [x] 4.4 Test zobaczony na czerwono przy usuniętym `window.confirm`
-- [x] 4.5 Brak zakazanych konstrukcji w pliku testu (grep)
-- [x] 4.6 Lint przechodzi: `npm run lint`
+- [x] 4.1 Nowy test przechodzi — 68c82c6
+- [x] 4.2 Cały zestaw e2e przechodzi bez regresji — 68c82c6
+- [x] 4.3 Test przechodzi przy `--repeat-each=2` — 68c82c6
+- [x] 4.4 Test zobaczony na czerwono przy usuniętym `window.confirm` — 68c82c6
+- [x] 4.5 Brak zakazanych konstrukcji w pliku testu (grep) — 68c82c6
+- [x] 4.6 Lint przechodzi: `npm run lint` — 68c82c6
 
 #### Manual
 
