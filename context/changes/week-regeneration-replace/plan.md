@@ -597,8 +597,8 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Manual
 
-- [ ] 1.6 Two-day payload with one empty batch leaves both days unchanged
-- [ ] 1.7 Accepted day with `p_confirm_replace => false` refuses with `U0001` and names the date
+- [x] 1.6 Two-day payload with one empty batch leaves both days unchanged — zweryfikowane na bazie podczas impl-review 2026-09-20 (sonda do F5)
+- [x] 1.7 Accepted day with `p_confirm_replace => false` refuses with `U0001` and names the date — zweryfikowane na bazie podczas impl-review 2026-09-20 (sonda do F5)
 
 ### Phase 2: Outline over a subset of days
 
@@ -613,8 +613,8 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Manual
 
-- [ ] 2.7 A 2-day outline request returns exactly 2 distinct Polish themes
-- [ ] 2.8 The prompt file reads coherently — no sentence still claiming five
+- [x] 2.7 A 2-day outline request returns exactly 2 distinct Polish themes — potwierdzone ręcznie 2026-09-20
+- [x] 2.8 The prompt file reads coherently — no sentence still claiming five — zweryfikowane grepem podczas impl-review 2026-09-20
 
 ### Phase 3: Generate-without-write and atomic write routes
 
@@ -629,8 +629,8 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Manual
 
-- [ ] 3.7 Deferred day route leaves an accepted day's row untouched
-- [ ] 3.8 Write route refuses a set containing an accepted day and writes neither day
+- [x] 3.7 Deferred day route leaves an accepted day's row untouched — potwierdzone ręcznie 2026-09-20
+- [x] 3.8 Write route refuses a set containing an accepted day and writes neither day — potwierdzone ręcznie 2026-09-20
 
 ### Phase 4: Week board — confirmation, replacement, all-or-nothing
 
@@ -645,8 +645,8 @@ undoing, because what it writes is shape-identical to what the single-day writer
 
 #### Manual
 
-- [ ] 4.7 Mixed week: dialog states both numbers; declining changes nothing; confirming spares the accepted days
-- [ ] 4.8 All-accepted week: nothing is spent and the message names acceptance
-- [ ] 4.9 Forced failure without retry leaves every day on its old plan after reload
-- [ ] 4.10 Retrying the failed day completes the set and the write fires once
-- [ ] 4.11 Reload mid-run shows the original week, and the board had warned this would happen
+- [x] 4.7 Mixed week: dialog states both numbers; declining changes nothing; confirming spares the accepted days — potwierdzone ręcznie 2026-09-20
+- [x] 4.8 All-accepted week: nothing is spent and the message names acceptance — potwierdzone ręcznie 2026-09-20
+- [x] 4.9 Forced failure without retry leaves every day on its old plan after reload — potwierdzone ręcznie 2026-09-20
+- [x] 4.10 Retrying the failed day completes the set and the write fires once — potwierdzone ręcznie 2026-09-20
+- [x] 4.11 Reload mid-run shows the original week, and the board had warned this would happen — potwierdzone ręcznie 2026-09-20
