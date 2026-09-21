@@ -49,11 +49,18 @@ export const PATCH: APIRoute = async (context) => {
   }
 
   try {
-    const planId = await updateActivityText(supabase, activityId.data, parsed.data);
+    const { planId, wasAccepted } = await updateActivityText(supabase, activityId.data, parsed.data);
     // The plan comes back too, not just the activity: the edit clears
     // `accepted_at` by trigger, and the island must see both facts at once or it
     // will keep rendering a plan it thinks is still accepted.
-    return json(requireSaved(await readDayPlanById(supabase, planId), planId), 200);
+    //
+    // `acceptance_cleared` is the second half of that: the plan alone says the
+    // day is a draft now, not that *this* save is what made it one. The island
+    // could only guess that from its own `accepted_at`, and a stale copy would
+    // guess wrong in exactly the case FR-017 exists for - so the answer comes
+    // from what the server read a moment before the write, not from the browser.
+    const saved = requireSaved(await readDayPlanById(supabase, planId), planId);
+    return json({ ...saved, acceptance_cleared: wasAccepted }, 200);
   } catch (error) {
     return storeFailure(error);
   }

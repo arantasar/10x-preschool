@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 2
 status: draft
 created: 2026-09-19
-updated: 2026-09-20
+updated: 2026-09-21
 prd_version: 2
 main_goal: quality
 top_blocker: decisions
@@ -58,7 +58,7 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 | ID    | Change ID                 | Outcome (user can …)                                                                        | Prerequisites        | PRD refs             | Status   |
 | ----- | ------------------------- | ------------------------------------------------------------------------------------------- | -------------------- | -------------------- | -------- |
 | S-09  | week-regeneration-replace | wygenerować tydzień na nowo, zastępując dni niezaakceptowane, po uczciwym potwierdzeniu     | S-03 (done, M-01)    | FR-012, FR-014, US-02 | done     |
-| S-12  | edit-unaccepts-day        | poprawić treść dnia zaakceptowanego po potwierdzeniu, które zdejmuje akceptację             | S-02 (done, M-01)    | FR-017               | ready    |
+| S-12  | edit-unaccepts-day        | poprawić treść dnia zaakceptowanego po potwierdzeniu, które zdejmuje akceptację             | S-02 (done, M-01)    | FR-017               | done     |
 | S-11  | week-level-plan-controls  | cofnąć akceptację i usunąć zapisany plan dnia z poziomu widoku tygodnia                     | S-05 (done, M-01)    | FR-015, FR-016       | ready    |
 | S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | ready    |
 | S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | ready    |
@@ -140,7 +140,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **Unknowns:**
   - Jak kafelek i nagłówek mają pokazywać dzień, który stracił akceptację przez edycję — wariant domyślny to stan „niezaakceptowany" nieodróżnialny od nigdy niezaakceptowanego. Owner: `/10x-plan`. Block: nie.
 - **Risk:** Druga w kolejności, bo cel `quality` stawia regułę przed jej najcięższym zastosowaniem: FR-017 ustala zasadę **„jawność proporcjonalna do skutku"** — nic nie jest zakazane, ale wszystko, co niszczy pracę oznaczoną jako gotowa, pyta — a `S-10` jest tej zasady najostrzejszym wariantem. Trzy ostrza. **(1)** Ta pozycja **odwraca decyzję zapisaną w roadmapie `M-01`** (2026-08-30: „blokada dotyczy edycji przypadkowej, operacje jawne pozostają dostępne"); granica „edycja przypadkowa vs operacja jawna" okazała się nie do obronienia — system broniłby poprawić literówkę, a pozwalał skasować tydzień. Nośnikiem tej decyzji są `shape-notes.md` i PRD v2, nie ten plik (Open Roadmap Questions #2). **(2)** Zmienia się znaczenie danych już zapisanych: dni zaakceptowane pod regułą „etykieta stanu" będą czytane pod regułą „stwierdzenie o konkretnej treści". Przepisania danych to nie wymaga, ale wymaga świadomości, że część istniejących zaakceptowanych dni mogła być edytowana po akceptacji. **(3)** To **jedyna** pozycja `M-02` ruszająca operacje akceptacji w widoku dnia, więc wiąże ją warunek układu z §Constraints (dawne FR-018, wycofane z listy FR 2026-09-19 — numer nie jest reużywany): cofnięcie akceptacji i usunięcie dnia trafiają przy okazji w docelowe miejsce (przy przycisku generowania), żeby te same przyciski nie były przesuwane dwa razy. Przy rozmieszczeniu obowiązuje ostrożność — usunięcie planu jest nieodwracalne, a przycisk generowania bywa klikany wielokrotnie w jednej sesji.
-- **Status:** ready
+- **Status:** done
 
 ### S-11: Cofnięcie akceptacji i usunięcie dnia z poziomu tygodnia
 
@@ -248,4 +248,5 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **S-04: Zalogowany nauczyciel po wejściu do aplikacji ląduje w widoku miesiąca i z niego wchodzi w tydzień oraz w pojedynczy dzień — bez osobnego pulpitu jako przystanku.** — Archived 2026-08-26 → `context/archive/2026-08-26-month-home/`. Lesson: —.
 - **S-08: Nauczyciel odróżnia od siebie dni jednego hasła bez wchodzenia w każdy z nich — kafelek w siatce miesiąca i nagłówek widoku dnia pokazują podtytuł dnia („Dinozaury — co jadły dinozaury"), a nie pięć razy to samo hasło.** — Archived 2026-08-27 → `context/archive/2026-08-27-visible-day-theme/`. Lesson: „Kryterium weryfikacji musi móc nie przejść".
 - **S-09: Nauczyciel może wygenerować tydzień na nowo pod nowym hasłem i dostać komplet nowych dni w miejsce dotychczasowych dni niezaakceptowanych — po potwierdzeniu, które uczciwie podaje, ile dni zostanie zastąpionych i ile z nich jest zaakceptowanych.** — Archived 2026-09-20 → `context/archive/2026-09-19-week-regeneration-replace/`. Lesson: —.
+- **S-12: Nauczyciel może poprawić treść dnia, który wcześniej zaakceptował — dostaje potwierdzenie, a po zgodzie dzień traci stan zaakceptowania, zamiast wyglądać na zatwierdzony z treścią zmienioną po akceptacji.** — Archived 2026-09-21 → `context/archive/2026-09-20-edit-unaccepts-day/`. Lesson: —.
 - **S-05: Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; wiersz `day_plans` i jego aktywności są usuwane trwale (kasowanie twarde), a dzień wraca do stanu **nieodróżnialnego od dnia nigdy nieplanowanego** — na wszystkich powierzchniach, na których jest pokazywany, i dla generowania tygodnia, które obejmuje go ponownie zamiast pominąć.** — Archived 2026-08-29 → `context/archive/2026-08-27-delete-day-plan/`. Lesson: „Kryterium »poza X nietknięte« musi być odporne na przerównanie".

@@ -19,8 +19,20 @@ import type { DayPlanWithCurrentActivities } from "@/types";
  * Editing one proposal also clears the plan's `accepted_at`, by trigger, so a
  * response carrying only the edited activity would leave the island holding a
  * plan it believes is still accepted. Both facts have to arrive together.
+ *
+ * `acceptance_cleared` is the one field a single route may add, and it is
+ * optional and additive precisely so the indistinguishability stated above
+ * survives it: the island narrows every body with `isDayPlanBody`, which checks
+ * the fields it needs and does not reject extra ones, so generate and accept
+ * keep parsing exactly as before while saying nothing. Only the edit route sets
+ * it, because only an edit can take an acceptance away as a side effect the
+ * teacher did not ask for by name - and the island must not infer that from its
+ * own copy of `accepted_at`, which can be minutes out of date.
  */
-export type DayPlanSuccessBody = DayPlanWithCurrentActivities;
+export type DayPlanSuccessBody = DayPlanWithCurrentActivities & {
+  /** True when *this* write is the one that cleared the plan's acceptance. */
+  readonly acceptance_cleared?: boolean;
+};
 
 /**
  * `retryable` is the whole point of this envelope. Without it, "the database is
