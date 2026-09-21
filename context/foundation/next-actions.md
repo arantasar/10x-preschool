@@ -321,6 +321,16 @@ wykonana; pozostałe trzy należą do Kroku 9.
 | **Ścieżka krytyczna z generowaniem bez pokrycia** — istniejące testy celowo omijają LLM (zasiew prosto do bazy), a §5 zakłada bramkę na pełnym przepływie | **Krok 9.** Wymaga rozstrzygnięcia, czym zastąpić dostawcę: `page.route()` nie zadziała, bo wywołanie idzie z serwera — kandydaci to atrapa na poziomie `webServer` (osobny tryb env) albo dopuszczenie jednego prawdziwego wywołania na przebieg |
 | **Ryzyko #5 (postęp przy 10–30 s) bez pokrycia przeglądarkowego** — jedyne pozostałe ryzyko, które jest w istotnej części widoczne wyłącznie w UI (`GenerationProgress`) | Naturalnie razem z poprzednim wierszem: oba potrzebują sterowalnego dostawcy, więc wstrzyknięcie opóźnienia i awarii to ta sama robota co atrapa generowania |
 
+## Otwarte ogony po `edit-unaccepts-day` (S-12, 2026-09-21)
+
+Nie blokują żadnego kroku. Oba wyszły z przeglądu implementacyjnego
+(`context/changes/edit-unaccepts-day/reviews/impl-review.md`).
+
+| Co | Właściciel / bramka wejścia |
+| --- | --- |
+| **`prd-v2.md` §Business Logic Changes reguła 2 opisuje nieprawdę** — mówi, że „edycja treści nie rusza tej etykiety [akceptacji]", co przestało być prawdą **2026-08-23** wraz z S-02: trigger `activities_edit_clears_acceptance` zeruje `accepted_at` przy każdej zmianie `title` albo `description`. `edit-unaccepts-day` świadomie tego nie poprawił (PRD v2 jest zamrożonym artefaktem M-02, a `CLAUDE.md` traktuje edycje `context/foundation/*` jako osobny tor) i zapisał to w §Migration Notes planu. Konsekwencja, jeśli zostanie: `S-10` ma `S-12` w prerekwizytach i będzie czytać ten akapit jako opis stanu wyjściowego | Brak formalnej bramki — edycja `context/foundation/*` idzie wprost na `master`. **Zrobić przed otwarciem `S-10`**, nie „kiedyś": to jedyna pozycja, która czyta ten akapit jako prawdę. Przy okazji sprawdzić §Constraints „Semantyka zastanych danych" (`prd-v2.md:281-285`), który ostrzega przed dniami zaakceptowanymi i edytowanymi po akceptacji — żadna ścieżka aplikacji nie mogła takiego wiersza wyprodukować od S-02 |
+| **Wyścig odczyt–zapis w trasie edycji raportuje stan sprzed zapisu, nie skutek** — `acceptance_cleared` to dosłownie `wasAccepted`, a trigger jest warunkowy (`when old.title is distinct from new.title or …`), więc zapis bez zmiany treści zwraca `true`, choć nic nie zdjął. Wyspę ratuje dopiero złożony warunek w `AcceptanceBanner` (`!acceptedAt && clearedByEdit`), czyli obrona w głąb, nie kontrakt. Finding F2 przeglądu, świadomie pominięty przy triage'u | Brak bramki. Jeśli pole zacznie czytać ktokolwiek poza `DayPlanEditor` — np. powierzchnie akceptacji w tygodniu z `S-11` — **najpierw** policzyć je z faktu po zapisie: `wasAccepted && saved.plan.accepted_at === null`, i dołożyć piąty przypadek do `activity/[id].test.ts` (dziś `savedDay()` zawsze buduje `accepted_at: null`, więc wszystkie cztery dzielą jeden kształt po zapisie) |
+
 ## Pułapki — pięć rzeczy, o które łatwo się potknąć
 
 1. **Sekcja §Kandydaci do M-02 w `roadmap.md` jest tymczasowa.** Nie należy do schematu
