@@ -1,10 +1,10 @@
 ---
 change_id: edit-unaccepts-day
 title: Edit unaccepts day
-status: impl_reviewed
+status: archived
 created: 2026-09-20
 updated: 2026-09-21
-archived_at: null
+archived_at: 2026-09-21T20:46:38Z
 ---
 
 ## Notes
