@@ -133,7 +133,7 @@ Trasa `PATCH` przestaje milczeć o tym, czy ta konkretna edycja cofnęła akcept
 - Lint przechodzi: `npm run lint`
 - Pakiet testów przechodzi, wraz z nowym plikiem: `npm test`
 - Nowy plik testowy faktycznie istnieje i jest uruchamiany: `npx vitest run src/pages/api/day-plan/activity/ --reporter=verbose` wypisuje cztery przypadki
-- Znacznik nie wycieka do pozostałych tras: `grep -n "acceptance_cleared" src/pages/api/day-plan/generate.ts src/pages/api/day-plan/accept.ts src/pages/api/day-plan/index.ts` nie zwraca nic, a `grep -c "acceptance_cleared" src/pages/api/day-plan/activity/\[id\].ts` zwraca co najmniej 1
+- Znacznik nie wycieka do pozostałych tras: `grep -n "acceptance_cleared" src/pages/api/day-plan/generate.ts src/pages/api/day-plan/accept.ts src/pages/api/day-plan/index.ts` nie zwraca nic, a `grep -c "acceptance_cleared:" src/pages/api/day-plan/activity/\[id\].ts` zwraca dokładnie `1` _(dwukropek i dokładna liczba są wymogiem `lessons.md` „Bramka grepowa musi celować w konstrukcję": bez dwukropka grep liczy też wzmiankę w komentarzu, więc `>= 1` przechodzi na pliku, z którego usunięto samo przypisanie. Przejechane na obu stanach: 1 na docelowym, 0 po podmianie `acceptance_cleared:` na inną nazwę pola)_
 - Podpowiedź nazwy FK jest w kodzie, nie w domyśle: `grep -n "activities_plan_id_user_id_fkey" src/lib/services/day-plan-store.ts` zwraca trafienie
 
 #### Manual Verification:
@@ -178,8 +178,8 @@ Wyspa pyta przed zapisem, który zdejmie akceptację, i mówi o tym po fakcie. O
 - Build przechodzi: `npm run build`
 - Lint, w tym reguły `jsx-a11y` i `react-hooks`, przechodzi: `npm run lint`
 - Pakiet testów przechodzi bez regresji: `npm test`
-- Dialog jest bramkowany, nie bezwarunkowy: `grep -n -B4 "window.confirm" src/components/plan/DayPlanEditor.tsx` pokazuje warunek na `accepted` w każdym z trzech wystąpień
-- Banner nie zgaduje ze swojej kopii stanu: `grep -n "clearedByEdit" src/components/plan/DayPlanEditor.tsx` pokazuje przypisanie wyłącznie z wartości odczytanej z odpowiedzi, a nie z `accepted`
+- Dialog przy zapisie jest bramkowany stanem akceptacji, i to stanem żywym: `grep -c "planRef.current?.plan.accepted_at" src/components/plan/DayPlanEditor.tsx` zwraca `1` _(kotwica na konstrukcji niosącej niezmiennik, a nie na słowie `accepted`, które pada też w komentarzach, w `generate()` i w `deletePlan()`. Poprzednia wersja tego kryterium żądała warunku na `accepted` nad **wszystkimi trzema** `window.confirm` — czytała się na czerwono na poprawnym kodzie, bo `deletePlan` jest bramkowany na `!plan` i tak ma być. Bez okna `-A<n>` świadomie: pierwsza wersja tej poprawki liczyła trafienia w `grep -A10 "function saveDraft"` i zgasła przy najbliższej zmianie w tej funkcji — dopisanie czterech linii bramki `inFlight` wypchnęło warunek poza okno. Przejechane na obu stanach: 1 na docelowym, 0 po cofnięciu bramki do `if (accepted)`)_
+- Banner nie zgaduje ze swojej kopii stanu: `grep -c "setClearedByEdit(" src/components/plan/DayPlanEditor.tsx` zwraca `2` (zerowanie na starcie mutacji + ustawienie z odpowiedzi), a `grep -c "setClearedByEdit(readAcceptanceCleared(body))" src/components/plan/DayPlanEditor.tsx` zwraca `1` _(pierwsza liczba pilnuje, że zerowanie nie zniknęło; druga — że źródłem jest odpowiedź serwera. Poprzednia wersja grepowała `clearedByEdit` z małym `c`, więc **omijała oba przypisania** — `setClearedByEdit` ma wielkie C — i pokazywała wyłącznie komentarze, propy i deklarację. Przejechane na obu stanach: 2/1 na docelowym, 2/0 po podmianie źródła na `accepted !== null`)_
 
 #### Manual Verification:
 
@@ -227,7 +227,7 @@ Wyspa pyta przed zapisem, który zdejmie akceptację, i mówi o tym po fakcie. O
 - Build przechodzi: `npm run build`
 - Lint, w tym `jsx-a11y`, przechodzi: `npm run lint`
 - Pakiet testów przechodzi: `npm test`
-- Akceptacja nie stała się przyciskiem wysyłającym formularz: `grep -n -A3 "Akceptuj plan" src/components/plan/DayPlanEditor.tsx` pokazuje `type="button"`
+- Akceptacja nie stała się przyciskiem wysyłającym formularz: `grep -c 'type="submit"' src/components/plan/DayPlanEditor.tsx` zwraca `1` — jedyny submit w wyspie to przycisk generowania, więc przycisk akceptacji stojący z nim w tym samym `<form>` nie może porwać `onSubmit` _(poprzednia wersja, `grep -n -A3 "Akceptuj plan"`, nie mogła zobaczyć swojego celu: etykieta jest trzynaście linii **poniżej** `type="button"`, więc komenda przechodziła bez oglądania atrybutu, który nazywa. Przejechane na obu stanach: 1 na docelowym, 2 po zamianie `type="button"` przycisku akceptacji na `type="submit"`)_
 - Przycisk usuwania nie został przeniesiony przy okazji: `git diff -w master..HEAD -- src/components/plan/DayPlanEditor.tsx | grep -c '^[+-].*Usuń plan dnia'` zwraca `0` _(zakresowanie `master..HEAD` i `-w` są wymogiem `lessons.md` — bez zakresu kryterium przechodzi bezwarunkowo po commicie fazy, bez `-w` łapie samo przeformatowanie)_
 - Istniejące testy e2e dotykające tych przycisków przechodzą: `npm run test:e2e`
 
@@ -411,5 +411,26 @@ Brak migracji. Brak przepisania danych — uzasadnienie w §Current State Analys
 
 #### Manual
 
-- [ ] 4.7 Dwa przebiegi pod rząd nie zostawiają zasianych dni
-- [ ] 4.8 Przebieg równoległy nie koliduje na `unique (user_id, plan_date)`
+- [x] 4.7 Dwa przebiegi pod rząd nie zostawiają zasianych dni — zweryfikowane przy przeglądzie: cztery pełne przebiegi `npm run test:e2e` pod rząd, `select count(*) from day_plans` zwraca `0`
+- [x] 4.8 Przebieg równoległy nie koliduje na `unique (user_id, plan_date)` — `fullyParallel`, 5 workerów, 9 testów; cztery przebiegi bez kolizji
+
+### Faza 5: Poprawki z przeglądu implementacyjnego (2026-09-21)
+
+> Dopisane po `/10x-impl-review`. Raport: `reviews/impl-review.md`; decyzje triage'u w polach `Decision`.
+
+#### Automated
+
+- [x] 5.1 F1 — bramka dialogu czyta stan żywy, nie render scope: `grep -c "planRef.current?.plan.accepted_at" src/components/plan/DayPlanEditor.tsx` zwraca `1`; przejechane na obu stanach (0 po cofnięciu do `if (accepted)`)
+- [x] 5.2 F3 — cztery bramki grepowe przepisane na konstrukcję (1.5b, 2.4, 2.5, 3.4), każda przejechana na stanie zepsutym i docelowym; wyniki wpisane w treść kryteriów
+- [x] 5.3 F4 — `tests/e2e/day-plan-edit-consent.spec.ts` pokrywa ścieżkę zgody: dialog → banner przyczyny → „Akceptuj ponownie" → ulotność po przeładowaniu, oraz drugą edycję dnia roboczego bez pytania
+- [x] 5.4 F4 — nowy test zobaczony na czerwono w dwóch wariantach psucia: `clearedByEdit={false}` (pada asercja o bannerze) i bramka dialogu wyłączona (pada `expect(dialogs).toHaveLength(1)`)
+- [x] 5.5 F5 — `expect(supabase.update).toHaveBeenCalledWith({ title, description })` w przypadku (a); sam licznik wywołań przechodził na `.update({})`
+- [x] 5.6 F6 — `acceptedAtOf` przyjmuje `| null` i zwraca `null` zamiast rzucać TypeError na 500
+- [x] 5.7 F8 — `saveDraft` sprawdza `inFlight.current` **przed** dialogiem, żeby nie zbierać zgody pod zapis, który `mutate` i tak porzuci
+- [x] 5.8 Lint, build, `npm test` (243) i `npm run test:e2e` (9) zielone; zakazane konstrukcje w nowym specu: brak
+
+#### Manual
+
+- [x] 5.9 Ryzyko #8 dopisane do mapy ryzyk `test-plan.md` §2 wraz z wierszem Risk Response; oba spece FR-017 przemianowane na `ryzyko #8` zgodnie z `E2E-RULES.md` (F9)
+- [x] 5.10 Dwa ogony dopisane do `next-actions.md` §Otwarte ogony po `edit-unaccepts-day`: nieprawdziwa reguła 2 w `prd-v2.md` (F7) i pominięty finding F2 z warunkiem wejścia przed `S-11` (F2)
+- [ ] 5.11 Kroki 6–7 z §Testing Strategy (scenariusze dwukartowe) — jedyna część weryfikacji ręcznej bez pokrycia automatycznego; wymagają dwóch kontekstów przeglądarki na jedno konto

@@ -34,7 +34,7 @@ import { waitForIslands } from "./support/hydration";
  * trasy oraz weryfikacja ręczna Fazy 2; drugi przebieg przeglądarki za sygnał,
  * który stoi taniej, to `test-plan.md` §1 zasada 1.
  */
-test.describe("FR-017 — odmowa w dialogu przy edycji dnia zaakceptowanego", () => {
+test.describe("Ryzyko #8 — odmowa w dialogu przy edycji dnia zaakceptowanego", () => {
   const seededPlanIds: string[] = [];
 
   test.afterEach(async () => {
@@ -42,7 +42,7 @@ test.describe("FR-017 — odmowa w dialogu przy edycji dnia zaakceptowanego", ()
     seededPlanIds.length = 0;
   });
 
-  test("FR-017: anulowanie dialogu nie zapisuje edycji i nie zdejmuje akceptacji", async ({ page }) => {
+  test("ryzyko #8: anulowanie dialogu nie zapisuje edycji i nie zdejmuje akceptacji", async ({ page }) => {
     const planDate = uniquePlanDate();
     const stamp = uniqueStamp();
     const originalTitle = `Powitanie ${stamp}`;

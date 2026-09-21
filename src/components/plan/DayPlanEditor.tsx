@@ -44,7 +44,7 @@ interface Draft {
 }
 
 export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorProps) {
-  const [plan, setPlan] = useState<DayPlanView | null>(initialPlan);
+  const [plan, setPlanState] = useState<DayPlanView | null>(initialPlan);
   const [prompt, setPrompt] = useState(initialPlan?.plan.prompt ?? "");
   const [promptError, setPromptError] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState<Busy>("idle");
@@ -68,6 +68,19 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
   function setDraft(next: Draft | null): void {
     draftRef.current = next;
     setDraftState(next);
+  }
+
+  // The same mirror, one field over, and for the same reason. `saveDraft` gates
+  // its dialog on the acceptance state, and the retry path re-enters the
+  // `saveDraft` built at the *first* attempt - by which time `reconcile()` may
+  // have pulled in an acceptance made in another tab. Reading `plan` from that
+  // render scope would ask the question against a state the server has already
+  // left, and nothing refuses behind this dialog to catch it.
+  const planRef = useRef<DayPlanView | null>(initialPlan);
+
+  function setPlan(next: DayPlanView | null): void {
+    planRef.current = next;
+    setPlanState(next);
   }
 
   // The disabled buttons cover the ordinary double click; this covers the rest -
@@ -276,7 +289,18 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
    * is precisely the one where the dialog never appears.
    */
   function saveDraft(current: Draft): void {
-    if (accepted) {
+    // Asked before the dialog, not after it. `mutate` opens with the same guard
+    // and returns silently, so prompting first would collect a consent for an
+    // operation that is then dropped without a request, a message or a reset -
+    // the teacher answers a question about a save that never happens.
+    if (inFlight.current) return;
+    // `planRef`, not `accepted`: "Spróbuj ponownie" re-enters this function
+    // through the closure built at the first attempt, and a failed save runs
+    // `reconcile()`, which can bring back a day that is accepted now although it
+    // was a draft when the teacher first clicked. Gating on the render scope
+    // would skip the dialog in exactly that case and take the acceptance away
+    // silently - the one outcome this change exists to prevent.
+    if (planRef.current?.plan.accepted_at) {
       const consequence =
         "Ten dzień jest zaakceptowany. Zapisanie zmiany cofnie akceptację i plan wróci do roboczego. " +
         "Akceptację można przywrócić jednym kliknięciem.";

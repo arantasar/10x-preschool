@@ -1,9 +1,9 @@
 ---
 change_id: edit-unaccepts-day
 title: Edit unaccepts day
-status: implemented
+status: impl_reviewed
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 archived_at: null
 ---
 

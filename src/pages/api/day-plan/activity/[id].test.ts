@@ -72,7 +72,12 @@ describe("PATCH /api/day-plan/activity/[id]", () => {
     expect(body.acceptance_cleared).toBe(true);
     // The whole plan still comes back, not just the edited proposal.
     expect(body.activities).toHaveLength(3);
+    // Not just *that* a write happened, but what it carried. `toHaveBeenCalledTimes`
+    // alone passes on a route calling `.update({})`, or one writing the
+    // description into the title — the stub hands the payload back untouched
+    // either way, so the count says nothing about the contract.
     expect(supabase.update).toHaveBeenCalledTimes(1);
+    expect(supabase.update).toHaveBeenCalledWith({ title: "Nowy tytuł", description: "Nowy opis" });
   });
 
   it("answers 200 without acceptance_cleared when the plan was already a draft", async () => {

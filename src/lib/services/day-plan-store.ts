@@ -447,8 +447,18 @@ export async function updateActivityText(
  * here, but the same select would be an array if the constraint's uniqueness
  * ever changed. Reading both shapes costs two lines and means a regenerated
  * `database.types.ts` cannot turn this into a silent `undefined`.
+ *
+ * `null` is the third shape, and it is unreachable today rather than impossible:
+ * the two `authenticated` SELECT policies use the identical predicate
+ * `(select auth.uid()) = user_id`, so an activity the caller can see always has
+ * a plan the caller can see. Were those to drift apart, a bare property read
+ * would throw inside the route's `try` and surface as a generic 500 instead of
+ * the `not_found` this path is built to answer - so the null is absorbed here.
  */
-function acceptedAtOf(embedded: { accepted_at: string | null } | { accepted_at: string | null }[]): string | null {
+function acceptedAtOf(
+  embedded: { accepted_at: string | null } | { accepted_at: string | null }[] | null,
+): string | null {
+  if (embedded === null) return null;
   return Array.isArray(embedded) ? (embedded[0]?.accepted_at ?? null) : embedded.accepted_at;
 }
 
