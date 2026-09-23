@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 2
 status: draft
 created: 2026-09-19
-updated: 2026-09-21
+updated: 2026-09-23
 prd_version: 2
 main_goal: quality
 top_blocker: decisions
@@ -59,7 +59,7 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 | ----- | ------------------------- | ------------------------------------------------------------------------------------------- | -------------------- | -------------------- | -------- |
 | S-09  | week-regeneration-replace | wygenerować tydzień na nowo, zastępując dni niezaakceptowane, po uczciwym potwierdzeniu     | S-03 (done, M-01)    | FR-012, FR-014, US-02 | done     |
 | S-12  | edit-unaccepts-day        | poprawić treść dnia zaakceptowanego po potwierdzeniu, które zdejmuje akceptację             | S-02 (done, M-01)    | FR-017               | done     |
-| S-11  | week-level-plan-controls  | cofnąć akceptację i usunąć zapisany plan dnia z poziomu widoku tygodnia                     | S-05 (done, M-01)    | FR-015, FR-016       | ready    |
+| S-11  | week-level-plan-controls  | cofnąć akceptację i usunąć zapisany plan dnia z poziomu widoku tygodnia                     | S-05 (done, M-01)    | FR-015, FR-016       | done     |
 | S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | ready    |
 | S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | ready    |
 | S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | proposed |
@@ -152,7 +152,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Najtańsza z pozycji ochronnych — oba prymitywy już stoją (`setAcceptance` w `day-plan-store.ts:300`, `deleteDayPlan` tamże `:367`, trasa `api/day-plan/accept.ts` umie też wycofać akceptację), brakuje wyłącznie powierzchni w tygodniu. Ryzyko nie leży w zapisie, tylko w celowaniu: w tygodniu nauczyciel widzi kafelki, nie pełne aktywności, więc **operacja musi jednoznacznie nazywać dzień, którego dotyczy**, a nie polegać na tym, że nauczyciel trafił we właściwy kafelek. Asymetria obu operacji jest świadoma i dyktuje ostrożność w układzie: cofnięcie akceptacji jest odwracalne (dzień można zaakceptować ponownie, pomyłka kosztuje jedno kliknięcie), usunięcie planu jest twarde i bez kosza. Sekwencjonowana po `S-12`, żeby powierzchnie akceptacji w dniu i w tygodniu powstawały pod już ustaloną regułą jawności, a nie dwoma niezależnymi odczytami tej samej intencji — ale graf tego nie wymusza i przy zmianie priorytetu może iść pierwsza.
-- **Status:** ready
+- **Status:** done
 
 ### S-07: Podgląd aktywności w siatce miesiąca
 
@@ -250,3 +250,4 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **S-09: Nauczyciel może wygenerować tydzień na nowo pod nowym hasłem i dostać komplet nowych dni w miejsce dotychczasowych dni niezaakceptowanych — po potwierdzeniu, które uczciwie podaje, ile dni zostanie zastąpionych i ile z nich jest zaakceptowanych.** — Archived 2026-09-20 → `context/archive/2026-09-19-week-regeneration-replace/`. Lesson: —.
 - **S-12: Nauczyciel może poprawić treść dnia, który wcześniej zaakceptował — dostaje potwierdzenie, a po zgodzie dzień traci stan zaakceptowania, zamiast wyglądać na zatwierdzony z treścią zmienioną po akceptacji.** — Archived 2026-09-21 → `context/archive/2026-09-20-edit-unaccepts-day/`. Lesson: —.
 - **S-05: Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; wiersz `day_plans` i jego aktywności są usuwane trwale (kasowanie twarde), a dzień wraca do stanu **nieodróżnialnego od dnia nigdy nieplanowanego** — na wszystkich powierzchniach, na których jest pokazywany, i dla generowania tygodnia, które obejmuje go ponownie zamiast pominąć.** — Archived 2026-08-29 → `context/archive/2026-08-27-delete-day-plan/`. Lesson: „Kryterium »poza X nietknięte« musi być odporne na przerównanie".
+- **S-11: Nauczyciel może cofnąć akceptację dnia i usunąć zapisany plan dnia, nie wychodząc z widoku tygodnia — czyli z widoku, w którym faktycznie pracuje, zamiast wchodzić w dzień po kolei.** — Archived 2026-09-23 → `context/archive/2026-09-23-week-level-plan-controls/`. Lesson: —.
