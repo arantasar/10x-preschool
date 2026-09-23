@@ -12,6 +12,7 @@ import {
   replacementConfirmation,
   type WeekDayAcceptance,
 } from "@/lib/week-generation";
+import { acceptanceNotice, CONFLICT_MESSAGE, deleteConfirmation, deletedNotice } from "@/lib/week-day-controls";
 import type { ActivityDraft, DayPlanView, WeekPlanView } from "@/types";
 
 /**
@@ -45,7 +46,11 @@ import type { ActivityDraft, DayPlanView, WeekPlanView } from "@/types";
  * Concurrency is per day, as before: `DayPlanEditor` guards with a single
  * `inFlight` ref because its mutations touch one plan, and a global guard here
  * would make the first day block the other four. The week-level ref still
- * covers the outline, the write and the week buttons.
+ * covers the outline, the write and the week buttons - and, since `S-11`, the
+ * two day operations (acceptance and deletion from a card). Those take it
+ * although they touch one day, because a week run partitions the week by
+ * acceptance: flipping a day under a running week would change a partition
+ * already made. For one teacher clicking one day at a time it costs nothing.
  *
  * Nothing here retries by itself. `generateDayActivities` already retries once
  * inside the route, and a second layer of automatic retries on top of five
@@ -56,7 +61,9 @@ interface WeekPlanBoardProps {
   readonly week: WeekPlanView;
 }
 
-type Busy = "idle" | "outlining" | "generating" | "saving" | "accepting";
+// `managing` is a day operation from a card. The generate button does not name
+// it - it only has to be disabled - so its label falls through to the default.
+type Busy = "idle" | "outlining" | "generating" | "saving" | "accepting" | "managing";
 
 interface Failure {
   readonly message: string;
@@ -80,8 +87,8 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
   // Per day, not per island. Five generations run at once and each one owns only
   // its own row; a shared flag here would serialise the week for no reason.
   const inFlight = useRef<Set<string>>(new Set());
-  // Guards the outline and the two week-level buttons - the operations that
-  // really are one-at-a-time.
+  // Guards the outline, the two week-level buttons and the day operations on the
+  // cards - the operations that really are one-at-a-time.
   const weekInFlight = useRef(false);
   // Guards the write alone, and is taken synchronously by `writeWeek` itself.
   // `weekInFlight` cannot do this job: `retryDay` deliberately does not hold it
@@ -135,7 +142,18 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
     // being regenerated, so that batch is superseded - and leaving it would let
     // a *failed* regeneration fall back to stale proposals that the write would
     // then commit as if they were this run's.
-    patchDay(planDate, { status: "generating", batch: null, error: null, retryable: false, theme });
+    //
+    // `notice`/`actionError` go too: a sentence about the last acceptance or
+    // delete on this day must not outlive a regeneration of it.
+    patchDay(planDate, {
+      status: "generating",
+      batch: null,
+      error: null,
+      retryable: false,
+      theme,
+      notice: null,
+      actionError: null,
+    });
 
     try {
       const response = await fetch("/api/day-plan/week/day", {
@@ -521,6 +539,11 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
       try {
         await Promise.allSettled(
           pending.map(async (day) => {
+            // "Cofnięto akceptację: …" left standing under the green badge this
+            // is about to put up would contradict it. Same rule as
+            // `clearedByEdit` in `DayPlanEditor`: cleared when an operation on
+            // the day starts, not only when one succeeds.
+            patchDay(day.planDate, { notice: null, actionError: null });
             try {
               const response = await fetch("/api/day-plan/accept", {
                 method: "POST",
@@ -558,6 +581,187 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
         setBusy("idle");
       }
     })();
+  }
+
+  /**
+   * Accepts one day, or takes its acceptance away - one button, both ways.
+   *
+   * Both ways on purpose, one step past the letter of FR-015: the PRD calls
+   * withdrawing an acceptance safe because a mistake costs one click, and on
+   * the week board that is only true if the click that undoes it is the same
+   * button in the same place.
+   *
+   * No dialog - the operation is reversible (PRD v2 §Business Logic Changes,
+   * "jawność proporcjonalna do skutku"). The day is named after the fact
+   * instead, in the card's notice, and before it in the button's accessible
+   * name.
+   */
+  function toggleAcceptance(planDate: string): void {
+    if (weekInFlight.current) return;
+    const plan = days[planDate].plan;
+    if (plan === null) return;
+
+    weekInFlight.current = true;
+    setFailure(null);
+    setBusy("managing");
+    patchDay(planDate, { notice: null, actionError: null });
+
+    void (async () => {
+      try {
+        const response = await fetch("/api/day-plan/accept", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            plan_id: plan.plan.id,
+            accepted: !plan.plan.accepted_at,
+            // The batch this card shows. A day regenerated elsewhere since is
+            // refused rather than signed off unseen.
+            expected_generation: plan.plan.current_generation,
+          }),
+        });
+        const body: unknown = await response.json().catch(() => null);
+
+        if (response.ok && isDayPlanBody(body)) {
+          // `status: "done"` (inside `planFields`) is not cosmetic. A day
+          // accepted before a week run comes back from it `skipped`, and a day
+          // that failed "Akceptuj tydzień" is `failed`. Left as they were, the
+          // first would read "Pominięty — dzień zaakceptowany" on a day that is
+          // now neither, and the second would keep a red border over a plan
+          // that just saved. The notice reads acceptance off the response, not
+          // off what was sent.
+          patchDay(planDate, {
+            ...planFields(body),
+            notice: acceptanceNotice(planDate, body.plan.accepted_at != null),
+          });
+          return;
+        }
+
+        await failDayOperation(
+          planDate,
+          response.status,
+          // The route's own 409 tells the teacher to refresh the page, which
+          // the re-read in `failDayOperation` has made untrue by the time the
+          // sentence is on screen.
+          response.status === 409
+            ? CONFLICT_MESSAGE
+            : isErrorBody(body)
+              ? body.error
+              : "Nie udało się zmienić akceptacji tego dnia.",
+        );
+      } catch {
+        patchDay(planDate, { actionError: "Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie." });
+        await reconcileDay(planDate);
+      } finally {
+        weekInFlight.current = false;
+        setBusy("idle");
+      }
+    })();
+  }
+
+  /**
+   * Deletes one day: the hasło, the proposals, the row.
+   *
+   * The confirmation is unconditional, names the day, and says the day is
+   * accepted when it is. It is the whole protection: there is no undo and no
+   * schema-side refusal behind it. That is also why no `expected_generation`
+   * is sent - the `S-05` decision this inherits: "this day should be empty"
+   * holds whatever batch happens to be in it. The acceptance the dialog names
+   * is this island's copy and can be stale; nothing checks it.
+   *
+   * The lock is read *before* the dialog and taken right after it, before the
+   * first `await`. The other order collects the teacher's consent for an
+   * operation that is then dropped without a word - the trap `saveDraft` in
+   * `DayPlanEditor` describes.
+   */
+  function deleteDay(planDate: string): void {
+    if (weekInFlight.current) return;
+    const plan = days[planDate].plan;
+    if (plan === null) return;
+    if (!window.confirm(deleteConfirmation(planDate, plan.plan.accepted_at != null))) {
+      return;
+    }
+
+    weekInFlight.current = true;
+    setFailure(null);
+    setBusy("managing");
+    patchDay(planDate, { notice: null, actionError: null });
+
+    void (async () => {
+      try {
+        // No headers and no body: the route reads the day from the query
+        // string, exactly as its GET does.
+        const response = await fetch(`/api/day-plan?date=${planDate}`, { method: "DELETE" });
+
+        // Decided on `ok` alone, before anything is parsed. Success is a 204
+        // with no body, so parsing first would reject, `isDayPlanBody(null)`
+        // would be false, and a delete that worked would be reported as one
+        // that failed.
+        if (response.ok) {
+          // Reset in place, where the day view reloads. There the day's
+          // subtitle is static SSR outside the island; here the whole card is
+          // the island's, so the shape a day with no plan has on first render
+          // is all there is to restore.
+          patchDay(planDate, { ...planFields(null), notice: deletedNotice(planDate) });
+          return;
+        }
+
+        const body: unknown = await response.json().catch(() => null);
+        await failDayOperation(
+          planDate,
+          response.status,
+          isErrorBody(body) ? body.error : "Nie udało się usunąć planu tego dnia.",
+        );
+      } catch {
+        patchDay(planDate, { actionError: "Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie." });
+        await reconcileDay(planDate);
+      } finally {
+        weekInFlight.current = false;
+        setBusy("idle");
+      }
+    })();
+  }
+
+  /**
+   * A day operation that did not go through: said in its card, then the card
+   * is re-read, so the teacher decides whether to try again against what the
+   * server holds rather than against the copy that was just refused.
+   *
+   * A lost session is the week's problem, not the day's, and goes to the
+   * banner with the sign-in link, as everywhere else on this board.
+   */
+  async function failDayOperation(planDate: string, status: number, message: string): Promise<void> {
+    if (status === 401) {
+      setFailure({ message: "Twoja sesja wygasła. Zaloguj się ponownie.", signInRequired: true });
+      return;
+    }
+    patchDay(planDate, { actionError: message });
+    await reconcileDay(planDate);
+  }
+
+  /**
+   * `DayPlanEditor.reconcile()` for one card.
+   *
+   * A refused day operation is usually a day that moved on elsewhere - another
+   * tab regenerated, accepted or deleted it - and the card's copy is exactly
+   * what is wrong. Its own failure is swallowed: the operation's message is the
+   * one worth reading, and replacing it with "the re-read failed too" helps
+   * nobody. `actionError` is left alone; `notice` was cleared when the
+   * operation started.
+   */
+  async function reconcileDay(planDate: string): Promise<void> {
+    try {
+      const response = await fetch(`/api/day-plan?date=${planDate}`);
+      if (response.status === 404) {
+        patchDay(planDate, planFields(null));
+        return;
+      }
+      const body: unknown = await response.json().catch(() => null);
+      if (response.ok && isDayPlanBody(body)) {
+        patchDay(planDate, planFields(body));
+      }
+    } catch {
+      // Leave the card standing rather than blanking it on a second failure.
+    }
   }
 
   const remaining = PROMPT_MAX - prompt.length;
@@ -665,7 +869,8 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
             {heldCount === 1
               ? "1 dzień czeka na zapis i istnieje tylko na tej stronie."
               : `${String(heldCount)} dni czeka na zapis i istnieje tylko na tej stronie.`}{" "}
-            Zamknięcie karty albo odświeżenie strony je odrzuci — w planie nic się wtedy nie zmieni.
+            Zamknięcie karty albo odświeżenie strony je odrzuci — w planie nic się wtedy nie zmieni. Dopóki tydzień nie
+            zostanie zapisany albo propozycje odrzucone, pojedynczych dni nie można akceptować ani usuwać.
           </span>
         </div>
       )}
@@ -680,8 +885,20 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
             key={day.planDate}
             day={day}
             disabled={isBusy}
+            // Off while anything is held, not only while busy: the held set is
+            // exactly the unaccepted days, and "Zapisz tydzień" is offered only
+            // while every one of them has a batch. Accepting or deleting a day
+            // under it changes that set, the button disappears, and generations
+            // already paid for are stranded. The banner above says why.
+            controlsDisabled={isBusy || heldCount > 0}
             onRetry={() => {
               retryDay(day.planDate);
+            }}
+            onToggleAcceptance={() => {
+              toggleAcceptance(day.planDate);
+            }}
+            onDelete={() => {
+              deleteDay(day.planDate);
             }}
           />
         ))}
@@ -730,20 +947,37 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
 function initialDays(week: WeekPlanView): Record<string, DayState> {
   const days: Record<string, DayState> = {};
   for (const planDate of week.days) {
-    const plan = week.plans[planDate] ?? null;
     days[planDate] = {
       planDate,
-      status: plan ? "done" : "empty",
-      plan,
-      // Nothing is ever held on first render: a batch only exists between a
-      // generation and its write, and both happen in this island's lifetime.
-      batch: null,
-      theme: plan?.plan.theme ?? null,
-      error: null,
-      retryable: false,
+      ...planFields(week.plans[planDate] ?? null),
+      notice: null,
+      actionError: null,
     };
   }
   return days;
+}
+
+/**
+ * A day's fields as a saved plan - or its absence - determines them.
+ *
+ * One function for first render, for a delete and for a re-read, so a day that
+ * was just deleted comes back in exactly the shape a day that never had a plan
+ * is given, and a re-read day in exactly the shape a server-rendered one is.
+ */
+function planFields(
+  plan: DayPlanView | null,
+): Pick<DayState, "status" | "plan" | "batch" | "theme" | "error" | "retryable"> {
+  return {
+    status: plan ? "done" : "empty",
+    plan,
+    // Nothing is ever held on first render: a batch only exists between a
+    // generation and its write, and both happen in this island's lifetime. The
+    // day operations that also land here are disabled while anything is held.
+    batch: null,
+    theme: plan?.plan.theme ?? null,
+    error: null,
+    retryable: false,
+  };
 }
 
 /**
