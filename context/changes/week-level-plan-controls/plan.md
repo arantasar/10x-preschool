@@ -307,12 +307,12 @@ Brak zmiany schematu i danych. Wydanie = merge do `master` (Cloudflare Workers B
 
 #### Automated
 
-- [x] 2.1 Lint przechodzi: `npm run lint`
-- [x] 2.2 Build przechodzi: `npm run build`
-- [x] 2.3 Pełny zestaw jednostkowy przechodzi: `npm test`
-- [x] 2.4 Dialog wyłącznie przy kasowaniu i przebiegu tygodnia: `window.confirm(` — 2 w `WeekPlanBoard.tsx`, 0 w `WeekDayCard.tsx`
-- [x] 2.5 Kasowanie przez istniejącą trasę: `method: "DELETE"` — 1 w `WeekPlanBoard.tsx`
-- [x] 2.6 Serwer, schemat i widok dnia nietknięte: `git diff --name-only master...HEAD -- src/pages/api src/lib/services supabase src/components/plan/DayPlanEditor.tsx` pusto
+- [x] 2.1 Lint przechodzi: `npm run lint` — e4ed568
+- [x] 2.2 Build przechodzi: `npm run build` — e4ed568
+- [x] 2.3 Pełny zestaw jednostkowy przechodzi: `npm test` — e4ed568
+- [x] 2.4 Dialog wyłącznie przy kasowaniu i przebiegu tygodnia: `window.confirm(` — 2 w `WeekPlanBoard.tsx`, 0 w `WeekDayCard.tsx` — e4ed568
+- [x] 2.5 Kasowanie przez istniejącą trasę: `method: "DELETE"` — 1 w `WeekPlanBoard.tsx` — e4ed568
+- [x] 2.6 Serwer, schemat i widok dnia nietknięte: `git diff --name-only master...HEAD -- src/pages/api src/lib/services supabase src/components/plan/DayPlanEditor.tsx` pusto — e4ed568
 
 #### Manual
 
@@ -329,12 +329,12 @@ Brak zmiany schematu i danych. Wydanie = merge do `master` (Cloudflare Workers B
 
 #### Automated
 
-- [ ] 3.1 Nowe testy przechodzą: `npm run test:e2e -- tests/e2e/week-day-controls.spec.ts`
-- [ ] 3.2 Cały zestaw e2e przechodzi: `npm run test:e2e`
-- [ ] 3.3 Celowe psucie A (dialog ignorowany) → test odmowy czerwony; wycofane
-- [ ] 3.4 Celowe psucie B (przełącznik celuje w `week.days[0]`) → test #9 czerwony; wycofane
-- [ ] 3.5 Celowe psucie C (dialog bez daty) → test zakresu czerwony; wycofane
-- [ ] 3.6 Lint przechodzi: `npm run lint`
+- [x] 3.1 Nowe testy przechodzą: `npm run test:e2e -- tests/e2e/week-day-controls.spec.ts`
+- [x] 3.2 Cały zestaw e2e przechodzi: `npm run test:e2e`
+- [x] 3.3 Celowe psucie A (dialog ignorowany) → test odmowy czerwony; wycofane
+- [x] 3.4 Celowe psucie B (przełącznik celuje w `week.days[0]`) → test #9 czerwony; wycofane
+- [x] 3.5 Celowe psucie C (dialog bez daty) → test zakresu czerwony; wycofane
+- [x] 3.6 Lint przechodzi: `npm run lint`
 
 #### Manual
 

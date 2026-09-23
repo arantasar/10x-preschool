@@ -39,6 +39,23 @@ export function plusDays(isoDate: string, days: number): string {
 }
 
 /**
+ * Poniedzialek przypisany jednemu testowi — dla testow widoku tygodnia, ktory
+ * potrzebuje poniedzialku, a nie dowolnego dnia, i pieciu wolnych dni po nim.
+ *
+ * Rezerwuje 14 dni i przesuwa sie **w przod** do najblizszego poniedzialku —
+ * o co najwyzej 6 dni, wiec caly tydzien roboczy (do +10) miesci sie w
+ * rezerwacji. Przesuniecie wstecz mogloby wejsc w okno zarezerwowane przez
+ * poprzednie wywolanie.
+ */
+export function uniqueWeekStart(): string {
+  const reserved = uniquePlanDate(14);
+  // getUTCDay(): 0 to niedziela, 1 poniedzialek. Dni do najblizszego
+  // poniedzialku, liczac poniedzialek jako 0.
+  const daysUntilMonday = (8 - new Date(`${reserved}T00:00:00Z`).getUTCDay()) % 7;
+  return plusDays(reserved, daysUntilMonday);
+}
+
+/**
  * Znacznik wplatany w tytuly propozycji.
  *
  * Asercje celuja w niego, a nie w ogolne "jakis plan jest widoczny" — inaczej
