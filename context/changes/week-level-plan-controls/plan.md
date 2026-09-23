@@ -329,12 +329,12 @@ Brak zmiany schematu i danych. Wydanie = merge do `master` (Cloudflare Workers B
 
 #### Automated
 
-- [x] 3.1 Nowe testy przechodzą: `npm run test:e2e -- tests/e2e/week-day-controls.spec.ts`
-- [x] 3.2 Cały zestaw e2e przechodzi: `npm run test:e2e`
-- [x] 3.3 Celowe psucie A (dialog ignorowany) → test odmowy czerwony; wycofane
-- [x] 3.4 Celowe psucie B (przełącznik celuje w `week.days[0]`) → test #9 czerwony; wycofane
-- [x] 3.5 Celowe psucie C (dialog bez daty) → test zakresu czerwony; wycofane
-- [x] 3.6 Lint przechodzi: `npm run lint`
+- [x] 3.1 Nowe testy przechodzą: `npm run test:e2e -- tests/e2e/week-day-controls.spec.ts` — 9ee2001
+- [x] 3.2 Cały zestaw e2e przechodzi: `npm run test:e2e` — 9ee2001
+- [x] 3.3 Celowe psucie A (dialog ignorowany) → test odmowy czerwony; wycofane — 9ee2001
+- [x] 3.4 Celowe psucie B (przełącznik celuje w `week.days[0]`) → test #9 czerwony; wycofane — 9ee2001
+- [x] 3.5 Celowe psucie C (dialog bez daty) → test zakresu czerwony; wycofane — 9ee2001
+- [x] 3.6 Lint przechodzi: `npm run lint` — 9ee2001
 
 #### Manual
 
