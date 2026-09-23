@@ -1,18 +1,32 @@
-import { Check, CircleAlert, ExternalLink, RotateCcw } from "lucide-react";
+import { Check, CircleAlert, ExternalLink, RotateCcw, Trash2, Undo2 } from "lucide-react";
 import { GenerationProgress } from "@/components/plan/GenerationProgress";
 import { Button } from "@/components/ui/button";
 import { formatAcceptedAt, formatPlanDate } from "@/lib/day-plan-dates";
 import { cn } from "@/lib/utils";
+import {
+  ACCEPT_DAY_LABEL,
+  acceptanceControlName,
+  DELETE_DAY_LABEL,
+  deleteControlName,
+  UNACCEPT_DAY_LABEL,
+} from "@/lib/week-day-controls";
 import type { ActivityDraft, DayPlanView } from "@/types";
 
 /**
  * One day on the week board: what is happening to it, and what can be done with
  * it without leaving the page.
  *
- * Read-only on purpose. Editing a proposal stays on `/plan?date=` so the whole
- * S-02 protocol - the draft, Cancel meaning something, the trigger that returns
- * an edited plan to draft - lives in exactly one place. This card links there
- * rather than reimplementing a fifth of it five times over.
+ * The *content* is read-only on purpose. Editing a proposal stays on
+ * `/plan?date=` so the whole S-02 protocol - the draft, Cancel meaning
+ * something, the trigger that returns an edited plan to draft - lives in exactly
+ * one place. This card links there rather than reimplementing a fifth of it five
+ * times over.
+ *
+ * Acceptance and deletion of the day live here too since `S-11`. Neither touches
+ * the content, and both are one request against a route that already exists, so
+ * they cost none of that protocol. The card only renders them and calls back;
+ * `WeekPlanBoard` owns the requests, the locks and the state, the same split as
+ * "Ponów ten dzień". Every control names its day - see `@/lib/week-day-controls`.
  */
 
 /**
@@ -46,15 +60,46 @@ export interface DayState {
   readonly theme: string | null;
   readonly error: string | null;
   readonly retryable: boolean;
+  /**
+   * What the last day operation that succeeded here did, naming the day.
+   *
+   * The toggle asks nothing before it acts - it is reversible - so this is
+   * where the day gets named instead: after the fact, next to the button that
+   * undoes it.
+   */
+  readonly notice: string | null;
+  /**
+   * A day operation that failed here: acceptance or deletion.
+   *
+   * Kept apart from `error` on purpose. `error` belongs to `status: "failed"`,
+   * which in this island means *the generation* failed - it carries the red
+   * border and the retry hints, and neither is true of a refused acceptance.
+   */
+  readonly actionError: string | null;
 }
 
 interface WeekDayCardProps {
   readonly day: DayState;
   readonly disabled: boolean;
+  /**
+   * Off while the week is busy or holds unwritten proposals. The second is the
+   * one that matters: the held set must stay exactly the days it was generated
+   * for, and accepting or deleting one of them under it strands the write.
+   */
+  readonly controlsDisabled: boolean;
   readonly onRetry: () => void;
+  readonly onToggleAcceptance: () => void;
+  readonly onDelete: () => void;
 }
 
-export function WeekDayCard({ day, disabled, onRetry }: WeekDayCardProps) {
+export function WeekDayCard({
+  day,
+  disabled,
+  controlsDisabled,
+  onRetry,
+  onToggleAcceptance,
+  onDelete,
+}: WeekDayCardProps) {
   const acceptedAt = day.plan?.plan.accepted_at ?? null;
   // A held batch is shown, but it is never allowed to look like a saved one:
   // `held`/`saving` drive the badge and the border below, and the proposals
@@ -153,13 +198,73 @@ export function WeekDayCard({ day, disabled, onRetry }: WeekDayCardProps) {
 
       {day.status === "empty" && <p className="mt-3 text-sm text-blue-100/60">Ten dzień nie ma jeszcze planu.</p>}
 
-      <a
-        href={`/plan?date=${day.planDate}`}
-        className="mt-3 inline-flex items-center gap-1 text-sm text-purple-300 hover:underline"
-      >
-        Otwórz dzień
-        <ExternalLink className="size-3.5" />
-      </a>
+      {/* Rendered always, empty until there is something to say. A live region
+          inserted together with its text is announced unreliably; one that is
+          already in the tree and only changes its content is not. */}
+      <p role="status" className={cn("text-sm text-emerald-200/90", day.notice && "mt-3")}>
+        {day.notice}
+      </p>
+
+      {/* No border change, unlike a failed generation: the day itself is fine,
+          one operation on it was refused, and the card has already been re-read
+          from the server by the time this shows. */}
+      {day.actionError && (
+        <p role="alert" className="mt-3 flex items-start gap-2 text-sm text-red-200">
+          <CircleAlert className="mt-0.5 size-4 shrink-0" />
+          {day.actionError}
+        </p>
+      )}
+
+      {/* Under the content they act on. Deletion is pushed away from the toggle
+          and quieter than it - an outline, not a fill - for the reason
+          `DayPlanEditor` seats its own delete apart (`prd-v2.md` §Constraints
+          „Warunek układu"): an irreversible operation does not sit next to one
+          the eye falls into. On a narrow card it wraps onto its own line.
+
+          The accessible names carry the date and start with the visible label,
+          so five identical-looking buttons are five different ones. */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <a
+          href={`/plan?date=${day.planDate}`}
+          className="inline-flex items-center gap-1 text-sm text-purple-300 hover:underline"
+        >
+          Otwórz dzień
+          <ExternalLink className="size-3.5" />
+        </a>
+
+        {/* Same gate as the day view: a day with no proposals has nothing to
+            accept. */}
+        {day.plan && activities.length > 0 && (
+          <Button
+            type="button"
+            disabled={controlsDisabled}
+            onClick={onToggleAcceptance}
+            aria-label={acceptanceControlName(day.planDate, acceptedAt !== null)}
+            className={cn(
+              "rounded-lg px-3 py-1.5 text-sm text-white transition-colors",
+              acceptedAt
+                ? "border border-white/20 bg-white/10 hover:bg-white/20"
+                : "bg-emerald-600 hover:bg-emerald-500",
+            )}
+          >
+            {acceptedAt ? <Undo2 className="size-3.5" /> : <Check className="size-3.5" />}
+            {acceptedAt ? UNACCEPT_DAY_LABEL : ACCEPT_DAY_LABEL}
+          </Button>
+        )}
+
+        {day.plan && (
+          <Button
+            type="button"
+            disabled={controlsDisabled}
+            onClick={onDelete}
+            aria-label={deleteControlName(day.planDate)}
+            className="ml-auto rounded-lg border border-red-400/30 bg-transparent px-3 py-1.5 text-sm text-red-300/90 transition-colors hover:bg-red-500/10 hover:text-red-200"
+          >
+            <Trash2 className="size-3.5" />
+            {DELETE_DAY_LABEL}
+          </Button>
+        )}
+      </div>
     </li>
   );
 }

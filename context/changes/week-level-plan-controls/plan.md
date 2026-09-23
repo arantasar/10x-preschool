@@ -295,9 +295,9 @@ Brak zmiany schematu i danych. Wydanie = merge do `master` (Cloudflare Workers B
 
 #### Automated
 
-- [x] 1.1 Testy modułu przechodzą: `npm test -- src/lib/week-day-controls.test.ts`
-- [x] 1.2 Asercja nieobecności potrafi nie przejść (zdanie o akceptacji dołączane bezwarunkowo → test `accepted: false` czerwony; wycofane)
-- [x] 1.3 Lint przechodzi: `npm run lint`
+- [x] 1.1 Testy modułu przechodzą: `npm test -- src/lib/week-day-controls.test.ts` — 65f6006
+- [x] 1.2 Asercja nieobecności potrafi nie przejść (zdanie o akceptacji dołączane bezwarunkowo → test `accepted: false` czerwony; wycofane) — 65f6006
+- [x] 1.3 Lint przechodzi: `npm run lint` — 65f6006
 
 #### Manual
 
@@ -307,12 +307,12 @@ Brak zmiany schematu i danych. Wydanie = merge do `master` (Cloudflare Workers B
 
 #### Automated
 
-- [ ] 2.1 Lint przechodzi: `npm run lint`
-- [ ] 2.2 Build przechodzi: `npm run build`
-- [ ] 2.3 Pełny zestaw jednostkowy przechodzi: `npm test`
-- [ ] 2.4 Dialog wyłącznie przy kasowaniu i przebiegu tygodnia: `window.confirm(` — 2 w `WeekPlanBoard.tsx`, 0 w `WeekDayCard.tsx`
-- [ ] 2.5 Kasowanie przez istniejącą trasę: `method: "DELETE"` — 1 w `WeekPlanBoard.tsx`
-- [ ] 2.6 Serwer, schemat i widok dnia nietknięte: `git diff --name-only master...HEAD -- src/pages/api src/lib/services supabase src/components/plan/DayPlanEditor.tsx` pusto
+- [x] 2.1 Lint przechodzi: `npm run lint`
+- [x] 2.2 Build przechodzi: `npm run build`
+- [x] 2.3 Pełny zestaw jednostkowy przechodzi: `npm test`
+- [x] 2.4 Dialog wyłącznie przy kasowaniu i przebiegu tygodnia: `window.confirm(` — 2 w `WeekPlanBoard.tsx`, 0 w `WeekDayCard.tsx`
+- [x] 2.5 Kasowanie przez istniejącą trasę: `method: "DELETE"` — 1 w `WeekPlanBoard.tsx`
+- [x] 2.6 Serwer, schemat i widok dnia nietknięte: `git diff --name-only master...HEAD -- src/pages/api src/lib/services supabase src/components/plan/DayPlanEditor.tsx` pusto
 
 #### Manual
 
