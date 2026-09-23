@@ -301,7 +301,7 @@ Brak zmiany schematu i danych. Wydanie = merge do `master` (Cloudflare Workers B
 
 #### Manual
 
-- [ ] 1.4 Zdania czytają się naturalnie po polsku, bezosobowo, z datą w formie „poniedziałek, 9 listopada 2026"
+- [x] 1.4 Zdania czytają się naturalnie po polsku, bezosobowo, z datą w formie „poniedziałek, 9 listopada 2026"
 
 ### Phase 2: Operacje dnia w wyspie tygodnia
 
@@ -316,14 +316,14 @@ Brak zmiany schematu i danych. Wydanie = merge do `master` (Cloudflare Workers B
 
 #### Manual
 
-- [ ] 2.7 Przełącznik bez dialogu, komunikat z datą, powrót tym samym przyciskiem
-- [ ] 2.8 Dialog kasowania nazywa dzień i akceptację tylko przy dniu zaakceptowanym; „Anuluj" nic nie robi; „OK" czyści kartę bez przeładowania
-- [ ] 2.9 Skasowany dzień wraca do generowania tygodnia i do siatki miesiąca jako wolny
-- [ ] 2.10 Dzień „Nietknięty" po cofnięciu akceptacji ma plakietkę „Plan roboczy"
-- [ ] 2.11 Stan `held`: kontrolki wyłączone, baner tłumaczy; po zapisie wracają
-- [ ] 2.12 Konflikt z drugą kartą: komunikat bez „Odśwież stronę", karta z aktualnym stanem
-- [ ] 2.13 Układ na 375 px i desktopie: kasowanie odsunięte i wyciszone
-- [ ] 2.14 Klawiatura i nazwy dostępne z datą
+- [x] 2.7 Przełącznik bez dialogu, komunikat z datą, powrót tym samym przyciskiem
+- [x] 2.8 Dialog kasowania nazywa dzień i akceptację tylko przy dniu zaakceptowanym; „Anuluj" nic nie robi; „OK" czyści kartę bez przeładowania
+- [x] 2.9 Skasowany dzień wraca do generowania tygodnia i do siatki miesiąca jako wolny
+- [x] 2.10 Dzień „Nietknięty" po cofnięciu akceptacji ma plakietkę „Plan roboczy"
+- [x] 2.11 Stan `held`: kontrolki wyłączone, baner tłumaczy; po zapisie wracają
+- [x] 2.12 Konflikt z drugą kartą: komunikat bez „Odśwież stronę", karta z aktualnym stanem
+- [x] 2.13 Układ na 375 px i desktopie: kasowanie odsunięte i wyciszone
+- [x] 2.14 Klawiatura i nazwy dostępne z datą
 
 ### Phase 3: Testy e2e i mapa ryzyk
 
@@ -338,4 +338,4 @@ Brak zmiany schematu i danych. Wydanie = merge do `master` (Cloudflare Workers B
 
 #### Manual
 
-- [ ] 3.7 Ryzyko #9 w `test-plan.md` spójne z #7 i #8; nazwy testów z numerami ryzyk
+- [x] 3.7 Ryzyko #9 w `test-plan.md` spójne z #7 i #8; nazwy testów z numerami ryzyk
