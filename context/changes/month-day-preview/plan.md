@@ -379,29 +379,29 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 
 #### Automated
 
-- [x] 1.1 Nowe testy przechodzą: `npm test -- src/lib/day-preview.test.ts src/lib/month-grid.test.ts`
-- [x] 1.2 Cały zestaw jednostkowy przechodzi: `npm test`
-- [x] 1.3 Lint przechodzi: `npm run lint`
-- [x] 1.4 Moduły nie ciągną zod ani Reacta do paczki klienta (grep sprawdzony na czerwono)
-- [x] 1.5 Celowe psucie A: `hide()` nie czyści timera → test przeciągnięcia czerwony; wycofane
-- [x] 1.6 Celowe psucie B: pominięta pamięć podręczna → test ponownego wskazania czerwony; wycofane
-- [x] 1.7 Celowe psucie C: bez sprawdzenia dnia docelowego → test „wygrywa ostatni" czerwony; wycofane
-- [x] 1.8 Celowe psucie D: błąd zapisywany do pamięci → test ponowienia po błędzie czerwony; wycofane
+- [x] 1.1 Nowe testy przechodzą: `npm test -- src/lib/day-preview.test.ts src/lib/month-grid.test.ts` — 5dea56e
+- [x] 1.2 Cały zestaw jednostkowy przechodzi: `npm test` — 5dea56e
+- [x] 1.3 Lint przechodzi: `npm run lint` — 5dea56e
+- [x] 1.4 Moduły nie ciągną zod ani Reacta do paczki klienta (grep sprawdzony na czerwono) — 5dea56e
+- [x] 1.5 Celowe psucie A: `hide()` nie czyści timera → test przeciągnięcia czerwony; wycofane — 5dea56e
+- [x] 1.6 Celowe psucie B: pominięta pamięć podręczna → test ponownego wskazania czerwony; wycofane — 5dea56e
+- [x] 1.7 Celowe psucie C: bez sprawdzenia dnia docelowego → test „wygrywa ostatni" czerwony; wycofane — 5dea56e
+- [x] 1.8 Celowe psucie D: błąd zapisywany do pamięci → test ponowienia po błędzie czerwony; wycofane — 5dea56e
 
 ### Phase 2: Siatka jako wyspa i pełny podtytuł (FR-011)
 
 #### Automated
 
-- [ ] 2.1 Lint przechodzi: `npm run lint`
-- [ ] 2.2 Build przechodzi: `npm run build`
-- [ ] 2.3 Testy jednostkowe przechodzą: `npm test`
-- [ ] 2.4 Plik Astro usunięty: `test ! -e src/components/plan/MonthGrid.astro`
-- [ ] 2.5 Siatka hydrowana: `grep -cE "<MonthGrid [^>]*client:load" src/pages/plan/month.astro` zwraca `1`
-- [ ] 2.6 Zestaw e2e przechodzi bez zmian: `npm run test:e2e`
+- [x] 2.1 Lint przechodzi: `npm run lint`
+- [x] 2.2 Build przechodzi: `npm run build`
+- [x] 2.3 Testy jednostkowe przechodzą: `npm test`
+- [x] 2.4 Plik Astro usunięty: `test ! -e src/components/plan/MonthGrid.astro`
+- [x] 2.5 Siatka hydrowana: `grep -cE "<MonthGrid [^>]*client:load" src/pages/plan/month.astro` zwraca `1`
+- [x] 2.6 Zestaw e2e przechodzi bez zmian: `npm run test:e2e`
 
 #### Manual
 
-- [ ] 2.7 Pomiar wyjściowy wykonany i wpisany przed pierwszą edycją (1280 px: ___, 1440 px: ___)
+- [ ] 2.7 Pomiar wyjściowy wykonany i wpisany przed pierwszą edycją (1280 px: ___, 1440 px: ___) _(agent, 2026-09-25, pusty listopad konta A, przed edycją: 558 px przy 1024/1280/1440; po zmianie: 558 px przy wszystkich trzech — do potwierdzenia na miesiącu z planami)_
 - [ ] 2.8 Po zmianie wysokość karty siatki dla `2026-11` równa pomiarowi wyjściowemu (±1 px) przy obu szerokościach
 - [ ] 2.9 Temat do ~40 znaków widoczny w całości przy 1440 px; dłuższy ucięty po dwóch liniach, wysokość kafelka bez zmian
 - [ ] 2.10 Przy 1024 px siatka nie wychodzi poza kartę w poziomie
