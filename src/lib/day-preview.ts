@@ -36,15 +36,19 @@ export type DayPreviewState =
 
 export const CLOSED: DayPreviewState = { status: "closed" };
 
+/**
+ * Function-valued properties rather than methods: the preview is a set of
+ * closures with no `this`, and the hook hands `show`/`hide` around detached.
+ */
 export interface DayPreview {
   /** The pointer or keyboard focus came to rest on a day that has a plan. */
-  show(date: string): void;
+  show: (date: string) => void;
   /** The pointer left the tile and its popover, focus left the tile, or Escape. */
-  hide(): void;
+  hide: () => void;
   /** Unmount: clears the timer and aborts the request. The preview stays usable. */
-  dispose(): void;
-  getState(): DayPreviewState;
-  subscribe(listener: () => void): () => void;
+  dispose: () => void;
+  getState: () => DayPreviewState;
+  subscribe: (listener: () => void) => () => void;
 }
 
 /** A cached day: its plan, or `null` for "the server says there is none". */

@@ -27,9 +27,9 @@ export function clipText(text: string, max: number): string {
 /**
  * How much of the hasło or the theme the accessible name carries.
  *
- * The tooltip is bounded by the screen and by the reader dismissing it; a
- * screen reader is bounded by neither, and reads the whole name before the
- * teacher can act on the tile. `PROMPT_MAX` is 2000 and nothing narrower stands
+ * The preview card is bounded by the screen and by the reader moving on; a
+ * screen reader reading the tile's name is bounded by neither, and reads the
+ * whole name before the teacher can act on the tile. `PROMPT_MAX` is 2000 and nothing narrower stands
  * between the textarea and this string, so the bound has to live here.
  */
 export const LABEL_PART_MAX = 80;
@@ -53,23 +53,13 @@ export function joinText(prompt: string, theme: string | null): string {
 }
 
 /**
- * Hasło and theme as one string, for the tooltip - in full.
- *
- * Both tile lines clip at roughly a dozen characters, so this is where the
- * whole text survives.
- */
-export function tileText(summary: DayPlanSummary): string {
-  return joinText(summary.prompt, summary.theme);
-}
-
-/**
  * The tile's accessible name: which day, what is on it, and what state it is in.
  *
  * The content sits before the state on purpose - a teacher tabbing across a
  * planned week wants to hear which day is which, and "zaakceptowany" is the
  * qualifier on that, not the headline. Each member is clipped: the name is read
  * aloud in full, so an unbounded hasło would bury the state at the end of a
- * paragraph. The tooltip keeps the untruncated text.
+ * paragraph. The day preview keeps the untruncated theme.
  */
 export function tileLabel(isoDate: string, summary: DayPlanSummary | undefined): string {
   if (!summary) {

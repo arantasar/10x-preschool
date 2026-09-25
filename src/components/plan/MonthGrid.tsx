@@ -1,5 +1,7 @@
+import { useDayPreview } from "@/components/hooks/useDayPreview";
+import DayPreview, { DAY_PREVIEW_ID, type DayPreviewPlacement } from "@/components/plan/DayPreview";
 import { addDays, workingDaysOf } from "@/lib/day-plan-dates";
-import { dayNumber, tileLabel, tileText } from "@/lib/month-grid";
+import { dayNumber, tileLabel } from "@/lib/month-grid";
 import { cn } from "@/lib/utils";
 import type { DayPlanSummary } from "@/types";
 
@@ -27,8 +29,21 @@ interface MonthGridProps {
 
 const WEEKDAY_HEADS = ["pon", "wt", "śr", "czw", "pt", "sob", "nd"];
 
+/**
+ * Where a tile's preview opens, from its position in the grid rather than from
+ * measuring the DOM: rows in the lower half open upwards so the card stays over
+ * the month, and the last three columns align it to the right edge.
+ */
+function placementOf(rowIndex: number, rowCount: number, columnIndex: number): DayPreviewPlacement {
+  return {
+    vertical: rowIndex >= Math.ceil(rowCount / 2) ? "above" : "below",
+    horizontal: columnIndex >= 4 ? "end" : "start",
+  };
+}
+
 export default function MonthGrid({ month, weeks, summaries }: MonthGridProps) {
   const byDate = new Map(summaries.map((summary) => [summary.plan_date, summary]));
+  const preview = useDayPreview();
 
   return (
     <div className="space-y-3">
@@ -46,7 +61,7 @@ export default function MonthGrid({ month, weeks, summaries }: MonthGridProps) {
         <span className="w-28"></span>
       </div>
 
-      {weeks.map((monday) => {
+      {weeks.map((monday, rowIndex) => {
         // Five working days plus the weekend, so Saturday and Sunday are visible
         // but visibly outside what "generate the week" covers.
         const days = [...workingDaysOf(monday), addDays(monday, 5), addDays(monday, 6)];
@@ -57,11 +72,26 @@ export default function MonthGrid({ month, weeks, summaries }: MonthGridProps) {
                 const summary = byDate.get(date);
                 const inMonth = date.slice(0, 7) === month;
                 const isWeekend = index > 4;
-                return (
+                const previewed =
+                  preview.state.status !== "closed" && preview.state.date === date ? preview.state : null;
+                const tile = (
                   <a
                     key={date}
                     href={`/plan?date=${date}`}
                     aria-label={tileLabel(date, summary)}
+                    aria-describedby={previewed ? DAY_PREVIEW_ID : undefined}
+                    // Keyboard only: a mouse click focuses the link too, and would
+                    // flash the preview on its way to the day view.
+                    onFocus={
+                      summary
+                        ? (event) => {
+                            if (event.currentTarget.matches(":focus-visible")) {
+                              preview.show(date);
+                            }
+                          }
+                        : undefined
+                    }
+                    onBlur={summary ? preview.hide : undefined}
                     className={cn(
                       // A fixed height, not a minimum: the row must not grow with
                       // its content. FR-011 is bound by "the whole month stays
@@ -84,8 +114,9 @@ export default function MonthGrid({ month, weeks, summaries }: MonthGridProps) {
                       // hasło differ only in the theme, so that is the text the eye
                       // should land on - and the one that gets two lines. A day
                       // without a theme keeps the single line; `null` there is a
-                      // permanent state, not an omission.
-                      <div title={tileText(summary)}>
+                      // permanent state, not an omission. The full text is in the
+                      // preview, which replaced the native `title` tooltip.
+                      <div>
                         <span className="block truncate text-[10px] leading-3 text-blue-100/50">{summary.prompt}</span>
                         {summary.theme && (
                           <span className="line-clamp-2 text-[10px] leading-3 break-words text-purple-200/90">
@@ -95,6 +126,37 @@ export default function MonthGrid({ month, weeks, summaries }: MonthGridProps) {
                       </div>
                     )}
                   </a>
+                );
+                if (!summary) {
+                  // Nothing to preview, so nothing to fetch: an empty day stays a plain link.
+                  return tile;
+                }
+                return (
+                  // The pointer handlers sit on this wrapper, not on the link, and
+                  // the preview is the link's sibling inside it. Crossing from the
+                  // tile onto the card then never fires `pointerleave`, so the card
+                  // is hoverable without a grace timer - and it does not inherit
+                  // the link's `opacity-40` on days outside the month. Mouse only:
+                  // touch fires `pointerenter` before the tap navigates.
+                  <div
+                    key={date}
+                    className="relative"
+                    onPointerEnter={(event) => {
+                      if (event.pointerType === "mouse") {
+                        preview.show(date);
+                      }
+                    }}
+                    onPointerLeave={(event) => {
+                      if (event.pointerType === "mouse") {
+                        preview.hide();
+                      }
+                    }}
+                  >
+                    {tile}
+                    {previewed && (
+                      <DayPreview state={previewed} placement={placementOf(rowIndex, weeks.length, index)} />
+                    )}
+                  </div>
                 );
               })}
             </div>

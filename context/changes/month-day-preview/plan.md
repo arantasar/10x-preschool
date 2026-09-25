@@ -392,12 +392,12 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 
 #### Automated
 
-- [x] 2.1 Lint przechodzi: `npm run lint`
-- [x] 2.2 Build przechodzi: `npm run build`
-- [x] 2.3 Testy jednostkowe przechodzą: `npm test`
-- [x] 2.4 Plik Astro usunięty: `test ! -e src/components/plan/MonthGrid.astro`
-- [x] 2.5 Siatka hydrowana: `grep -cE "<MonthGrid [^>]*client:load" src/pages/plan/month.astro` zwraca `1`
-- [x] 2.6 Zestaw e2e przechodzi bez zmian: `npm run test:e2e`
+- [x] 2.1 Lint przechodzi: `npm run lint` — 399e4b3
+- [x] 2.2 Build przechodzi: `npm run build` — 399e4b3
+- [x] 2.3 Testy jednostkowe przechodzą: `npm test` — 399e4b3
+- [x] 2.4 Plik Astro usunięty: `test ! -e src/components/plan/MonthGrid.astro` — 399e4b3
+- [x] 2.5 Siatka hydrowana: `grep -cE "<MonthGrid [^>]*client:load" src/pages/plan/month.astro` zwraca `1` — 399e4b3
+- [x] 2.6 Zestaw e2e przechodzi bez zmian: `npm run test:e2e` — 399e4b3
 
 #### Manual
 
@@ -411,10 +411,10 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 
 #### Automated
 
-- [ ] 3.1 Lint przechodzi: `npm run lint`
-- [ ] 3.2 Build przechodzi: `npm run build`
-- [ ] 3.3 Testy jednostkowe przechodzą: `npm test`
-- [ ] 3.4 Natywny dymek zniknął: `grep -rn "tileText(" src/` zwraca pusto
+- [x] 3.1 Lint przechodzi: `npm run lint`
+- [x] 3.2 Build przechodzi: `npm run build`
+- [x] 3.3 Testy jednostkowe przechodzą: `npm test`
+- [x] 3.4 Natywny dymek zniknął: `grep -rn "tileText(" src/` zwraca pusto
 
 #### Manual
 
