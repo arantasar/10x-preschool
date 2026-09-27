@@ -282,4 +282,14 @@ describe("layoutDocument — a month, week per page", () => {
     expect(hasDashedBox(firstWeek)).toBe(false);
     expect(pageText(firstWeek).split(EMPTY_DAY_NOTE)).toHaveLength(5);
   });
+
+  it("gives a month that starts on a Saturday no page without a day on it", () => {
+    // August 2026: 3–7, 10–14, 17–21, 24–28, 31 - five weeks, not the six rows of the screen grid.
+    const result = layoutDocument(buildPrintMonth("2026-08", {}), "week-per-page", measure);
+
+    expect(result.pages).toHaveLength(5);
+    for (const page of result.pages) {
+      expect(pageText(page)).toContain(EMPTY_DAY_NOTE);
+    }
+  });
 });

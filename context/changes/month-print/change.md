@@ -1,7 +1,7 @@
 ---
 change_id: month-print
 title: Month print
-status: implemented
+status: impl_reviewed
 created: 2026-09-27
 updated: 2026-09-27
 archived_at: null

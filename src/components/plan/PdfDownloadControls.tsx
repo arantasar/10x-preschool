@@ -111,6 +111,9 @@ export default function PdfDownloadControls({
     setError(null);
 
     void (async () => {
+      // Held apart from Promise.all so the catch can ask it how it ended; the
+      // `then` turns a synchronous throw into a rejection the finally still sees.
+      const documentLoad = Promise.resolve().then(loadDocument);
       try {
         const [{ renderPlanPdf }, regular, bold, printDocument] = await Promise.all([
           import("@/lib/plan-pdf/render").catch((error: unknown) => {
@@ -118,12 +121,18 @@ export default function PdfDownloadControls({
           }),
           fetchFont("/fonts/NotoSans-Regular.ttf"),
           fetchFont("/fonts/NotoSans-Bold.ttf"),
-          loadDocument(),
+          documentLoad,
         ]);
         const bytes = await renderPlanPdf(printDocument, kind, { regular, bold });
         saveFile(bytes, fileName(kind));
       } catch (error) {
-        setError(errorMessage(error));
+        // When the read and the renderer both fail, the read's message wins
+        // whichever rejected first: "Sesja wygasła" is the one a teacher can act on.
+        const cause = await documentLoad.then(
+          () => error,
+          (loadError: unknown) => loadError,
+        );
+        setError(errorMessage(cause));
       } finally {
         inFlight.current = false;
         setPreparing(null);

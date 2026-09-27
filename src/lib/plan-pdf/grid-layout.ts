@@ -27,8 +27,9 @@ import {
 /**
  * The month on one landscape sheet (`S-14`): a row per week, a column per
  * working day, and in each cell only what fits a glance - date, draft label,
- * hasło, theme, activity titles. The descriptions are what the "tygodniami"
- * layout is for.
+ * hasło, theme. No activities, not even their titles: three titles in a cell a
+ * fifth of a page wide cut every full day (Janusz, 2026-09-27, after looking at
+ * the printed grid). The activities are what the "tygodniami" layout is for.
  *
  * Always exactly one page. The text size is the largest candidate at which
  * every cell fits; at the 7 pt floor a cell that still does not fit is cut, and
@@ -123,9 +124,6 @@ function cellLines(day: PrintDay, width: number, size: number, measure: Measure)
   if (day.theme !== null) {
     lines.push(...flowText(`${THEME_PREFIX}${day.theme}`, width, size, "regular", measure));
   }
-  day.activities.forEach((activity, index) => {
-    lines.push(...flowText(`${index + 1}. ${activity.title}`, width, size, "regular", measure, size * 0.3));
-  });
   return lines;
 }
 

@@ -187,8 +187,15 @@ export function formatMonth(month: string): string {
  */
 export function formatWeekRange(weekStart: string): string {
   const days = workingDaysOf(weekStart);
-  const first = days[0];
-  const last = days[days.length - 1];
+  return formatDateRange(days[0], days[days.length - 1]);
+}
+
+/**
+ * Any span of days in the form of {@link formatWeekRange}. The month print needs
+ * it for a partial week: the first row of September names 1–4 września, not the
+ * 31 August it leaves blank.
+ */
+export function formatDateRange(first: string, last: string): string {
   const sameMonth = first.slice(0, 7) === last.slice(0, 7);
 
   const dayOnly = new Intl.DateTimeFormat("pl-PL", { day: "numeric", timeZone: "UTC" });

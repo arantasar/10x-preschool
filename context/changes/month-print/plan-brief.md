@@ -12,7 +12,7 @@
 
 ## Desired End State
 
-Na `/plan/month` dwa przyciski: **„siatka miesiąca"** (jedna kartka A4 poziomo — data, hasło, temat, tytuły aktywności; szkic = „SZKIC ROBOCZY" + przerywana ramka; legenda na dole) i **„tygodniami"** (układ „tydzień na stronie" z `S-13` dla każdego tygodnia, pełne opisy). Drukowane są wyłącznie dni robocze tego miesiąca; dni sąsiednich miesięcy to puste pola bez etykiety. Wydruk tygodnia działa identycznie jak przed slice'em.
+Na `/plan/month` dwa przyciski: **„siatka miesiąca"** (jedna kartka A4 poziomo — data, hasło, temat, bez aktywności; szkic = „SZKIC ROBOCZY" + przerywana ramka; legenda na dole) i **„tygodniami"** (układ „tydzień na stronie" z `S-13` dla każdego tygodnia, pełne opisy). Drukowane są wyłącznie dni robocze tego miesiąca; dni sąsiednich miesięcy to puste pola bez etykiety. Wydruk tygodnia działa identycznie jak przed slice'em.
 
 ## Key Decisions Made
 

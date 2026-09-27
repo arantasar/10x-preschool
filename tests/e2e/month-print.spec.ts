@@ -56,13 +56,18 @@ function weekday(isoDate: string): number {
   return new Date(`${isoDate}T00:00:00Z`).getUTCDay();
 }
 
-/** Liczba tygodni (poniedziałek–niedziela), które dotykają miesiąca — wiersze siatki i strony „tygodniami”. */
-function weeksTouching(month: string): number {
+/**
+ * Liczba tygodni z co najmniej jednym dniem roboczym miesiąca — strony „tygodniami”.
+ * Tydzień, w którym miesiąc ma tylko sobotę i niedzielę (1. w weekend), się nie liczy.
+ */
+function weeksWithWorkingDays(month: string): number {
   const first = `${month}-01`;
   let monday = plusDays(first, -((weekday(first) + 6) % 7));
   let count = 0;
   while (monday.slice(0, 7) <= month) {
-    count += 1;
+    if ([0, 1, 2, 3, 4].some((offset) => plusDays(monday, offset).slice(0, 7) === month)) {
+      count += 1;
+    }
     monday = plusDays(monday, 7);
   }
   return count;
@@ -138,7 +143,7 @@ test.describe("Ryzyko #12 — wydruk miesiąca", () => {
     // Zasiane plany są krótkie, więc żaden tydzień nie przechodzi na „(cd.)”.
     const { bytes, pages } = await readPdf(download);
     expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe("%PDF-");
-    expect(pages).toHaveLength(weeksTouching(month));
+    expect(pages).toHaveLength(weeksWithWorkingDays(month));
     for (const { width, height } of pages) {
       expect(width).toBeGreaterThan(height);
     }

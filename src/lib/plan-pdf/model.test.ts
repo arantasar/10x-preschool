@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { formatAcceptedAt, formatMonth, formatPlanDate, formatWeekRange, weeksOfMonth } from "@/lib/day-plan-dates";
+import {
+  formatAcceptedAt,
+  formatMonth,
+  formatPlanDate,
+  formatWeekRange,
+  weeksOfMonth,
+  workingDaysOfMonth,
+} from "@/lib/day-plan-dates";
 
 import { fullMonth, MONTH, MONTH_DAYS_ISO } from "./__fixtures__/month";
 import { planView, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
@@ -107,8 +114,29 @@ describe("buildPrintMonth", () => {
     expect(doc.rows).toHaveLength(5);
     for (const row of doc.rows) {
       expect(row.slots).toHaveLength(5);
-      expect(row.heading).toBe(`${doc.title} · ${formatWeekRange(row.weekStart)}`);
     }
+    expect(doc.rows[2].heading).toBe(`${doc.title} · ${formatWeekRange(doc.rows[2].weekStart)}`);
+  });
+
+  it("heads a partial week with the month's own days, not the neighbours' left blank", () => {
+    const { title, rows } = buildPrintMonth(MONTH, {});
+
+    expect(rows[0].heading).toBe(`${title} · 1 – 4 września 2026`);
+    expect(rows[4].heading).toBe(`${title} · 28 – 30 września 2026`);
+  });
+
+  it("drops the week a weekend-start month borrows from the previous month", () => {
+    // 1 August 2026 is a Saturday: the screen grid opens with 27–31 July, which
+    // holds none of August's working days and must not become a blank page.
+    const doc = buildPrintMonth("2026-08", {});
+
+    expect(weeksOfMonth("2026-08")[0]).toBe("2026-07-27");
+    expect(doc.rows.map((row) => row.weekStart)).toEqual(weeksOfMonth("2026-08").slice(1));
+    expect(doc.rows[0].slots[0]?.date).toBe("2026-08-03");
+    for (const row of doc.rows) {
+      expect(row.slots.some((slot) => slot !== null)).toBe(true);
+    }
+    expect(printDays(doc).map((day) => day.date)).toEqual(workingDaysOfMonth("2026-08"));
   });
 
   it("leaves the neighbouring months' days as empty slots, not as days without a plan", () => {

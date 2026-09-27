@@ -1,5 +1,6 @@
 import {
   formatAcceptedAt,
+  formatDateRange,
   formatMonth,
   formatPlanDate,
   formatWeekRange,
@@ -176,25 +177,34 @@ export function printDays(doc: PrintDocument): PrintDay[] {
 }
 
 /**
- * The month as it goes on paper: a row for every week that touches it, and a
- * {@link PrintDay} in every slot whose date is one of its working days.
+ * The month as it goes on paper: a row for every week that holds one of its
+ * working days, and a {@link PrintDay} in every slot whose date is one of them.
  *
  * The other slots - the neighbouring months' days in the first and last rows -
  * are `null`, not empty days: they print as nothing, because saying "Brak planu"
  * about 31 August on September's plan would be a claim about the wrong month.
- * Keys of `plans` outside the month are ignored for the same reason.
+ * Keys of `plans` outside the month are ignored for the same reason, and a row's
+ * heading names only the month's own days in it.
+ *
+ * Rows come from {@link weeksOfMonth} minus the ones with no slot at all: a month
+ * that starts on a Saturday or Sunday opens with the previous month's last week,
+ * which the screen grid shows but paper would spend a blank sheet (or a blank
+ * grid row) on.
  */
 export function buildPrintMonth(month: string, plans: Readonly<Partial<Record<string, DayPlanView>>>): PrintDocument {
   const title = `Plan miesiąca — ${formatMonth(month)}`;
   const inMonth = new Set(workingDaysOfMonth(month));
-  return {
-    title,
-    rows: weeksOfMonth(month).map((weekStart) => ({
+  const rows: PrintWeekRow[] = [];
+  for (const weekStart of weeksOfMonth(month)) {
+    const own = workingDaysOf(weekStart).filter((date) => inMonth.has(date));
+    if (own.length === 0) continue;
+    rows.push({
       weekStart,
-      heading: `${title} · ${formatWeekRange(weekStart)}`,
+      heading: `${title} · ${formatDateRange(own[0], own[own.length - 1])}`,
       slots: workingDaysOf(weekStart).map((date) => (inMonth.has(date) ? printDay(date, plans[date]) : null)),
-    })),
-  };
+    });
+  }
+  return { title, rows };
 }
 
 /** `2026-09-14` as `14 września` - a grid cell's heading. */

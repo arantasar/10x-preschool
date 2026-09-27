@@ -653,7 +653,7 @@ export async function readWeekPlans(
     .in("plan_date", [...dates]);
 
   if (planError) {
-    throw toStoreError(planError, "Nie udało się odczytać planów tygodnia");
+    throw toStoreError(planError, "Nie udało się odczytać planów");
   }
   if (plans.length === 0) {
     return result;
@@ -669,7 +669,7 @@ export async function readWeekPlans(
     .order("ordinal");
 
   if (activityError) {
-    throw toStoreError(activityError, "Nie udało się odczytać propozycji tygodnia");
+    throw toStoreError(activityError, "Nie udało się odczytać propozycji");
   }
 
   for (const plan of plans) {

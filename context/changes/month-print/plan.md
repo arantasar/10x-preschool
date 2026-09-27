@@ -2,7 +2,7 @@
 
 ## Overview
 
-`S-14` (`month-print`, FR-021; FR-020 dziedziczone; PRD v2 §Open Questions #8). Nauczyciel pobiera z widoku miesiąca plik PDF z planem całego miesiąca. Do wyboru są dwa układy: **siatka miesiąca** (jedna kartka A4 poziomo — hasło, temat i tytuły aktywności, bez opisów) i **tygodniami** (układ „tydzień na stronie" z `S-13` powtórzony dla każdego tygodnia miesiąca, pełne opisy). Wydruk obejmuje wszystkie dni robocze **tego** miesiąca; dzień niezaakceptowany i dzień bez planu są oznaczone tym samym językiem co w wydruku tygodnia.
+`S-14` (`month-print`, FR-021; FR-020 dziedziczone; PRD v2 §Open Questions #8). Nauczyciel pobiera z widoku miesiąca plik PDF z planem całego miesiąca. Do wyboru są dwa układy: **siatka miesiąca** (jedna kartka A4 poziomo — hasło i temat, bez aktywności) i **tygodniami** (układ „tydzień na stronie" z `S-13` powtórzony dla każdego tygodnia miesiąca, pełne opisy). Wydruk obejmuje wszystkie dni robocze **tego** miesiąca; dzień niezaakceptowany i dzień bez planu są oznaczone tym samym językiem co w wydruku tygodnia.
 
 Slice rozstrzyga PRD §Open Questions #8 decyzją **siatka + tygodniami — dwa przyciski** (Janusz, 2026-09-27).
 
@@ -26,7 +26,7 @@ Slice najpierw **uogólnia** silnik `S-13` (`src/lib/week-pdf/` → `src/lib/pla
 - Na `/plan/month`, pod nawigacją poprzedni/następny miesiąc, są dwa przyciski: **„Pobierz PDF — siatka miesiąca"** i **„Pobierz PDF — tygodniami"**. Kliknięcie pobiera `plan-miesiaca-<YYYY-MM>-siatka.pdf` / `plan-miesiaca-<YYYY-MM>-tygodniami.pdf`. Przyciski są ukryte, gdy miesiąc nie wczytał się (`readFailed`); przy miesiącu bez planów są aktywne (wydruk z samymi „Brak planu").
 - Dane wydruku pobiera po kliknięciu nowa trasa `GET /api/day-plan/month?month=YYYY-MM` — pełne plany z aktywnościami dla dni roboczych **tego** miesiąca. Ładowanie strony miesiąca się nie zmienia.
 - **Zakres dni:** poniedziałek–piątek z datą w danym miesiącu (20–23 dni). Dni sąsiedniego miesiąca w pierwszym/ostatnim tygodniu to pusta komórka / pusta kolumna **bez etykiety** — nie „Brak planu".
-- **Siatka miesiąca:** jedna kartka A4 poziomo, zawsze dokładnie jedna. Tytuł „Plan miesiąca — wrzesień 2026", wiersz nagłówków dni tygodnia, wiersz na każdy tydzień z `weeksOfMonth`, pięć kolumn. Komórka: data (np. „14 września"), dla szkicu „SZKIC ROBOCZY" + przerywana ramka wokół komórki, hasło, temat (jeśli jest), tytuły trzech aktywności; dla dnia pustego „Brak planu na ten dzień"; dla dnia zaakceptowanego brak etykiety. Rozmiar tekstu to największy z listy kandydatów, przy którym **każda** komórka się mieści; na progu 7 pt komórka, która się nie mieści, jest ucięta — ostatnia widoczna linia kończy się „…". Na dole kartki jedna linia legendy: „Przerywana ramka i „SZKIC ROBOCZY” — plan niezaakceptowany".
+- **Siatka miesiąca:** jedna kartka A4 poziomo, zawsze dokładnie jedna. Tytuł „Plan miesiąca — wrzesień 2026", wiersz nagłówków dni tygodnia, wiersz na każdy tydzień z `weeksOfMonth`, pięć kolumn. Komórka: data (np. „14 września"), dla szkicu „SZKIC ROBOCZY" + przerywana ramka wokół komórki, hasło, temat (jeśli jest) — **bez aktywności** (zmiana po obejrzeniu wydruku, 2026-09-27: trzy tytuły ucinały każdy pełny dzień); dla dnia pustego „Brak planu na ten dzień"; dla dnia zaakceptowanego brak etykiety. Rozmiar tekstu to największy z listy kandydatów, przy którym **każda** komórka się mieści; na progu 7 pt komórka, która się nie mieści, jest ucięta — ostatnia widoczna linia kończy się „…". Na dole kartki jedna linia legendy: „Przerywana ramka i „SZKIC ROBOCZY” — plan niezaakceptowany".
 - **Tygodniami:** dla każdego tygodnia z `weeksOfMonth` układ „tydzień na stronie" z `S-13` (A4 poziomo, pięć kolumn, rozmiar 11→7 pt dobierany **osobno dla każdego tygodnia**, kontynuacja „(cd.)" poniżej progu), z pełnymi etykietami tygodnia (`SZKIC ROBOCZY — niezaakceptowany`, `Zaakceptowano …`, „Brak planu na ten dzień"). Tydzień zaczyna się zawsze od nowej kartki. Kolumny dni spoza miesiąca są puste. Nagłówek kartki: tytuł miesiąca + zakres tygodnia.
 - **Wydruk tygodnia (`S-13`) zachowuje się identycznie** — te same przyciski, nazwy plików, liczba i orientacja stron, etykiety.
 - Weryfikacja: testy jednostkowe (model, układ siatki, trasa), test renderowania w node na prawdziwym foncie, e2e pod nowym ryzykiem #12, ręczne obejrzenie i wydruk PDF-a.
@@ -176,7 +176,7 @@ interface PdfDownloadControlsProps {
 - Lint przechodzi: `npm run lint`
 - Build przechodzi: `npm run build`
 - Stary katalog nie istnieje i nic go nie importuje: `test ! -e src/lib/week-pdf && ! grep -rn "week-pdf" src tests`
-- Asercje testów tygodnia nietknięte — diff testów i spec-a e2e zawiera wyłącznie linie z importami/ścieżkami lub nazwami przemianowanych symboli (sprawdzić na tymczasowo zmienionej asercji, że kryterium pada): `git diff -w -M master..HEAD -- src/lib/plan-pdf/model.test.ts src/lib/plan-pdf/layout.test.ts src/lib/plan-pdf/render.test.ts tests/e2e/week-print.spec.ts | grep -E "^[-+][^-+]" | grep -vE "plan-pdf|week-pdf|buildPrintWeek|layoutDocument|layoutWeek|renderPlanPdf|renderWeekPdf|prepareDocument|prepareWeek|embedPlanFonts|embedWeekFonts|PrintDocument|PrintWeek|bodySize" | wc -l` zwraca `0`
+- Asercje testów tygodnia nietknięte — diff testów i spec-a e2e na commicie fazy 1 zawiera wyłącznie linie z importami/ścieżkami, nazwami przemianowanych symboli albo zmianą dostępu `week.days[i]` → `printDays(week)[i]`. Pathspec musi obejmować **obie** strony przeniesienia (bez `week-pdf/*` `-M` nie ma pary i każdy plik liczy się jako dodany — pierwotna wersja kryterium zwracała 340). Sprawdzone: `0` na `03f7f5e`, `2` z dopisaną zmianą oczekiwanej liczby stron (review `F2`, 2026-09-27): `git diff -w -M master..03f7f5e -- src/lib/week-pdf/model.test.ts src/lib/week-pdf/layout.test.ts src/lib/week-pdf/render.test.ts src/lib/plan-pdf/model.test.ts src/lib/plan-pdf/layout.test.ts src/lib/plan-pdf/render.test.ts tests/e2e/week-print.spec.ts | grep -E "^[-+][^-+]" | grep -vE 'plan-pdf|week-pdf|buildPrintWeek|layoutDocument|layoutWeek|renderPlanPdf|renderWeekPdf|prepareDocument|prepareWeek|embedPlanFonts|embedWeekFonts|PrintDocument|PrintWeek|bodySize|printDays|normalizeDocument|normalizeWeek|\.days\[[0-9]\];$|^\+ *\}\);$' | wc -l` zwraca `0`
 - Spec e2e tygodnia przechodzi: `npx playwright test tests/e2e/week-print.spec.ts`
 - Renderer nie jest importowany statycznie poza sobą (sprawdzić na tymczasowym statycznym imporcie): `! grep -rnE "from ['\"](pdf-lib|@pdf-lib/fontkit|@/lib/plan-pdf/render)['\"]" src/components src/pages`
 
@@ -281,13 +281,13 @@ export const GRID_LEGEND = "Przerywana ramka i „SZKIC ROBOCZY” — plan niez
 export const TRUNCATION_MARK = "…";
 ```
 
-Semantyka: `title` = `Plan miesiąca — ${formatMonth(month)}`; wiersze = `weeksOfMonth(month)`; slot = `PrintDay` (ten sam `printDay` co tydzień) dla dat z `workingDaysOfMonth(month)`, `null` dla pozostałych; `row.heading` = `${title} · ${formatWeekRange(weekStart)}`. Dzień miesiąca bez klucza w `plans` → `empty`. Klucze `plans` spoza miesiąca są ignorowane.
+Semantyka: `title` = `Plan miesiąca — ${formatMonth(month)}`; wiersze = `weeksOfMonth(month)` **bez tygodni, w których miesiąc nie ma dnia roboczego** (miesiąc zaczynający się w sobotę/niedzielę — review `F1`); slot = `PrintDay` (ten sam `printDay` co tydzień) dla dat z `workingDaysOfMonth(month)`, `null` dla pozostałych; `row.heading` = `${title} · ${formatDateRange(pierwszy, ostatni dzień roboczy miesiąca w wierszu)}` (review `F3`). Dzień miesiąca bez klucza w `plans` → `empty`. Klucze `plans` spoza miesiąca są ignorowane.
 
 #### 2. Układ siatki
 
 **File**: `src/lib/plan-pdf/grid-layout.ts` (nowy), podpięcie w `layoutDocument` (`layout.ts`)
 
-**Intent**: `month-grid`: A4 poziomo, dokładnie jedna strona. Tytuł, wiersz nagłówków dni tygodnia (Poniedziałek…Piątek), pod nim `rows.length` wierszy komórek równej wysokości i pięć kolumn równej szerokości z odstępem, linia legendy przy dolnym marginesie. Komórka dnia: data krótko (np. „14 września", bold), dla `draft` — `DRAFT_SHORT_LABEL` (bold) + `dashed-box` wokół całej komórki, dla `empty` — `EMPTY_DAY_NOTE`, dla `accepted` — bez etykiety; potem `Hasło: …`, `Temat: …` (jeśli jest), `1. <tytuł>` … `3. <tytuł>`. Bez opisów. Slot `null` — nic.
+**Intent**: `month-grid`: A4 poziomo, dokładnie jedna strona. Tytuł, wiersz nagłówków dni tygodnia (Poniedziałek…Piątek), pod nim `rows.length` wierszy komórek równej wysokości i pięć kolumn równej szerokości z odstępem, linia legendy przy dolnym marginesie. Komórka dnia: data krótko (np. „14 września", bold), dla `draft` — `DRAFT_SHORT_LABEL` (bold) + `dashed-box` wokół całej komórki, dla `empty` — `EMPTY_DAY_NOTE`, dla `accepted` — bez etykiety; potem `Hasło: …`, `Temat: …` (jeśli jest). Bez aktywności — ani tytułów, ani opisów. Slot `null` — nic.
 
 **Contract**: `layoutMonthGrid(doc: PrintDocument, measure: Measure): PdfLayout` z `kind: "month-grid"`, `pages.length === 1` zawsze.
 
@@ -304,7 +304,7 @@ Semantyka: `title` = `Plan miesiąca — ${formatMonth(month)}`; wiersze = `week
 **Contract** — przypadki minimalne:
 
 - model: wrzesień 2026 → 5 wierszy, pierwszy wiersz ma slot poniedziałku 31 sierpnia `null`, a wtorek 1 września `PrintDay`; liczba slotów niepustych === `workingDaysOfMonth("2026-09").length` (22); dzień bez planu → `empty` + `EMPTY_DAY_NOTE`; plan w `plans` pod datą z sąsiedniego miesiąca nie trafia do dokumentu; `accepted_at === null` → `draft`; `monthPdfFileName` dla obu układów; `title` z `formatMonth`.
-- siatka: zawsze jedna strona pozioma — także dla miesiąca pustego i miesiąca 23 × (prompt 2000 + 3 × tytuł 200 znaków); typowy miesiąc → `bodySize` > 7; komórka `draft` ma `dashed-box` i tekst `DRAFT_SHORT_LABEL`, komórka `accepted` nie ma ani jednego; komórka `empty` ma `EMPTY_DAY_NOTE`, slot `null` nie ma żadnego elementu w swoim prostokącie; przy przepełnieniu `bodySize === 7`, a przepełniona komórka ma ostatnią linię kończącą się `TRUNCATION_MARK` i ta linia mieści się w szerokości komórki; żaden element tekstowy nie wychodzi poza margines strony ani poza swoją komórkę; legenda `GRID_LEGEND` jest na stronie.
+- siatka: zawsze jedna strona pozioma — także dla miesiąca pustego i miesiąca 23 × (prompt 2000 znaków; długie tytuły aktywności nie trafiają do siatki); typowy miesiąc → `bodySize` > 7; komórka `draft` ma `dashed-box` i tekst `DRAFT_SHORT_LABEL`, komórka `accepted` nie ma ani jednego; komórka `empty` ma `EMPTY_DAY_NOTE`, slot `null` nie ma żadnego elementu w swoim prostokącie; przy przepełnieniu `bodySize === 7`, a przepełniona komórka ma ostatnią linię kończącą się `TRUNCATION_MARK` i ta linia mieści się w szerokości komórki; żaden element tekstowy nie wychodzi poza margines strony ani poza swoją komórkę; legenda `GRID_LEGEND` jest na stronie.
 - week-per-page dla miesiąca (w `layout.test.ts`): liczba stron ≥ liczba wierszy; każdy wiersz zaczyna nową stronę; kolumna slotu `null` nie ma tekstu; typowy miesiąc → dokładnie `rows.length` stron.
 
 ### Success Criteria:
@@ -413,7 +413,7 @@ Ryzyko #12 w mapie testów, spec Playwright dla miesiąca, domknięcie slice'a w
 **Contract** — testy:
 
 - „siatka miesiąca": `suggestedFilename()` === `plan-miesiaca-<YYYY-MM>-siatka.pdf`; `%PDF-`; 1 strona; strona pozioma.
-- „tygodniami": nazwa pliku; liczba stron === liczba tygodni dotykających miesiąca; wszystkie strony poziome. (Zasiane dane są krótkie, więc żaden tydzień nie przechodzi na „(cd.)" — nawet przy równoległych specach piszących w tym samym miesiącu.)
+- „tygodniami": nazwa pliku; liczba stron === liczba tygodni z co najmniej jednym dniem roboczym miesiąca; wszystkie strony poziome. (Zasiane dane są krótkie, więc żaden tydzień nie przechodzi na „(cd.)" — nawet przy równoległych specach piszących w tym samym miesiącu.)
 - „izolacja": `page.request.get("/api/day-plan/month?month=…")` jako `TEACHER_A` → 200; `plans` zawiera obie zasiane daty A z tytułami ze znacznikiem `uniqueStamp` A; czwartek B **nie** występuje w `plans` albo występuje z planem bez znacznika B (inny spec może mieć tam plan A — asercja na znaczniku, nie na obecności klucza); żadna data w `plans` nie leży poza miesiącem ani w weekend.
 
 Lokatory wyłącznie `getByRole("button", { name, exact: true })`; zero `waitForTimeout`.
@@ -503,7 +503,7 @@ Brak — żadnych zmian w schemacie ani danych.
 - [x] 1.3 Lint przechodzi — 03f7f5e
 - [x] 1.4 Build przechodzi — 03f7f5e
 - [x] 1.5 Stary katalog nie istnieje i nic go nie importuje — 03f7f5e
-- [x] 1.6 Asercje testów tygodnia nietknięte — 03f7f5e
+- [x] 1.6 Asercje testów tygodnia nietknięte — 03f7f5e (kryterium poprawione i uruchomione ponownie w review F2: 0 / zepsute 2)
 - [x] 1.7 Spec e2e tygodnia przechodzi — 03f7f5e
 - [x] 1.8 Renderer nie jest importowany statycznie poza sobą — 03f7f5e
 

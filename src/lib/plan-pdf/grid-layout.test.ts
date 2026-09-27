@@ -49,7 +49,10 @@ function grid(month: string, plans: Record<string, DayPlanView>): { doc: PrintDo
   return { doc, layout: layoutMonthGrid(doc, measure) };
 }
 
-/** 23 working days, each with a 2000-character hasło and three 200-character titles. */
+/**
+ * 23 working days, each with a 2000-character hasło - enough on its own to
+ * overflow a cell. The long titles are there to prove they stay off the grid.
+ */
 function overflowingMonth(): Record<string, DayPlanView> {
   return fullMonth(LONGEST_MONTH, {
     prompt: prose(2000),
@@ -92,6 +95,7 @@ describe("layoutMonthGrid — one sheet", () => {
     const text = texts(layout.pages[0]).map((item) => item.text);
 
     expect(layout.pages).toHaveLength(1);
+    expect(layout.pages[0].spec).toBe(A4_LANDSCAPE);
     expect(text.filter((line) => line === EMPTY_DAY_NOTE)).toHaveLength(22);
   });
 
@@ -99,6 +103,7 @@ describe("layoutMonthGrid — one sheet", () => {
     const { layout } = grid(LONGEST_MONTH, overflowingMonth());
 
     expect(layout.pages).toHaveLength(1);
+    expect(layout.pages[0].spec).toBe(A4_LANDSCAPE);
     expect(layout.bodySize).toBe(7);
   });
 
@@ -146,7 +151,7 @@ describe("layoutMonthGrid — cells", () => {
     expect(text.join("\n")).not.toContain(DRAFT_LABEL);
   });
 
-  it("shows the hasło, the theme and the three titles, but no description", () => {
+  it("shows the hasło and the theme, but no activity - neither title nor description", () => {
     const { doc, layout } = grid(MONTH, {
       "2026-09-15": planView("2026-09-15", {
         acceptedAt: "2026-09-23T09:31:00Z",
@@ -161,7 +166,7 @@ describe("layoutMonthGrid — cells", () => {
     });
     const text = cellTexts(layout.pages[0], cellFor(doc, "2026-09-15")).map((item) => item.text);
 
-    expect(text).toEqual(["15 września", "Hasło: Kasztany", "Temat: Ludziki", "1. Pierwsza", "2. Druga", "3. Trzecia"]);
+    expect(text).toEqual(["15 września", "Hasło: Kasztany", "Temat: Ludziki"]);
   });
 
   it("says an unplanned day of the month has no plan, and draws nothing in a slot outside it", () => {
