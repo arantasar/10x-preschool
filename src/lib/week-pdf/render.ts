@@ -1,7 +1,7 @@
 import fontkit from "@pdf-lib/fontkit";
 import { grayscale, PDFDocument, type PDFFont } from "pdf-lib";
 
-import { layoutWeek, normalizeText, type FontWeight, type Measure } from "@/lib/week-pdf/layout";
+import { layoutWeek, normalizeText, type FontWeight, type Measure, type PdfLayout } from "@/lib/week-pdf/layout";
 import type { PdfLayoutKind, PrintDay, PrintWeek } from "@/lib/week-pdf/model";
 
 /**
@@ -60,9 +60,13 @@ export interface EmbeddedWeekFonts {
 
 export async function embedWeekFonts(doc: PDFDocument, fonts: PdfFonts): Promise<EmbeddedWeekFonts> {
   doc.registerFontkit(fontkit);
+  // Whole fonts, not `subset: true`: @pdf-lib/fontkit's subsetter breaks the
+  // glyph mapping of Noto Sans, and every viewer then draws stray letters in
+  // place of the text. No test here can see it - the PDF holds glyph ids, not
+  // characters - so only a look at the rendered page does.
   const embedded: Record<FontWeight, PDFFont> = {
-    regular: await doc.embedFont(fonts.regular, { subset: true }),
-    bold: await doc.embedFont(fonts.bold, { subset: true }),
+    regular: await doc.embedFont(fonts.regular),
+    bold: await doc.embedFont(fonts.bold),
   };
 
   // A character counts as drawable only if both weights have it, because the
@@ -104,12 +108,25 @@ function cachedMeasure(embedded: Readonly<Record<FontWeight, PDFFont>>): Measure
   };
 }
 
+/**
+ * The week as it will be drawn: filtered to what the fonts have, then laid out
+ * with their measure. Separate from {@link renderWeekPdf} so a test can read
+ * the laid-out text - the PDF itself carries glyph ids, not characters.
+ */
+export function prepareWeek(
+  week: PrintWeek,
+  kind: PdfLayoutKind,
+  { hasGlyph, measure }: EmbeddedWeekFonts,
+): { readonly printable: PrintWeek; readonly layout: PdfLayout } {
+  const printable = normalizeWeek(week, hasGlyph);
+  return { printable, layout: layoutWeek(printable, kind, measure) };
+}
+
 export async function renderWeekPdf(week: PrintWeek, kind: PdfLayoutKind, fonts: PdfFonts): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  const { fonts: embedded, hasGlyph, measure } = await embedWeekFonts(doc, fonts);
-
-  const printable = normalizeWeek(week, hasGlyph);
-  const layout = layoutWeek(printable, kind, measure);
+  const embeddedFonts = await embedWeekFonts(doc, fonts);
+  const embedded = embeddedFonts.fonts;
+  const { printable, layout } = prepareWeek(week, kind, embeddedFonts);
 
   doc.setTitle(printable.title);
   doc.setLanguage("pl");

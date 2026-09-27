@@ -85,14 +85,20 @@ const WEEK_TITLE_SIZE = 13;
 
 /**
  * Text as it may be measured and drawn: `\r\n` and lone `\r` become `\n`, tabs
- * become spaces, and characters the font has no glyph for become `?`.
+ * become spaces, a run of blank lines becomes one, and characters the font has
+ * no glyph for become `?`.
  *
  * The glyph check is the renderer's to supply - only it knows the font - but it
  * must run before layout, or the width measured and the width drawn disagree
  * (and pdf-lib throws on a character it cannot encode).
  */
 export function normalizeText(text: string, hasGlyph: (char: string) => boolean = () => true): string {
-  const unified = text.replace(/\r\n?/g, "\n").replace(/\t/g, " ");
+  // A run of blank lines keeps one: pasted text can carry hundreds, and each
+  // would otherwise be a printed line - whole "(cd.)" pages of nothing.
+  const unified = text
+    .replace(/\r\n?/g, "\n")
+    .replace(/\t/g, " ")
+    .replace(/\n(?: *\n)+/g, "\n\n");
   return Array.from(unified, (char) => (char === "\n" || hasGlyph(char) ? char : "?")).join("");
 }
 

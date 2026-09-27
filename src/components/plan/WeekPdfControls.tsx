@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { CircleAlert, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buildPrintWeek, PDF_BUTTON_LABELS, pdfFileName, type PdfLayoutKind } from "@/lib/week-pdf/model";
@@ -30,6 +30,14 @@ interface WeekPdfControlsProps {
 
 const KINDS: readonly PdfLayoutKind[] = ["day-per-page", "week-per-page"];
 
+const RENDER_FAILED = "Nie udało się przygotować pliku PDF. Spróbuj ponownie.";
+// The renderer chunk is named by content hash and only the current deployment's
+// files are served, so a page opened before a deploy can no longer load it.
+// Retrying fails the same way every time; only a reload helps.
+const RENDERER_UNAVAILABLE = "Nie udało się wczytać modułu PDF. Odśwież stronę i spróbuj ponownie.";
+
+class RendererUnavailableError extends Error {}
+
 async function fetchFont(path: string): Promise<Uint8Array> {
   const response = await fetch(path);
   if (!response.ok) {
@@ -53,11 +61,12 @@ function saveFile(bytes: Uint8Array, fileName: string): void {
   document.body.append(link);
   link.click();
   link.remove();
-  // After the click has been dispatched; revoking synchronously can cancel the
-  // download in some browsers.
+  // Not right after the click: Firefox and Safari (iOS opens a preview) read
+  // the blob asynchronously and lose it once the URL is revoked. One PDF per
+  // click, so holding it for a while costs nothing.
   setTimeout(() => {
     URL.revokeObjectURL(url);
-  }, 0);
+  }, 40_000);
 }
 
 export default function WeekPdfControls({ weekStart, days, plans, disabled, disabledReason }: WeekPdfControlsProps) {
@@ -66,6 +75,7 @@ export default function WeekPdfControls({ weekStart, days, plans, disabled, disa
   // Set synchronously on click, so a double click cannot start two downloads
   // before the first `setPreparing` has re-rendered the buttons as disabled.
   const inFlight = useRef(false);
+  const reasonId = useId();
 
   function download(kind: PdfLayoutKind): void {
     if (inFlight.current || disabled) return;
@@ -76,14 +86,16 @@ export default function WeekPdfControls({ weekStart, days, plans, disabled, disa
     void (async () => {
       try {
         const [{ renderWeekPdf }, regular, bold] = await Promise.all([
-          import("@/lib/week-pdf/render"),
+          import("@/lib/week-pdf/render").catch((error: unknown) => {
+            throw new RendererUnavailableError("PDF renderer failed to load", { cause: error });
+          }),
           fetchFont("/fonts/NotoSans-Regular.ttf"),
           fetchFont("/fonts/NotoSans-Bold.ttf"),
         ]);
         const bytes = await renderWeekPdf(buildPrintWeek(weekStart, days, plans), kind, { regular, bold });
         saveFile(bytes, pdfFileName(weekStart, kind));
-      } catch {
-        setError("Nie udało się przygotować pliku PDF. Spróbuj ponownie.");
+      } catch (error) {
+        setError(error instanceof RendererUnavailableError ? RENDERER_UNAVAILABLE : RENDER_FAILED);
       } finally {
         inFlight.current = false;
         setPreparing(null);
@@ -98,19 +110,23 @@ export default function WeekPdfControls({ weekStart, days, plans, disabled, disa
           <Button
             key={kind}
             type="button"
-            variant="outline"
             disabled={disabled || preparing !== null}
+            aria-describedby={disabledReason !== null ? reasonId : undefined}
             onClick={() => {
               download(kind);
             }}
-            className="flex-1 rounded-lg border-white/20 bg-white/5 text-white hover:bg-white/10"
+            className="flex-1 cursor-pointer rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-white transition-colors hover:bg-white/10 hover:text-white"
           >
             <FileDown className="size-4" />
             {preparing === kind ? "Przygotowuję PDF…" : PDF_BUTTON_LABELS[kind]}
           </Button>
         ))}
       </div>
-      {disabledReason !== null && <p className="text-xs text-amber-200/80">{disabledReason}</p>}
+      {disabledReason !== null && (
+        <p id={reasonId} className="text-xs text-amber-200/80">
+          {disabledReason}
+        </p>
+      )}
       {error !== null && (
         <p role="alert" className="flex items-center gap-1 text-sm text-red-300">
           <CircleAlert className="size-4 shrink-0" />

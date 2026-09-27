@@ -3,9 +3,9 @@ import { readFile } from "node:fs/promises";
 import { PDFDocument } from "pdf-lib";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { fullWeek, planView, WEEK_DAYS_ISO, WEEK_START } from "./fixtures.test-helpers";
+import { fullWeek, planView, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
 import { buildPrintWeek, type PdfLayoutKind } from "./model";
-import { embedWeekFonts, normalizeWeek, renderWeekPdf, type PdfFonts } from "./render";
+import { embedWeekFonts, normalizeWeek, prepareWeek, renderWeekPdf, type PdfFonts } from "./render";
 import type { DayPlanView } from "@/types";
 
 // Real font files, not a stub: the claim under test is that the whole chain -
@@ -101,6 +101,25 @@ describe("renderWeekPdf", () => {
 
     expect(day.prompt).toBe(`Jesień ? ${POLISH}`);
     expect(day.activities[0]).toEqual({ title: "Liście ?", description: "Kasztany ? i ??" });
+  });
+
+  // The test above proves the filter works; this one that the renderer's path
+  // runs it. Without it the layout would carry the emoji the font cannot draw.
+  it("lays out the filtered text, not the raw one", async () => {
+    const embedded = await embedWeekFonts(await PDFDocument.create(), fonts);
+    const date = WEEK_DAYS_ISO[0];
+    const week = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, {
+      [date]: planView(date, { activities: [{ title: "Liście 🍁", description: "Kasztany 🌰" }] }),
+    });
+
+    for (const kind of ["day-per-page", "week-per-page"] as const) {
+      const text = prepareWeek(week, kind, embedded)
+        .layout.pages.flatMap((page) => page.items)
+        .map((item) => (item.kind === "text" ? item.text : ""))
+        .join("\n");
+      expect(text).toContain("Kasztany ?");
+      expect(text).not.toMatch(/🍁|🌰/u);
+    }
   });
 
   it("gives an empty week five pages", async () => {

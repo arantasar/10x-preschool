@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { fullWeek, planView, prose, WEEK_DAYS_ISO, WEEK_START } from "./fixtures.test-helpers";
+import { fullWeek, planView, prose, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
 import {
   A4_LANDSCAPE,
   A4_PORTRAIT,
@@ -49,6 +49,13 @@ function expectInsideMargins(result: PdfLayout): void {
       expect(item.y + item.size).toBeLessThanOrEqual(height - margin + 1e-6);
       expect(item.y - 0.3 * item.size).toBeGreaterThanOrEqual(margin - 1e-6);
     }
+    for (const item of page.items) {
+      if (item.kind !== "dashed-box") continue;
+      expect(item.x).toBeGreaterThanOrEqual(margin - 1e-6);
+      expect(item.y).toBeGreaterThanOrEqual(margin - 1e-6);
+      expect(item.x + item.width).toBeLessThanOrEqual(width - margin + 1e-6);
+      expect(item.y + item.height).toBeLessThanOrEqual(height - margin + 1e-6);
+    }
   }
 }
 
@@ -89,6 +96,12 @@ describe("normalizeText", () => {
     const hasGlyph = (char: string) => (char.codePointAt(0) ?? 0) < 0x2000;
 
     expect(normalizeText("Zażółć 🍂 gęślą\tjaźń", hasGlyph)).toBe("Zażółć ? gęślą jaźń");
+  });
+
+  it("keeps one blank line out of a run, and leaves a single break alone", () => {
+    expect(normalizeText(`a${"\n".repeat(500)}b`)).toBe("a\n\nb");
+    expect(normalizeText("a\r\n \r\n  \n\nb")).toBe("a\n\nb");
+    expect(normalizeText("a\nb\n\nc")).toBe("a\nb\n\nc");
   });
 });
 

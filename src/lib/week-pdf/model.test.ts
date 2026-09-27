@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatAcceptedAt, formatPlanDate, formatWeekRange } from "@/lib/day-plan-dates";
 
-import { planView, WEEK_DAYS_ISO, WEEK_START } from "./fixtures.test-helpers";
+import { planView, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
 import { buildPrintWeek, DRAFT_LABEL, EMPTY_DAY_NOTE, pdfFileName } from "./model";
 
 const ACCEPTED_AT = "2026-09-23T09:31:00Z";
