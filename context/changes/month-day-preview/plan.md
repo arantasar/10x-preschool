@@ -432,12 +432,12 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 
 #### Automated
 
-- [x] 4.1 Nowe testy przechodzą: `npm run test:e2e -- tests/e2e/month-day-preview.spec.ts`
-- [x] 4.2 Cały zestaw e2e przechodzi: `npm run test:e2e`
-- [x] 4.3 Celowe psucie A: `hide()` nie czyści timera → test przeciągnięcia czerwony; wycofane
-- [x] 4.4 Celowe psucie B: pominięta pamięć podręczna → test ponownego wskazania czerwony; wycofane
-- [x] 4.5 Celowe psucie C: usunięty `onFocus` → test klawiatury czerwony; wycofane
-- [x] 4.6 Lint przechodzi: `npm run lint`
+- [x] 4.1 Nowe testy przechodzą: `npm run test:e2e -- tests/e2e/month-day-preview.spec.ts` — ff1a384
+- [x] 4.2 Cały zestaw e2e przechodzi: `npm run test:e2e` — ff1a384
+- [x] 4.3 Celowe psucie A: `hide()` nie czyści timera → test przeciągnięcia czerwony; wycofane — ff1a384
+- [x] 4.4 Celowe psucie B: pominięta pamięć podręczna → test ponownego wskazania czerwony; wycofane — ff1a384
+- [x] 4.5 Celowe psucie C: usunięty `onFocus` → test klawiatury czerwony; wycofane — ff1a384
+- [x] 4.6 Lint przechodzi: `npm run lint` — ff1a384
 
 #### Manual
 
