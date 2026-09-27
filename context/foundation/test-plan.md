@@ -54,6 +54,7 @@ patrz §1 zasada #3).
 | 8 | Dzień oznaczony jako gotowy przestaje być zatwierdzony po cichu: edycja treści zdejmuje akceptację, a nauczyciel nie zostaje o to zapytany przed zapisem ani nie dowiaduje się po nim, dlaczego zielona plakietka zniknęła | Medium | Medium | PRD FR-017 („jawność proporcjonalna do skutku"); `context/foundation/roadmap.md` S-12; trigger `activities_edit_clears_acceptance` działa od S-02 (`supabase/migrations/20260823095136_…`), więc skutek istniał w bazie o slice wcześniej niż jakakolwiek jego zapowiedź w interfejsie; `context/changes/edit-unaccepts-day/reviews/impl-review.md` F4 (ścieżka zgody bez dowodu automatycznego) |
 | 9 | Operacja wykonana z poziomu tygodnia — cofnięcie akceptacji albo usunięcie planu dnia — trafia w inny dzień niż ten, który nauczyciel wskazał, bo tydzień pokazuje pięć kart obok siebie; przy kasowaniu pomyłki nie da się cofnąć | High | Low | `context/foundation/roadmap.md` S-11 §Risk („ryzyko nie leży w zapisie, tylko w celowaniu… operacja musi jednoznacznie nazywać dzień, którego dotyczy"); `context/foundation/prd-v2.md` FR-015 (Socrates: utrzymane z warunkiem nazywania dnia), FR-016; `context/changes/week-level-plan-controls/` (pierwsza operacja na pojedynczym dniu w widoku, który renderuje pięć dni naraz) |
 | 10 | Podgląd dnia w siatce miesiąca pokazuje treść innego dnia niż ten, na którym zatrzymał się nauczyciel — spóźniona odpowiedź dnia minionego ląduje pod datą bieżącego — albo przeciągnięcie kursora przez rząd wysyła żądanie za każdy mijany dzień; nauczyciel bez myszy nie dochodzi do tej samej treści | Medium | Medium | `context/foundation/roadmap.md` S-07 §Risk (opóźnienie, anulowanie porzuconego żądania i pamięć podręczna jako warunki brzegowe, nie optymalizacja); `context/foundation/prd-v2.md` §Warunki jakościowe zmiany (zachowanie pod szybkim ruchem wskaźnika, osiągalność bez myszy), FR-010 (Socrates: kontrargument o burzy żądań przyjęty); `context/changes/month-day-preview/` (pierwszy odczyt w tle wyzwalany ruchem wskaźnika, nie kliknięciem) |
+| 11 | Wydruk tygodnia pokazuje dzień niezaakceptowany jako gotowy (albo odwrotnie), pomija dzień roboczy albo zawiera propozycje, których nie ma w bazie — nauczyciel oddaje na papierze plan, który nie odpowiada temu, co zatwierdził | Medium | Low | `context/foundation/prd-v2.md` FR-020 (wszystkie dni robocze, szkice oznaczone); `context/foundation/roadmap.md` S-13 §Risk (napięcie „oznaczony szkic i tak zostanie oddany"); `context/changes/week-print/` (PDF generowany w przeglądarce ze stanu wyspy, nie z bazy — a wyspa trzyma też partie niezapisane) |
 
 Ryzyka o wysokim impakcie i niskim prawdopodobieństwie — awaria samego
 OpenRoutera, awaria regionu Cloudflare — nie mają tu wiersza. Należą do
@@ -519,6 +520,12 @@ respektują je, dopóki nie zmieni się założenie leżące u podstaw.
   _Rozpatrzone 2026-09 przy `S-07` (`month-day-preview`): stan podglądu dnia jest
   widoczny w drzewie dostępności (`role="tooltip"` + `aria-describedby`) i asertowalny
   bez snapshotu — ryzyko #10 — więc wykluczenie zostaje._
+  _Rozpatrzone 2026-09 przy `S-13` (`week-print`): wydruk tygodnia nie wprowadza
+  snapshotów ani rasteryzacji PDF. Treść wydruku (etykieta szkicu, „Brak planu na ten
+  dzień", kolejność dni) jest asertowana na czystym modelu w `src/lib/week-pdf/` —
+  tekst osadzony własnym fontem jest w PDF-ie zakodowany identyfikatorami glifów i nie
+  da się go grepować — a struktura pliku (liczba i orientacja stron, nazwa) w e2e pod
+  ryzykiem #11. Wygląd kartki ocenia człowiek na papierze._
 - **Jakość kreatywna propozycji** — czy „Dinozaury" dały *dobrą* aktywność, ocenia
   człowiek; PRD mierzy to metryką akceptacji ≥ 75%, nie bramką CI. To **nie
   obejmuje** bezpieczeństwa treści, które jest ryzykiem #1 i ma własną fazę.

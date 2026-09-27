@@ -430,10 +430,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [x] 3.1 Lint przechodzi
-- [x] 3.2 Pełen zestaw jednostkowy przechodzi
-- [x] 3.3 Build przechodzi
-- [x] 3.4 pdf-lib nie jest importowany statycznie poza rendererem
+- [x] 3.1 Lint przechodzi — 62883e8
+- [x] 3.2 Pełen zestaw jednostkowy przechodzi — 62883e8
+- [x] 3.3 Build przechodzi — 62883e8
+- [x] 3.4 pdf-lib nie jest importowany statycznie poza rendererem — 62883e8
 
 #### Manual
 
@@ -447,10 +447,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [ ] 4.1 Spec week-print przechodzi lokalnie
-- [ ] 4.2 Cały zestaw e2e bez regresji
-- [ ] 4.3 Lint przechodzi
-- [ ] 4.4 Wiersze #1–#10 mapy ryzyk nietknięte
+- [x] 4.1 Spec week-print przechodzi lokalnie
+- [x] 4.2 Cały zestaw e2e bez regresji
+- [x] 4.3 Lint przechodzi
+- [x] 4.4 Wiersze #1–#10 mapy ryzyk nietknięte
 
 #### Manual
 
