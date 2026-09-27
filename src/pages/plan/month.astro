@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import AppHeader from "@/components/AppHeader.astro";
-import MonthGrid from "@/components/plan/MonthGrid.astro";
+import MonthGrid from "@/components/plan/MonthGrid";
 import { addDays, addMonths, formatMonth, resolveMonth, weeksOfMonth } from "@/lib/day-plan-dates";
 import { readMonthSummary } from "@/lib/services/day-plan-store";
 import type { DayPlanSummary } from "@/types";
@@ -42,7 +42,7 @@ const plannedCount = summaries.filter((summary) => summary.plan_date.slice(0, 7)
 
 <Layout title={`Plan miesiąca — ${formatMonth(month)}`}>
   <div class="bg-cosmic min-h-screen p-4">
-    <main class="mx-auto w-full max-w-4xl py-10">
+    <main class="mx-auto w-full max-w-6xl py-10">
       <AppHeader />
       <header class="mb-8">
         <h1 class="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
@@ -92,7 +92,7 @@ const plannedCount = summaries.filter((summary) => summary.plan_date.slice(0, 7)
               </a>
             </div>
           ) : (
-            <MonthGrid month={month} weeks={weeks} summaries={summaries} />
+            <MonthGrid client:load month={month} weeks={weeks} summaries={summaries} />
           )
         }
       </div>
