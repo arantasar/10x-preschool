@@ -550,7 +550,7 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Manual
 
-- [ ] 4.7 PDF-y miesiąca obejrzane (warunek merge'a)
+- [x] 4.7 PDF-y miesiąca obejrzane (warunek merge'a) — Janusz, 2026-09-27; po obejrzeniu siatka straciła tytuły aktywności
 - [ ] 4.8 Wydruk na papierze obu układów (także cz-b), wynik w change.md
 - [ ] 4.9 Przyciski ukryte przy readFailed, pusty miesiąc drukuje się
 - [ ] 4.10 Błąd trasy pokazuje komunikat
@@ -568,5 +568,5 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Manual
 
-- [ ] 5.5 Spec stabilny przy powtórzeniu i równoległym przebiegu
+- [x] 5.5 Spec stabilny przy powtórzeniu i równoległym przebiegu — 2026-09-27: dwa przebiegi pod rząd na świeżym serwerze, drugi w pełnym zestawie (20/20)
 - [ ] 5.6 Odwrócona asercja izolacji daje czerwony wynik
