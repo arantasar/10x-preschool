@@ -162,6 +162,10 @@ wejście w dzień.
 Zakres zatwierdzony 2026-09-19 — **wszystkie sześć pozycji wchodzi do `M-02`**, nic nie wypada do
 `M-03`.
 
+_Rozszerzone 2026-09-27:_ siódma pozycja — **wydruk miesiąca** (FR-021) — dopisana na prośbę
+Janusza po wydaniu wydruku tygodnia (`S-13`), z priorytetem „jak najszybciej". Bez rundy
+Sokratejskiej; jedyne otwarte pytanie (układ) należy do slice'a — §Open Questions #8.
+
 Numeracja FR kontynuuje v1 (FR-001…FR-009 skonsumowane przez `F-01`…`S-03`), żeby odwołania
 w zarchiwizowanych slice'ach nie zaczęły wskazywać na co innego. Kategorie per schemat brownfieldowy:
 `[new]` — zdolność nieosiągalna dziś żadną ścieżką; `[modified]` — istniejące zachowanie, które się
@@ -244,6 +248,11 @@ Pozycja rozbita 2026-09-19 w rundzie Sokratejskiej na połowę bezpieczną i ryz
   > Socrates: Kontrargumenty rozważone — oznaczony szkic i tak zostanie oddany; napięcie
   > z kryterium Secondary („nadaje się do oddania bez obróbki"); pusta strona dla dnia bez planu.
   > Żadnego nie uznano; FR stoi w obecnym brzmieniu.
+- [new] FR-021: Nauczyciel może wydrukować miesiąc w postaci czytelnej na papierze. Wydruk obejmuje wszystkie dni robocze miesiąca, a dni niezaakceptowane i dni bez planu są na nim oznaczone tak samo jak w wydruku tygodnia (FR-020). Priority: must-have
+  > Dodane 2026-09-27, po wydaniu `S-13`. Zobowiązanie dotyczy — jak przy FR-019 — czytelności,
+  > nie konkretnego układu: miesiąc to 20–23 dni robocze, więc pełne opisy aktywności nie mieszczą
+  > się na jednej kartce, a to, co ma z nich zostać na papierze, zależy od tego, do czego nauczyciel
+  > miesiąc drukuje. Wybór układu → §Open Questions #8.
 
 ### Zachowania chronione
 
@@ -404,3 +413,9 @@ przedmiotem zmiany — każda nowa ścieżka zapisu musi ją egzekwować tak sam
    Dwa pliki w `context/foundation/` obiecywały spłatę w v2 wbrew decyzji z Open Questions #3 —
    poprawione 2026-09-19. Pozycja zostaje jako ślad: przy każdej regeneracji roadmapy trzeba
    sprawdzić, czy obietnica nie wraca. Właściciel: Janusz. Blokuje: nie.
+8. **Układ wydruku miesiąca (FR-021).** Kandydaci: (a) siatka miesiąca na jednej kartce A4 poziomo
+   — hasło, temat i tytuły aktywności, bez opisów; (b) „tydzień na stronie" z `S-13` powtórzony dla
+   każdego tygodnia miesiąca (4–5 kartek, pełne opisy); (c) „dzień na stronę" (20–23 kartki).
+   Zależy od tego, do czego nauczyciel drukuje miesiąc (tablica w sali, dokumentacja, oddanie
+   dyrekcji), a tego nie ustalono. Właściciel: Janusz. Blokuje: nie — rozstrzygnięcie należy do
+   slice'a wydruku miesiąca, tak jak #1 należało do `S-13`.

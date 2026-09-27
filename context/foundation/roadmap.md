@@ -22,10 +22,10 @@ milestone_status: active
 
 **M-02: Plan, którym da się zarządzać** — Status: active (otwarty 2026-09-19)
 
-- **Intent:** Nauczyciel, który ma już zbudowany plan, potrafi go **poprawić, odczytać i wynieść poza aplikację**, nie wychodząc z widoku, w którym pracuje: regeneruje tydzień z zastępowaniem, cofa akceptację i usuwa dzień z poziomu tygodnia, ogląda aktywności wprost w siatce miesiąca i drukuje zaakceptowany tydzień.
+- **Intent:** Nauczyciel, który ma już zbudowany plan, potrafi go **poprawić, odczytać i wynieść poza aplikację**, nie wychodząc z widoku, w którym pracuje: regeneruje tydzień z zastępowaniem, cofa akceptację i usuwa dzień z poziomu tygodnia, ogląda aktywności wprost w siatce miesiąca i drukuje zaakceptowany tydzień oraz miesiąc.
 - **Source materials:** `context/foundation/prd-v2.md` (v2), poprzedzone `shape-notes.md` (runda Sokratejska, 2026-09-19). Wszystkie pozycje mają własne FR — w odróżnieniu od `S-04`…`S-08` z `M-01`.
 - **Done when:** każdy `S-NN` poniżej ma status `done`, **z jawnym wyjątkiem `S-10`** (`FR-013`, jedyny nice-to-have paczki). PRD §Scope of Change stwierdza wprost: „Kamień domyka się bez niego". `S-10` jest zaworem bezpieczeństwa, nie warunkiem zamknięcia.
-- **Scope anchors:** FR-010…FR-017, FR-019, FR-020 (numer FR-018 celowo pusty — patrz PRD §Scope of Change); US-02, US-03.
+- **Scope anchors:** FR-010…FR-017, FR-019…FR-021 (numer FR-018 celowo pusty — patrz PRD §Scope of Change; FR-021 dopisany 2026-09-27); US-02, US-03.
 - **Czego ten kamień nie robi:** nie spłaca długu PRD za `S-04`, `S-05` i `S-08`. Decyzja użytkownika 2026-09-19 — PRD v2 obejmuje wyłącznie `M-02`. Patrz Open Roadmap Questions #3; **nie wpisuj tu obietnicy spłaty** (Open Roadmap Questions #7 istnieje po to, żeby ta obietnica nie wróciła przy kolejnej regeneracji).
 
 ## Vision recap
@@ -62,12 +62,17 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 | S-11  | week-level-plan-controls  | cofnąć akceptację i usunąć zapisany plan dnia z poziomu widoku tygodnia                     | S-05 (done, M-01)    | FR-015, FR-016       | done     |
 | S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | done     |
 | S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | done     |
+| S-14  | month-print               | wydrukować miesiąc czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-13                 | FR-021               | ready    |
 | S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | proposed |
 
 **Pięć z sześciu pozycji jest `ready` i wzajemnie równoległych.** To nie jest hojność
 w liczeniu — wszystkie zależności `M-02` poza `S-10` są już `done` w `M-01`, więc kolejność
 w tej tabeli jest **preferencją wynikającą z celu `quality`**, a nie przymusem grafu.
 Jedyna twarda krawędź w całym kamieniu to `S-09` + `S-12` → `S-10`.
+
+_2026-09-27:_ dopisany `S-14` (`month-print`, FR-021) — po wydaniu `S-13`, z priorytetem „jak
+najszybciej". Stoi na silniku wydruku z `S-13`, więc to druga twarda krawędź kamienia:
+`S-13` → `S-14`. Oba prerekwizyty są `done`; pozycja jest gotowa do `/10x-new month-print`.
 
 ## Streams
 
@@ -78,7 +83,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | A      | Zastępowanie i ochrona pracy gotowej  | `S-09` → `S-12` → `S-10`     | Jedyny łańcuch z prawdziwymi krawędziami. Gwiazda przewodnia otwiera go, reguła „jawność proporcjonalna do skutku" go domyka, zawór bezpieczeństwa zamyka. |
 | B      | Zarządzanie planem z poziomu tygodnia | `S-11`                       | Samodzielny — oba prymitywy (`setAcceptance`, `deleteDayPlan`) istnieją; brakuje wyłącznie powierzchni w tygodniu.                                     |
 | C      | Czytelność siatki miesiąca            | `S-07`                       | Samodzielny i jedyny z decyzjami zamkniętymi już 2026-08-30; przy celu `quality` ustępuje pozycjom ochronnym, ale można go wziąć równolegle o dowolnej porze. |
-| D      | Wyjście planu poza aplikację          | `S-13`                       | Samodzielny; niesie jedyne kryterium Secondary i jedyne żywe pytanie otwarte paczki (układ wydruku).                                                   |
+| D      | Wyjście planu poza aplikację          | `S-13` → `S-14`              | `S-13` niósł jedyne kryterium Secondary i pytanie o układ wydruku (rozstrzygnięte: oba, przełącznik). `S-14` przenosi jego silnik na miesiąc i dziedziczy analogiczne pytanie o układ. |
 
 ## Baseline
 
@@ -181,6 +186,20 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **Risk:** Ostatnia z pozycji `ready` i to jest świadome następstwo wyboru `decisions` jako głównego ryzyka: to jedyna pozycja `M-02` z żywym pytaniem otwartym, więc dostaje najwięcej czasu na rozstrzygnięcie, zanim ktokolwiek zacznie ją planować. Startuje od pustej powierzchni — w `src/` nie ma dziś ani jednej reguły `@media print` ani utility `print:`. Napięcie zapisane w PRD i nierozwiązane w nim: kryterium Secondary mówi „nadaje się do oddania bez obróbki", a FR-020 każe drukować także dni nieskończone — oznaczony szkic i tak zostanie oddany. Kontrargument rozważono i odrzucono; slice dziedziczy to napięcie jawnie, zamiast je odkrywać. Niesie jedyną oś bólu, której dziś nie ma wcale — dwie pozostałe („trudny do poprawienia", „trudny do odczytania") mają przynajmniej obejście.
 - **Status:** done
 
+### S-14: Wydruk miesiąca
+
+- **Outcome:** Nauczyciel może pobrać z widoku miesiąca plik PDF z planem całego miesiąca, czytelny na papierze; wydruk obejmuje wszystkie dni robocze miesiąca, a dni niezaakceptowane i dni bez planu są oznaczone tak samo jak w wydruku tygodnia.
+- **Change ID:** month-print
+- **PRD refs:** FR-021; FR-020 (reguła oznaczania szkicu i pustego dnia, dziedziczona); §Open Questions #8
+- **Prerequisites:** S-13 (done — model wydruku, silnik układu, renderer pdf-lib i fonty w `src/lib/week-pdf/`; decyzja „PDF w przeglądarce, nie na serwerze")
+- **Parallel with:** S-10
+- **Blockers:** —
+- **Unknowns:**
+  - Układ wydruku miesiąca — siatka na jednej kartce bez opisów, tydzień na stronie × 4–5 kartek, czy dzień na stronę (20–23 kartki)? Owner: Janusz. Block: nie — rozstrzygnięcie należy do slice'a (Open Roadmap Questions #8), jak przy `S-13`.
+  - Odczyt treści: `/plan/month` ładuje dziś wyłącznie podsumowania dni (`readMonthSummary`), bez aktywności, a podgląd `S-07` dociąga dzień na żądanie. Czy wydruk czyta cały miesiąc jednym żądaniem po kliknięciu (nowy odczyt po stronie serwera), czy składa go z istniejącego odczytu tygodnia? Owner: `/10x-plan`. Block: nie.
+- **Risk:** Najkrótsza droga w kamieniu, bo silnik z `S-13` stoi — ale `src/lib/week-pdf/` jest nazwany i sparametryzowany pod tydzień (`PrintWeek`, `WEEK_DAYS`, pięć kolumn, nazwa pliku z poniedziałkiem), więc slice najpierw **uogólnia** model wydruku na zakres dni, zamiast go kopiować obok. Dwa ostrza. **(1)** Wydruk potrzebuje treści całego miesiąca naraz — pierwszy odczyt w paczce obejmujący ponad pięć dni z pełnymi aktywnościami; Guardrail #1 (izolacja kont) obowiązuje go tak samo jak każdy inny, a PRD §Non-Goals („bez wstępnego pobierania całego miesiąca") dotyczy podglądu, nie wydruku na żądanie — plan powinien to powiedzieć wprost. **(2)** Lekcja z `S-13`: tekst w PDF-ie widzi wyłącznie człowiek patrzący na plik (identyfikatory glifów, nie znaki) — błąd `subset: true` przeszedł wszystkie testy automatyczne i CI. Punkt ręczny „obejrzyj wygenerowany PDF" jest tu warunkiem merge'a, nie formalnością.
+- **Status:** ready
+
 ### S-10: Rozszerzenie zastępowania na dni zaakceptowane
 
 - **Outcome:** Nauczyciel może jawnie rozszerzyć regenerację tygodnia na dni zaakceptowane, zamiast najpierw cofać akceptacje po kolei.
@@ -203,6 +222,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 | S-11       | week-level-plan-controls  | Cofnięcie akceptacji i usunięcie dnia z poziomu tygodnia           | yes                   | Prymitywy istnieją; może iść równolegle do S-09 i S-12                 |
 | S-07       | month-day-preview         | Podgląd aktywności dnia i pełny podtytuł w siatce miesiąca         | yes                   | Decyzje zamknięte od 2026-08-30; najkrótsza droga do wydania           |
 | S-13       | week-print                | Wydruk tygodnia z oznaczonymi szkicami roboczymi                   | yes                   | Rozstrzygnij układ wydruku wewnątrz slice'a (Open Roadmap Questions #1) |
+| S-14       | month-print               | Wydruk miesiąca z oznaczonymi szkicami roboczymi                   | yes                   | Uogólnij silnik `src/lib/week-pdf/`; rozstrzygnij układ w slice'ie (Open Roadmap Questions #8) |
 | S-10       | accepted-day-replacement  | Rozszerzenie zastępowania tygodnia na dni zaakceptowane            | no                    | Czeka na S-09 + S-12; nice-to-have, kamień domyka się bez niej          |
 
 ## Open Roadmap Questions
@@ -214,6 +234,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 5. **Limit regeneracji** — czy istnieje limit liczby wywołań AI dla jednego użytkownika (koszt API)? Przeniesione z v1 i **podniesione przez tę paczkę**: regeneracja tygodnia z zastępowaniem mnoży wywołania przez pięć na jedno kliknięcie, a FR-012 czyni tę operację łatwiejszą do powtórzenia niż była. Owner: decyzja techniczno-biznesowa. Block: nie — gates: `S-09`, `S-10`.
 6. **Brak bramki czasowej — przyjęte ryzyko, nie luka.** `delivery_weeks` jest `null`, nie liczbą: tryb „slice po slice, ile zajmie" wybrano po przedstawieniu kosztu (sześć pozycji, realnie więcej niż trzy tygodnie pracy po godzinach). Konsekwencja: **nic w tym projekcie nie powie, że `M-02` trwa za długo** — nie ma daty, względem której opóźnienie by się mierzyło. Obroną jest dyscyplina slice'ów (każdy slice to osobny PR i osobne wydanie), nie budżet. Owner: Janusz. Block: nie — roadmap-wide.
 7. **Repo niosło obietnicę spłaty długu PRD w v2.** Dwa pliki w `context/foundation/` obiecywały spłatę wbrew decyzji z #3 — poprawione 2026-09-19. Pozycja zostaje jako **ślad kontrolny: przy każdej regeneracji roadmapy sprawdź, czy obietnica nie wróciła.** Ta regeneracja (2026-09-19) sprawdzona — §Milestone „Czego ten kamień nie robi" i #3 powyżej niosą odroczenie, nie obietnicę. Owner: Janusz. Block: nie — roadmap-wide.
+8. **Układ wydruku miesiąca** — siatka na jednej kartce (hasła, tematy, tytuły aktywności, bez opisów), tydzień na stronie × 4–5 kartek, czy dzień na stronę? Zależy od tego, do czego nauczyciel drukuje miesiąc. Owner: Janusz. Block: nie — gates: `S-14` (rozstrzygnięcie należy do slice'a). Źródło: `prd-v2.md` §Open Questions #8.
 
 ## Parked
 
