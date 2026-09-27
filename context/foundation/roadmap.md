@@ -61,7 +61,7 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 | S-12  | edit-unaccepts-day        | poprawić treść dnia zaakceptowanego po potwierdzeniu, które zdejmuje akceptację             | S-02 (done, M-01)    | FR-017               | done     |
 | S-11  | week-level-plan-controls  | cofnąć akceptację i usunąć zapisany plan dnia z poziomu widoku tygodnia                     | S-05 (done, M-01)    | FR-015, FR-016       | done     |
 | S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | done     |
-| S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | ready    |
+| S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | done     |
 | S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | proposed |
 
 **Pięć z sześciu pozycji jest `ready` i wzajemnie równoległych.** To nie jest hojność
@@ -179,7 +179,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **Unknowns:**
   - ~~Układ wydruku — dzień na stronie czy tydzień na stronie?~~ Rozstrzygnięte 2026-09-27: oba, przełącznikiem przy pobraniu (Open Roadmap Questions #1).
 - **Risk:** Ostatnia z pozycji `ready` i to jest świadome następstwo wyboru `decisions` jako głównego ryzyka: to jedyna pozycja `M-02` z żywym pytaniem otwartym, więc dostaje najwięcej czasu na rozstrzygnięcie, zanim ktokolwiek zacznie ją planować. Startuje od pustej powierzchni — w `src/` nie ma dziś ani jednej reguły `@media print` ani utility `print:`. Napięcie zapisane w PRD i nierozwiązane w nim: kryterium Secondary mówi „nadaje się do oddania bez obróbki", a FR-020 każe drukować także dni nieskończone — oznaczony szkic i tak zostanie oddany. Kontrargument rozważono i odrzucono; slice dziedziczy to napięcie jawnie, zamiast je odkrywać. Niesie jedyną oś bólu, której dziś nie ma wcale — dwie pozostałe („trudny do poprawienia", „trudny do odczytania") mają przynajmniej obejście.
-- **Status:** ready
+- **Status:** done
 
 ### S-10: Rozszerzenie zastępowania na dni zaakceptowane
 
@@ -252,3 +252,4 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **S-05: Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; wiersz `day_plans` i jego aktywności są usuwane trwale (kasowanie twarde), a dzień wraca do stanu **nieodróżnialnego od dnia nigdy nieplanowanego** — na wszystkich powierzchniach, na których jest pokazywany, i dla generowania tygodnia, które obejmuje go ponownie zamiast pominąć.** — Archived 2026-08-29 → `context/archive/2026-08-27-delete-day-plan/`. Lesson: „Kryterium »poza X nietknięte« musi być odporne na przerównanie".
 - **S-11: Nauczyciel może cofnąć akceptację dnia i usunąć zapisany plan dnia, nie wychodząc z widoku tygodnia — czyli z widoku, w którym faktycznie pracuje, zamiast wchodzić w dzień po kolei.** — Archived 2026-09-23 → `context/archive/2026-09-23-week-level-plan-controls/`. Lesson: —.
 - **S-07: Nauczyciel widzi aktywności zaplanowane na dany dzień bez opuszczania siatki miesiąca, a kafelek mieści pełny podtytuł dnia — nieucięty.** — Archived 2026-09-27 → `context/archive/2026-09-23-month-day-preview/`. Lesson: —.
+- **S-13: Nauczyciel może wydrukować tydzień w postaci czytelnej na papierze i oddać go bez przepisywania czegokolwiek do innego narzędzia; wydruk obejmuje wszystkie dni robocze, a dni niezaakceptowane są na nim widocznie oznaczone jako szkic roboczy.** — Archived 2026-09-27 → `context/archive/2026-09-27-week-print/`. Lesson: —.

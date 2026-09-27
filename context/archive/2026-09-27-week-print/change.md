@@ -1,10 +1,10 @@
 ---
 change_id: week-print
 title: Week print
-status: impl_reviewed
+status: archived
 created: 2026-09-27
 updated: 2026-09-27
-archived_at: null
+archived_at: 2026-09-27T13:11:45Z
 ---
 
 ## Notes
