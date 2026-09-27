@@ -424,7 +424,7 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Manual
 
-- [ ] 2.6 Plik z testu obejrzany: polskie znaki, szkic, pusty dzień, układ poziomy
+- [x] 2.6 Plik z testu obejrzany: polskie znaki, szkic, pusty dzień, układ poziomy — 2fdf381
 
 ### Phase 3: Przyciski PDF w widoku tygodnia
 
@@ -437,7 +437,7 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Manual
 
-- [ ] 3.5 Oba PDF-y pobierają się z poprawną nazwą
+- [x] 3.5 Oba PDF-y pobierają się z poprawną nazwą — 2fdf381
 - [ ] 3.6 PDF odzwierciedla operacje z wyspy bez przeładowania
 - [ ] 3.7 Przyciski wyłączone przy zajętości i niezapisanej partii
 - [ ] 3.8 Wydruk na papierze obu układów (także cz-b), wynik w change.md
