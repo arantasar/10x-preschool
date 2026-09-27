@@ -54,6 +54,8 @@ export interface SupabaseStubOptions {
    */
   weekPlans?: DayPlanRow[];
   weekActivities?: ActivityRow[];
+  /** Makes the `.in("plan_date", …)` read fail, as `readWeekPlans`' first query. */
+  weekPlansError?: StubPostgrestError;
   /**
    * What `updateActivityText`'s pre-write read finds on `activities`.
    *
@@ -78,6 +80,8 @@ export interface SupabaseStub {
   update: ReturnType<typeof vi.fn>;
   /** Every `from(…)` call, so a test can assert a route never reached the database. */
   from: ReturnType<typeof vi.fn>;
+  /** Every `from("day_plans").select().in(column, values)` call - which days a range read asked for. */
+  dayPlansIn: ReturnType<typeof vi.fn>;
 }
 
 export function planRow(overrides: Partial<DayPlanRow> = {}): DayPlanRow {
@@ -116,6 +120,7 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
     rpcError,
     weekPlans = [],
     weekActivities = [],
+    weekPlansError,
     activityBeforeEdit = null,
     updatedActivity = null,
   } = options;
@@ -145,12 +150,16 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
     error: null,
   });
 
+  const dayPlansIn = vi.fn((_column: string, _values: readonly string[]) =>
+    Promise.resolve(weekPlansError ? { data: null, error: weekPlansError } : { data: weekPlans, error: null }),
+  );
+
   const from = vi.fn((table: string) =>
     table === "day_plans"
       ? {
           select: () => ({
             eq: () => ({ maybeSingle: () => Promise.resolve(dayPlanResult()) }),
-            in: () => Promise.resolve({ data: weekPlans, error: null }),
+            in: dayPlansIn,
           }),
         }
       : {
@@ -170,5 +179,5 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
 
   const client = { rpc, from };
 
-  return { client: client as unknown as DayPlanClient, rpc, update, from };
+  return { client: client as unknown as DayPlanClient, rpc, update, from, dayPlansIn };
 }

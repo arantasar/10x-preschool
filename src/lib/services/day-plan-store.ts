@@ -634,6 +634,9 @@ async function readCurrentActivities(supabase: DayPlanClient, plan: DayPlan): Pr
  *
  * A day with no plan has no key. The caller distinguishes "free" from "failed"
  * by whether this threw, never by a null in the map.
+ *
+ * Despite the name it takes any set of days: the month print (`S-14`,
+ * `GET /api/day-plan/month`) reads a whole month's working days through it.
  */
 export async function readWeekPlans(
   supabase: DayPlanClient,

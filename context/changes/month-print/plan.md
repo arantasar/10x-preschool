@@ -498,14 +498,14 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [x] 1.1 Testy jednostkowe silnika przechodzą
-- [x] 1.2 Pełen zestaw jednostkowy przechodzi
-- [x] 1.3 Lint przechodzi
-- [x] 1.4 Build przechodzi
-- [x] 1.5 Stary katalog nie istnieje i nic go nie importuje
-- [x] 1.6 Asercje testów tygodnia nietknięte
-- [x] 1.7 Spec e2e tygodnia przechodzi
-- [x] 1.8 Renderer nie jest importowany statycznie poza sobą
+- [x] 1.1 Testy jednostkowe silnika przechodzą — 03f7f5e
+- [x] 1.2 Pełen zestaw jednostkowy przechodzi — 03f7f5e
+- [x] 1.3 Lint przechodzi — 03f7f5e
+- [x] 1.4 Build przechodzi — 03f7f5e
+- [x] 1.5 Stary katalog nie istnieje i nic go nie importuje — 03f7f5e
+- [x] 1.6 Asercje testów tygodnia nietknięte — 03f7f5e
+- [x] 1.7 Spec e2e tygodnia przechodzi — 03f7f5e
+- [x] 1.8 Renderer nie jest importowany statycznie poza sobą — 03f7f5e
 
 #### Manual
 
@@ -515,10 +515,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [ ] 2.1 Testy trasy, dat i strażnika przechodzą
-- [ ] 2.2 Pełen zestaw jednostkowy przechodzi
-- [ ] 2.3 Lint przechodzi
-- [ ] 2.4 Build przechodzi
+- [x] 2.1 Testy trasy, dat i strażnika przechodzą
+- [x] 2.2 Pełen zestaw jednostkowy przechodzi
+- [x] 2.3 Lint przechodzi
+- [x] 2.4 Build przechodzi
 
 #### Manual
 

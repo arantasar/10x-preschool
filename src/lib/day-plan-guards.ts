@@ -1,4 +1,4 @@
-import type { ActivityDraft, DayPlanView, DayTheme } from "@/types";
+import type { ActivityDraft, DayPlanView, DayTheme, MonthPlansBody } from "@/types";
 
 /**
  * The narrowing predicates both islands use on the bodies they fetch.
@@ -134,6 +134,20 @@ export function isSaveWeekBody(body: unknown): body is { plans: Partial<Record<s
     return false;
   }
   return entries.every((plan) => isDayPlanBody(plan));
+}
+
+/**
+ * The month print's read (`GET /api/day-plan/month`).
+ *
+ * Unlike {@link isSaveWeekBody} an empty `plans` is valid: a month nobody has
+ * planned yet still prints, every day saying "Brak planu". Each value that is
+ * there must still be a whole saved plan - the print shows its activities.
+ */
+export function isMonthPlansBody(body: unknown): body is MonthPlansBody {
+  if (!isRecord(body) || typeof body.month !== "string" || !isRecord(body.plans) || Array.isArray(body.plans)) {
+    return false;
+  }
+  return Object.values(body.plans).every((plan) => isDayPlanBody(plan));
 }
 
 /**
