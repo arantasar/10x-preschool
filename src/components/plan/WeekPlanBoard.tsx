@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Check, CircleAlert, Sparkles } from "lucide-react";
 import { WeekDayCard, type DayState } from "@/components/plan/WeekDayCard";
+import WeekPdfControls from "@/components/plan/WeekPdfControls";
 import { Button } from "@/components/ui/button";
 import { PROMPT_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
 import { cn } from "@/lib/utils";
@@ -766,6 +767,16 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
 
   const remaining = PROMPT_MAX - prompt.length;
 
+  // What the PDF prints: the saved plans as this island holds them now. Not
+  // `week.plans` - that is the first render, stale after any acceptance or
+  // delete - and not a held batch, which has no row behind it.
+  const savedPlans: Record<string, DayPlanView> = {};
+  for (const day of dayList) {
+    if (day.plan !== null) {
+      savedPlans[day.planDate] = day.plan;
+    }
+  }
+
   return (
     <div className="space-y-6">
       <form
@@ -936,6 +947,20 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
           Wszystkie gotowe dni tego tygodnia są zaakceptowane.
         </p>
       )}
+
+      {/* Same rule as the day controls, for the same reason: a held batch is
+          on screen but not in the database, and a PDF taken now would leave out
+          what the teacher is looking at without a word. Busy needs no sentence -
+          every other button on the board already says what is running. */}
+      <WeekPdfControls
+        weekStart={week.weekStart}
+        days={week.days}
+        plans={savedPlans}
+        disabled={isBusy || heldCount > 0}
+        disabledReason={
+          heldCount > 0 ? "Zapisz tydzień, zanim pobierzesz PDF — niezapisane propozycje nie trafią do pliku." : null
+        }
+      />
     </div>
   );
 }

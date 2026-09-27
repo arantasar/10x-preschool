@@ -372,10 +372,10 @@ przedmiotem zmiany — każda nowa ścieżka zapisu musi ją egzekwować tak sam
 
 ## Open Questions
 
-1. **Układ wydruku — dzień na stronie czy tydzień na stronie?** Wyjaśnione w rundzie Sokratejskiej
-   jako wybór dokonany przedwcześnie: zależy od tego, komu i w jakiej formie nauczyciel oddaje plan,
-   a tego nie ustaliliśmy. Właściciel: Janusz. Blokuje: nie — rozstrzygnięcie należy do slice'a
-   wydruku (FR-019).
+1. ~~**Układ wydruku — dzień na stronie czy tydzień na stronie?**~~ **Rozstrzygnięte 2026-09-27
+   w slice'ie `S-13` (`week-print`): oba — przełącznik.** Nauczyciel wybiera przy pobraniu PDF układ
+   „dzień na stronę" albo „tydzień na stronie". Decyzja Janusza. Pierwotnie wyjaśnione w rundzie
+   Sokratejskiej jako wybór dokonany przedwcześnie, bo zależał od odbiorcy wydruku.
 2. **Odwrócenie decyzji z roadmapy o blokadzie edycji.** Roadmapa (2026-08-30) zapisała: „blokada
    «tydzień zaakceptowany» dotyczy edycji przypadkowej; operacje jawne pozostają dostępne". FR-017
    zastępuje to regułą „potwierdzenie zamiast zakazu", bo granica między edycją przypadkową a jawną
