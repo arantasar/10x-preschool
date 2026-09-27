@@ -1,4 +1,5 @@
 import { WEEK_DAYS } from "@/lib/day-plan-limits";
+import { layoutMonthGrid } from "@/lib/plan-pdf/grid-layout";
 import {
   CONTINUED_MARK,
   printDays,
@@ -430,6 +431,6 @@ export function layoutDocument(doc: PrintDocument, kind: PdfLayoutKind, measure:
     case "week-per-page":
       return layoutWeekPerPage(doc, measure);
     case "month-grid":
-      throw new Error("month-grid layout is not available yet");
+      return layoutMonthGrid(doc, measure);
   }
 }

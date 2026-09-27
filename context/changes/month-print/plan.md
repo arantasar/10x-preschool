@@ -515,10 +515,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [x] 2.1 Testy trasy, dat i strażnika przechodzą
-- [x] 2.2 Pełen zestaw jednostkowy przechodzi
-- [x] 2.3 Lint przechodzi
-- [x] 2.4 Build przechodzi
+- [x] 2.1 Testy trasy, dat i strażnika przechodzą — 280df0f
+- [x] 2.2 Pełen zestaw jednostkowy przechodzi — 280df0f
+- [x] 2.3 Lint przechodzi — 280df0f
+- [x] 2.4 Build przechodzi — 280df0f
 
 #### Manual
 
@@ -528,10 +528,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [ ] 3.1 Testy modelu i układów przechodzą
-- [ ] 3.2 Pełen zestaw jednostkowy przechodzi
-- [ ] 3.3 Lint przechodzi
-- [ ] 3.4 Moduły układu nie importują pdf-lib
+- [x] 3.1 Testy modelu i układów przechodzą
+- [x] 3.2 Pełen zestaw jednostkowy przechodzi
+- [x] 3.3 Lint przechodzi
+- [x] 3.4 Moduły układu nie importują pdf-lib
 
 #### Manual
 

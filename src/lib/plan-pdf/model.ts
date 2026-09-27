@@ -1,4 +1,12 @@
-import { formatAcceptedAt, formatPlanDate, formatWeekRange } from "@/lib/day-plan-dates";
+import {
+  formatAcceptedAt,
+  formatMonth,
+  formatPlanDate,
+  formatWeekRange,
+  weeksOfMonth,
+  workingDaysOf,
+  workingDaysOfMonth,
+} from "@/lib/day-plan-dates";
 import type { DayPlanView } from "@/types";
 
 /**
@@ -49,6 +57,31 @@ const FILE_SUFFIXES: Readonly<Record<WeekPdfLayoutKind, string>> = {
   "day-per-page": "dzien-na-strone",
   "week-per-page": "tydzien-na-stronie",
 };
+
+/** The layouts a month offers (`S-14`). */
+export type MonthPdfLayoutKind = Extract<PdfLayoutKind, "month-grid" | "week-per-page">;
+
+export const MONTH_PDF_BUTTON_LABELS: Readonly<Record<MonthPdfLayoutKind, string>> = {
+  "month-grid": "Pobierz PDF — siatka miesiąca",
+  "week-per-page": "Pobierz PDF — tygodniami",
+};
+
+const MONTH_FILE_SUFFIXES: Readonly<Record<MonthPdfLayoutKind, string>> = {
+  "month-grid": "siatka",
+  "week-per-page": "tygodniami",
+};
+
+/** A grid cell's draft label - {@link DRAFT_LABEL} does not fit a fifth of a page. The legend explains it. */
+export const DRAFT_SHORT_LABEL = "SZKIC ROBOCZY";
+
+/** The one line under the month grid that says what a dashed frame means. */
+export const GRID_LEGEND = "Przerywana ramka i „SZKIC ROBOCZY” — plan niezaakceptowany";
+
+/** Ends the last visible line of a grid cell whose text did not fit. */
+export const TRUNCATION_MARK = "…";
+
+/** Column headings of the month grid, Monday first. */
+export const GRID_WEEKDAYS: readonly string[] = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek"];
 
 export interface PrintActivity {
   readonly title: string;
@@ -140,6 +173,40 @@ export function buildPrintWeek(
 /** Every printed day, in document order - the pages of the day-per-page layout. */
 export function printDays(doc: PrintDocument): PrintDay[] {
   return doc.rows.flatMap((row) => row.slots.filter((slot): slot is PrintDay => slot !== null));
+}
+
+/**
+ * The month as it goes on paper: a row for every week that touches it, and a
+ * {@link PrintDay} in every slot whose date is one of its working days.
+ *
+ * The other slots - the neighbouring months' days in the first and last rows -
+ * are `null`, not empty days: they print as nothing, because saying "Brak planu"
+ * about 31 August on September's plan would be a claim about the wrong month.
+ * Keys of `plans` outside the month are ignored for the same reason.
+ */
+export function buildPrintMonth(month: string, plans: Readonly<Partial<Record<string, DayPlanView>>>): PrintDocument {
+  const title = `Plan miesiąca — ${formatMonth(month)}`;
+  const inMonth = new Set(workingDaysOfMonth(month));
+  return {
+    title,
+    rows: weeksOfMonth(month).map((weekStart) => ({
+      weekStart,
+      heading: `${title} · ${formatWeekRange(weekStart)}`,
+      slots: workingDaysOf(weekStart).map((date) => (inMonth.has(date) ? printDay(date, plans[date]) : null)),
+    })),
+  };
+}
+
+/** `2026-09-14` as `14 września` - a grid cell's heading. */
+export function gridDayHeading(date: string): string {
+  return new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long", timeZone: "UTC" }).format(
+    new Date(`${date}T00:00:00Z`),
+  );
+}
+
+/** `plan-miesiaca-2026-09-siatka.pdf`, `plan-miesiaca-2026-09-tygodniami.pdf`. */
+export function monthPdfFileName(month: string, kind: MonthPdfLayoutKind): string {
+  return `plan-miesiaca-${month}-${MONTH_FILE_SUFFIXES[kind]}.pdf`;
 }
 
 /** `plan-tygodnia-2026-09-14-dzien-na-strone.pdf`. */

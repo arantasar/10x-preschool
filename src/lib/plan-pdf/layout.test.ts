@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { fullMonth, MONTH } from "./__fixtures__/month";
 import { fullWeek, planView, prose, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
 import {
   A4_LANDSCAPE,
@@ -12,7 +13,7 @@ import {
   type Measure,
   type PdfLayout,
 } from "./layout";
-import { buildPrintWeek, CONTINUED_MARK, DRAFT_LABEL, EMPTY_DAY_NOTE, printDays } from "./model";
+import { buildPrintMonth, buildPrintWeek, CONTINUED_MARK, DRAFT_LABEL, EMPTY_DAY_NOTE, printDays } from "./model";
 import type { DayPlanView } from "@/types";
 
 // Deterministic stand-in for a real font: every character half an em wide,
@@ -238,5 +239,47 @@ describe("layoutDocument — week per page", () => {
     for (const length of [100, 500, 600, 4000]) {
       expectInsideMargins(layout(fullWeek({ descriptionLength: length }), "week-per-page"));
     }
+  });
+});
+
+describe("layoutDocument — a month, week per page", () => {
+  const firstColumnEnd = A4_LANDSCAPE.margin + (A4_LANDSCAPE.width - 2 * A4_LANDSCAPE.margin) / 5;
+
+  it("gives a typical month one landscape page per week, each headed by its week", () => {
+    const doc = buildPrintMonth(MONTH, fullMonth(MONTH, { descriptionLength: 300 }));
+    const result = layoutDocument(doc, "week-per-page", measure);
+
+    expect(result.pages).toHaveLength(doc.rows.length);
+    result.pages.forEach((page, index) => {
+      expect(page.spec).toBe(A4_LANDSCAPE);
+      expect(pageText(page)).toContain(doc.rows[index].heading);
+    });
+  });
+
+  it("starts every week on a new page, even when one continues", () => {
+    const plans = { ...fullMonth(), "2026-09-08": planView("2026-09-08", { descriptionLength: 4000 }) };
+    const doc = buildPrintMonth(MONTH, plans);
+    const result = layoutDocument(doc, "week-per-page", measure);
+    const firstPages = doc.rows.map((row) =>
+      result.pages.findIndex(
+        (page) => pageText(page).includes(row.heading) && !pageText(page).includes(`${row.heading} ${CONTINUED_MARK}`),
+      ),
+    );
+
+    expect(result.pages.length).toBeGreaterThan(doc.rows.length);
+    expect(firstPages.every((index) => index >= 0)).toBe(true);
+    expect([...firstPages].sort((a, b) => a - b)).toEqual(firstPages);
+    expect(new Set(firstPages).size).toBe(doc.rows.length);
+    expectInsideMargins(result);
+  });
+
+  it("leaves the column of a day outside the month blank", () => {
+    const doc = buildPrintMonth(MONTH, {});
+    const [firstWeek] = layoutDocument(doc, "week-per-page", measure).pages;
+
+    // Monday 31 August: nothing in the first column but the page title.
+    expect(texts(firstWeek).filter((item) => item.x > A4_LANDSCAPE.margin && item.x < firstColumnEnd)).toEqual([]);
+    expect(hasDashedBox(firstWeek)).toBe(false);
+    expect(pageText(firstWeek).split(EMPTY_DAY_NOTE)).toHaveLength(5);
   });
 });
