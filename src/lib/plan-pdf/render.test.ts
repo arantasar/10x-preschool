@@ -4,8 +4,8 @@ import { PDFDocument } from "pdf-lib";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { fullWeek, planView, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
-import { buildPrintWeek, type PdfLayoutKind } from "./model";
-import { embedWeekFonts, normalizeWeek, prepareWeek, renderWeekPdf, type PdfFonts } from "./render";
+import { buildPrintWeek, printDays, type PdfLayoutKind } from "./model";
+import { embedPlanFonts, normalizeDocument, prepareDocument, renderPlanPdf, type PdfFonts } from "./render";
 import type { DayPlanView } from "@/types";
 
 // Real font files, not a stub: the claim under test is that the whole chain -
@@ -21,7 +21,7 @@ beforeAll(async () => {
 });
 
 async function render(plans: Record<string, DayPlanView>, kind: PdfLayoutKind): Promise<Uint8Array> {
-  return renderWeekPdf(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans), kind, fonts);
+  return renderPlanPdf(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans), kind, fonts);
 }
 
 async function pages(bytes: Uint8Array) {
@@ -31,7 +31,7 @@ async function pages(bytes: Uint8Array) {
 
 const POLISH = "ąćęłńóśźż ĄĆĘŁŃÓŚŹŻ";
 
-describe("renderWeekPdf", () => {
+describe("renderPlanPdf", () => {
   it("produces a PDF", async () => {
     const bytes = await render(fullWeek(), "day-per-page");
 
@@ -88,7 +88,7 @@ describe("renderWeekPdf", () => {
   // so "does not fail" above cannot tell a filtered string from an unfiltered
   // one. This is the assertion that can.
   it("replaces what the real fonts cannot draw, and keeps every Polish letter", async () => {
-    const { hasGlyph } = await embedWeekFonts(await PDFDocument.create(), fonts);
+    const { hasGlyph } = await embedPlanFonts(await PDFDocument.create(), fonts);
     const date = WEEK_DAYS_ISO[0];
     const week = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, {
       [date]: planView(date, {
@@ -97,7 +97,7 @@ describe("renderWeekPdf", () => {
       }),
     });
 
-    const [day] = normalizeWeek(week, hasGlyph).days;
+    const [day] = printDays(normalizeDocument(week, hasGlyph));
 
     expect(day.prompt).toBe(`Jesień ? ${POLISH}`);
     expect(day.activities[0]).toEqual({ title: "Liście ?", description: "Kasztany ? i ??" });
@@ -106,14 +106,14 @@ describe("renderWeekPdf", () => {
   // The test above proves the filter works; this one that the renderer's path
   // runs it. Without it the layout would carry the emoji the font cannot draw.
   it("lays out the filtered text, not the raw one", async () => {
-    const embedded = await embedWeekFonts(await PDFDocument.create(), fonts);
+    const embedded = await embedPlanFonts(await PDFDocument.create(), fonts);
     const date = WEEK_DAYS_ISO[0];
     const week = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, {
       [date]: planView(date, { activities: [{ title: "Liście 🍁", description: "Kasztany 🌰" }] }),
     });
 
     for (const kind of ["day-per-page", "week-per-page"] as const) {
-      const text = prepareWeek(week, kind, embedded)
+      const text = prepareDocument(week, kind, embedded)
         .layout.pages.flatMap((page) => page.items)
         .map((item) => (item.kind === "text" ? item.text : ""))
         .join("\n");

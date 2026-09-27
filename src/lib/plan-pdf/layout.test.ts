@@ -4,7 +4,7 @@ import { fullWeek, planView, prose, WEEK_DAYS_ISO, WEEK_START } from "./__fixtur
 import {
   A4_LANDSCAPE,
   A4_PORTRAIT,
-  layoutWeek,
+  layoutDocument,
   normalizeText,
   wrapText,
   type LayoutItem,
@@ -12,7 +12,7 @@ import {
   type Measure,
   type PdfLayout,
 } from "./layout";
-import { buildPrintWeek, CONTINUED_MARK, DRAFT_LABEL, EMPTY_DAY_NOTE } from "./model";
+import { buildPrintWeek, CONTINUED_MARK, DRAFT_LABEL, EMPTY_DAY_NOTE, printDays } from "./model";
 import type { DayPlanView } from "@/types";
 
 // Deterministic stand-in for a real font: every character half an em wide,
@@ -37,7 +37,7 @@ function hasDashedBox(page: LayoutPage): boolean {
 }
 
 function layout(plans: Record<string, DayPlanView>, kind: PdfLayout["kind"]): PdfLayout {
-  return layoutWeek(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans), kind, measure);
+  return layoutDocument(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans), kind, measure);
 }
 
 function expectInsideMargins(result: PdfLayout): void {
@@ -105,7 +105,7 @@ describe("normalizeText", () => {
   });
 });
 
-describe("layoutWeek — day per page", () => {
+describe("layoutDocument — day per page", () => {
   it("gives five short days exactly five portrait pages", () => {
     const result = layout(fullWeek(), "day-per-page");
 
@@ -118,10 +118,10 @@ describe("layoutWeek — day per page", () => {
 
   it("starts each day on its own page, in calendar order", () => {
     const week = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, fullWeek());
-    const result = layoutWeek(week, "day-per-page", measure);
+    const result = layoutDocument(week, "day-per-page", measure);
 
     result.pages.forEach((page, index) => {
-      expect(pageText(page)).toContain(week.days[index].heading);
+      expect(pageText(page)).toContain(printDays(week)[index].heading);
     });
   });
 
@@ -129,7 +129,7 @@ describe("layoutWeek — day per page", () => {
     const date = WEEK_DAYS_ISO[1];
     const plans = { ...fullWeek(), [date]: planView(date, { descriptionLength: 4000 }) };
     const result = layout(plans, "day-per-page");
-    const heading = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans).days[1].heading;
+    const heading = printDays(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans))[1].heading;
 
     expect(result.pages.length).toBeGreaterThan(5);
     const continuation = result.pages[2];
@@ -143,7 +143,7 @@ describe("layoutWeek — day per page", () => {
     const plans = { [date]: planView(date, { acceptedAt: null, descriptionLength: 4000 }) };
     const result = layout(plans, "day-per-page");
     const draftPages = result.pages.filter((page) =>
-      pageText(page).includes(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans).days[0].heading),
+      pageText(page).includes(printDays(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans))[0].heading),
     );
 
     expect(draftPages.length).toBeGreaterThan(1);
@@ -176,7 +176,7 @@ describe("layoutWeek — day per page", () => {
   });
 });
 
-describe("layoutWeek — week per page", () => {
+describe("layoutDocument — week per page", () => {
   it("fits a typical week on one landscape page above the 7 pt floor", () => {
     const result = layout(fullWeek({ descriptionLength: 500 }), "week-per-page");
 
@@ -226,7 +226,7 @@ describe("layoutWeek — week per page", () => {
     const [page] = layout(plans, "week-per-page").pages;
     const text = pageText(page);
 
-    for (const day of week.days) {
+    for (const day of printDays(week)) {
       expect(text).toContain(day.heading.split(",")[0]);
     }
     expect(page.items.filter((item) => item.kind === "dashed-box")).toHaveLength(1);

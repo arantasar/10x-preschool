@@ -15,7 +15,7 @@ import { waitForIslands } from "./support/hydration";
  * imporcie renderera i pobraniu fontów z `/fonts`. Każde z ogniw — hydracja,
  * leniwy chunk, statyczne zasoby, `<a download>` — istnieje dopiero w
  * przeglądarce. Treść wydruku (szkic oznaczony, pusty dzień jawny) jest
- * asertowana niżej, na czystym modelu w `src/lib/week-pdf/`: tekst osadzony
+ * asertowana niżej, na czystym modelu w `src/lib/plan-pdf/`: tekst osadzony
  * własnym fontem jest w PDF-ie zakodowany identyfikatorami glifów i nie da się
  * go tu przeczytać. Ten plik dowodzi struktury: że plik jest, jak się nazywa,
  * ile ma stron i w jakiej orientacji.

@@ -1,14 +1,17 @@
+import { WEEK_DAYS } from "@/lib/day-plan-limits";
 import {
   CONTINUED_MARK,
+  printDays,
   PROMPT_PREFIX,
   THEME_PREFIX,
   type PdfLayoutKind,
   type PrintDay,
-  type PrintWeek,
-} from "@/lib/week-pdf/model";
+  type PrintDocument,
+  type PrintWeekRow,
+} from "@/lib/plan-pdf/model";
 
 /**
- * Where everything in a {@link PrintWeek} goes, in PDF points.
+ * Where everything in a {@link PrintDocument} goes, in PDF points.
  *
  * Line breaking, pagination, the "(cd.)" continuation and the font-size search
  * for the week-on-one-page layout all live here, and none of it imports pdf-lib.
@@ -62,6 +65,7 @@ export interface LayoutPage {
 
 export interface PdfLayout {
   readonly kind: PdfLayoutKind;
+  /** The body size used; where each week row picks its own, the smallest of them. */
   readonly bodySize: number;
   readonly pages: readonly LayoutPage[];
 }
@@ -161,7 +165,7 @@ export function wrapText(text: string, maxWidth: number, size: number, weight: F
 // Flowing a day into a column
 // ---------------------------------------------------------------------------
 
-interface FlowLine {
+export interface FlowLine {
   readonly text: string;
   readonly size: number;
   readonly weight: FontWeight;
@@ -169,15 +173,15 @@ interface FlowLine {
   readonly spaceBefore: number;
 }
 
-function lineHeight(line: FlowLine): number {
+export function lineHeight(line: FlowLine): number {
   return line.spaceBefore + line.size * LINE_HEIGHT;
 }
 
-function totalHeight(lines: readonly FlowLine[]): number {
+export function totalHeight(lines: readonly FlowLine[]): number {
   return lines.reduce((sum, line) => sum + lineHeight(line), 0);
 }
 
-function flowText(
+export function flowText(
   text: string,
   width: number,
   size: number,
@@ -258,7 +262,7 @@ function flowSegments(
 }
 
 /** Text items for `lines` stacked downward from `top`. */
-function placeLines(lines: readonly FlowLine[], x: number, top: number): LayoutItem[] {
+export function placeLines(lines: readonly FlowLine[], x: number, top: number): LayoutItem[] {
   const items: LayoutItem[] = [];
   let cursor = top;
   for (const line of lines) {
@@ -294,7 +298,7 @@ function placeDaySegment(
 // The two layouts
 // ---------------------------------------------------------------------------
 
-function layoutDayPerPage(week: PrintWeek, measure: Measure): PdfLayout {
+function layoutDayPerPage(doc: PrintDocument, measure: Measure): PdfLayout {
   const spec = A4_PORTRAIT;
   const contentWidth = spec.width - 2 * spec.margin;
   const top = spec.height - spec.margin;
@@ -303,13 +307,13 @@ function layoutDayPerPage(week: PrintWeek, measure: Measure): PdfLayout {
     bodySize: DAY_PAGE_SIZE,
     headingSize: DAY_PAGE_SIZE * DAY_PAGE_HEADING_SCALE,
   };
-  const titleLines = flowText(week.title, contentWidth, DAY_PAGE_SIZE - 1, "regular", measure);
+  const titleLines = flowText(doc.title, contentWidth, DAY_PAGE_SIZE - 1, "regular", measure);
   const titleGap = DAY_PAGE_SIZE;
   const dayTop = top - totalHeight(titleLines) - titleGap;
   const available = dayTop - spec.margin - 2 * DAY_PAGE_PADDING;
 
   const pages: LayoutPage[] = [];
-  for (const day of week.days) {
+  for (const day of printDays(doc)) {
     const segments = flowSegments(
       (continued) => dayHeader(day, style, measure, continued),
       dayBody(day, style, measure),
@@ -330,18 +334,24 @@ function layoutDayPerPage(week: PrintWeek, measure: Measure): PdfLayout {
 
 interface WeekAttempt {
   readonly size: number;
+  /** One per slot; an empty list for a `null` slot, which draws nothing. */
   readonly columns: readonly FlowLine[][][];
 }
 
-function attemptWeek(week: PrintWeek, size: number, measure: Measure): { fits: boolean; attempt: WeekAttempt } {
+/** Width of one of the week's five columns - fixed by `WEEK_DAYS`, not by how many slots hold a day. */
+const WEEK_COLUMN_WIDTH =
+  (A4_LANDSCAPE.width - 2 * A4_LANDSCAPE.margin - (WEEK_DAYS - 1) * WEEK_COLUMN_GAP) / WEEK_DAYS;
+
+function attemptWeek(row: PrintWeekRow, size: number, measure: Measure): { fits: boolean; attempt: WeekAttempt } {
   const spec = A4_LANDSCAPE;
-  const contentWidth = spec.width - 2 * spec.margin;
-  const columnWidth = (contentWidth - (week.days.length - 1) * WEEK_COLUMN_GAP) / week.days.length;
-  const style: DayStyle = { width: columnWidth - 2 * WEEK_PAGE_PADDING, bodySize: size, headingSize: size };
-  const available = columnTop(week, measure) - spec.margin - 2 * WEEK_PAGE_PADDING;
+  const style: DayStyle = { width: WEEK_COLUMN_WIDTH - 2 * WEEK_PAGE_PADDING, bodySize: size, headingSize: size };
+  const available = columnTop(row, measure) - spec.margin - 2 * WEEK_PAGE_PADDING;
 
   let fits = true;
-  const columns = week.days.map((day) => {
+  const columns = row.slots.map((day) => {
+    if (day === null) {
+      return [];
+    }
     const header = (continued: boolean) => dayHeader(day, style, measure, continued);
     const body = dayBody(day, style, measure);
     if (totalHeight([...header(false), ...body]) > available) {
@@ -352,59 +362,74 @@ function attemptWeek(week: PrintWeek, size: number, measure: Measure): { fits: b
   return { fits, attempt: { size, columns } };
 }
 
-function weekTitleLines(week: PrintWeek, measure: Measure, continued: boolean): FlowLine[] {
+function weekTitleLines(row: PrintWeekRow, measure: Measure, continued: boolean): FlowLine[] {
   const spec = A4_LANDSCAPE;
-  const title = continued ? `${week.title} ${CONTINUED_MARK}` : week.title;
+  const title = continued ? `${row.heading} ${CONTINUED_MARK}` : row.heading;
   return flowText(title, spec.width - 2 * spec.margin, WEEK_TITLE_SIZE, "bold", measure);
 }
 
 /** Where the columns start. Measured on the longer, continued title so every page lines up. */
-function columnTop(week: PrintWeek, measure: Measure): number {
+function columnTop(row: PrintWeekRow, measure: Measure): number {
   const spec = A4_LANDSCAPE;
-  return spec.height - spec.margin - totalHeight(weekTitleLines(week, measure, true)) - WEEK_COLUMN_GAP;
+  return spec.height - spec.margin - totalHeight(weekTitleLines(row, measure, true)) - WEEK_COLUMN_GAP;
 }
 
 /** The largest size at which the whole week fits one page - or the smallest, whose columns then continue. */
-function chooseWeekAttempt(week: PrintWeek, measure: Measure): WeekAttempt {
+function chooseWeekAttempt(row: PrintWeekRow, measure: Measure): WeekAttempt {
   for (const size of WEEK_PAGE_SIZES) {
-    const { fits, attempt } = attemptWeek(week, size, measure);
+    const { fits, attempt } = attemptWeek(row, size, measure);
     if (fits) {
       return attempt;
     }
   }
-  return attemptWeek(week, WEEK_PAGE_SIZES[WEEK_PAGE_SIZES.length - 1], measure).attempt;
+  return attemptWeek(row, WEEK_PAGE_SIZES[WEEK_PAGE_SIZES.length - 1], measure).attempt;
 }
 
-function layoutWeekPerPage(week: PrintWeek, measure: Measure): PdfLayout {
+/** One week row on its own pages - a month is several of these, each sized independently. */
+function layoutWeekRow(row: PrintWeekRow, measure: Measure): { size: number; pages: LayoutPage[] } {
   const spec = A4_LANDSCAPE;
-  const { size, columns } = chooseWeekAttempt(week, measure);
+  const { size, columns } = chooseWeekAttempt(row, measure);
 
-  const contentWidth = spec.width - 2 * spec.margin;
-  const columnWidth = (contentWidth - (columns.length - 1) * WEEK_COLUMN_GAP) / columns.length;
-  const top = columnTop(week, measure);
-  const pageCount = Math.max(...columns.map((segments) => segments.length));
+  const top = columnTop(row, measure);
+  const pageCount = Math.max(1, ...columns.map((segments) => segments.length));
 
   const pages: LayoutPage[] = [];
   for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
     const items: LayoutItem[] = placeLines(
-      weekTitleLines(week, measure, pageIndex > 0),
+      weekTitleLines(row, measure, pageIndex > 0),
       spec.margin,
       spec.height - spec.margin,
     );
     columns.forEach((segments, dayIndex) => {
-      // A shorter column has already ended; its later pages stay blank.
-      if (pageIndex < segments.length) {
-        const x = spec.margin + dayIndex * (columnWidth + WEEK_COLUMN_GAP);
-        items.push(
-          ...placeDaySegment(week.days[dayIndex], segments[pageIndex], x, top, columnWidth, WEEK_PAGE_PADDING),
-        );
+      const day = row.slots[dayIndex];
+      // A shorter column has already ended, and a `null` slot never began;
+      // either way this page stays blank there.
+      if (day !== null && pageIndex < segments.length) {
+        const x = spec.margin + dayIndex * (WEEK_COLUMN_WIDTH + WEEK_COLUMN_GAP);
+        items.push(...placeDaySegment(day, segments[pageIndex], x, top, WEEK_COLUMN_WIDTH, WEEK_PAGE_PADDING));
       }
     });
     pages.push({ spec, items });
   }
-  return { kind: "week-per-page", bodySize: size, pages };
+  return { size, pages };
 }
 
-export function layoutWeek(week: PrintWeek, kind: PdfLayoutKind, measure: Measure): PdfLayout {
-  return kind === "day-per-page" ? layoutDayPerPage(week, measure) : layoutWeekPerPage(week, measure);
+function layoutWeekPerPage(doc: PrintDocument, measure: Measure): PdfLayout {
+  const rows = doc.rows.map((row) => layoutWeekRow(row, measure));
+  return {
+    kind: "week-per-page",
+    bodySize: Math.min(...rows.map((row) => row.size)),
+    pages: rows.flatMap((row) => row.pages),
+  };
+}
+
+export function layoutDocument(doc: PrintDocument, kind: PdfLayoutKind, measure: Measure): PdfLayout {
+  switch (kind) {
+    case "day-per-page":
+      return layoutDayPerPage(doc, measure);
+    case "week-per-page":
+      return layoutWeekPerPage(doc, measure);
+    case "month-grid":
+      throw new Error("month-grid layout is not available yet");
+  }
 }

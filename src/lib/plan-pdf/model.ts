@@ -2,12 +2,17 @@ import { formatAcceptedAt, formatPlanDate, formatWeekRange } from "@/lib/day-pla
 import type { DayPlanView } from "@/types";
 
 /**
- * What goes on paper when a teacher downloads a week, and in which words.
+ * What goes on paper when a teacher downloads a week or a month, and in which
+ * words.
  *
  * `S-13` (FR-020): every working day is printed, a draft says it is one, and an
  * empty day says so rather than vanishing. That is a claim about content, not
  * about geometry, so it lives here - apart from `layout.ts`, which only decides
  * where things go, and from `render.ts`, the one module that knows pdf-lib.
+ *
+ * Both prints share one shape: a document of week rows, five slots each. A week
+ * is one row with five days; a month (`S-14`) is four to six rows whose edge
+ * slots are `null` - days of the neighbouring month, which print as nothing.
  *
  * Every Polish string the PDF carries is defined in this file. Text drawn with an
  * embedded font is encoded as glyph ids inside the PDF, so it cannot be grepped
@@ -15,7 +20,7 @@ import type { DayPlanView } from "@/types";
  * draft" is this model.
  */
 
-export type PdfLayoutKind = "day-per-page" | "week-per-page";
+export type PdfLayoutKind = "day-per-page" | "week-per-page" | "month-grid";
 
 export type PrintDayStatus = "accepted" | "draft" | "empty";
 
@@ -32,12 +37,15 @@ export const PROMPT_PREFIX = "Hasło: ";
 export const THEME_PREFIX = "Temat: ";
 
 /** The buttons' visible text, which is also their accessible name. */
-export const PDF_BUTTON_LABELS: Readonly<Record<PdfLayoutKind, string>> = {
+export const PDF_BUTTON_LABELS: Readonly<Record<WeekPdfLayoutKind, string>> = {
   "day-per-page": "Pobierz PDF — dzień na stronę",
   "week-per-page": "Pobierz PDF — tydzień na stronie",
 };
 
-const FILE_SUFFIXES: Readonly<Record<PdfLayoutKind, string>> = {
+/** The layouts a week offers. */
+export type WeekPdfLayoutKind = Exclude<PdfLayoutKind, "month-grid">;
+
+const FILE_SUFFIXES: Readonly<Record<WeekPdfLayoutKind, string>> = {
   "day-per-page": "dzien-na-strone",
   "week-per-page": "tydzien-na-stronie",
 };
@@ -63,12 +71,18 @@ export interface PrintDay {
   readonly emptyNote: string | null;
 }
 
-export interface PrintWeek {
+export interface PrintWeekRow {
   readonly weekStart: string;
+  /** Page heading in the week-per-page layout; for a printed week it is {@link PrintDocument.title}. */
+  readonly heading: string;
+  /** `WEEK_DAYS` slots in calendar order; `null` is a day outside the document - no heading, no label, no frame. */
+  readonly slots: readonly (PrintDay | null)[];
+}
+
+export interface PrintDocument {
   /** `Plan tygodnia — 14–18 września 2026`. */
   readonly title: string;
-  /** Every working day, in calendar order. */
-  readonly days: readonly PrintDay[];
+  readonly rows: readonly PrintWeekRow[];
 }
 
 /** `Zaakceptowano 23 września, 11:31`. */
@@ -104,7 +118,7 @@ function printDay(date: string, view: DayPlanView | undefined): PrintDay {
 }
 
 /**
- * The week as it goes on paper.
+ * The week as it goes on paper: a document of one row.
  *
  * `plans` has the shape of `WeekPlanView.plans` - absent key means a free day -
  * but the island builds it from its own `day.plan` state, never from the SSR
@@ -115,15 +129,20 @@ export function buildPrintWeek(
   weekStart: string,
   days: readonly string[],
   plans: Readonly<Partial<Record<string, DayPlanView>>>,
-): PrintWeek {
+): PrintDocument {
+  const title = `Plan tygodnia — ${formatWeekRange(weekStart)}`;
   return {
-    weekStart,
-    title: `Plan tygodnia — ${formatWeekRange(weekStart)}`,
-    days: [...days].sort().map((date) => printDay(date, plans[date])),
+    title,
+    rows: [{ weekStart, heading: title, slots: [...days].sort().map((date) => printDay(date, plans[date])) }],
   };
 }
 
+/** Every printed day, in document order - the pages of the day-per-page layout. */
+export function printDays(doc: PrintDocument): PrintDay[] {
+  return doc.rows.flatMap((row) => row.slots.filter((slot): slot is PrintDay => slot !== null));
+}
+
 /** `plan-tygodnia-2026-09-14-dzien-na-strone.pdf`. */
-export function pdfFileName(weekStart: string, kind: PdfLayoutKind): string {
+export function pdfFileName(weekStart: string, kind: WeekPdfLayoutKind): string {
   return `plan-tygodnia-${weekStart}-${FILE_SUFFIXES[kind]}.pdf`;
 }
