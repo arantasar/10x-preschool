@@ -403,10 +403,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [x] 1.1 Testy modelu i układu przechodzą
-- [x] 1.2 Pełen zestaw jednostkowy przechodzi
-- [x] 1.3 Lint przechodzi
-- [x] 1.4 Moduły Fazy 1 nie importują pdf-lib
+- [x] 1.1 Testy modelu i układu przechodzą — 79ea795
+- [x] 1.2 Pełen zestaw jednostkowy przechodzi — 79ea795
+- [x] 1.3 Lint przechodzi — 79ea795
+- [x] 1.4 Moduły Fazy 1 nie importują pdf-lib — 79ea795
 
 #### Manual
 
@@ -416,11 +416,11 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [ ] 2.1 Test renderowania przechodzi
-- [ ] 2.2 Pełen zestaw jednostkowy przechodzi
-- [ ] 2.3 Lint przechodzi
-- [ ] 2.4 Build przechodzi
-- [ ] 2.5 Fonty i licencja są w repo
+- [x] 2.1 Test renderowania przechodzi
+- [x] 2.2 Pełen zestaw jednostkowy przechodzi
+- [x] 2.3 Lint przechodzi
+- [x] 2.4 Build przechodzi
+- [x] 2.5 Fonty i licencja są w repo
 
 #### Manual
 
