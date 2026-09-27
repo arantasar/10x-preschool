@@ -561,10 +561,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [x] 5.1 Spec month-print przechodzi lokalnie
-- [x] 5.2 Cały zestaw e2e bez regresji
-- [x] 5.3 Lint przechodzi
-- [x] 5.4 Wiersze #1–#11 mapy ryzyk nietknięte
+- [x] 5.1 Spec month-print przechodzi lokalnie — 6f607d0
+- [x] 5.2 Cały zestaw e2e bez regresji — 6f607d0
+- [x] 5.3 Lint przechodzi — 6f607d0
+- [x] 5.4 Wiersze #1–#11 mapy ryzyk nietknięte — 6f607d0
 
 #### Manual
 
