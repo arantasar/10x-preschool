@@ -416,11 +416,11 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [x] 2.1 Test renderowania przechodzi
-- [x] 2.2 Pełen zestaw jednostkowy przechodzi
-- [x] 2.3 Lint przechodzi
-- [x] 2.4 Build przechodzi
-- [x] 2.5 Fonty i licencja są w repo
+- [x] 2.1 Test renderowania przechodzi — bdb067d
+- [x] 2.2 Pełen zestaw jednostkowy przechodzi — bdb067d
+- [x] 2.3 Lint przechodzi — bdb067d
+- [x] 2.4 Build przechodzi — bdb067d
+- [x] 2.5 Fonty i licencja są w repo — bdb067d
 
 #### Manual
 
@@ -430,10 +430,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [ ] 3.1 Lint przechodzi
-- [ ] 3.2 Pełen zestaw jednostkowy przechodzi
-- [ ] 3.3 Build przechodzi
-- [ ] 3.4 pdf-lib nie jest importowany statycznie poza rendererem
+- [x] 3.1 Lint przechodzi
+- [x] 3.2 Pełen zestaw jednostkowy przechodzi
+- [x] 3.3 Build przechodzi
+- [x] 3.4 pdf-lib nie jest importowany statycznie poza rendererem
 
 #### Manual
 
