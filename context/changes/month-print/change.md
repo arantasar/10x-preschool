@@ -14,5 +14,5 @@ archived_at: null
 - 2026-09-27 — wydanie po impl-review (`reviews/impl-review.md`). Obejrzane PDF-y miesiąca (4.7) i
   stabilność e2e (5.5) potwierdzone; cały zestaw e2e 20/20 na świeżym serwerze. Po obejrzeniu wydruku
   siatka miesiąca pokazuje tylko datę, hasło i temat — bez tytułów aktywności.
-- Punkty ręczne 1.9, 2.5, 3.5, 4.8–4.12 i 5.6 **świadomie niesprawdzone przed wydaniem** (decyzja
-  Janusza, jak przy `S-13`). Wydruk na papierze (4.8) — wynik nieodnotowany.
+- Pozostałe punkty ręczne (1.9, 2.5, 3.5, 4.8–4.12, 5.6) sprawdzone przez Janusza przed wydaniem.
+  Wydruk na papierze (4.8): drukarka i rozmiar czcionki siatki nieodnotowane.

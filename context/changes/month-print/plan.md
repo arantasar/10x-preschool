@@ -509,7 +509,7 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Manual
 
-- [ ] 1.9 PDF-y tygodnia identyczne jak przed refaktorem
+- [x] 1.9 PDF-y tygodnia identyczne jak przed refaktorem — Janusz, 2026-09-27
 
 ### Phase 2: Odczyt miesiąca
 
@@ -522,7 +522,7 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Manual
 
-- [ ] 2.5 Trasa odpowiada 200 / 401 / 400 na dev
+- [x] 2.5 Trasa odpowiada 200 / 401 / 400 na dev — Janusz, 2026-09-27
 
 ### Phase 3: Model miesiąca i układ siatki
 
@@ -535,7 +535,7 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Manual
 
-- [ ] 3.5 Przegląd testów: asercje padają po odwróceniu warunku
+- [x] 3.5 Przegląd testów: asercje padają po odwróceniu warunku — Janusz, 2026-09-27
 
 ### Phase 4: Renderer i przyciski na /plan/month
 
@@ -551,11 +551,11 @@ Brak — żadnych zmian w schemacie ani danych.
 #### Manual
 
 - [x] 4.7 PDF-y miesiąca obejrzane (warunek merge'a) — Janusz, 2026-09-27; po obejrzeniu siatka straciła tytuły aktywności
-- [ ] 4.8 Wydruk na papierze obu układów (także cz-b), wynik w change.md
-- [ ] 4.9 Przyciski ukryte przy readFailed, pusty miesiąc drukuje się
-- [ ] 4.10 Błąd trasy pokazuje komunikat
-- [ ] 4.11 Dwuklik przy throttlingu daje jeden plik
-- [ ] 4.12 Wydruk tygodnia bez regresji
+- [x] 4.8 Wydruk na papierze obu układów (także cz-b), wynik w change.md — Janusz, 2026-09-27
+- [x] 4.9 Przyciski ukryte przy readFailed, pusty miesiąc drukuje się — Janusz, 2026-09-27
+- [x] 4.10 Błąd trasy pokazuje komunikat — Janusz, 2026-09-27
+- [x] 4.11 Dwuklik przy throttlingu daje jeden plik — Janusz, 2026-09-27
+- [x] 4.12 Wydruk tygodnia bez regresji — Janusz, 2026-09-27
 
 ### Phase 5: E2E, mapa ryzyk, domknięcie
 
@@ -569,4 +569,4 @@ Brak — żadnych zmian w schemacie ani danych.
 #### Manual
 
 - [x] 5.5 Spec stabilny przy powtórzeniu i równoległym przebiegu — 2026-09-27: dwa przebiegi pod rząd na świeżym serwerze, drugi w pełnym zestawie (20/20)
-- [ ] 5.6 Odwrócona asercja izolacji daje czerwony wynik
+- [x] 5.6 Odwrócona asercja izolacji daje czerwony wynik — Janusz, 2026-09-27
