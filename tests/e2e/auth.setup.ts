@@ -1,5 +1,6 @@
 import { test as setup, expect } from "@playwright/test";
 import { e2eEnv } from "./support/env";
+import { waitForIslands } from "./support/hydration";
 import { ensureTeacher, TEACHER_A, TEACHER_B, type Teacher } from "./support/supabase-admin";
 
 /**
@@ -19,6 +20,9 @@ async function signIn(page: import("@playwright/test").Page, teacher: Teacher): 
   await ensureTeacher(teacher);
 
   await page.goto("/auth/signin");
+  // `SignInForm` to wyspa z kontrolowanymi polami: wpisanie przed hydracja
+  // zostaje skasowane przez React, a formularz odmawia wyslania pustego e-maila.
+  await waitForIslands(page);
   await page.getByLabel("Adres e-mail").fill(teacher.email);
   await page.getByLabel("Hasło", { exact: true }).fill(e2eEnv.password);
   await page.getByRole("button", { name: "Zaloguj się" }).click();
