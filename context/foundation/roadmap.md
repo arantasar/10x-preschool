@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 2
 status: draft
 created: 2026-09-19
-updated: 2026-09-23
+updated: 2026-09-27
 prd_version: 2
 main_goal: quality
 top_blocker: decisions
@@ -60,7 +60,7 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 | S-09  | week-regeneration-replace | wygenerować tydzień na nowo, zastępując dni niezaakceptowane, po uczciwym potwierdzeniu     | S-03 (done, M-01)    | FR-012, FR-014, US-02 | done     |
 | S-12  | edit-unaccepts-day        | poprawić treść dnia zaakceptowanego po potwierdzeniu, które zdejmuje akceptację             | S-02 (done, M-01)    | FR-017               | done     |
 | S-11  | week-level-plan-controls  | cofnąć akceptację i usunąć zapisany plan dnia z poziomu widoku tygodnia                     | S-05 (done, M-01)    | FR-015, FR-016       | done     |
-| S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | ready    |
+| S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | done     |
 | S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | ready    |
 | S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | proposed |
 
@@ -166,7 +166,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **Unknowns:** — (wzorzec interakcji rozstrzygnięty 2026-08-30, warunki wydajnościowe przeszły w PRD z pytań w warunki brzegowe)
 - **Decyzje zastane, nie do przegłosowania w slice'ie:** podgląd na `:hover` **oraz** `:focus-visible`, kliknięcie kafelka nadal otwiera dzień (podgląd jest akceleratorem, nie jedyną drogą do informacji); podgląd wyłącznie do odczytu; dane dociągane na żądanie, bez wstępnego pobierania całego miesiąca (PRD §Non-Goals).
 - **Risk:** Jedyna pozycja z decyzjami zamkniętymi przed startem `M-02` i najkrótsza droga do wydania — sekwencjonowana jako czwarta **wyłącznie** dlatego, że cel `quality` stawia trzy pozycje ochronne przed pozycją wygody. Zależności `M-02` nie ma żadnych, więc jest pierwszym kandydatem do wzięcia równolegle albo do przesunięcia w przód, jeśli potrzebny jest szybki dowód postępu. Trzy warunki brzegowe przestały być tematami do zbadania i stały się wymaganiami: opóźnienie przed pobraniem i anulowanie porzuconego żądania (przeciągnięcie kursora przez rząd 20–22 kafelków nie może wywołać żądania za żądaniem), pamięć podręczna już obejrzanych dni, oraz **twarde ograniczenie**: pełny miesiąc pozostaje widoczny bez przewijania na tej samej szerokości ekranu co dziś — przy konflikcie ustępuje podtytuł, nie widok miesiąca. Zakres zawężony stanem kodu: kliknięcie kafelka już prowadzi do `/plan?date=`, a to, co dziś wygląda jak dymek, to natywny atrybut `title` (`MonthGrid.astro:126`) — slice go zastępuje. Powiększony kafelek i panel podglądu konkurują o tę samą siatkę siedmiu kolumn, dlatego FR-010 i FR-011 wchodzą razem, a nie osobno.
-- **Status:** ready
+- **Status:** done
 
 ### S-13: Wydruk tygodnia
 
@@ -251,3 +251,4 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **S-12: Nauczyciel może poprawić treść dnia, który wcześniej zaakceptował — dostaje potwierdzenie, a po zgodzie dzień traci stan zaakceptowania, zamiast wyglądać na zatwierdzony z treścią zmienioną po akceptacji.** — Archived 2026-09-21 → `context/archive/2026-09-20-edit-unaccepts-day/`. Lesson: —.
 - **S-05: Nauczyciel może usunąć zapisany plan wybranego dnia z poziomu widoku tego dnia; wiersz `day_plans` i jego aktywności są usuwane trwale (kasowanie twarde), a dzień wraca do stanu **nieodróżnialnego od dnia nigdy nieplanowanego** — na wszystkich powierzchniach, na których jest pokazywany, i dla generowania tygodnia, które obejmuje go ponownie zamiast pominąć.** — Archived 2026-08-29 → `context/archive/2026-08-27-delete-day-plan/`. Lesson: „Kryterium »poza X nietknięte« musi być odporne na przerównanie".
 - **S-11: Nauczyciel może cofnąć akceptację dnia i usunąć zapisany plan dnia, nie wychodząc z widoku tygodnia — czyli z widoku, w którym faktycznie pracuje, zamiast wchodzić w dzień po kolei.** — Archived 2026-09-23 → `context/archive/2026-09-23-week-level-plan-controls/`. Lesson: —.
+- **S-07: Nauczyciel widzi aktywności zaplanowane na dany dzień bez opuszczania siatki miesiąca, a kafelek mieści pełny podtytuł dnia — nieucięty.** — Archived 2026-09-27 → `context/archive/2026-09-23-month-day-preview/`. Lesson: —.
