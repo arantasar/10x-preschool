@@ -541,12 +541,12 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [x] 4.1 Test renderowania przechodzi
-- [x] 4.2 Pełen zestaw jednostkowy przechodzi
-- [x] 4.3 Lint przechodzi
-- [x] 4.4 Build przechodzi
-- [x] 4.5 Renderer nie jest importowany statycznie poza sobą
-- [x] 4.6 Strona miesiąca nie czyta treści planów przy ładowaniu
+- [x] 4.1 Test renderowania przechodzi — 0e72c0f
+- [x] 4.2 Pełen zestaw jednostkowy przechodzi — 0e72c0f
+- [x] 4.3 Lint przechodzi — 0e72c0f
+- [x] 4.4 Build przechodzi — 0e72c0f
+- [x] 4.5 Renderer nie jest importowany statycznie poza sobą — 0e72c0f
+- [x] 4.6 Strona miesiąca nie czyta treści planów przy ładowaniu — 0e72c0f
 
 #### Manual
 
@@ -561,10 +561,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [ ] 5.1 Spec month-print przechodzi lokalnie
-- [ ] 5.2 Cały zestaw e2e bez regresji
-- [ ] 5.3 Lint przechodzi
-- [ ] 5.4 Wiersze #1–#11 mapy ryzyk nietknięte
+- [x] 5.1 Spec month-print przechodzi lokalnie
+- [x] 5.2 Cały zestaw e2e bez regresji
+- [x] 5.3 Lint przechodzi
+- [x] 5.4 Wiersze #1–#11 mapy ryzyk nietknięte
 
 #### Manual
 
