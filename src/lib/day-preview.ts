@@ -39,6 +39,11 @@ export const CLOSED: DayPreviewState = { status: "closed" };
 /**
  * Function-valued properties rather than methods: the preview is a set of
  * closures with no `this`, and the hook hands `show`/`hide` around detached.
+ *
+ * One target for both inputs, on purpose: the last intent wins. A pointer
+ * leaving a tile closes a preview the keyboard opened, and a blur closes one
+ * the pointer opened - the preview is an accelerator, and Tab or a second hover
+ * brings it back. Two independent sources would mean two cards on screen.
  */
 export interface DayPreview {
   /** The pointer or keyboard focus came to rest on a day that has a plan. */

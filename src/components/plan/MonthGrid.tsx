@@ -96,9 +96,10 @@ export default function MonthGrid({ month, weeks, summaries }: MonthGridProps) {
                       // A fixed height, not a minimum: the row must not grow with
                       // its content. FR-011 is bound by "the whole month stays
                       // visible without scrolling" - when the theme does not fit,
-                      // the theme gives way, not the month. The number and three
-                      // 12px lines fill exactly 4rem.
-                      "flex h-16 flex-col justify-between overflow-hidden rounded-lg border p-1.5 transition-colors",
+                      // the theme gives way, not the month. `h-16` is border-box:
+                      // 64px less 2px of border and 6+4px of padding leaves 52px,
+                      // exactly the 16px number plus three 12px lines.
+                      "flex h-16 flex-col justify-between overflow-hidden rounded-lg border px-1.5 pt-1.5 pb-1 transition-colors",
                       summary?.accepted && "border-emerald-400/40 bg-emerald-500/15 hover:bg-emerald-500/25",
                       summary && !summary.accepted && "border-purple-400/40 bg-purple-500/15 hover:bg-purple-500/25",
                       !summary && "border-white/10 bg-white/5 hover:bg-white/10",

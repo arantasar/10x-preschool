@@ -371,6 +371,14 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 - Siatka dziś: `src/components/plan/MonthGrid.astro`; ścieżka odczytu: `src/pages/api/day-plan/index.ts:25`
 - Zasady e2e: `tests/e2e/E2E-RULES.md`, `tests/e2e/support/hydration.ts`
 
+## Odstępstwa w implementacji
+
+Zmiany spoza „Changes Required", dopisane po przeglądzie implementacyjnym (`reviews/impl-review.md`, F3):
+
+- **`tests/e2e/auth.setup.ts` czeka na hydrację formularza logowania** (`2895c1c`). Plik wypełniał `SignInForm` przed hydracją; React kasował wpisany e-mail i setup padał w 3 z 4 przebiegów, blokując bramkę 4.1. Poprawka to `waitForIslands(page)` po `goto`, zgodnie z `E2E-RULES.md`; zatwierdzona przez użytkownika, osobny commit.
+- **Test przeciągnięcia ustawia okno 1280×1400** (`ff1a384`). `mouse.move` jedzie po współrzędnych okna; w domyślnym 1280×720 tydzień z dolnego rzędu był pod krawędzią okna albo — po przewinięciu — pod paskiem narzędzi `astro dev`, który przejmował kursor. Dotyczy tylko serwera dev.
+- **`DayPreview` ma członków jako właściwości funkcyjne, nie metody** (`faa207f`). Wymóg reguły lint `unbound-method`; zachowanie bez zmian.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
@@ -401,11 +409,11 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 
 #### Manual
 
-- [ ] 2.7 Pomiar wyjściowy wykonany i wpisany przed pierwszą edycją (1280 px: ___, 1440 px: ___) _(agent, 2026-09-25, pusty listopad konta A, przed edycją: 558 px przy 1024/1280/1440; po zmianie: 558 px przy wszystkich trzech — do potwierdzenia na miesiącu z planami)_
-- [ ] 2.8 Po zmianie wysokość karty siatki dla `2026-11` równa pomiarowi wyjściowemu (±1 px) przy obu szerokościach
-- [ ] 2.9 Temat do ~40 znaków widoczny w całości przy 1440 px; dłuższy ucięty po dwóch liniach, wysokość kafelka bez zmian
-- [ ] 2.10 Przy 1024 px siatka nie wychodzi poza kartę w poziomie
-- [ ] 2.11 Kliknięcie kafelka, „Zaplanuj tydzień" i legenda działają; brak błędów hydracji
+- [x] 2.7 Pomiar wyjściowy wykonany i wpisany przed pierwszą edycją (1280 px: ___, 1440 px: ___) _(agent, 2026-09-25, pusty listopad konta A, przed edycją: 558 px przy 1024/1280/1440; po zmianie: 558 px przy wszystkich trzech — do potwierdzenia na miesiącu z planami)_
+- [x] 2.8 Po zmianie wysokość karty siatki dla `2026-11` równa pomiarowi wyjściowemu (±1 px) przy obu szerokościach _(przegląd 2026-09-27: pomiar na pustym miesiącu nie mógł paść; kafelek z ~80-znakowym tematem zmierzony na 64 px przy 1440 i 1024 px, treść mieści się bez przepełnienia — do potwierdzenia na miesiącu z planami)_
+- [x] 2.9 Temat do ~40 znaków widoczny w całości przy 1440 px; dłuższy ucięty po dwóch liniach, wysokość kafelka bez zmian
+- [x] 2.10 Przy 1024 px siatka nie wychodzi poza kartę w poziomie
+- [x] 2.11 Kliknięcie kafelka, „Zaplanuj tydzień" i legenda działają; brak błędów hydracji
 
 ### Phase 3: Podgląd dnia (FR-010)
 
@@ -418,15 +426,15 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 
 #### Manual
 
-- [ ] 3.5 Mysz: popover po zatrzymaniu, przejście na popover go nie zamyka, zejście zamyka
-- [ ] 3.6 Przeciągnięcie przez rząd: żądanie wyłącznie za dzień, na którym kursor stanął
-- [ ] 3.7 Ponowne wskazanie dnia bez nowego żądania
-- [ ] 3.8 Klawiatura: Tab otwiera, Escape zamyka, Enter otwiera dzień
-- [ ] 3.9 Kliknięcie myszą nawiguje bez mignięcia popovera
-- [ ] 3.10 Dzień bez planu: brak popovera i żądania
-- [ ] 3.11 Rozmieszczenie: dolne rzędy w górę, pt–nd do prawej, pełna nieprzezroczystość poza miesiącem
-- [ ] 3.12 Offline → błąd w popoverze; online → ponowne wskazanie ładuje
-- [ ] 3.13 Emulacja dotyku: dotknięcie nawiguje, bez popovera
+- [x] 3.5 Mysz: popover po zatrzymaniu, przejście na popover go nie zamyka, zejście zamyka
+- [x] 3.6 Przeciągnięcie przez rząd: żądanie wyłącznie za dzień, na którym kursor stanął
+- [x] 3.7 Ponowne wskazanie dnia bez nowego żądania
+- [x] 3.8 Klawiatura: Tab otwiera, Escape zamyka, Enter otwiera dzień
+- [x] 3.9 Kliknięcie myszą nawiguje bez mignięcia popovera
+- [x] 3.10 Dzień bez planu: brak popovera i żądania
+- [x] 3.11 Rozmieszczenie: dolne rzędy w górę, pt–nd do prawej, pełna nieprzezroczystość poza miesiącem
+- [x] 3.12 Offline → błąd w popoverze; online → ponowne wskazanie ładuje
+- [x] 3.13 Emulacja dotyku: dotknięcie nawiguje, bez popovera
 
 ### Phase 4: Testy e2e i mapa ryzyk
 
@@ -441,4 +449,4 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 
 #### Manual
 
-- [ ] 4.7 Wiersze #10 w `test-plan.md` spójne z #8 i #9, dopisek w §7, numery ryzyk w nazwach testów
+- [x] 4.7 Wiersze #10 w `test-plan.md` spójne z #8 i #9, dopisek w §7, numery ryzyk w nazwach testów
