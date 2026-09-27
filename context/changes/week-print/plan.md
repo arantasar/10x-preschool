@@ -447,10 +447,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [x] 4.1 Spec week-print przechodzi lokalnie
-- [x] 4.2 Cały zestaw e2e bez regresji
-- [x] 4.3 Lint przechodzi
-- [x] 4.4 Wiersze #1–#10 mapy ryzyk nietknięte
+- [x] 4.1 Spec week-print przechodzi lokalnie — bfc9c42
+- [x] 4.2 Cały zestaw e2e bez regresji — bfc9c42
+- [x] 4.3 Lint przechodzi — bfc9c42
+- [x] 4.4 Wiersze #1–#10 mapy ryzyk nietknięte — bfc9c42
 
 #### Manual
 
