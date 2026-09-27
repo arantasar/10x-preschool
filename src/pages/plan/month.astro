@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import AppHeader from "@/components/AppHeader.astro";
 import MonthGrid from "@/components/plan/MonthGrid";
+import MonthPdfControls from "@/components/plan/MonthPdfControls";
 import { addDays, addMonths, formatMonth, resolveMonth, weeksOfMonth } from "@/lib/day-plan-dates";
 import { readMonthSummary } from "@/lib/services/day-plan-store";
 import type { DayPlanSummary } from "@/types";
@@ -73,6 +74,17 @@ const plannedCount = summaries.filter((summary) => summary.plan_date.slice(0, 7)
             Następny miesiąc &rarr;
           </a>
         </nav>
+
+        {
+          /* The print reads its own data on click (`GET /api/day-plan/month`);
+             this page's read stays summaries only. Hidden when that read failed,
+             like the grid - a month we could not load is not one to print. */
+          !readFailed && (
+            <div class="mt-4">
+              <MonthPdfControls client:idle month={month} />
+            </div>
+          )
+        }
       </header>
 
       <div class="rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-xl">

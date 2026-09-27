@@ -3,8 +3,9 @@ import { readFile } from "node:fs/promises";
 import { PDFDocument } from "pdf-lib";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { fullWeek, planView, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
-import { buildPrintWeek, printDays, type PdfLayoutKind } from "./model";
+import { fullMonth, LONGEST_MONTH, MONTH } from "./__fixtures__/month";
+import { fullWeek, planView, prose, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
+import { buildPrintMonth, buildPrintWeek, printDays, TRUNCATION_MARK, type PdfLayoutKind } from "./model";
 import { embedPlanFonts, normalizeDocument, prepareDocument, renderPlanPdf, type PdfFonts } from "./render";
 import type { DayPlanView } from "@/types";
 
@@ -124,5 +125,67 @@ describe("renderPlanPdf", () => {
 
   it("gives an empty week five pages", async () => {
     expect(await pages(await render({}, "day-per-page"))).toHaveLength(5);
+  });
+});
+
+describe("renderPlanPdf — a month", () => {
+  it("draws a typical month's grid on one landscape page", async () => {
+    const bytes = await renderPlanPdf(buildPrintMonth(MONTH, fullMonth()), "month-grid", fonts);
+    const sizes = await pages(bytes);
+
+    expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe("%PDF-");
+    expect(sizes).toHaveLength(1);
+    expect(sizes[0].width).toBeGreaterThan(sizes[0].height);
+  });
+
+  it("draws a month week by week, one landscape page per week", async () => {
+    const doc = buildPrintMonth(MONTH, fullMonth(MONTH, { descriptionLength: 300 }));
+    const sizes = await pages(await renderPlanPdf(doc, "week-per-page", fonts));
+
+    expect(sizes).toHaveLength(doc.rows.length);
+    for (const { width, height } of sizes) {
+      expect(width).toBeGreaterThan(height);
+    }
+  });
+
+  it("draws an empty month's grid on one page", async () => {
+    expect(await pages(await renderPlanPdf(buildPrintMonth(MONTH, {}), "month-grid", fonts))).toHaveLength(1);
+  });
+
+  it("keeps an overflowing month on one page, cut with a mark the fonts can draw", async () => {
+    const plans = fullMonth(LONGEST_MONTH, {
+      prompt: prose(2000),
+      activities: [1, 2, 3].map(() => ({ title: prose(200), description: "opis" })),
+    });
+    const doc = buildPrintMonth(LONGEST_MONTH, plans);
+    const embedded = await embedPlanFonts(await PDFDocument.create(), fonts);
+    const text = prepareDocument(doc, "month-grid", embedded)
+      .layout.pages.flatMap((page) => page.items)
+      .map((item) => (item.kind === "text" ? item.text : ""));
+
+    expect(await pages(await renderPlanPdf(doc, "month-grid", fonts))).toHaveLength(1);
+    expect(text.some((line) => line.endsWith(TRUNCATION_MARK))).toBe(true);
+  });
+
+  it("has the truncation mark and the legend's quotes in both weights", async () => {
+    const { hasGlyph } = await embedPlanFonts(await PDFDocument.create(), fonts);
+
+    for (const char of [TRUNCATION_MARK, "„", "”", "—", "·"]) {
+      expect(hasGlyph(char)).toBe(true);
+    }
+  });
+
+  it("draws Polish letters in the grid and week by week", async () => {
+    const plans = {
+      "2026-09-14": planView("2026-09-14", {
+        prompt: POLISH,
+        theme: POLISH,
+        activities: [{ title: POLISH, description: POLISH }],
+      }),
+    };
+
+    for (const kind of ["month-grid", "week-per-page"] as const) {
+      await expect(renderPlanPdf(buildPrintMonth(MONTH, plans), kind, fonts)).resolves.toBeInstanceOf(Uint8Array);
+    }
   });
 });

@@ -528,10 +528,10 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [x] 3.1 Testy modelu i układów przechodzą
-- [x] 3.2 Pełen zestaw jednostkowy przechodzi
-- [x] 3.3 Lint przechodzi
-- [x] 3.4 Moduły układu nie importują pdf-lib
+- [x] 3.1 Testy modelu i układów przechodzą — 98b37e8
+- [x] 3.2 Pełen zestaw jednostkowy przechodzi — 98b37e8
+- [x] 3.3 Lint przechodzi — 98b37e8
+- [x] 3.4 Moduły układu nie importują pdf-lib — 98b37e8
 
 #### Manual
 
@@ -541,12 +541,12 @@ Brak — żadnych zmian w schemacie ani danych.
 
 #### Automated
 
-- [ ] 4.1 Test renderowania przechodzi
-- [ ] 4.2 Pełen zestaw jednostkowy przechodzi
-- [ ] 4.3 Lint przechodzi
-- [ ] 4.4 Build przechodzi
-- [ ] 4.5 Renderer nie jest importowany statycznie poza sobą
-- [ ] 4.6 Strona miesiąca nie czyta treści planów przy ładowaniu
+- [x] 4.1 Test renderowania przechodzi
+- [x] 4.2 Pełen zestaw jednostkowy przechodzi
+- [x] 4.3 Lint przechodzi
+- [x] 4.4 Build przechodzi
+- [x] 4.5 Renderer nie jest importowany statycznie poza sobą
+- [x] 4.6 Strona miesiąca nie czyta treści planów przy ładowaniu
 
 #### Manual
 
