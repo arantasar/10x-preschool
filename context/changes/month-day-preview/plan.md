@@ -411,10 +411,10 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 
 #### Automated
 
-- [x] 3.1 Lint przechodzi: `npm run lint`
-- [x] 3.2 Build przechodzi: `npm run build`
-- [x] 3.3 Testy jednostkowe przechodzą: `npm test`
-- [x] 3.4 Natywny dymek zniknął: `grep -rn "tileText(" src/` zwraca pusto
+- [x] 3.1 Lint przechodzi: `npm run lint` — faa207f
+- [x] 3.2 Build przechodzi: `npm run build` — faa207f
+- [x] 3.3 Testy jednostkowe przechodzą: `npm test` — faa207f
+- [x] 3.4 Natywny dymek zniknął: `grep -rn "tileText(" src/` zwraca pusto — faa207f
 
 #### Manual
 
@@ -432,12 +432,12 @@ Przed pierwszym commitem: gałąź `feat/month-day-preview` (CLAUDE.md §Git —
 
 #### Automated
 
-- [ ] 4.1 Nowe testy przechodzą: `npm run test:e2e -- tests/e2e/month-day-preview.spec.ts`
-- [ ] 4.2 Cały zestaw e2e przechodzi: `npm run test:e2e`
-- [ ] 4.3 Celowe psucie A: `hide()` nie czyści timera → test przeciągnięcia czerwony; wycofane
-- [ ] 4.4 Celowe psucie B: pominięta pamięć podręczna → test ponownego wskazania czerwony; wycofane
-- [ ] 4.5 Celowe psucie C: usunięty `onFocus` → test klawiatury czerwony; wycofane
-- [ ] 4.6 Lint przechodzi: `npm run lint`
+- [x] 4.1 Nowe testy przechodzą: `npm run test:e2e -- tests/e2e/month-day-preview.spec.ts`
+- [x] 4.2 Cały zestaw e2e przechodzi: `npm run test:e2e`
+- [x] 4.3 Celowe psucie A: `hide()` nie czyści timera → test przeciągnięcia czerwony; wycofane
+- [x] 4.4 Celowe psucie B: pominięta pamięć podręczna → test ponownego wskazania czerwony; wycofane
+- [x] 4.5 Celowe psucie C: usunięty `onFocus` → test klawiatury czerwony; wycofane
+- [x] 4.6 Lint przechodzi: `npm run lint`
 
 #### Manual
 
