@@ -62,7 +62,7 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 | S-11  | week-level-plan-controls  | cofnąć akceptację i usunąć zapisany plan dnia z poziomu widoku tygodnia                     | S-05 (done, M-01)    | FR-015, FR-016       | done     |
 | S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | done     |
 | S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | done     |
-| S-14  | month-print               | wydrukować miesiąc czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-13                 | FR-021               | ready    |
+| S-14  | month-print               | wydrukować miesiąc czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-13                 | FR-021               | done     |
 | S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | proposed |
 
 **Pięć z sześciu pozycji jest `ready` i wzajemnie równoległych.** To nie jest hojność
@@ -198,7 +198,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
   - Układ wydruku miesiąca — siatka na jednej kartce bez opisów, tydzień na stronie × 4–5 kartek, czy dzień na stronę (20–23 kartki)? Owner: Janusz. Block: nie — rozstrzygnięcie należy do slice'a (Open Roadmap Questions #8), jak przy `S-13`.
   - Odczyt treści: `/plan/month` ładuje dziś wyłącznie podsumowania dni (`readMonthSummary`), bez aktywności, a podgląd `S-07` dociąga dzień na żądanie. Czy wydruk czyta cały miesiąc jednym żądaniem po kliknięciu (nowy odczyt po stronie serwera), czy składa go z istniejącego odczytu tygodnia? Owner: `/10x-plan`. Block: nie.
 - **Risk:** Najkrótsza droga w kamieniu, bo silnik z `S-13` stoi — ale `src/lib/week-pdf/` jest nazwany i sparametryzowany pod tydzień (`PrintWeek`, `WEEK_DAYS`, pięć kolumn, nazwa pliku z poniedziałkiem), więc slice najpierw **uogólnia** model wydruku na zakres dni, zamiast go kopiować obok. Dwa ostrza. **(1)** Wydruk potrzebuje treści całego miesiąca naraz — pierwszy odczyt w paczce obejmujący ponad pięć dni z pełnymi aktywnościami; Guardrail #1 (izolacja kont) obowiązuje go tak samo jak każdy inny, a PRD §Non-Goals („bez wstępnego pobierania całego miesiąca") dotyczy podglądu, nie wydruku na żądanie — plan powinien to powiedzieć wprost. **(2)** Lekcja z `S-13`: tekst w PDF-ie widzi wyłącznie człowiek patrzący na plik (identyfikatory glifów, nie znaki) — błąd `subset: true` przeszedł wszystkie testy automatyczne i CI. Punkt ręczny „obejrzyj wygenerowany PDF" jest tu warunkiem merge'a, nie formalnością.
-- **Status:** ready
+- **Status:** done
 
 ### S-10: Rozszerzenie zastępowania na dni zaakceptowane
 
@@ -274,3 +274,4 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **S-11: Nauczyciel może cofnąć akceptację dnia i usunąć zapisany plan dnia, nie wychodząc z widoku tygodnia — czyli z widoku, w którym faktycznie pracuje, zamiast wchodzić w dzień po kolei.** — Archived 2026-09-23 → `context/archive/2026-09-23-week-level-plan-controls/`. Lesson: —.
 - **S-07: Nauczyciel widzi aktywności zaplanowane na dany dzień bez opuszczania siatki miesiąca, a kafelek mieści pełny podtytuł dnia — nieucięty.** — Archived 2026-09-27 → `context/archive/2026-09-23-month-day-preview/`. Lesson: —.
 - **S-13: Nauczyciel może wydrukować tydzień w postaci czytelnej na papierze i oddać go bez przepisywania czegokolwiek do innego narzędzia; wydruk obejmuje wszystkie dni robocze, a dni niezaakceptowane są na nim widocznie oznaczone jako szkic roboczy.** — Archived 2026-09-27 → `context/archive/2026-09-27-week-print/`. Lesson: —.
+- **S-14: Nauczyciel może pobrać z widoku miesiąca plik PDF z planem całego miesiąca, czytelny na papierze; wydruk obejmuje wszystkie dni robocze miesiąca, a dni niezaakceptowane i dni bez planu są oznaczone tak samo jak w wydruku tygodnia.** — Archived 2026-09-27 → `context/archive/2026-09-27-month-print/`. Lesson: —.
