@@ -1,17 +1,17 @@
 import fontkit from "@pdf-lib/fontkit";
 import { grayscale, PDFDocument, type PDFFont } from "pdf-lib";
 
-import { layoutWeek, normalizeText, type FontWeight, type Measure, type PdfLayout } from "@/lib/week-pdf/layout";
-import type { PdfLayoutKind, PrintDay, PrintWeek } from "@/lib/week-pdf/model";
+import { layoutDocument, normalizeText, type FontWeight, type Measure, type PdfLayout } from "@/lib/plan-pdf/layout";
+import type { PdfLayoutKind, PrintDay, PrintDocument } from "@/lib/plan-pdf/model";
 
 /**
- * Draws a {@link PrintWeek} as PDF bytes.
+ * Draws a {@link PrintDocument} as PDF bytes.
  *
  * The one module that imports pdf-lib. It takes font bytes rather than fetching
  * them, so the same code runs in node under vitest (bytes read from
  * `public/fonts`) and in the browser (bytes from `fetch`). The island loads it
  * with a dynamic `import()`, which keeps pdf-lib and fontkit out of the week
- * view's initial bundle.
+ * and month views' initial bundles.
  */
 
 export interface PdfFonts {
@@ -24,7 +24,7 @@ const DRAFT_FRAME_COLOR = grayscale(0.3);
 const TEXT_COLOR = grayscale(0);
 
 /**
- * Every string in the week, with characters the fonts cannot draw replaced.
+ * Every string in the document, with characters the fonts cannot draw replaced.
  *
  * Runs before layout, so the width measured is the width drawn. Without it an
  * emoji pasted into a description does not fail - pdf-lib quietly draws the
@@ -32,7 +32,7 @@ const TEXT_COLOR = grayscale(0);
  * page with holes in it and no sign of why. A `?` at least reads as "something
  * was here".
  */
-export function normalizeWeek(week: PrintWeek, hasGlyph: (char: string) => boolean): PrintWeek {
+export function normalizeDocument(doc: PrintDocument, hasGlyph: (char: string) => boolean): PrintDocument {
   const clean = (text: string) => normalizeText(text, hasGlyph);
   const cleanOrNull = (text: string | null) => (text === null ? null : clean(text));
   const day = (printDay: PrintDay): PrintDay => ({
@@ -47,18 +47,25 @@ export function normalizeWeek(week: PrintWeek, hasGlyph: (char: string) => boole
       description: clean(activity.description),
     })),
   });
-  return { ...week, title: clean(week.title), days: week.days.map(day) };
+  return {
+    title: clean(doc.title),
+    rows: doc.rows.map((row) => ({
+      ...row,
+      heading: clean(row.heading),
+      slots: row.slots.map((slot) => (slot === null ? null : day(slot))),
+    })),
+  };
 }
 
-export interface EmbeddedWeekFonts {
+export interface EmbeddedPlanFonts {
   readonly fonts: Readonly<Record<FontWeight, PDFFont>>;
   /** Whether both weights can draw `char`. */
   readonly hasGlyph: (char: string) => boolean;
-  /** Width as the embedded fonts will draw it - the measure `layoutWeek` is given. */
+  /** Width as the embedded fonts will draw it - the measure `layoutDocument` is given. */
   readonly measure: Measure;
 }
 
-export async function embedWeekFonts(doc: PDFDocument, fonts: PdfFonts): Promise<EmbeddedWeekFonts> {
+export async function embedPlanFonts(doc: PDFDocument, fonts: PdfFonts): Promise<EmbeddedPlanFonts> {
   doc.registerFontkit(fontkit);
   // Whole fonts, not `subset: true`: @pdf-lib/fontkit's subsetter breaks the
   // glyph mapping of Noto Sans, and every viewer then draws stray letters in
@@ -109,30 +116,30 @@ function cachedMeasure(embedded: Readonly<Record<FontWeight, PDFFont>>): Measure
 }
 
 /**
- * The week as it will be drawn: filtered to what the fonts have, then laid out
- * with their measure. Separate from {@link renderWeekPdf} so a test can read
+ * The document as it will be drawn: filtered to what the fonts have, then laid
+ * out with their measure. Separate from {@link renderPlanPdf} so a test can read
  * the laid-out text - the PDF itself carries glyph ids, not characters.
  */
-export function prepareWeek(
-  week: PrintWeek,
+export function prepareDocument(
+  doc: PrintDocument,
   kind: PdfLayoutKind,
-  { hasGlyph, measure }: EmbeddedWeekFonts,
-): { readonly printable: PrintWeek; readonly layout: PdfLayout } {
-  const printable = normalizeWeek(week, hasGlyph);
-  return { printable, layout: layoutWeek(printable, kind, measure) };
+  { hasGlyph, measure }: EmbeddedPlanFonts,
+): { readonly printable: PrintDocument; readonly layout: PdfLayout } {
+  const printable = normalizeDocument(doc, hasGlyph);
+  return { printable, layout: layoutDocument(printable, kind, measure) };
 }
 
-export async function renderWeekPdf(week: PrintWeek, kind: PdfLayoutKind, fonts: PdfFonts): Promise<Uint8Array> {
-  const doc = await PDFDocument.create();
-  const embeddedFonts = await embedWeekFonts(doc, fonts);
+export async function renderPlanPdf(doc: PrintDocument, kind: PdfLayoutKind, fonts: PdfFonts): Promise<Uint8Array> {
+  const pdf = await PDFDocument.create();
+  const embeddedFonts = await embedPlanFonts(pdf, fonts);
   const embedded = embeddedFonts.fonts;
-  const { printable, layout } = prepareWeek(week, kind, embeddedFonts);
+  const { printable, layout } = prepareDocument(doc, kind, embeddedFonts);
 
-  doc.setTitle(printable.title);
-  doc.setLanguage("pl");
+  pdf.setTitle(printable.title);
+  pdf.setLanguage("pl");
 
   for (const layoutPage of layout.pages) {
-    const page = doc.addPage([layoutPage.spec.width, layoutPage.spec.height]);
+    const page = pdf.addPage([layoutPage.spec.width, layoutPage.spec.height]);
     for (const item of layoutPage.items) {
       if (item.kind === "text") {
         page.drawText(item.text, {
@@ -158,5 +165,5 @@ export async function renderWeekPdf(week: PrintWeek, kind: PdfLayoutKind, fonts:
     }
   }
 
-  return doc.save();
+  return pdf.save();
 }

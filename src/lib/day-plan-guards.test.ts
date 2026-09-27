@@ -6,6 +6,7 @@ import {
   isGeneratedDayBody,
   isOutlineBody,
   isRecord,
+  isMonthPlansBody,
   isSaveWeekBody,
 } from "./day-plan-guards";
 
@@ -177,5 +178,31 @@ describe("isSaveWeekBody", () => {
     ["an array", { plans: [] }],
   ])("rejects %s", (_name, value) => {
     expect(isSaveWeekBody(value)).toBe(false);
+  });
+});
+
+describe("isMonthPlansBody", () => {
+  it("accepts a month of saved days", () => {
+    expect(isMonthPlansBody({ month: "2026-09", plans: { "2026-09-14": dayPlanBody() } })).toBe(true);
+  });
+
+  it("accepts an empty map — an unplanned month still prints", () => {
+    expect(isMonthPlansBody({ month: "2026-09", plans: {} })).toBe(true);
+  });
+
+  it("rejects a value that is not a saved plan", () => {
+    expect(isMonthPlansBody({ month: "2026-09", plans: { "2026-09-14": { plan: null } } })).toBe(false);
+    expect(isMonthPlansBody({ month: "2026-09", plans: { "2026-09-14": dayPlanBody({ activities: [] }) } })).toBe(
+      false,
+    );
+  });
+
+  it.each([
+    ["no plans key", { month: "2026-09" }],
+    ["no month", { plans: {} }],
+    ["null", null],
+    ["plans as an array", { month: "2026-09", plans: [] }],
+  ])("rejects %s", (_name, value) => {
+    expect(isMonthPlansBody(value)).toBe(false);
   });
 });

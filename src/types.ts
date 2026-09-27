@@ -90,6 +90,19 @@ export interface WeekPlanView {
 }
 
 /**
+ * `GET /api/day-plan/month` - every saved plan among one month's working days,
+ * for the month print (`S-14`).
+ *
+ * Keyed by `plan_date`; an absent key is a day without a plan. `Partial` for the
+ * reason given on {@link WeekPlanView.plans}.
+ */
+export interface MonthPlansBody {
+  /** `YYYY-MM`. */
+  readonly month: string;
+  readonly plans: Readonly<Partial<Record<string, DayPlanView>>>;
+}
+
+/**
  * One day as the month grid needs it: enough to say "planned" or "accepted",
  * and nothing more.
  *

@@ -413,9 +413,8 @@ przedmiotem zmiany — każda nowa ścieżka zapisu musi ją egzekwować tak sam
    Dwa pliki w `context/foundation/` obiecywały spłatę w v2 wbrew decyzji z Open Questions #3 —
    poprawione 2026-09-19. Pozycja zostaje jako ślad: przy każdej regeneracji roadmapy trzeba
    sprawdzić, czy obietnica nie wraca. Właściciel: Janusz. Blokuje: nie.
-8. **Układ wydruku miesiąca (FR-021).** Kandydaci: (a) siatka miesiąca na jednej kartce A4 poziomo
-   — hasło, temat i tytuły aktywności, bez opisów; (b) „tydzień na stronie" z `S-13` powtórzony dla
-   każdego tygodnia miesiąca (4–5 kartek, pełne opisy); (c) „dzień na stronę" (20–23 kartki).
-   Zależy od tego, do czego nauczyciel drukuje miesiąc (tablica w sali, dokumentacja, oddanie
-   dyrekcji), a tego nie ustalono. Właściciel: Janusz. Blokuje: nie — rozstrzygnięcie należy do
-   slice'a wydruku miesiąca, tak jak #1 należało do `S-13`.
+8. ~~**Układ wydruku miesiąca (FR-021).**~~ **Rozstrzygnięte 2026-09-27 w slice'ie `S-14`
+   (`month-print`): (a) i (b) — dwa przyciski.** Siatka miesiąca na jednej kartce A4 poziomo niesie
+   datę, hasło i temat, bez aktywności (tytuły aktywności wypadły po obejrzeniu wydruku — ucinały
+   każdy pełny dzień); „tygodniami" to „tydzień na stronie" z `S-13` dla każdego tygodnia miesiąca.
+   (c) „dzień na stronę" odrzucone. Decyzja Janusza.

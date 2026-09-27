@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { fullMonth, MONTH } from "./__fixtures__/month";
 import { fullWeek, planView, prose, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
 import {
   A4_LANDSCAPE,
   A4_PORTRAIT,
-  layoutWeek,
+  layoutDocument,
   normalizeText,
   wrapText,
   type LayoutItem,
@@ -12,7 +13,7 @@ import {
   type Measure,
   type PdfLayout,
 } from "./layout";
-import { buildPrintWeek, CONTINUED_MARK, DRAFT_LABEL, EMPTY_DAY_NOTE } from "./model";
+import { buildPrintMonth, buildPrintWeek, CONTINUED_MARK, DRAFT_LABEL, EMPTY_DAY_NOTE, printDays } from "./model";
 import type { DayPlanView } from "@/types";
 
 // Deterministic stand-in for a real font: every character half an em wide,
@@ -37,7 +38,7 @@ function hasDashedBox(page: LayoutPage): boolean {
 }
 
 function layout(plans: Record<string, DayPlanView>, kind: PdfLayout["kind"]): PdfLayout {
-  return layoutWeek(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans), kind, measure);
+  return layoutDocument(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans), kind, measure);
 }
 
 function expectInsideMargins(result: PdfLayout): void {
@@ -105,7 +106,7 @@ describe("normalizeText", () => {
   });
 });
 
-describe("layoutWeek — day per page", () => {
+describe("layoutDocument — day per page", () => {
   it("gives five short days exactly five portrait pages", () => {
     const result = layout(fullWeek(), "day-per-page");
 
@@ -118,10 +119,10 @@ describe("layoutWeek — day per page", () => {
 
   it("starts each day on its own page, in calendar order", () => {
     const week = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, fullWeek());
-    const result = layoutWeek(week, "day-per-page", measure);
+    const result = layoutDocument(week, "day-per-page", measure);
 
     result.pages.forEach((page, index) => {
-      expect(pageText(page)).toContain(week.days[index].heading);
+      expect(pageText(page)).toContain(printDays(week)[index].heading);
     });
   });
 
@@ -129,7 +130,7 @@ describe("layoutWeek — day per page", () => {
     const date = WEEK_DAYS_ISO[1];
     const plans = { ...fullWeek(), [date]: planView(date, { descriptionLength: 4000 }) };
     const result = layout(plans, "day-per-page");
-    const heading = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans).days[1].heading;
+    const heading = printDays(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans))[1].heading;
 
     expect(result.pages.length).toBeGreaterThan(5);
     const continuation = result.pages[2];
@@ -143,7 +144,7 @@ describe("layoutWeek — day per page", () => {
     const plans = { [date]: planView(date, { acceptedAt: null, descriptionLength: 4000 }) };
     const result = layout(plans, "day-per-page");
     const draftPages = result.pages.filter((page) =>
-      pageText(page).includes(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans).days[0].heading),
+      pageText(page).includes(printDays(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans))[0].heading),
     );
 
     expect(draftPages.length).toBeGreaterThan(1);
@@ -176,7 +177,7 @@ describe("layoutWeek — day per page", () => {
   });
 });
 
-describe("layoutWeek — week per page", () => {
+describe("layoutDocument — week per page", () => {
   it("fits a typical week on one landscape page above the 7 pt floor", () => {
     const result = layout(fullWeek({ descriptionLength: 500 }), "week-per-page");
 
@@ -226,7 +227,7 @@ describe("layoutWeek — week per page", () => {
     const [page] = layout(plans, "week-per-page").pages;
     const text = pageText(page);
 
-    for (const day of week.days) {
+    for (const day of printDays(week)) {
       expect(text).toContain(day.heading.split(",")[0]);
     }
     expect(page.items.filter((item) => item.kind === "dashed-box")).toHaveLength(1);
@@ -237,6 +238,58 @@ describe("layoutWeek — week per page", () => {
   it("keeps every line inside the margins, at every size", () => {
     for (const length of [100, 500, 600, 4000]) {
       expectInsideMargins(layout(fullWeek({ descriptionLength: length }), "week-per-page"));
+    }
+  });
+});
+
+describe("layoutDocument — a month, week per page", () => {
+  const firstColumnEnd = A4_LANDSCAPE.margin + (A4_LANDSCAPE.width - 2 * A4_LANDSCAPE.margin) / 5;
+
+  it("gives a typical month one landscape page per week, each headed by its week", () => {
+    const doc = buildPrintMonth(MONTH, fullMonth(MONTH, { descriptionLength: 300 }));
+    const result = layoutDocument(doc, "week-per-page", measure);
+
+    expect(result.pages).toHaveLength(doc.rows.length);
+    result.pages.forEach((page, index) => {
+      expect(page.spec).toBe(A4_LANDSCAPE);
+      expect(pageText(page)).toContain(doc.rows[index].heading);
+    });
+  });
+
+  it("starts every week on a new page, even when one continues", () => {
+    const plans = { ...fullMonth(), "2026-09-08": planView("2026-09-08", { descriptionLength: 4000 }) };
+    const doc = buildPrintMonth(MONTH, plans);
+    const result = layoutDocument(doc, "week-per-page", measure);
+    const firstPages = doc.rows.map((row) =>
+      result.pages.findIndex(
+        (page) => pageText(page).includes(row.heading) && !pageText(page).includes(`${row.heading} ${CONTINUED_MARK}`),
+      ),
+    );
+
+    expect(result.pages.length).toBeGreaterThan(doc.rows.length);
+    expect(firstPages.every((index) => index >= 0)).toBe(true);
+    expect([...firstPages].sort((a, b) => a - b)).toEqual(firstPages);
+    expect(new Set(firstPages).size).toBe(doc.rows.length);
+    expectInsideMargins(result);
+  });
+
+  it("leaves the column of a day outside the month blank", () => {
+    const doc = buildPrintMonth(MONTH, {});
+    const [firstWeek] = layoutDocument(doc, "week-per-page", measure).pages;
+
+    // Monday 31 August: nothing in the first column but the page title.
+    expect(texts(firstWeek).filter((item) => item.x > A4_LANDSCAPE.margin && item.x < firstColumnEnd)).toEqual([]);
+    expect(hasDashedBox(firstWeek)).toBe(false);
+    expect(pageText(firstWeek).split(EMPTY_DAY_NOTE)).toHaveLength(5);
+  });
+
+  it("gives a month that starts on a Saturday no page without a day on it", () => {
+    // August 2026: 3–7, 10–14, 17–21, 24–28, 31 - five weeks, not the six rows of the screen grid.
+    const result = layoutDocument(buildPrintMonth("2026-08", {}), "week-per-page", measure);
+
+    expect(result.pages).toHaveLength(5);
+    for (const page of result.pages) {
+      expect(pageText(page)).toContain(EMPTY_DAY_NOTE);
     }
   });
 });

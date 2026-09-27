@@ -143,6 +143,27 @@ export function weeksOfMonth(month: string): string[] {
   return weeks;
 }
 
+/**
+ * The working days of a month, Monday to Friday, in calendar order - the days
+ * the month print (`S-14`) covers.
+ *
+ * Unlike {@link weeksOfMonth} it never reaches into the neighbouring months: a
+ * Monday 31 August in the first row of September is not a day of September, and
+ * printing it - even as "Brak planu" - would claim otherwise. The route reads
+ * exactly these days and the print model fills exactly these slots, so both ask
+ * this one function.
+ */
+export function workingDaysOfMonth(month: string): string[] {
+  const days: string[] = [];
+  for (let date = `${month}-01`; date.startsWith(month); date = addDays(date, 1)) {
+    const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
+    if (weekday !== 0 && weekday !== 6) {
+      days.push(date);
+    }
+  }
+  return days;
+}
+
 /** `2026-09` shifted by whole months, as the first of that month. */
 export function addMonths(month: string, months: number): string {
   const shifted = new Date(`${month}-01T00:00:00Z`);
@@ -166,8 +187,15 @@ export function formatMonth(month: string): string {
  */
 export function formatWeekRange(weekStart: string): string {
   const days = workingDaysOf(weekStart);
-  const first = days[0];
-  const last = days[days.length - 1];
+  return formatDateRange(days[0], days[days.length - 1]);
+}
+
+/**
+ * Any span of days in the form of {@link formatWeekRange}. The month print needs
+ * it for a partial week: the first row of September names 1–4 września, not the
+ * 31 August it leaves blank.
+ */
+export function formatDateRange(first: string, last: string): string {
   const sameMonth = first.slice(0, 7) === last.slice(0, 7);
 
   const dayOnly = new Intl.DateTimeFormat("pl-PL", { day: "numeric", timeZone: "UTC" });

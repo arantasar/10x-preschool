@@ -2,7 +2,7 @@ import { workingDaysOf } from "@/lib/day-plan-dates";
 import type { Activity, DayPlanView } from "@/types";
 
 /**
- * Plans for the week-pdf tests. Not a `*.test.ts` file, so vitest does not
+ * Plans for the plan-pdf tests. Not a `*.test.ts` file, so vitest does not
  * collect it; shared by the model, layout and render suites.
  */
 
