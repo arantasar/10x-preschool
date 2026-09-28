@@ -75,9 +75,9 @@ export const POST: APIRoute = async (context) => {
     await saveWeekGeneration(supabase, {
       prompt: parsed.data.prompt,
       days: parsed.data.days,
-      // Never `true` in this slice. The parameter exists so `S-10` (FR-013)
-      // flips a boolean instead of rewriting the writer.
-      confirm_replace: false,
+      // No consent yet: the request schema does not carry the list until the
+      // next phase of `S-10`, so every accepted day is still refused.
+      confirm_dates: [],
     });
 
     // Read back rather than echoing the request: the response is what the board

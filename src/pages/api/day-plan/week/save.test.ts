@@ -68,7 +68,7 @@ afterEach(() => {
 });
 
 describe("POST /api/day-plan/week/save — the write", () => {
-  it("calls the week writer exactly once, with confirm_replace false", async () => {
+  it("calls the week writer exactly once, consenting to no accepted day", async () => {
     const supabase = writtenWeek();
 
     const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
@@ -77,8 +77,8 @@ describe("POST /api/day-plan/week/save — the write", () => {
     expect(supabase.rpc).toHaveBeenCalledTimes(1);
     const [fn, args] = supabase.rpc.mock.calls[0] as [string, Record<string, unknown>];
     expect(fn).toBe("save_week_plan_generation");
-    // Never true in this slice: accepted days are S-10's.
-    expect(args.p_confirm_replace).toBe(false);
+    expect(args.p_confirm_dates).toEqual([]);
+    expect(args).not.toHaveProperty("p_confirm_replace");
     expect(args.p_days).toHaveLength(2);
   });
 

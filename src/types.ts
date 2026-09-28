@@ -215,12 +215,17 @@ export type GenerateWeekDayCommand = Pick<DayPlanInsert, "plan_date"> & {
  * not be able to accept a proposal shape the day path would reject.
  *
  * There is no `require_absent` counterpart. This command replaces by design —
- * the caller chooses which days to send by acceptance, and a day it does not
- * send is a day the writer never touches. `confirm_replace` is the accepted-day
- * gate, and in this slice nothing ever sets it to `true`.
+ * the caller chooses which days to send, and a day it does not send is a day
+ * the writer never touches. `confirm_dates` is the accepted-day gate: a list of
+ * dates rather than a boolean since `S-10`, because one flag for the whole set
+ * would also replace a day accepted elsewhere after the teacher confirmed.
  */
 export type GenerateWeekPlanCommand = Pick<DayPlanInsert, "prompt"> & {
   readonly days: readonly GenerateWeekDayCommand[];
-  /** The teacher has agreed to lose the accepted days' batches and acceptance. */
-  readonly confirm_replace: boolean;
+  /**
+   * The accepted dates the teacher saw and agreed to lose — batches and
+   * acceptance both. An accepted day in `days` whose date is not here is
+   * refused by the writer (`U0001`), and the whole set with it.
+   */
+  readonly confirm_dates: readonly string[];
 };
