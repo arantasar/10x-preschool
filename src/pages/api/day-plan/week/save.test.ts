@@ -42,8 +42,8 @@ function request(payload: unknown = body()) {
   });
 }
 
-function call(context: { request: Request; locals: unknown }): Promise<Response> {
-  return POST(context as unknown as APIContext);
+async function call(context: { request: Request; locals: unknown }): Promise<Response> {
+  return await POST(context as unknown as APIContext);
 }
 
 /** A stub whose read-back returns the two days the default body writes. */
