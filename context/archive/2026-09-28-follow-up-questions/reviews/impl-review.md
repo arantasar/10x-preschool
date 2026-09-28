@@ -64,7 +64,7 @@ Automated checks at review time: `npm test` 424/424, `npm run lint`, `npm run bu
   - Tradeoff: Needs live dev with an OpenRouter key and owner time.
   - Confidence: HIGH — stated in the plan and lessons §3.
   - Blind spot: Covers only the default model, not every allowed one.
-- **Decision**: DEFERRED TO OWNER — cannot be done by the agent; queued in `follow-ups/review-fixes.md` as a merge blocker.
+- **Decision**: FIXED by the owner 2026-09-28 — manual checks run on production after the PR #32 merge (not before it, as recommended); all Manual rows in `plan.md` §Progress ticked.
 
 ### F5 — Gaps in refine.test.ts compared with week/day.test.ts
 
