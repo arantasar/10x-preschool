@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 2
 status: draft
 created: 2026-09-19
-updated: 2026-09-27
+updated: 2026-09-28
 prd_version: 2
 main_goal: quality
 top_blocker: decisions
@@ -64,7 +64,7 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 | S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | done     |
 | S-14  | month-print               | wydrukować miesiąc czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-13                 | FR-021               | done     |
 | S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | proposed |
-| S-15  | follow-up-questions | poprawić jedną aktywność poleceniem dla modelu i zapisać wynik po przejrzeniu | S-02 (done, M-01) | — (bez FR w PRD v2) | implemented |
+| S-15  | follow-up-questions | poprawić jedną aktywność poleceniem dla modelu i zapisać wynik po przejrzeniu | S-02 (done, M-01) | — (bez FR w PRD v2) | done |
 
 **Pięć z sześciu pozycji jest `ready` i wzajemnie równoległych.** To nie jest hojność
 w liczeniu — wszystkie zależności `M-02` poza `S-10` są już `done` w `M-01`, więc kolejność
@@ -224,7 +224,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** **Merge bez przebiegu bramki bezpieczeństwa treści — przyjęte ryzyko, decyzja Janusza z 2026-09-28.** Nowy prompt `refine-activity.pl.md` z założenia wykonuje polecenia nauczyciela, a prompt jest jedyną warstwą bezpieczeństwa; bramka jest zawieszona od 2026-09-19 i ta zmiana weszła oceniona tylko ręcznie, wbrew `lessons.md` §3. Tryb `activity` w `content-safety.gate.test.ts` jest napisany i jest pierwszym do uruchomienia po odwieszeniu; ślad w `src/lib/services/gate-suspension.ts`.
-- **Status:** implemented
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -289,3 +289,4 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **S-07: Nauczyciel widzi aktywności zaplanowane na dany dzień bez opuszczania siatki miesiąca, a kafelek mieści pełny podtytuł dnia — nieucięty.** — Archived 2026-09-27 → `context/archive/2026-09-23-month-day-preview/`. Lesson: —.
 - **S-13: Nauczyciel może wydrukować tydzień w postaci czytelnej na papierze i oddać go bez przepisywania czegokolwiek do innego narzędzia; wydruk obejmuje wszystkie dni robocze, a dni niezaakceptowane są na nim widocznie oznaczone jako szkic roboczy.** — Archived 2026-09-27 → `context/archive/2026-09-27-week-print/`. Lesson: —.
 - **S-14: Nauczyciel może pobrać z widoku miesiąca plik PDF z planem całego miesiąca, czytelny na papierze; wydruk obejmuje wszystkie dni robocze miesiąca, a dni niezaakceptowane i dni bez planu są oznaczone tak samo jak w wydruku tygodnia.** — Archived 2026-09-27 → `context/archive/2026-09-27-month-print/`. Lesson: —.
+- **S-15: Nauczyciel może przy jednej aktywności w widoku dnia wpisać polecenie dla modelu („dopisz słowa piosenki", „zamień na zabawę ruchową"); poprawiony tytuł i opis trafiają do szkicu tej aktywności i zapisują się dopiero przyciskiem „Zapisz".** — Archived 2026-09-28 → `context/archive/2026-09-28-follow-up-questions/`. Lesson: —.
