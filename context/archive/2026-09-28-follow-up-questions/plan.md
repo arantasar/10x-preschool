@@ -536,7 +536,7 @@ zapisuje, więc nie zostawia śladu w bazie.
 
 #### Manual
 
-- [ ] 1.5 Treść `refine-activity.pl.md` przeczytana przez właściciela
+- [x] 1.5 Treść `refine-activity.pl.md` przeczytana przez właściciela
 
 ### Phase 2: Route `POST /api/day-plan/refine`
 
@@ -549,7 +549,7 @@ zapisuje, więc nie zostawia śladu w bazie.
 
 #### Manual
 
-- [ ] 2.5 `curl` na `npm run dev` zwraca polską propozycję
+- [x] 2.5 `curl` na `npm run dev` zwraca polską propozycję
 
 ### Phase 3: Edytor dnia
 
@@ -561,15 +561,15 @@ zapisuje, więc nie zostawia śladu w bazie.
 
 #### Manual
 
-- [ ] 3.4 „Zapytaj model" → słowa piosenki w szkicu → Zapisz → zwrotki w podglądzie
-- [ ] 3.5 Dzień zaakceptowany: confirm + baner „Akceptuj ponownie"
-- [ ] 3.6 Anuluj po wyniku modelu przywraca zapisany tekst
-- [ ] 3.7 Drugie polecenie działa na niezapisanym szkicu
-- [ ] 3.8 Pozostałe akcje nieaktywne w trakcie wywołania
-- [ ] 3.9 Polecenie spoza zakresu bez odmowy; komunikat „bez zmian"
-- [ ] 3.10 Znany utwór → tekst własny
-- [ ] 3.11 Brak sieci → komunikat + „Spróbuj ponownie", szkic nietknięty
-- [ ] 3.12 Szerokość telefonu bez przewijania w poziomie
+- [x] 3.4 „Zapytaj model" → słowa piosenki w szkicu → Zapisz → zwrotki w podglądzie
+- [x] 3.5 Dzień zaakceptowany: confirm + baner „Akceptuj ponownie"
+- [x] 3.6 Anuluj po wyniku modelu przywraca zapisany tekst
+- [x] 3.7 Drugie polecenie działa na niezapisanym szkicu
+- [x] 3.8 Pozostałe akcje nieaktywne w trakcie wywołania
+- [x] 3.9 Polecenie spoza zakresu bez odmowy; komunikat „bez zmian"
+- [x] 3.10 Znany utwór → tekst własny
+- [x] 3.11 Brak sieci → komunikat + „Spróbuj ponownie", szkic nietknięty
+- [x] 3.12 Szerokość telefonu bez przewijania w poziomie
 
 ### Phase 4: Bramka i zapis decyzji
 
@@ -584,5 +584,5 @@ zapisuje, więc nie zostawia śladu w bazie.
 
 #### Manual
 
-- [ ] 4.7 Właściciel potwierdza wpis o przyjętym ryzyku
-- [ ] 4.8 PR pokazuje ostrzeżenie o zawieszonej bramce z `refine-activity.pl.md`
+- [x] 4.7 Właściciel potwierdza wpis o przyjętym ryzyku
+- [x] 4.8 PR pokazuje ostrzeżenie o zawieszonej bramce z `refine-activity.pl.md`
