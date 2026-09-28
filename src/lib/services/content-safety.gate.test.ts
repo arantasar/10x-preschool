@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import type { ActivityDraft, DayTheme } from "@/types";
 import { ALLOWED_MODELS } from "./allowed-models";
-import { generateDayActivities, generateWeekOutline } from "./activity-generator";
-import { CONTENT_SAFETY_FIXTURES, GATE_KEYWORDS } from "./__fixtures__/content-safety";
+import { generateDayActivities, generateWeekOutline, refineActivity } from "./activity-generator";
+import { CONTENT_SAFETY_FIXTURES, GATE_KEYWORDS, REFINE_GATE_CASES } from "./__fixtures__/content-safety";
 import { judgeContentSafety, type JudgeInput, type SafetyVerdict } from "./content-safety-judge";
 import { retryGateCall } from "./gate-retry";
 import { formatGateReport, writeGitHubStepSummary, type GateFinding } from "./content-safety-report";
@@ -26,8 +26,13 @@ const WEEK_DATES = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "202
  * The three reachable day configurations plus the week outline -
  * `activity-generator.ts:100-111` and the S-03 implementation review: coverage
  * counts per configuration, not per prompt.
+ *
+ * `activity` is the refine path (`refine-activity.pl.md`, `follow-up-questions`),
+ * driven by `REFINE_GATE_CASES` rather than `GATE_KEYWORDS`: its input is an
+ * activity and an instruction, not a hasło. It merged without a run of this
+ * gate (see `gate-suspension.ts`) and is the first mode to run once it is back.
  */
-const GATE_MODES = ["day", "day-weekday", "day-themed", "week"] as const;
+const GATE_MODES = ["day", "day-weekday", "day-themed", "week", "activity"] as const;
 type GateMode = (typeof GATE_MODES)[number];
 
 /**
@@ -69,6 +74,10 @@ function dayInput(keyword: string, activities: readonly ActivityDraft[]): JudgeI
 
 function weekInput(keyword: string, themes: readonly DayTheme[]): JudgeInput {
   return { kind: "week", keyword, themes };
+}
+
+function activityInput(instruction: string, activity: ActivityDraft): JudgeInput {
+  return { kind: "activity", keyword: instruction, activity };
 }
 
 function describeError(error: unknown): string {
@@ -187,6 +196,21 @@ gateDescribe("content safety gate — live matrix", () => {
               record("day-themed", model, keyword, "Awaria wywołania", String(themed.reason));
             }
           }
+        }
+      });
+
+      // The refine path: every allowed model × every fixed case, through the
+      // production `refineActivity`. The instruction stands in the report's
+      // hasło column, since it is the teacher's text this mode is graded on.
+      const refineCombos = ALLOWED_MODELS.flatMap((model) =>
+        REFINE_GATE_CASES.map((refineCase) => ({ model, refineCase })),
+      );
+      await mapWithConcurrency(refineCombos, GATE_CONCURRENCY, async ({ model, refineCase }) => {
+        try {
+          const refined = await refineActivity(refineCase.activity, refineCase.instruction, { model });
+          await judge("activity", model, refineCase.name, activityInput(refineCase.instruction, refined.activity));
+        } catch (error) {
+          record("activity", model, refineCase.name, "Awaria wywołania", describeError(error));
         }
       });
 

@@ -15,6 +15,11 @@
  * That rule is not repealed by this flag; it is unenforced while the flag is
  * on. A prompt edit merged in this state has been graded by nobody.
  *
+ * One such merge is on record: `refine-activity.pl.md` (`follow-up-questions`)
+ * went to production **without a run of this gate**, by the owner's decision
+ * of 2026-09-28, checked by hand only. Its mode, `activity` in
+ * `content-safety.gate.test.ts`, is the first to run once the flag flips.
+ *
  * **Deliberately a skip, not a deletion, and deliberately not a silent pass.**
  * The suites still exist, still compile, and still run in full the moment the
  * flag flips. Vitest reports a skipped test as skipped rather than passed, and

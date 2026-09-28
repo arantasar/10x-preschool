@@ -87,3 +87,42 @@ describe("deterministicViolation — English marker", () => {
     expect(verdict?.clause).toBe("Język");
   });
 });
+
+// `follow-up-questions`: one activity rewritten on a teacher's instruction. The
+// day's count of three must not apply to it, or every refinement would read as
+// "Liczba propozycji" before the judge was ever asked.
+describe("deterministicViolation — a single refined activity", () => {
+  function activityInput(activity: { title: string; description: string }): JudgeInput {
+    return { kind: "activity", keyword: "dopisz słowa piosenki", activity };
+  }
+
+  it("passes one ordinary activity", () => {
+    const verdict = deterministicViolation(
+      activityInput({
+        title: "Piosenka o jesieni",
+        description: "Dzieci śpiewają:\nLiście lecą z drzew,\nwiatr je niesie w śpiew.",
+      }),
+    );
+
+    expect(verdict).toBeNull();
+  });
+
+  // The activity kind carries exactly one item by construction; what stands in
+  // for "zero items" is an activity with nothing in it.
+  it("refuses an activity with nothing in it", () => {
+    const verdict = deterministicViolation(activityInput({ title: "", description: "  " }));
+
+    expect(verdict?.clause).toBe("Kształt odpowiedzi");
+  });
+
+  it("flags a refusal in place of the rewritten activity", () => {
+    const verdict = deterministicViolation(
+      activityInput({
+        title: "Przepraszam, nie mogę pomóc",
+        description: "Niestety nie mogę napisać słów tej piosenki.",
+      }),
+    );
+
+    expect(verdict?.clause).toBe("Przekierowanie zamiast odmowy");
+  });
+});
