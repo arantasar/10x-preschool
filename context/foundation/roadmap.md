@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 2
 status: draft
 created: 2026-09-19
-updated: 2026-09-27
+updated: 2026-09-28
 prd_version: 2
 main_goal: quality
 top_blocker: decisions
@@ -64,6 +64,7 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 | S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | done     |
 | S-14  | month-print               | wydrukować miesiąc czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-13                 | FR-021               | done     |
 | S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | proposed |
+| S-15  | follow-up-questions | poprawić jedną aktywność poleceniem dla modelu i zapisać wynik po przejrzeniu | S-02 (done, M-01) | — (bez FR w PRD v2) | done |
 
 **Pięć z sześciu pozycji jest `ready` i wzajemnie równoległych.** To nie jest hojność
 w liczeniu — wszystkie zależności `M-02` poza `S-10` są już `done` w `M-01`, więc kolejność
@@ -213,6 +214,18 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **Risk:** Jedyna pozycja, którą graf naprawdę wiąże, i jedyna, bez której kamień się domyka — PRD stwierdza to wprost, a `shape-notes.md` §Forward nazywa ją zaworem bezpieczeństwa: jeśli `M-02` się rozciągnie, to jest pozycja do odpuszczenia. Sekwencjonowana ostatnia nie z powodu kosztu, tylko charakteru: **kasuje hurtowo jedyny stan, który człowiek świadomie oznaczył jako skończony, w systemie, który nie ma cofania nigdzie** (`S-02` usunął undo świadomie, `S-05` kasuje twardo, a PRD §Non-Goals potwierdza: paczka dokłada potwierdzeń, nie historii). Potwierdzenie jest jedyną barierą i to jest świadomie przyjęte ryzyko, nie przeoczenie. Dlatego `S-12` stoi w jej prerekwizytach, a nie tylko obok w kolejności.
 - **Status:** proposed
 
+### S-15: Polecenie dla modelu przy aktywności
+
+- **Outcome:** Nauczyciel może przy jednej aktywności w widoku dnia wpisać polecenie dla modelu („dopisz słowa piosenki", „zamień na zabawę ruchową"); poprawiony tytuł i opis trafiają do szkicu tej aktywności i zapisują się dopiero przyciskiem „Zapisz".
+- **Change ID:** follow-up-questions
+- **PRD refs:** — (brak FR w PRD v2; trzecia droga pomiędzy FR-007 a FR-008, problem (b) z `context/changes/follow-up-questions/frame.md`)
+- **Prerequisites:** S-02 (done, M-01 — szkic aktywności i `PATCH /api/day-plan/activity/[id]`)
+- **Parallel with:** S-10
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** **Merge bez przebiegu bramki bezpieczeństwa treści — przyjęte ryzyko, decyzja Janusza z 2026-09-28.** Nowy prompt `refine-activity.pl.md` z założenia wykonuje polecenia nauczyciela, a prompt jest jedyną warstwą bezpieczeństwa; bramka jest zawieszona od 2026-09-19 i ta zmiana weszła oceniona tylko ręcznie, wbrew `lessons.md` §3. Tryb `activity` w `content-safety.gate.test.ts` jest napisany i jest pierwszym do uruchomienia po odwieszeniu; ślad w `src/lib/services/gate-suspension.ts`.
+- **Status:** done
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                 | Suggested issue title                                              | Ready for `/10x-plan` | Notes                                                                 |
@@ -235,6 +248,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 6. **Brak bramki czasowej — przyjęte ryzyko, nie luka.** `delivery_weeks` jest `null`, nie liczbą: tryb „slice po slice, ile zajmie" wybrano po przedstawieniu kosztu (sześć pozycji, realnie więcej niż trzy tygodnie pracy po godzinach). Konsekwencja: **nic w tym projekcie nie powie, że `M-02` trwa za długo** — nie ma daty, względem której opóźnienie by się mierzyło. Obroną jest dyscyplina slice'ów (każdy slice to osobny PR i osobne wydanie), nie budżet. Owner: Janusz. Block: nie — roadmap-wide.
 7. **Repo niosło obietnicę spłaty długu PRD w v2.** Dwa pliki w `context/foundation/` obiecywały spłatę wbrew decyzji z #3 — poprawione 2026-09-19. Pozycja zostaje jako **ślad kontrolny: przy każdej regeneracji roadmapy sprawdź, czy obietnica nie wróciła.** Ta regeneracja (2026-09-19) sprawdzona — §Milestone „Czego ten kamień nie robi" i #3 powyżej niosą odroczenie, nie obietnicę. Owner: Janusz. Block: nie — roadmap-wide.
 8. ~~**Układ wydruku miesiąca**~~ **Rozstrzygnięte 2026-09-27 w `S-14`: siatka + tygodniami — dwa przyciski.** „Siatka miesiąca" to jedna kartka A4 poziomo z datą, hasłem i tematem, **bez aktywności** — tytuły aktywności wypadły po obejrzeniu wydruku, bo w komórce ucinały każdy pełny dzień. „Tygodniami" to układ „tydzień na stronie" z `S-13` dla każdego tygodnia z dniem roboczym miesiąca. „Dzień na stronę" (20–23 kartki) odrzucony. Decyzja Janusza; nośnik: `context/archive/…-month-print/plan.md`.
+9. **Generator nie dostarcza tekstów, od których zależy aktywność** (problem (a) z `context/changes/follow-up-questions/frame.md`). Kontrakt `day-plan.pl.md` limituje opis do „2–4 zdań" i nie prosi o słowa piosenki ani wierszyka, więc aktywność „zaśpiewajcie piosenkę" przychodzi bez piosenki — w próbce 12 z 15 takich aktywności. `S-15` łagodzi objaw poleceniem przy aktywności, ale nie usuwa przyczyny: każdy dzień, tydzień i wydruk nadal wychodzi bez tekstu. Naprawa to zmiana wytycznych generowania, zaparkowana — wymaga `/10x-shape` i przebiegu bramki dla każdego dozwolonego modelu (`lessons.md` §3). Owner: Janusz. Block: nie.
 
 ## Parked
 
@@ -275,3 +289,4 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **S-07: Nauczyciel widzi aktywności zaplanowane na dany dzień bez opuszczania siatki miesiąca, a kafelek mieści pełny podtytuł dnia — nieucięty.** — Archived 2026-09-27 → `context/archive/2026-09-23-month-day-preview/`. Lesson: —.
 - **S-13: Nauczyciel może wydrukować tydzień w postaci czytelnej na papierze i oddać go bez przepisywania czegokolwiek do innego narzędzia; wydruk obejmuje wszystkie dni robocze, a dni niezaakceptowane są na nim widocznie oznaczone jako szkic roboczy.** — Archived 2026-09-27 → `context/archive/2026-09-27-week-print/`. Lesson: —.
 - **S-14: Nauczyciel może pobrać z widoku miesiąca plik PDF z planem całego miesiąca, czytelny na papierze; wydruk obejmuje wszystkie dni robocze miesiąca, a dni niezaakceptowane i dni bez planu są oznaczone tak samo jak w wydruku tygodnia.** — Archived 2026-09-27 → `context/archive/2026-09-27-month-print/`. Lesson: —.
+- **S-15: Nauczyciel może przy jednej aktywności w widoku dnia wpisać polecenie dla modelu („dopisz słowa piosenki", „zamień na zabawę ruchową"); poprawiony tytuł i opis trafiają do szkicu tej aktywności i zapisują się dopiero przyciskiem „Zapisz".** — Archived 2026-09-28 → `context/archive/2026-09-28-follow-up-questions/`. Lesson: —.

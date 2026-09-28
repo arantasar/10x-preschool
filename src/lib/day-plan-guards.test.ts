@@ -6,6 +6,7 @@ import {
   isGeneratedDayBody,
   isOutlineBody,
   isRecord,
+  isRefinedActivityBody,
   isMonthPlansBody,
   isSaveWeekBody,
 } from "./day-plan-guards";
@@ -204,5 +205,24 @@ describe("isMonthPlansBody", () => {
     ["plans as an array", { month: "2026-09", plans: [] }],
   ])("rejects %s", (_name, value) => {
     expect(isMonthPlansBody(value)).toBe(false);
+  });
+});
+
+// The refine route's answer goes straight into the teacher's draft; an empty
+// field there would be text the save route then refuses.
+describe("isRefinedActivityBody", () => {
+  it("accepts a title and a description", () => {
+    expect(isRefinedActivityBody({ title: "Piosenka", description: "Zwrotka 1\nZwrotka 2" })).toBe(true);
+  });
+
+  it.each([
+    ["an empty title", { title: "", description: "Opis" }],
+    ["an empty description", { title: "Tytuł", description: "" }],
+    ["a whitespace-only description", { title: "Tytuł", description: " \n" }],
+    ["a missing description", { title: "Tytuł" }],
+    ["a day plan body", { plan: {}, activities: [] }],
+    ["null", null],
+  ])("rejects %s", (_name, body) => {
+    expect(isRefinedActivityBody(body)).toBe(false);
   });
 });

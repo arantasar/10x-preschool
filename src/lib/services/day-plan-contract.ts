@@ -1,6 +1,14 @@
 import { z } from "zod";
 import type { ActivityDraft, DayTheme } from "@/types";
-import { ACTIVITY_COUNT, DESCRIPTION_MAX, PROMPT_MAX, THEME_MAX, TITLE_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
+import {
+  ACTIVITY_COUNT,
+  DESCRIPTION_MAX,
+  INSTRUCTION_MAX,
+  PROMPT_MAX,
+  THEME_MAX,
+  TITLE_MAX,
+  WEEK_DAYS,
+} from "@/lib/day-plan-limits";
 
 // The bounds live in `@/lib/day-plan-limits` because the React island needs them
 // too and must not pull zod into the client bundle. See that module for why they
@@ -52,6 +60,25 @@ export function toActivityDrafts(proposal: DayPlanProposal): ActivityDraft[] {
     description: activity.opis,
   }));
 }
+
+/**
+ * One activity rewritten on the teacher's instruction, validated after
+ * `JSON.parse`.
+ *
+ * The bounds are those of one element of {@link dayPlanProposalSchema}, and
+ * unknown keys are stripped rather than rejected for the same reason: a stray
+ * field is not worth a failed call the teacher waited for.
+ *
+ * Unlike that element, both fields are trimmed before the bounds: this answer
+ * replaces text the teacher already has, and a whitespace-only one would leave
+ * a draft that neither "Zapisz" nor another instruction accepts.
+ */
+export const refineActivityProposalSchema = z.object({
+  tytul: z.string().trim().min(1).max(TITLE_MAX),
+  opis: z.string().trim().min(1).max(DESCRIPTION_MAX),
+});
+
+export type RefineActivityProposal = z.infer<typeof refineActivityProposalSchema>;
 
 // ---------------------------------------------------------------------------
 // Week outline
@@ -135,7 +162,9 @@ export function toDayThemes(outline: WeekOutline, dates: readonly string[]): Day
  * Silently deleting the character would leave the caller believing the rest of
  * their instruction had been read; refusing says what happened.
  */
-const CONTROL_CHARACTERS = /[\p{Cc}\p{Cf}]/u;
+// `Zl`/`Zp` are U+2028 and U+2029, the line and paragraph separators: not
+// control characters by category, but a newline to anything that reads lines.
+const CONTROL_CHARACTERS = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 /**
  * A teacher-written field that reaches the model: one line of text, trimmed.
@@ -303,6 +332,26 @@ export const updateActivityRequestSchema = z.object({
 });
 
 export type UpdateActivityRequest = z.infer<typeof updateActivityRequestSchema>;
+
+/**
+ * The refine route's request body (`/api/day-plan/refine`).
+ *
+ * `title` and `description` are the teacher's *unsaved draft*, so they carry
+ * exactly the bounds the edit route will later hold them to - multi-line
+ * included, since a description with song verses is the point. They reach the
+ * model inside a fenced data block (`buildRefineUserMessage`), which is the
+ * defence for them; `singleLineText` would refuse the very text being refined.
+ *
+ * `instruction` is the one field the model is asked to *obey*, so it gets the
+ * full single-line rule: a newline there forges a line after the data block.
+ */
+export const refineActivityRequestSchema = z.object({
+  title: z.string().min(1).max(TITLE_MAX),
+  description: z.string().min(1).max(DESCRIPTION_MAX),
+  instruction: singleLineText(INSTRUCTION_MAX),
+});
+
+export type RefineActivityRequest = z.infer<typeof refineActivityRequestSchema>;
 
 /**
  * The acceptance route's request body (FR-009).

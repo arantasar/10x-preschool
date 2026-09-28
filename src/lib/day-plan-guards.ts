@@ -113,6 +113,23 @@ export function isGeneratedDayBody(
 }
 
 /**
+ * The refine route's body: one activity with no row behind it.
+ *
+ * Two strings that are not blank, and nothing else - an empty or
+ * whitespace-only title or description would put into the draft text the save
+ * route then refuses, after the teacher had been shown it as the model's answer.
+ */
+export function isRefinedActivityBody(body: unknown): body is ActivityDraft {
+  return (
+    isRecord(body) &&
+    typeof body.title === "string" &&
+    body.title.trim().length > 0 &&
+    typeof body.description === "string" &&
+    body.description.trim().length > 0
+  );
+}
+
+/**
  * The atomic write's body: the days it committed, read back from the database.
  *
  * Each value is checked with {@link isDayPlanBody} rather than by hand - these

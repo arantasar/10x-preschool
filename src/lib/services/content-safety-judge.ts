@@ -66,7 +66,21 @@ export interface WeekOutlineJudgeInput {
   readonly themes: readonly DayTheme[];
 }
 
-export type JudgeInput = DayPlanJudgeInput | WeekOutlineJudgeInput;
+/**
+ * One activity rewritten on a teacher's instruction (`refine-activity.pl.md`).
+ *
+ * The instruction travels as `keyword` because it sits where the hasło sits:
+ * the teacher's free text the prompt must keep subordinate to §Odbiorca. The
+ * rubric reads it the same way, as context for what was asked, not as part of
+ * the output being graded.
+ */
+export interface ActivityJudgeInput {
+  readonly kind: "activity";
+  readonly keyword: string;
+  readonly activity: ActivityDraft;
+}
+
+export type JudgeInput = DayPlanJudgeInput | WeekOutlineJudgeInput | ActivityJudgeInput;
 
 export interface SafetyVerdict {
   readonly safe: boolean;
@@ -138,9 +152,28 @@ function quoteContaining(text: string, marker: string): string {
 }
 
 function itemTexts(input: JudgeInput): string[] {
-  return input.kind === "day"
-    ? input.activities.flatMap((activity) => [activity.title, activity.description])
-    : input.themes.map((theme) => theme.theme);
+  switch (input.kind) {
+    case "day":
+      return input.activities.flatMap((activity) => [activity.title, activity.description]);
+    case "week":
+      return input.themes.map((theme) => theme.theme);
+    case "activity":
+      return [input.activity.title, input.activity.description];
+  }
+}
+
+/** How many items the input carries, and how many its generator promised. */
+function itemCounts(input: JudgeInput): { actual: number; expected: number } {
+  switch (input.kind) {
+    case "day":
+      return { actual: input.activities.length, expected: ACTIVITY_COUNT };
+    case "week":
+      return { actual: input.themes.length, expected: WEEK_DAYS };
+    case "activity":
+      // One by construction: a refinement returns the activity it was given,
+      // rewritten. An empty one is caught below as a shape failure.
+      return { actual: 1, expected: 1 };
+  }
 }
 
 /**
@@ -149,8 +182,7 @@ function itemTexts(input: JudgeInput): string[] {
  * four pass, meaning the judge below is the only thing left to ask.
  */
 export function deterministicViolation(input: JudgeInput): SafetyVerdict | null {
-  const itemCount = input.kind === "day" ? input.activities.length : input.themes.length;
-  const expectedCount = input.kind === "day" ? ACTIVITY_COUNT : WEEK_DAYS;
+  const { actual: itemCount, expected: expectedCount } = itemCounts(input);
   if (itemCount !== expectedCount) {
     return { safe: false, clause: "Liczba propozycji", quote: `otrzymano ${itemCount}, oczekiwano ${expectedCount}` };
   }
@@ -215,6 +247,12 @@ const judgeVerdictSchema = z
   });
 
 function buildJudgeUserMessage(input: JudgeInput): string {
+  if (input.kind === "activity") {
+    return (
+      `Polecenie nauczyciela: ${input.keyword}\n\n` +
+      `Propozycja 1:\nTytuł: ${input.activity.title}\nOpis: ${input.activity.description}`
+    );
+  }
   if (input.kind === "day") {
     const proposals = input.activities
       .map((activity, index) => `Propozycja ${index + 1}:\nTytuł: ${activity.title}\nOpis: ${activity.description}`)
