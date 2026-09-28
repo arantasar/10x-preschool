@@ -509,12 +509,12 @@ migration and the code in the same merge. Rollback: drop the `date[]` signature,
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly against a reset local database: `npx supabase db reset`
-- [x] 1.2 Database suites pass, including the new week writer suite: `npm run test:db`
-- [x] 1.3 Exactly one overload remains and it takes the date array
-- [x] 1.4 The week wrapper sends the list, not the flag
-- [x] 1.5 Type checking passes: `npm run build`
-- [x] 1.6 Linting passes: `npm run lint`
+- [x] 1.1 Migration applies cleanly against a reset local database: `npx supabase db reset` — 0bea710
+- [x] 1.2 Database suites pass, including the new week writer suite: `npm run test:db` — 0bea710
+- [x] 1.3 Exactly one overload remains and it takes the date array — 0bea710
+- [x] 1.4 The week wrapper sends the list, not the flag — 0bea710
+- [x] 1.5 Type checking passes: `npm run build` — 0bea710
+- [x] 1.6 Linting passes: `npm run lint` — 0bea710
 
 #### Manual
 
@@ -524,10 +524,10 @@ migration and the code in the same merge. Rollback: drop the `date[]` signature,
 
 #### Automated
 
-- [ ] 2.1 Route tests pass, including the new consent cases: `npm run test`
-- [ ] 2.2 The route no longer hard-codes the flag
-- [ ] 2.3 Type checking passes: `npm run build`
-- [ ] 2.4 Linting passes: `npm run lint`
+- [x] 2.1 Route tests pass, including the new consent cases: `npm run test`
+- [x] 2.2 The route no longer hard-codes the flag
+- [x] 2.3 Type checking passes: `npm run build`
+- [x] 2.4 Linting passes: `npm run lint`
 
 #### Manual
 

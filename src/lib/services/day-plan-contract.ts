@@ -302,17 +302,37 @@ const weekDayBatchSchema = z.object({
  * delete the batch the first pass had just inserted. The day would end up
  * correct and its counter would not, which is the kind of wrong that surfaces
  * much later, in `expected_generation`.
+ *
+ * `confirm_dates` is the teacher's consent, by date, to lose accepted days
+ * (`S-10`). It defaults to `[]` for the reason `confirm_replace` defaults to
+ * `false` on the day route: an older client, or a request that omits it, gets
+ * the refusal rather than the deletion (`save_week_plan_generation`, U0001).
+ * Every entry must be a day this request writes - consent to a day outside the
+ * set means the island's run and its payload disagree, which is our bug and
+ * should not reach the writer looking like a valid request.
  */
-export const saveWeekPlanRequestSchema = z.object({
-  prompt: singleLineText(PROMPT_MAX),
-  days: z
-    .array(weekDayBatchSchema)
-    .min(1)
-    .max(WEEK_DAYS)
-    .refine((days) => new Set(days.map((day) => day.plan_date)).size === days.length, {
-      message: "each plan_date must appear at most once",
-    }),
-});
+export const saveWeekPlanRequestSchema = z
+  .object({
+    prompt: singleLineText(PROMPT_MAX),
+    days: z
+      .array(weekDayBatchSchema)
+      .min(1)
+      .max(WEEK_DAYS)
+      .refine((days) => new Set(days.map((day) => day.plan_date)).size === days.length, {
+        message: "each plan_date must appear at most once",
+      }),
+    confirm_dates: z
+      .array(z.iso.date())
+      .max(WEEK_DAYS)
+      .refine((dates) => new Set(dates).size === dates.length, {
+        message: "each consented date must appear at most once",
+      })
+      .default([]),
+  })
+  .refine((body) => body.confirm_dates.every((date) => body.days.some((day) => day.plan_date === date)), {
+    message: "every consented date must be one of the days being written",
+    path: ["confirm_dates"],
+  });
 
 export type SaveWeekPlanRequest = z.infer<typeof saveWeekPlanRequestSchema>;
 
