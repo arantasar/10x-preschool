@@ -1,11 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CalendarDays, Check, CircleAlert, Pencil, RotateCcw, Sparkles, Trash2, Undo2, X } from "lucide-react";
 import { GenerationProgress } from "@/components/plan/GenerationProgress";
 import { Button } from "@/components/ui/button";
-import { DESCRIPTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
+import { DESCRIPTION_MAX, INSTRUCTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
 import { formatAcceptedAt, formatPlanDate } from "@/lib/day-plan-dates";
 import { cn } from "@/lib/utils";
-import { isDayPlanBody, isErrorBody, readAcceptanceCleared } from "@/lib/day-plan-guards";
+import { isDayPlanBody, isErrorBody, isRefinedActivityBody, readAcceptanceCleared } from "@/lib/day-plan-guards";
 import type { Activity, DayPlanView } from "@/types";
 
 /**
@@ -29,7 +29,7 @@ interface DayPlanEditorProps {
   readonly initialPlan: DayPlanView | null;
 }
 
-type Busy = "idle" | "generating" | "saving" | "deleting";
+type Busy = "idle" | "generating" | "saving" | "deleting" | "refining";
 
 interface Failure {
   readonly message: string;
@@ -64,10 +64,37 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
   // state through this ref is what makes "Spróbuj ponownie" mean "send what is on
   // screen now" rather than "send what was on screen when it failed".
   const draftRef = useRef<Draft | null>(null);
+  // The instruction for the model, typed into the open draft. Held here rather
+  // than in `ActivityEditor` so it survives the draft being replaced by the
+  // model's answer, and so a retry can send the same words again.
+  const [instruction, setInstruction] = useState("");
+  // Whether the text in the draft came from the model and has not been touched
+  // since - the "review before saving" note - and whether the model's last
+  // answer was the draft unchanged. Both describe the open draft only.
+  const [draftFromModel, setDraftFromModel] = useState(false);
+  const [refineUnchanged, setRefineUnchanged] = useState(false);
+  // Set by "Zapytaj model" so the draft opens with the cursor in the
+  // instruction field rather than the title.
+  const [focusInstruction, setFocusInstruction] = useState(false);
 
   function setDraft(next: Draft | null): void {
+    // A different draft, or none: whatever was said about the previous one no
+    // longer applies. The same draft replaced by the model's answer keeps them.
+    if (next?.id !== draftRef.current?.id) {
+      setInstruction("");
+      setDraftFromModel(false);
+      setRefineUnchanged(false);
+      setFocusInstruction(false);
+    }
     draftRef.current = next;
     setDraftState(next);
+  }
+
+  /** The teacher typing in the draft: the text is theirs again. */
+  function editDraft(next: Draft): void {
+    setDraft(next);
+    setDraftFromModel(false);
+    setRefineUnchanged(false);
   }
 
   // The same mirror, one field over, and for the same reason. `saveDraft` gates
@@ -334,6 +361,77 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
     );
   }
 
+  /**
+   * Asks the model to rewrite the open draft, and puts the answer back into it.
+   *
+   * Beside `mutate` rather than through it: the answer is one activity, not a
+   * plan, so `isDayPlanBody` would refuse it, and nothing was written, so a
+   * failure has nothing to `reconcile()`. It shares the in-flight guard,
+   * `lastAttempt` and the failure box, so the rest of the island cannot tell it
+   * apart from any other request in progress.
+   *
+   * It sends the draft as it is on screen - which may already be an unsaved
+   * answer from the model - so a second instruction refines the first result.
+   * `clearedByEdit` is not touched: that banner describes the last save, and
+   * this is not one. The save is still "Zapisz", with its own confirm.
+   */
+  async function refine(sent: string): Promise<void> {
+    const current = draftRef.current;
+    if (inFlight.current || !current) return;
+    inFlight.current = true;
+    // Like `saveDraft`, the retry describes the intent - this instruction, on
+    // whatever the draft holds by then - rather than replaying a frozen body.
+    lastAttempt.current = () => {
+      void refine(sent);
+    };
+    setBusy("refining");
+    setFailure(null);
+    setRefineUnchanged(false);
+
+    try {
+      const response = await fetch("/api/day-plan/refine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: current.title, description: current.description, instruction: sent }),
+      });
+      const body: unknown = await response.json().catch(() => null);
+
+      if (response.ok && isRefinedActivityBody(body)) {
+        // Every control that could close or switch the draft is disabled while
+        // this runs, so this should always hold; if it ever does not, the
+        // answer belongs to a draft that is gone and is dropped.
+        if (draftRef.current?.id !== current.id) return;
+        const unchanged = body.title === current.title && body.description === current.description;
+        setDraft({ id: current.id, title: body.title, description: body.description });
+        setRefineUnchanged(unchanged);
+        if (!unchanged) setDraftFromModel(true);
+        setInstruction("");
+        return;
+      }
+
+      const signInRequired = response.status === 401;
+      setFailure({
+        message: isErrorBody(body) ? body.error : "Nie udało się poprawić aktywności. Spróbuj ponownie.",
+        retryable: isErrorBody(body) ? body.retryable : true,
+        signInRequired,
+      });
+    } catch {
+      setFailure({
+        message: "Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.",
+        retryable: true,
+        signInRequired: false,
+      });
+    } finally {
+      inFlight.current = false;
+      setBusy("idle");
+    }
+  }
+
+  function openDraft(activity: Activity, withInstruction: boolean): void {
+    setDraft({ id: activity.id, title: activity.title, description: activity.description });
+    setFocusInstruction(withInstruction);
+  }
+
   function setAcceptance(next: boolean): void {
     if (!plan) return;
     const planId = plan.plan.id;
@@ -551,7 +649,16 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
                   <ActivityEditor
                     draft={draft}
                     disabled={isBusy}
-                    onChange={setDraft}
+                    refining={busy === "refining"}
+                    instruction={instruction}
+                    fromModel={draftFromModel}
+                    unchanged={refineUnchanged}
+                    focusInstruction={focusInstruction}
+                    onInstructionChange={setInstruction}
+                    onRefine={() => {
+                      void refine(instruction.trim());
+                    }}
+                    onChange={editDraft}
                     onCancel={() => {
                       // The teacher's previous text was never sent, so cancelling
                       // is simply dropping the draft. This is the one thing this
@@ -568,11 +675,10 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
                     index={index}
                     disabled={isBusy || draft !== null}
                     onEdit={() => {
-                      setDraft({
-                        id: activity.id,
-                        title: activity.title,
-                        description: activity.description,
-                      });
+                      openDraft(activity, false);
+                    }}
+                    onAsk={() => {
+                      openDraft(activity, true);
                     }}
                   />
                 )}
@@ -680,11 +786,13 @@ function ActivityPreview({
   index,
   disabled,
   onEdit,
+  onAsk,
 }: {
   activity: Activity;
   index: number;
   disabled: boolean;
   onEdit: () => void;
+  onAsk: () => void;
 }) {
   return (
     <div className="flex items-start justify-between gap-3">
@@ -695,34 +803,77 @@ function ActivityPreview({
         </h3>
         <p className="mt-1 text-sm whitespace-pre-line text-blue-100/80">{activity.description}</p>
       </div>
-      <Button
-        type="button"
-        disabled={disabled}
-        onClick={onEdit}
-        aria-label={`Edytuj propozycję: ${activity.title}`}
-        className="shrink-0 rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white transition-colors hover:bg-white/20"
-      >
-        <Pencil className="size-3.5" />
-        Edytuj
-      </Button>
+      <div className="flex shrink-0 flex-col gap-2">
+        <Button
+          type="button"
+          disabled={disabled}
+          onClick={onEdit}
+          aria-label={`Edytuj propozycję: ${activity.title}`}
+          className="rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white transition-colors hover:bg-white/20"
+        >
+          <Pencil className="size-3.5" />
+          Edytuj
+        </Button>
+        <Button
+          type="button"
+          disabled={disabled}
+          onClick={onAsk}
+          aria-label={`Zapytaj model o propozycję: ${activity.title}`}
+          className="rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white transition-colors hover:bg-white/20"
+        >
+          <Sparkles className="size-3.5" />
+          Zapytaj model
+        </Button>
+      </div>
     </div>
   );
+}
+
+/**
+ * Rows for the description: at least the five it always had, growing with the
+ * text up to a ceiling, because song verses do not fit in five and a textarea
+ * taller than the screen is its own problem. Long lines count as the rows they
+ * wrap to, roughly.
+ */
+function descriptionRows(description: string): number {
+  const wrapped = description.split("\n").reduce((rows, line) => rows + Math.max(1, Math.ceil(line.length / 60)), 0);
+  return Math.min(20, Math.max(5, wrapped));
 }
 
 function ActivityEditor({
   draft,
   disabled,
+  refining,
+  instruction,
+  fromModel,
+  unchanged,
+  focusInstruction,
+  onInstructionChange,
+  onRefine,
   onChange,
   onCancel,
   onSave,
 }: {
   draft: Draft;
   disabled: boolean;
+  refining: boolean;
+  instruction: string;
+  fromModel: boolean;
+  unchanged: boolean;
+  focusInstruction: boolean;
+  onInstructionChange: (next: string) => void;
+  onRefine: () => void;
   onChange: (next: Draft) => void;
   onCancel: () => void;
   onSave: () => void;
 }) {
   const invalid = draft.title.trim().length === 0 || draft.description.trim().length === 0;
+  const canRefine = !disabled && !invalid && instruction.trim().length > 0;
+  const instructionInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (focusInstruction) instructionInput.current?.focus();
+  }, [focusInstruction]);
 
   return (
     <div className="space-y-3">
@@ -748,7 +899,7 @@ function ActivityEditor({
         </label>
         <textarea
           id={`description-${draft.id}`}
-          rows={5}
+          rows={descriptionRows(draft.description)}
           value={draft.description}
           disabled={disabled}
           maxLength={DESCRIPTION_MAX}
@@ -757,6 +908,58 @@ function ActivityEditor({
           }}
           className="w-full resize-y rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white transition-colors focus:ring-2 focus:ring-purple-400 focus:outline-none disabled:opacity-60"
         />
+      </div>
+      {fromModel && (
+        <p className="flex items-start gap-2 text-xs text-amber-200">
+          <Sparkles className="mt-0.5 size-3 shrink-0" />
+          Tekst pochodzi od modelu — warto go przejrzeć przed zapisem.
+        </p>
+      )}
+      {unchanged && (
+        <p className="flex items-start gap-2 text-xs text-blue-100/70">
+          <CircleAlert className="mt-0.5 size-3 shrink-0" />
+          Model nie zmienił tej aktywności — spróbuj innego polecenia.
+        </p>
+      )}
+      <div>
+        <label htmlFor={`instruction-${draft.id}`} className="mb-1 block text-xs text-blue-100/70">
+          Polecenie dla modelu
+        </label>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            id={`instruction-${draft.id}`}
+            ref={instructionInput}
+            type="text"
+            value={instruction}
+            disabled={disabled}
+            maxLength={INSTRUCTION_MAX}
+            placeholder="np. dopisz słowa piosenki"
+            onChange={(event) => {
+              onInstructionChange(event.target.value);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                if (canRefine) onRefine();
+              }
+            }}
+            className="w-full min-w-0 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 transition-colors focus:ring-2 focus:ring-purple-400 focus:outline-none disabled:opacity-60 sm:flex-1"
+          />
+          <Button
+            type="button"
+            disabled={!canRefine}
+            onClick={onRefine}
+            className="rounded-lg bg-white/10 px-4 py-2 text-white transition-colors hover:bg-white/20"
+          >
+            <Sparkles className="size-4" />
+            {refining ? "Model pracuje…" : "Zapytaj model"}
+          </Button>
+        </div>
+        {refining && (
+          <p role="status" className="mt-1 text-xs text-blue-100/70">
+            Model pracuje… Poprawiony tekst pojawi się w polach powyżej.
+          </p>
+        )}
       </div>
       <div className="flex gap-2">
         <Button

@@ -542,10 +542,10 @@ zapisuje, więc nie zostawia śladu w bazie.
 
 #### Automated
 
-- [x] 2.1 Testy route'u przechodzą: `npm test -- src/pages/api/day-plan/refine.test.ts`
-- [x] 2.2 Cały zestaw przechodzi: `npm test`
-- [x] 2.3 Lint przechodzi: `npm run lint`
-- [x] 2.4 Build przechodzi: `npm run build`
+- [x] 2.1 Testy route'u przechodzą: `npm test -- src/pages/api/day-plan/refine.test.ts` — bb6cc92
+- [x] 2.2 Cały zestaw przechodzi: `npm test` — bb6cc92
+- [x] 2.3 Lint przechodzi: `npm run lint` — bb6cc92
+- [x] 2.4 Build przechodzi: `npm run build` — bb6cc92
 
 #### Manual
 
@@ -555,9 +555,9 @@ zapisuje, więc nie zostawia śladu w bazie.
 
 #### Automated
 
-- [ ] 3.1 Lint przechodzi: `npm run lint`
-- [ ] 3.2 Build przechodzi: `npm run build`
-- [ ] 3.3 Cały zestaw przechodzi: `npm test`
+- [x] 3.1 Lint przechodzi: `npm run lint`
+- [x] 3.2 Build przechodzi: `npm run build`
+- [x] 3.3 Cały zestaw przechodzi: `npm test`
 
 #### Manual
 
