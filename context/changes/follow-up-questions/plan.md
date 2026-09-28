@@ -575,12 +575,12 @@ zapisuje, więc nie zostawia śladu w bazie.
 
 #### Automated
 
-- [x] 4.1 Testy sędziego przechodzą: `npm test -- src/lib/services/content-safety-judge.test.ts`
-- [x] 4.2 `npm run test:gate` kończy się kodem 2 z komunikatem o zawieszeniu, bez błędu importu
-- [x] 4.3 Cały zestaw przechodzi: `npm test`
-- [x] 4.4 Lint przechodzi: `npm run lint`
-- [x] 4.5 Build przechodzi: `npm run build`
-- [x] 4.6 Roadmapa tylko z dopisanymi liniami: `git diff -w master..HEAD -- context/foundation/roadmap.md`
+- [x] 4.1 Testy sędziego przechodzą: `npm test -- src/lib/services/content-safety-judge.test.ts` — cc8e101
+- [x] 4.2 `npm run test:gate` kończy się kodem 2 z komunikatem o zawieszeniu, bez błędu importu — cc8e101
+- [x] 4.3 Cały zestaw przechodzi: `npm test` — cc8e101
+- [x] 4.4 Lint przechodzi: `npm run lint` — cc8e101
+- [x] 4.5 Build przechodzi: `npm run build` — cc8e101
+- [x] 4.6 Roadmapa tylko z dopisanymi liniami: `git diff -w master..HEAD -- context/foundation/roadmap.md` — cc8e101
 
 #### Manual
 

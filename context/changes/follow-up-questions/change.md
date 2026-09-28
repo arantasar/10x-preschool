@@ -1,7 +1,7 @@
 ---
 change_id: follow-up-questions
 title: Per-activity LLM follow-up prompt that edits the activity in the day view
-status: implementing
+status: implemented
 created: 2026-09-28
 updated: 2026-09-28
 archived_at: null
