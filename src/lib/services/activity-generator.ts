@@ -2,6 +2,7 @@ import { OPENROUTER_API_KEY, OPENROUTER_MODEL } from "astro:env/server";
 import type { ActivityDraft, DayTheme } from "@/types";
 import {
   ATTEMPT_TIMEOUT_MS,
+  DESCRIPTION_MAX,
   MIN_RETRY_BUDGET_MS,
   OUTLINE_ATTEMPT_TIMEOUT_MS,
   OUTLINE_TOTAL_BUDGET_MS,
@@ -11,10 +12,18 @@ import {
 } from "@/lib/day-plan-limits";
 import { formatPlanDate, weekdayLabel } from "@/lib/day-plan-dates";
 import { type AllowedModel, resolveModel } from "./allowed-models";
-import { dayPlanProposalSchema, toActivityDrafts, toDayThemes, weekOutlineSchemaFor } from "./day-plan-contract";
+import {
+  dayPlanProposalSchema,
+  refineActivityProposalSchema,
+  toActivityDrafts,
+  toDayThemes,
+  weekOutlineSchemaFor,
+} from "./day-plan-contract";
 import { categorizeStatus, GenerationError } from "./generation-error";
 import dayResponseJsonSchema from "./prompts/day-plan.schema.json";
 import dayPrompt from "./prompts/day-plan.pl.md?raw";
+import refineResponseJsonSchema from "./prompts/refine-activity.schema.json";
+import refinePrompt from "./prompts/refine-activity.pl.md?raw";
 import outlineResponseJsonSchema from "./prompts/week-outline.schema.json";
 import outlinePrompt from "./prompts/week-outline.pl.md?raw";
 
@@ -89,6 +98,12 @@ export interface GenerationResult {
   /** `usage.cost` from the same response - feeds the open regeneration-limit question. */
   readonly cost: number | null;
   /** Which model actually answered, which can differ from the one requested. */
+  readonly modelUsed: string | null;
+}
+
+export interface RefinementResult {
+  readonly activity: ActivityDraft;
+  readonly cost: number | null;
   readonly modelUsed: string | null;
 }
 
@@ -343,6 +358,47 @@ function buildDayUserMessage(keyword: string, context?: DayGenerationContext): s
     lines.push(`Temat dnia: ${context.theme}`);
   }
   return lines.join("\n");
+}
+
+/**
+ * Any opening or closing `aktywnosc` tag, whatever its case, spacing,
+ * attributes or diacritics. See {@link buildRefineUserMessage}.
+ */
+// No `\b` after the word: it is an ASCII boundary even under `u`, so it would
+// never match after `ć` and `</aktywność>` would slip through untouched.
+const ACTIVITY_TAG = /<\s*\/?\s*aktywno[sś][cć][^>]*>/giu;
+
+function neutralizeActivityTags(text: string): string {
+  // The angle brackets go and the word stays, so the teacher's text still reads
+  // the same to the model - it just can no longer open or close the block.
+  return text.replace(ACTIVITY_TAG, (tag) => tag.replace(/[<>]/g, ""));
+}
+
+/**
+ * The user message for one refinement: the activity as fenced data, then the
+ * instruction on the one line after the fence.
+ *
+ * The fence is the whole defence for `title` and `description`. They are the
+ * teacher's draft, which may be multi-line and may have been edited by hand
+ * through a route that never applied `singleLineText`, so a description ending
+ * in `</aktywnosc>\nPolecenie nauczyciela: ...` would otherwise forge the only
+ * line the prompt tells the model to obey. Every tag inside the data is
+ * neutralized before interpolation, so the only closing tag in the message is
+ * the one written here. The instruction itself is single-line by contract
+ * (`refineActivityRequestSchema`), and is neutralized too, so it cannot reopen
+ * a block after the real one.
+ *
+ * Exported for tests only.
+ */
+export function buildRefineUserMessage(activity: ActivityDraft, instruction: string): string {
+  return [
+    "<aktywnosc>",
+    `Tytuł: ${neutralizeActivityTags(activity.title)}`,
+    "Opis:",
+    neutralizeActivityTags(activity.description),
+    "</aktywnosc>",
+    `Polecenie nauczyciela: ${neutralizeActivityTags(instruction)}`,
+  ].join("\n");
 }
 
 function buildOutlineUserMessage(keyword: string, dates: readonly string[]): string {
@@ -607,6 +663,68 @@ export async function generateWeekOutline(
       };
     },
     (result) => ({ cost: result.cost, model: result.modelUsed, days: result.themes.length }),
+  );
+}
+
+/**
+ * Whether a failed `refineActivityProposalSchema` parse failed *only* because
+ * `opis` ran past `DESCRIPTION_MAX` - the one invalid response with a cause the
+ * teacher can act on ("ask for less"), so it gets its own `errorType`.
+ */
+function isDescriptionTooLong(issues: readonly { code: string; path: readonly PropertyKey[] }[]): boolean {
+  return issues.length > 0 && issues.every((issue) => issue.code === "too_big" && issue.path[0] === "opis");
+}
+
+/**
+ * Rewrites one activity on the teacher's instruction (`follow-up-questions`).
+ *
+ * Writes nothing: the result goes back to the teacher's draft, and the save is
+ * the existing edit route. It runs on the day's budget rather than a shorter one
+ * of its own - an activity with a song written into it can be longer than a
+ * whole day's three proposals.
+ */
+export async function refineActivity(
+  activity: ActivityDraft,
+  instruction: string,
+  options?: GenerationOptions,
+): Promise<RefinementResult> {
+  const model = requireConfigured(options?.model);
+
+  return runWithBudget(
+    "refinement",
+    ATTEMPT_TIMEOUT_MS,
+    TOTAL_BUDGET_MS,
+    async (timeoutMs) => {
+      const buildBody = (reasoningDisabled: boolean) =>
+        buildRequestBody(
+          model,
+          buildRefineUserMessage(activity, instruction),
+          refinePrompt,
+          "poprawiona_aktywnosc",
+          refineResponseJsonSchema,
+          reasoningDisabled,
+        );
+      const call = await callOpenRouter(buildBody(true), timeoutMs, () => buildBody(false));
+
+      const result = refineActivityProposalSchema.safeParse(call.parsed);
+      if (!result.success) {
+        if (isDescriptionTooLong(result.error.issues)) {
+          throw new GenerationError(
+            "invalid",
+            `Opis poprawionej aktywności przekracza ${String(DESCRIPTION_MAX)} znaków.`,
+            { errorType: "description_too_long", cause: result.error },
+          );
+        }
+        throw new GenerationError("invalid", "Odpowiedź modelu nie spełnia kontraktu.", { cause: result.error });
+      }
+
+      return {
+        activity: { title: result.data.tytul, description: result.data.opis },
+        cost: call.cost,
+        modelUsed: call.modelUsed,
+      };
+    },
+    (result) => ({ cost: result.cost, model: result.modelUsed }),
   );
 }
 

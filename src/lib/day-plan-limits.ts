@@ -27,6 +27,14 @@ export const TITLE_MAX = 200;
 export const DESCRIPTION_MAX = 4000;
 export const PROMPT_MAX = 2000;
 
+/**
+ * The teacher's instruction to the model for one activity ("dopisz słowa
+ * piosenki"). Unlike every bound above it has no CHECK to mirror: the
+ * instruction is sent to the model and never stored, so there is no migration
+ * behind it. It is shared by the route's zod schema and the island's counter.
+ */
+export const INSTRUCTION_MAX = 500;
+
 /** How many proposals one generation returns. Mirrors `day-plan.schema.json`. */
 export const ACTIVITY_COUNT = 3;
 

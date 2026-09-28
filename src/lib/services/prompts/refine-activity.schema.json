@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "tytul": {
+      "type": "string",
+      "description": "Tytuł aktywności po zmianie, po polsku, maksymalnie 200 znaków. Nazywa to, co dzieci robią; bez zmian, jeśli polecenie nie zmienia tego, co dzieci robią.",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "opis": {
+      "type": "string",
+      "description": "Pełny opis aktywności po zmianie, po polsku, maksymalnie 4000 znaków łącznie z dopisanym tekstem. Treść bezpieczna i adekwatna rozwojowo dla dzieci 3-6 lat; teksty utworów własne.",
+      "minLength": 1,
+      "maxLength": 4000
+    }
+  },
+  "required": ["tytul", "opis"],
+  "additionalProperties": false
+}
