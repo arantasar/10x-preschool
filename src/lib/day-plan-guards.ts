@@ -115,17 +115,17 @@ export function isGeneratedDayBody(
 /**
  * The refine route's body: one activity with no row behind it.
  *
- * Two non-empty strings and nothing else - an empty title or description would
- * put into the draft text the save route then refuses, after the teacher had
- * been shown it as the model's answer.
+ * Two strings that are not blank, and nothing else - an empty or
+ * whitespace-only title or description would put into the draft text the save
+ * route then refuses, after the teacher had been shown it as the model's answer.
  */
 export function isRefinedActivityBody(body: unknown): body is ActivityDraft {
   return (
     isRecord(body) &&
     typeof body.title === "string" &&
-    body.title.length > 0 &&
+    body.title.trim().length > 0 &&
     typeof body.description === "string" &&
-    body.description.length > 0
+    body.description.trim().length > 0
   );
 }
 

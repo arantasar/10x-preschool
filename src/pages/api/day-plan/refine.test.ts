@@ -173,6 +173,18 @@ describe("POST /api/day-plan/refine — refusals", () => {
 });
 
 describe("POST /api/day-plan/refine — model failures", () => {
+  it("answers 500 when OpenRouter is not configured", async () => {
+    env.apiKey = undefined;
+    const supabase = supabaseStub();
+    const fetchStub = stubFetch(() => proposalResponse({ tytul: "a", opis: "b" }));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(500);
+    expect(fetchStub).not.toHaveBeenCalled();
+    expectNoDatabaseCall(supabase);
+  });
+
   it("answers 502 with the length message when the description comes back over DESCRIPTION_MAX", async () => {
     const supabase = supabaseStub();
     stubFetch(() => proposalResponse({ tytul: "a", opis: "a".repeat(DESCRIPTION_MAX + 1) }));

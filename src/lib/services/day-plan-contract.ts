@@ -68,10 +68,14 @@ export function toActivityDrafts(proposal: DayPlanProposal): ActivityDraft[] {
  * The bounds are those of one element of {@link dayPlanProposalSchema}, and
  * unknown keys are stripped rather than rejected for the same reason: a stray
  * field is not worth a failed call the teacher waited for.
+ *
+ * Unlike that element, both fields are trimmed before the bounds: this answer
+ * replaces text the teacher already has, and a whitespace-only one would leave
+ * a draft that neither "Zapisz" nor another instruction accepts.
  */
 export const refineActivityProposalSchema = z.object({
-  tytul: z.string().min(1).max(TITLE_MAX),
-  opis: z.string().min(1).max(DESCRIPTION_MAX),
+  tytul: z.string().trim().min(1).max(TITLE_MAX),
+  opis: z.string().trim().min(1).max(DESCRIPTION_MAX),
 });
 
 export type RefineActivityProposal = z.infer<typeof refineActivityProposalSchema>;
@@ -158,7 +162,9 @@ export function toDayThemes(outline: WeekOutline, dates: readonly string[]): Day
  * Silently deleting the character would leave the caller believing the rest of
  * their instruction had been read; refusing says what happened.
  */
-const CONTROL_CHARACTERS = /[\p{Cc}\p{Cf}]/u;
+// `Zl`/`Zp` are U+2028 and U+2029, the line and paragraph separators: not
+// control characters by category, but a newline to anything that reads lines.
+const CONTROL_CHARACTERS = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 /**
  * A teacher-written field that reaches the model: one line of text, trimmed.

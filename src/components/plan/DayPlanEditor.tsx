@@ -80,7 +80,11 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
   function setDraft(next: Draft | null): void {
     // A different draft, or none: whatever was said about the previous one no
     // longer applies. The same draft replaced by the model's answer keeps them.
+    // That includes a failure: its "Spróbuj ponownie" retries `refine` and
+    // `saveDraft` against whatever `draftRef` holds, so left standing it would
+    // send one activity's instruction or edit to the next one opened.
     if (next?.id !== draftRef.current?.id) {
+      setFailure(null);
       setInstruction("");
       setDraftFromModel(false);
       setRefineUnchanged(false);

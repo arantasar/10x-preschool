@@ -361,17 +361,20 @@ function buildDayUserMessage(keyword: string, context?: DayGenerationContext): s
 }
 
 /**
- * Any opening or closing `aktywnosc` tag, whatever its case, spacing,
- * attributes or diacritics. See {@link buildRefineUserMessage}.
+ * Every angle bracket, ASCII or full-width. See {@link buildRefineUserMessage}.
+ *
+ * All of them go, not only those of a matched `aktywnosc` tag: a single-pass
+ * tag regex let a stray bracket rebuild what it removed (`<</aktywnosc>>` →
+ * `</aktywnosc>`), and missed `</aktywność>` in decomposed (NFD) form. With no
+ * bracket left in the data there is no tag to spell, however it is spelled.
+ * Brackets have no job in an activity description, so nothing is lost.
  */
-// No `\b` after the word: it is an ASCII boundary even under `u`, so it would
-// never match after `ć` and `</aktywność>` would slip through untouched.
-const ACTIVITY_TAG = /<\s*\/?\s*aktywno[sś][cć][^>]*>/giu;
+const ANGLE_BRACKETS = /[<>＜＞]/gu;
 
 function neutralizeActivityTags(text: string): string {
-  // The angle brackets go and the word stays, so the teacher's text still reads
-  // the same to the model - it just can no longer open or close the block.
-  return text.replace(ACTIVITY_TAG, (tag) => tag.replace(/[<>]/g, ""));
+  // The word stays, so the teacher's text still reads the same to the model -
+  // it just can no longer open or close the block.
+  return text.normalize("NFC").replace(ANGLE_BRACKETS, "");
 }
 
 /**

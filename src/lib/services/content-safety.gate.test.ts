@@ -200,8 +200,8 @@ gateDescribe("content safety gate — live matrix", () => {
       });
 
       // The refine path: every allowed model × every fixed case, through the
-      // production `refineActivity`. The instruction stands in the report's
-      // hasło column, since it is the teacher's text this mode is graded on.
+      // production `refineActivity`. The case name stands in the report's
+      // hasło column; the instruction itself reaches the judge in its input.
       const refineCombos = ALLOWED_MODELS.flatMap((model) =>
         REFINE_GATE_CASES.map((refineCase) => ({ model, refineCase })),
       );

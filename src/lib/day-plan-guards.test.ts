@@ -218,6 +218,7 @@ describe("isRefinedActivityBody", () => {
   it.each([
     ["an empty title", { title: "", description: "Opis" }],
     ["an empty description", { title: "Tytuł", description: "" }],
+    ["a whitespace-only description", { title: "Tytuł", description: " \n" }],
     ["a missing description", { title: "Tytuł" }],
     ["a day plan body", { plan: {}, activities: [] }],
     ["null", null],
