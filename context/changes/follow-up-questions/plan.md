@@ -529,10 +529,10 @@ zapisuje, więc nie zostawia śladu w bazie.
 
 #### Automated
 
-- [x] 1.1 Testy jednostkowe przechodzą: `npm test -- src/lib/services/activity-generator.test.ts src/lib/services/day-plan-contract.test.ts`
-- [x] 1.2 Test dryfu Odbiorcy przechodzi i zapala się na czerwono po zmianie jednego słowa w §Odbiorca
-- [x] 1.3 Lint przechodzi: `npm run lint`
-- [x] 1.4 `day-plan.pl.md` i `day-plan.schema.json` nietknięte: `git diff --name-only master..HEAD -- …` zwraca pusto
+- [x] 1.1 Testy jednostkowe przechodzą: `npm test -- src/lib/services/activity-generator.test.ts src/lib/services/day-plan-contract.test.ts` — eac8c92
+- [x] 1.2 Test dryfu Odbiorcy przechodzi i zapala się na czerwono po zmianie jednego słowa w §Odbiorca — eac8c92
+- [x] 1.3 Lint przechodzi: `npm run lint` — eac8c92
+- [x] 1.4 `day-plan.pl.md` i `day-plan.schema.json` nietknięte: `git diff --name-only master..HEAD -- …` zwraca pusto — eac8c92
 
 #### Manual
 
@@ -542,10 +542,10 @@ zapisuje, więc nie zostawia śladu w bazie.
 
 #### Automated
 
-- [ ] 2.1 Testy route'u przechodzą: `npm test -- src/pages/api/day-plan/refine.test.ts`
-- [ ] 2.2 Cały zestaw przechodzi: `npm test`
-- [ ] 2.3 Lint przechodzi: `npm run lint`
-- [ ] 2.4 Build przechodzi: `npm run build`
+- [x] 2.1 Testy route'u przechodzą: `npm test -- src/pages/api/day-plan/refine.test.ts`
+- [x] 2.2 Cały zestaw przechodzi: `npm test`
+- [x] 2.3 Lint przechodzi: `npm run lint`
+- [x] 2.4 Build przechodzi: `npm run build`
 
 #### Manual
 
