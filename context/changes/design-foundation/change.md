@@ -1,7 +1,7 @@
 ---
 change_id: design-foundation
 title: Design foundation
-status: implementing
+status: implemented
 created: 2026-09-29
 updated: 2026-09-29
 archived_at: null

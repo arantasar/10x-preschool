@@ -523,11 +523,11 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Automated
 
-- [x] 4.1 Testy jednostkowe helpera przechodzą
-- [x] 4.2 Lint i build
-- [x] 4.3 Nowy e2e przechodzi i pada bez przekierowania
-- [x] 4.4 Cały e2e zielony
-- [x] 4.5 `.theme-legacy` ma właściciela w kolejce
+- [x] 4.1 Testy jednostkowe helpera przechodzą — 562fe88
+- [x] 4.2 Lint i build — 562fe88
+- [x] 4.3 Nowy e2e przechodzi i pada bez przekierowania — 562fe88
+- [x] 4.4 Cały e2e zielony — 562fe88
+- [x] 4.5 `.theme-legacy` ma właściciela w kolejce — 562fe88
 
 #### Manual
 
