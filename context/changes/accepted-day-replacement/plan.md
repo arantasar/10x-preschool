@@ -537,13 +537,13 @@ migration and the code in the same merge. Rollback: drop the `date[]` signature,
 
 #### Automated
 
-- [x] 3.1 Unit tests pass, including the new partition, scope and confirmation cases: `npm run test`
-- [x] 3.2 No path in the board re-derives targets from acceptance
-- [x] 3.3 The board sends consent to the writer
-- [x] 3.4 The all-accepted refusal is gone
-- [x] 3.5 Type checking passes: `npm run build`
-- [x] 3.6 Linting passes: `npm run lint`
-- [x] 3.7 Existing Playwright specs still pass: `npm run test:e2e`
+- [x] 3.1 Unit tests pass, including the new partition, scope and confirmation cases: `npm run test` — 3aa00a9
+- [x] 3.2 No path in the board re-derives targets from acceptance — 3aa00a9
+- [x] 3.3 The board sends consent to the writer — 3aa00a9
+- [x] 3.4 The all-accepted refusal is gone — 3aa00a9
+- [x] 3.5 Type checking passes: `npm run build` — 3aa00a9
+- [x] 3.6 Linting passes: `npm run lint` — 3aa00a9
+- [x] 3.7 Existing Playwright specs still pass: `npm run test:e2e` — 3aa00a9
 
 #### Manual
 

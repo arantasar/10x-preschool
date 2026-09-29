@@ -1,9 +1,9 @@
 ---
 change_id: accepted-day-replacement
 title: Accepted day replacement
-status: implementing
+status: implemented
 created: 2026-09-28
-updated: 2026-09-28
+updated: 2026-09-29
 archived_at: null
 ---
 
