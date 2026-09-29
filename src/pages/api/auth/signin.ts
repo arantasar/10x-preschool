@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { CONFIG_MISSING, CONNECTION_FAILED } from "@/lib/auth-error-messages";
+import { normalizePendingTopic, PENDING_TOPIC_COOKIE } from "@/lib/pending-topic";
 import { createClient } from "@/lib/supabase";
 
 export const POST: APIRoute = async (context) => {
@@ -31,6 +32,13 @@ export const POST: APIRoute = async (context) => {
     // box at all, leaving the teacher with a silently blank form.
     const code = error.code ?? "";
     return context.redirect(`/auth/signin?error=${encodeURIComponent(code || CONNECTION_FAILED)}`);
+  }
+
+  // A hasło typed on the landing is waiting: go where it is used. The cookie
+  // is not cleared here - the week page consumes it on first display, so a
+  // redirect that never arrives does not lose it.
+  if (normalizePendingTopic(context.cookies.get(PENDING_TOPIC_COOKIE)?.value)) {
+    return context.redirect("/plan/week");
   }
 
   // Straight to the month - the app's home screen. Going through `/` would

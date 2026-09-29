@@ -4,6 +4,7 @@ import AuthSplit from "@/components/layout/AuthSplit.astro";
 import SampleDayCard from "@/components/marketing/SampleDayCard.astro";
 import SignInForm from "@/components/auth/SignInForm";
 import { authErrorMessage } from "@/lib/auth-error-messages";
+import { normalizePendingTopic, PENDING_TOPIC_COOKIE, PENDING_TOPIC_COOKIE_OPTIONS } from "@/lib/pending-topic";
 
 // `?error=` carries a code, not a sentence. An absent parameter has to
 // short-circuit rather than go through the lookup: the lookup is
@@ -12,6 +13,12 @@ import { authErrorMessage } from "@/lib/auth-error-messages";
 // clean page load.
 const errorCode = Astro.url.searchParams.get("error");
 const serverError = errorCode ? authErrorMessage(errorCode) : null;
+
+// A `?haslo=` link aimed at sign-in parks the hasło the same way sign-up does.
+const fromLanding = normalizePendingTopic(Astro.url.searchParams.get("haslo"));
+if (fromLanding) {
+  Astro.cookies.set(PENDING_TOPIC_COOKIE, fromLanding, PENDING_TOPIC_COOKIE_OPTIONS);
+}
 ---
 
 <Layout title="Zaloguj się">

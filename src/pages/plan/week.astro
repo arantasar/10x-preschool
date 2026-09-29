@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import AppHeader from "@/components/AppHeader.astro";
 import WeekPlanBoard from "@/components/plan/WeekPlanBoard";
 import { addDays, formatWeekRange, resolveWeekStart, workingDaysOf } from "@/lib/day-plan-dates";
+import { normalizePendingTopic, PENDING_TOPIC_COOKIE } from "@/lib/pending-topic";
 import { readWeekPlans } from "@/lib/services/day-plan-store";
 import type { DayPlanView, WeekPlanView } from "@/types";
 
@@ -31,6 +32,16 @@ if (supabase) {
 }
 
 const week: WeekPlanView = { weekStart, days, plans };
+
+// A hasło the teacher typed on the landing before signing up. Read and deleted
+// here in the frontmatter - response headers are still open - so it fills the
+// field exactly once: a refresh shows the week as usual. It wins over the
+// week's saved hasło because it is what the teacher asked for last. It only
+// fills the field; nothing is generated.
+const pendingTopic = normalizePendingTopic(Astro.cookies.get(PENDING_TOPIC_COOKIE)?.value);
+if (Astro.cookies.has(PENDING_TOPIC_COOKIE)) {
+  Astro.cookies.delete(PENDING_TOPIC_COOKIE, { path: "/" });
+}
 const previousWeek = addDays(weekStart, -7);
 const nextWeek = addDays(weekStart, 7);
 const month = weekStart.slice(0, 7);
@@ -90,7 +101,7 @@ const month = weekStart.slice(0, 7);
               </a>
             </div>
           ) : (
-            <WeekPlanBoard client:load week={week} />
+            <WeekPlanBoard client:load week={week} initialPrompt={pendingTopic ?? undefined} />
           )
         }
       </div>

@@ -67,6 +67,8 @@ import type { AcceptedDayConsent, ActivityDraft, DayPlanView, WeekPlanView } fro
 
 interface WeekPlanBoardProps {
   readonly week: WeekPlanView;
+  /** A hasło carried over from the landing (`@/lib/pending-topic`); wins over the saved one. */
+  readonly initialPrompt?: string;
 }
 
 // `managing` is a day operation from a card. The generate button does not name
@@ -100,9 +102,9 @@ interface WeekWriteDay {
   readonly activities: readonly ActivityDraft[];
 }
 
-export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
+export default function WeekPlanBoard({ week, initialPrompt }: WeekPlanBoardProps) {
   const [days, setDays] = useState<Record<string, DayState>>(() => initialDays(week));
-  const [prompt, setPrompt] = useState(() => firstPrompt(week));
+  const [prompt, setPrompt] = useState(() => initialPrompt ?? firstPrompt(week));
   const [promptError, setPromptError] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState<Busy>("idle");
   const [failure, setFailure] = useState<Failure | null>(null);

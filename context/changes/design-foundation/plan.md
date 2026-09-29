@@ -508,10 +508,10 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Automated
 
-- [x] 3.1 Lint, build, testy
-- [x] 3.2 Brak kosmicznych klas w auth
-- [x] 3.3 Etykiety wiązane przez e2e zostały
-- [x] 3.4 Cały e2e zielony
+- [x] 3.1 Lint, build, testy — fca03ba
+- [x] 3.2 Brak kosmicznych klas w auth — fca03ba
+- [x] 3.3 Etykiety wiązane przez e2e zostały — fca03ba
+- [x] 3.4 Cały e2e zielony — fca03ba
 
 #### Manual
 
@@ -523,11 +523,11 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Automated
 
-- [ ] 4.1 Testy jednostkowe helpera przechodzą
-- [ ] 4.2 Lint i build
-- [ ] 4.3 Nowy e2e przechodzi i pada bez przekierowania
-- [ ] 4.4 Cały e2e zielony
-- [ ] 4.5 `.theme-legacy` ma właściciela w kolejce
+- [x] 4.1 Testy jednostkowe helpera przechodzą
+- [x] 4.2 Lint i build
+- [x] 4.3 Nowy e2e przechodzi i pada bez przekierowania
+- [x] 4.4 Cały e2e zielony
+- [x] 4.5 `.theme-legacy` ma właściciela w kolejce
 
 #### Manual
 
