@@ -109,6 +109,7 @@ Trasy są propozycją, więc dopasuj je do istniejących.
 | Kontakt `/kontakt` | 11, 11b | `MarketingHeader active="kontakt"`, `TextField` (imię, e-mail, temat `as="select"`, wiadomość `as="textarea"`), checkbox zgody, stan po wysłaniu (11b) |
 | Reset hasła `/reset-hasla` | 12, 12b | `AuthCard` + `TextField` e-mail → po wysłaniu stan „Sprawdź skrzynkę” (12b). Przycisk „Otwórz link (demo)” jest tylko w makiecie — w aplikacji go nie ma. |
 | Nowe hasło `/nowe-haslo?token=…` | 13 | `AuthCard mirror` + 2× `TextField type="password"` |
+| Konto założone `/konto-zalozone` | 14 | `AuthCard` + ikona ✓ w zielonym kształcie liścia, `<h1>Konto założone</h1>`, tekst z `role="status"`, `Button href="/logowanie" block` „Zaloguj się”. Pokazywany po udanej rejestracji. |
 
 Linki: „Nie pamiętasz hasła?” na logowaniu → `/reset-hasla` (`TextField labelAside`). Stopka `SiteFooter` na wszystkich stronach publicznych, łącznie ze stroną główną.
 
