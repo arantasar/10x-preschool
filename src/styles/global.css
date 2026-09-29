@@ -223,11 +223,19 @@
     font-size: 17px;
     line-height: 1.6;
   }
-  /* "Ogród" focus: 3 px Morela. Scoped away from the planner rather than put on
-     a bare `:focus-visible`, which `.theme-legacy` would then have to undo.
-     `:where` keeps it at zero specificity, so a component's own focus style wins. */
+  /* "Ogród" focus: a 3 px Las ring with Morela filling the 2 px gap. The design
+     package asks for a plain Morela outline, but Morela is 1.9:1 on Owies and
+     2.2:1 on Mleko - under the 3:1 a focus indicator needs (WCAG 1.4.11). Las is
+     10.6:1 on the light pages, and on a dark Las band, where the ring itself
+     disappears, the Morela halo carries it (5.5:1). The pill buttons and form
+     fields repeat the same pair as utilities.
+     Scoped away from the planner rather than put on a bare `:focus-visible`,
+     which `.theme-legacy` would then have to undo. The selector is (0,1,0), not
+     zero - what lets a component's own focus utilities win is that this sits in
+     `@layer base`, below `@layer utilities`. */
   :where(:not(.theme-legacy, .theme-legacy *)):focus-visible {
-    outline: 3px solid var(--color-morela);
+    outline: 3px solid var(--color-las);
     outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-morela);
   }
 }

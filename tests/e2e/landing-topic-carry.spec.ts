@@ -5,7 +5,7 @@ import { ensureTeacher, TEACHER_A } from "./support/supabase-admin";
 import { uniqueStamp } from "./support/test-data";
 
 /**
- * N1 (`design-foundation`) — hasło wpisane na stronie głównej przez gościa
+ * Ryzyko #13 (`design-foundation`, N1) — hasło wpisane na stronie głównej przez gościa
  * czeka na niego do pierwszego logowania i wypełnia formularz tygodnia.
  *
  * To jedyny test w zestawie poza `auth.setup.ts`, który loguje się przez
@@ -16,11 +16,11 @@ import { uniqueStamp } from "./support/test-data";
  * Nic nie generuje i nic nie zapisuje — samo wypełnienie pola — więc nie ma
  * czego sprzątać.
  */
-test.describe("N1 — hasło z landingu przeżywa rejestrację i logowanie", () => {
+test.describe("Ryzyko #13 — hasło z landingu przeżywa rejestrację i logowanie", () => {
   // Gość: bez sesji konta A, którą zestaw daje domyślnie.
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("N1: hasło z landingu wypełnia „Hasło tygodnia” po zalogowaniu — i tylko raz", async ({ page }) => {
+  test("ryzyko #13: hasło z landingu wypełnia „Hasło tygodnia” po zalogowaniu — i tylko raz", async ({ page }) => {
     // Unikalne hasło: asercja nie może przejść na haśle zapisanym w bieżącym
     // tygodniu konta A przez kogokolwiek wcześniej.
     const topic = `Dinozaury ${uniqueStamp()}`;

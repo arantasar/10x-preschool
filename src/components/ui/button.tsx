@@ -30,9 +30,9 @@ const buttonVariants = cva(
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
-        pill: "min-h-11 rounded-full px-[22px] py-[13px] font-body text-base font-extrabold focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-morela",
+        pill: "min-h-11 rounded-full px-[22px] py-[13px] font-body text-base font-extrabold focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-las focus-visible:shadow-[0_0_0_2px_var(--color-morela)]",
         pillLg:
-          "min-h-11 rounded-full px-[30px] py-[17px] font-body text-lg font-extrabold focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-morela",
+          "min-h-11 rounded-full px-[30px] py-[17px] font-body text-lg font-extrabold focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-las focus-visible:shadow-[0_0_0_2px_var(--color-morela)]",
       },
     },
     defaultVariants: {

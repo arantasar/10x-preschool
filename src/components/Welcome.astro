@@ -96,7 +96,7 @@ const illustrationWeeks: { label: string; days: Cell[] }[] = [
       }
       <form method="GET" action="/auth/signup" class="flex w-full max-w-[760px] flex-col gap-3.5 pt-2 sm:items-center">
         <div
-          class="sm:bg-mleko sm:shadow-input sm:has-[input:focus-visible]:outline-morela flex w-full flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:py-2 sm:pr-2 sm:pl-7 sm:has-[input:focus-visible]:outline-3 sm:has-[input:focus-visible]:outline-offset-2 sm:has-[input:focus-visible]:outline-solid"
+          class="sm:bg-mleko sm:shadow-input sm:has-[input:focus-visible]:outline-las flex w-full flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:py-2 sm:pr-2 sm:pl-7 sm:has-[input:focus-visible]:shadow-[0_0_0_2px_var(--color-morela)] sm:has-[input:focus-visible]:outline-3 sm:has-[input:focus-visible]:outline-offset-2 sm:has-[input:focus-visible]:outline-solid"
         >
           <label for="haslo" class="text-mech text-sm font-extrabold sm:text-[15px] sm:font-bold">Temat</label>
           <input
@@ -122,7 +122,11 @@ const illustrationWeeks: { label: string; days: Cell[] }[] = [
       </form>
     </section>
 
-    <section class="sm:px-gutter grid gap-5 px-5 pt-14 sm:pt-16 md:grid-cols-3 md:gap-6" aria-label="Przykładowe dni">
+    <section
+      class="sm:px-gutter grid gap-5 px-5 pt-14 sm:pt-16 md:grid-cols-3 md:gap-6"
+      aria-labelledby="samples-heading"
+    >
+      <h2 id="samples-heading" class="sr-only">Przykładowe dni</h2>
       {
         sampleDays.map((sample) => (
           <SampleDayCard day={sample.day} theme={sample.theme} activities={sample.activities} />

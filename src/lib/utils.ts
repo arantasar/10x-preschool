@@ -12,6 +12,7 @@ const twMerge = extendTailwindMerge({
       shadow: ["card", "panel", "input"],
       radius: ["input", "row", "card", "panel", "logo", "blob-a", "blob-b"],
       spacing: ["gutter"],
+      container: ["content"],
     },
   },
 });

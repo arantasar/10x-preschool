@@ -17,7 +17,13 @@ const serverError = errorCode ? authErrorMessage(errorCode) : null;
 // The landing's topic form lands here with `?haslo=`. It is parked in a cookie,
 // because the session that will use it is born only after the e-mail
 // confirmation and a separate sign-in - see `@/lib/pending-topic`. A hasło
-// already waiting from an earlier visit is shown too.
+// already waiting from an earlier visit is acknowledged too.
+//
+// The notice never echoes the value. `?haslo=` is free text anyone can put in a
+// link, and quoting it would render an arbitrary sentence inside our own box -
+// right above a field labelled "Hasło" (password) - the same hole `?error=`
+// closed by carrying codes (`supabase-error-copy`). The teacher sees her topic
+// where it matters: in the week form after signing in.
 const fromLanding = normalizePendingTopic(Astro.url.searchParams.get("haslo"));
 if (fromLanding) {
   Astro.cookies.set(PENDING_TOPIC_COOKIE, fromLanding, PENDING_TOPIC_COOKIE_OPTIONS);
@@ -34,7 +40,7 @@ const pendingTopic = fromLanding ?? normalizePendingTopic(Astro.cookies.get(PEND
     {
       pendingTopic && (
         <p class="rounded-input bg-szalwia-soft text-mech-ciemny px-4 py-3 text-[15px] font-semibold" role="status">
-          Twoje hasło „{pendingTopic}” poczeka na Ciebie po zalogowaniu.
+          Temat wpisany na stronie głównej poczeka na Ciebie po zalogowaniu.
         </p>
       )
     }
