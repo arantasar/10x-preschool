@@ -17,12 +17,22 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // "Ogród" pill variants (design package, `Button.astro`). Pair them with
+        // a `pill*` size - those carry the pill shape, weight and 44 px target.
+        // The keys above stay as they were: the planner still renders them.
+        primary: "bg-las text-owies hover:bg-las-2",
+        accent: "bg-morela text-las hover:bg-morela-hover",
+        inverse: "bg-owies text-las hover:bg-white",
+        outlinePill: "border-[1.5px] border-obrys bg-transparent text-las hover:border-las",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
+        pill: "min-h-11 rounded-full px-[22px] py-[13px] font-body text-base font-extrabold focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-morela",
+        pillLg:
+          "min-h-11 rounded-full px-[30px] py-[17px] font-body text-lg font-extrabold focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-morela",
       },
     },
     defaultVariants: {

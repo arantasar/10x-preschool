@@ -1,4 +1,11 @@
 ---
+// Self-hosted fonts (variant A in the design package's README): no third-party
+// font domain on Workers. Young Serif ships a single weight (400); Nunito Sans
+// comes as one variable `wght` axis. Only the latin + latin-ext subsets - Polish
+// lives in latin-ext.
+import "@fontsource/young-serif/latin-ext.css";
+import "@fontsource/young-serif/latin.css";
+import "@fontsource-variable/nunito-sans/wght.css";
 import "../styles/global.css";
 import Banner from "@/components/Banner.astro";
 import { missingConfigs } from "@/lib/config-status";
@@ -14,7 +21,7 @@ const { title = "10xPreschool" } = Astro.props;
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title}</title>
   </head>

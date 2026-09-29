@@ -1,0 +1,27 @@
+---
+/** One question/answer. Native <details> — keyboard and screen-reader friendly, no JS. */
+interface Props { question: string; open?: boolean; }
+const { question, open = false } = Astro.props;
+---
+<details class="faq" open={open}>
+  <summary class="faq__q">
+    <span>{question}</span>
+    <span class="faq__icon" aria-hidden="true"></span>
+  </summary>
+  <div class="faq__a"><slot /></div>
+</details>
+
+<style>
+  .faq { background: var(--color-surface); border-radius: var(--radius-lg); padding: 22px 28px; }
+  .faq__q {
+    list-style: none; cursor: pointer; min-height: 32px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    font-size: 19px; font-weight: 800; line-height: 1.35;
+  }
+  .faq__q::-webkit-details-marker { display: none; }
+  .faq__icon::before { content: '+'; font-family: var(--font-display); font-size: 26px; color: var(--color-text-accent); }
+  .faq[open] .faq__icon::before { content: '–'; }
+  .faq__a { margin-top: 14px; font-size: 17px; line-height: 1.6; color: var(--color-text-muted); }
+  .faq__a :global(p + p) { margin-top: 10px; }
+  @media (max-width: 640px) { .faq { padding: 18px 20px; } .faq__q { font-size: 17px; } }
+</style>

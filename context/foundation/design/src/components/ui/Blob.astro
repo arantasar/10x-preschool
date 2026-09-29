@@ -1,0 +1,24 @@
+---
+/**
+ * Decorative organic shape. Place inside a `position: relative; overflow: hidden` parent.
+ * Pass position/size via `style`, e.g. style="top:-160px; right:-120px; width:600px; height:520px"
+ */
+interface Props {
+  shape?: 'a' | 'b' | 'circle';
+  color?: 'sage' | 'apricot' | 'apricot-soft' | 'forest';
+  style?: string;
+}
+const { shape = 'a', color = 'sage', style = '' } = Astro.props;
+const bg = {
+  'sage': 'var(--color-sage)',
+  'apricot': 'var(--color-apricot)',
+  'apricot-soft': 'var(--color-apricot-soft)',
+  'forest': 'var(--color-primary-2)',
+}[color];
+const radius = shape === 'circle' ? '50%' : `var(--blob-${shape})`;
+---
+<div class="blob" aria-hidden="true" style={`background:${bg}; border-radius:${radius}; ${style}`}></div>
+
+<style>
+  .blob { position: absolute; pointer-events: none; z-index: 0; }
+</style>

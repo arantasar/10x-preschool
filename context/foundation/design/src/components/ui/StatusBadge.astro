@@ -1,0 +1,18 @@
+---
+import Icon from './Icon.astro';
+interface Props { status: 'approved' | 'pending'; }
+const { status } = Astro.props;
+---
+{status === 'approved'
+  ? <span class="badge badge--approved"><Icon name="check" size={16} strokeWidth={3} />Zatwierdzone</span>
+  : <span class="badge badge--pending">Do przejrzenia</span>}
+
+<style>
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: var(--text-meta); font-weight: 800; line-height: 1.2;
+    padding: 9px 14px; border-radius: var(--radius-pill);
+  }
+  .badge--approved { background: var(--status-approved-bg); color: var(--status-approved-fg); }
+  .badge--pending { border: 1.5px dashed var(--status-pending-border); color: var(--color-text-muted); }
+</style>

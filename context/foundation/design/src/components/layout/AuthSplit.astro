@@ -1,0 +1,40 @@
+---
+/**
+ * Two-column auth layout (logowanie, rejestracja):
+ * left = logo + form (default slot), right = dark forest panel (slot "panel").
+ * ≤ 900px the panel is hidden and the form fills the screen.
+ */
+import Logo from '../ui/Logo.astro';
+import Blob from '../ui/Blob.astro';
+---
+<div class="as">
+  <div class="as__left">
+    <Logo size="lg" />
+    <main class="as__form"><slot /></main>
+  </div>
+  <aside class="as__panel" aria-hidden="true">
+    <Blob shape="a" color="forest" style="top:-120px; right:-100px; width:440px; height:400px" />
+    <Blob shape="b" color="apricot" style="bottom:-90px; left:-70px; width:280px; height:250px" />
+    <div class="as__panel-content"><slot name="panel" /></div>
+  </aside>
+</div>
+
+<style>
+  .as { min-height: 100vh; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .as__left { display: flex; flex-direction: column; padding: 36px clamp(20px, 6.6vw, 96px); }
+  .as__form { margin: auto 0; width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 22px; padding: 40px 0; }
+  .as__form :global(h1) { font-size: clamp(36px, 3.4vw, 48px); line-height: 1.1; }
+  .as__panel {
+    position: relative; overflow: hidden; margin: 20px 20px 20px 0; border-radius: var(--radius-2xl);
+    background: var(--color-primary); color: var(--color-on-primary);
+    display: flex; flex-direction: column; justify-content: center; padding: 80px;
+  }
+  .as__panel-content { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 32px; }
+  .as__panel-content :global(h2) { color: var(--color-on-primary); font-size: clamp(40px, 3.9vw, 56px); line-height: 1.05; }
+  .as__panel-content :global(h2 em) { color: var(--color-sage); }
+  @media (max-width: 900px) {
+    .as { grid-template-columns: 1fr; }
+    .as__panel { display: none; }
+    .as__left { padding: 18px 20px; }
+  }
+</style>

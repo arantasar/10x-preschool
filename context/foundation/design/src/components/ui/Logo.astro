@@ -1,0 +1,20 @@
+---
+interface Props { href?: string; size?: 'sm' | 'md' | 'lg'; }
+const { href = '/', size = 'md' } = Astro.props;
+---
+<a href={href} class:list={['logo', `logo--${size}`]} aria-label="10xPreschool — strona główna">
+  <span class="logo__mark" aria-hidden="true"></span>
+  <span class="logo__word">10xPreschool</span>
+</a>
+
+<style>
+  .logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--color-text); }
+  .logo__mark { display: block; background: var(--color-primary); border-radius: var(--radius-logo); }
+  .logo__word { font-family: var(--font-display); line-height: 1; }
+  .logo--sm .logo__mark { width: 26px; height: 26px; border-radius: 50% 50% 50% 6px; }
+  .logo--sm .logo__word { font-size: 20px; }
+  .logo--md .logo__mark { width: 30px; height: 30px; }
+  .logo--md .logo__word { font-size: 22px; }
+  .logo--lg .logo__mark { width: 34px; height: 34px; }
+  .logo--lg .logo__word { font-size: 25px; }
+</style>
