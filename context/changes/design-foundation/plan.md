@@ -482,8 +482,8 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Manual
 
-- [ ] 1.8 Planer (trzy ekrany) bez zmian wyglądu względem produkcji
-- [ ] 1.9 Fonty ładowane z własnej domeny
+- [x] 1.8 Planer (trzy ekrany) bez zmian wyglądu względem produkcji
+- [x] 1.9 Fonty ładowane z własnej domeny
 
 ### Phase 2: Landing
 
@@ -498,11 +498,11 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Manual
 
-- [ ] 2.7 `/` przy 390, 768, 1440 px zgodne z makietami (poza świadomymi odstępstwami)
-- [ ] 2.8 Wysłanie hasła prowadzi na `/auth/signup?haslo=…`
-- [ ] 2.9 Nawigacja klawiaturą, focus i cele ≥ 44 px
-- [ ] 2.10 Zalogowany na `/` nadal ląduje na `/plan/month`
-- [ ] 2.11 Pozycja 1.11 z `next-actions.md` domknięta
+- [x] 2.7 `/` przy 390, 768, 1440 px zgodne z makietami (poza świadomymi odstępstwami)
+- [x] 2.8 Wysłanie hasła prowadzi na `/auth/signup?haslo=…`
+- [x] 2.9 Nawigacja klawiaturą, focus i cele ≥ 44 px
+- [x] 2.10 Zalogowany na `/` nadal ląduje na `/plan/month`
+- [x] 2.11 Pozycja 1.11 z `next-actions.md` domknięta
 
 ### Phase 3: Ekrany auth
 
@@ -515,9 +515,9 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Manual
 
-- [ ] 3.5 Ekrany auth przy 390 / 768 / 1440 px zgodne z makietami
-- [ ] 3.6 Błędy klienta i serwera czytelne
-- [ ] 3.7 Pokaż/ukryj hasło i focus
+- [x] 3.5 Ekrany auth przy 390 / 768 / 1440 px zgodne z makietami
+- [x] 3.6 Błędy klienta i serwera czytelne
+- [x] 3.7 Pokaż/ukryj hasło i focus
 
 ### Phase 4: Hasło z landingu (N1) i przekazanie do `design-planner`
 
@@ -531,6 +531,6 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Manual
 
-- [ ] 4.6 Pełny przepływ z nowym kontem lokalnie
-- [ ] 4.7 Logowanie bez hasła prowadzi na `/plan/month`
-- [ ] 4.8 Hasło ze znakami specjalnymi wyświetla się dosłownie
+- [x] 4.6 Pełny przepływ z nowym kontem lokalnie
+- [x] 4.7 Logowanie bez hasła prowadzi na `/plan/month`
+- [x] 4.8 Hasło ze znakami specjalnymi wyświetla się dosłownie
