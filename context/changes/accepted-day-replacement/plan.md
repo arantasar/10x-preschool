@@ -524,10 +524,10 @@ migration and the code in the same merge. Rollback: drop the `date[]` signature,
 
 #### Automated
 
-- [x] 2.1 Route tests pass, including the new consent cases: `npm run test`
-- [x] 2.2 The route no longer hard-codes the flag
-- [x] 2.3 Type checking passes: `npm run build`
-- [x] 2.4 Linting passes: `npm run lint`
+- [x] 2.1 Route tests pass, including the new consent cases: `npm run test` — 9aaf177
+- [x] 2.2 The route no longer hard-codes the flag — 9aaf177
+- [x] 2.3 Type checking passes: `npm run build` — 9aaf177
+- [x] 2.4 Linting passes: `npm run lint` — 9aaf177
 
 #### Manual
 
@@ -537,13 +537,13 @@ migration and the code in the same merge. Rollback: drop the `date[]` signature,
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass, including the new partition, scope and confirmation cases: `npm run test`
-- [ ] 3.2 No path in the board re-derives targets from acceptance
-- [ ] 3.3 The board sends consent to the writer
-- [ ] 3.4 The all-accepted refusal is gone
-- [ ] 3.5 Type checking passes: `npm run build`
-- [ ] 3.6 Linting passes: `npm run lint`
-- [ ] 3.7 Existing Playwright specs still pass: `npm run test:e2e`
+- [x] 3.1 Unit tests pass, including the new partition, scope and confirmation cases: `npm run test`
+- [x] 3.2 No path in the board re-derives targets from acceptance
+- [x] 3.3 The board sends consent to the writer
+- [x] 3.4 The all-accepted refusal is gone
+- [x] 3.5 Type checking passes: `npm run build`
+- [x] 3.6 Linting passes: `npm run lint`
+- [x] 3.7 Existing Playwright specs still pass: `npm run test:e2e`
 
 #### Manual
 
