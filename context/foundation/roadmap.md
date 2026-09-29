@@ -3,13 +3,13 @@ project: 10xPreschool
 version: 2
 status: draft
 created: 2026-09-19
-updated: 2026-09-28
+updated: 2026-09-29
 prd_version: 2
 main_goal: quality
 top_blocker: decisions
 milestone_id: manageable-month-plan
 milestone_seq: 2
-milestone_status: active
+milestone_status: done
 ---
 
 # Roadmap: 10xPreschool
@@ -20,7 +20,7 @@ milestone_status: active
 
 ## Milestone
 
-**M-02: Plan, którym da się zarządzać** — Status: active (otwarty 2026-09-19)
+**M-02: Plan, którym da się zarządzać** — Status: done (otwarty 2026-09-19, zamknięty 2026-09-29)
 
 - **Intent:** Nauczyciel, który ma już zbudowany plan, potrafi go **poprawić, odczytać i wynieść poza aplikację**, nie wychodząc z widoku, w którym pracuje: regeneruje tydzień z zastępowaniem, cofa akceptację i usuwa dzień z poziomu tygodnia, ogląda aktywności wprost w siatce miesiąca i drukuje zaakceptowany tydzień oraz miesiąc.
 - **Source materials:** `context/foundation/prd-v2.md` (v2), poprzedzone `shape-notes.md` (runda Sokratejska, 2026-09-19). Wszystkie pozycje mają własne FR — w odróżnieniu od `S-04`…`S-08` z `M-01`.
@@ -63,7 +63,7 @@ Tabela jest uporządkowana **rekomendowaną kolejnością planowania**, nie nume
 | S-07  | month-day-preview         | podejrzeć aktywności dnia bez opuszczania siatki miesiąca, na nieuciętym kafelku            | S-08 (done, M-01)    | FR-010, FR-011, US-03 | done     |
 | S-13  | week-print                | wydrukować tydzień czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-02 (done, M-01)    | FR-019, FR-020, US-02 | done     |
 | S-14  | month-print               | wydrukować miesiąc czytelny na papierze, ze szkicami roboczymi oznaczonymi                  | S-13                 | FR-021               | done     |
-| S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | proposed |
+| S-10  | accepted-day-replacement  | rozszerzyć zastępowanie tygodnia na dni zaakceptowane                                       | S-09, S-12           | FR-013               | done     |
 | S-15  | follow-up-questions | poprawić jedną aktywność poleceniem dla modelu i zapisać wynik po przejrzeniu | S-02 (done, M-01) | — (bez FR w PRD v2) | done |
 
 **Pięć z sześciu pozycji jest `ready` i wzajemnie równoległych.** To nie jest hojność
@@ -74,6 +74,9 @@ Jedyna twarda krawędź w całym kamieniu to `S-09` + `S-12` → `S-10`.
 _2026-09-27:_ dopisany `S-14` (`month-print`, FR-021) — po wydaniu `S-13`, z priorytetem „jak
 najszybciej". Stoi na silniku wydruku z `S-13`, więc to druga twarda krawędź kamienia:
 `S-13` → `S-14`. Oba prerekwizyty są `done`; pozycja jest gotowa do `/10x-new month-print`.
+
+_2026-09-29:_ `S-10` zarchiwizowany — wszystkie osiem pozycji `done`, łącznie z nice-to-have.
+Kamień zamknięty w komplecie (§Milestone History).
 
 ## Streams
 
@@ -212,7 +215,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **Unknowns:**
   - Czy rozszerzenie jest osobnym wyborem w tym samym potwierdzeniu, czy drugim krokiem — kształt należy do `/10x-plan`. Owner: `/10x-plan`. Block: nie.
 - **Risk:** Jedyna pozycja, którą graf naprawdę wiąże, i jedyna, bez której kamień się domyka — PRD stwierdza to wprost, a `shape-notes.md` §Forward nazywa ją zaworem bezpieczeństwa: jeśli `M-02` się rozciągnie, to jest pozycja do odpuszczenia. Sekwencjonowana ostatnia nie z powodu kosztu, tylko charakteru: **kasuje hurtowo jedyny stan, który człowiek świadomie oznaczył jako skończony, w systemie, który nie ma cofania nigdzie** (`S-02` usunął undo świadomie, `S-05` kasuje twardo, a PRD §Non-Goals potwierdza: paczka dokłada potwierdzeń, nie historii). Potwierdzenie jest jedyną barierą i to jest świadomie przyjęte ryzyko, nie przeoczenie. Dlatego `S-12` stoi w jej prerekwizytach, a nie tylko obok w kolejności.
-- **Status:** proposed
+- **Status:** done
 
 ### S-15: Polecenie dla modelu przy aktywności
 
@@ -236,7 +239,7 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 | S-07       | month-day-preview         | Podgląd aktywności dnia i pełny podtytuł w siatce miesiąca         | yes                   | Decyzje zamknięte od 2026-08-30; najkrótsza droga do wydania           |
 | S-13       | week-print                | Wydruk tygodnia z oznaczonymi szkicami roboczymi                   | yes                   | Rozstrzygnij układ wydruku wewnątrz slice'a (Open Roadmap Questions #1) |
 | S-14       | month-print               | Wydruk miesiąca z oznaczonymi szkicami roboczymi                   | yes                   | Uogólnij silnik `src/lib/week-pdf/`; rozstrzygnij układ w slice'ie (Open Roadmap Questions #8) |
-| S-10       | accepted-day-replacement  | Rozszerzenie zastępowania tygodnia na dni zaakceptowane            | no                    | Czeka na S-09 + S-12; nice-to-have, kamień domyka się bez niej          |
+| S-10       | accepted-day-replacement  | Rozszerzenie zastępowania tygodnia na dni zaakceptowane            | done                  | Zarchiwizowane 2026-09-29; nice-to-have dowiezione mimo wszystko        |
 
 ## Open Roadmap Questions
 
@@ -252,7 +255,6 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 
 ## Parked
 
-- **Rozszerzenie zastępowania na dni zaakceptowane** — Why parked: **nie jest parkowane dziś** — stoi jako `S-10` ze statusem `proposed`. Wpis istnieje jako wskazanie, którą pozycję odpuścić pierwszą, jeśli `M-02` się rozciągnie (`prd-v2.md` §Scope of Change: „Kamień domyka się bez niego").
 - **Cofanie operacji (undo) i kosz** — Why parked: PRD v2 §Non-Goals — paczka dokłada potwierdzeń, nie historii; kasowanie pozostaje twarde zgodnie z decyzją `S-05`.
 - **Edycja treści z poziomu podglądu w siatce miesiąca** — Why parked: PRD v2 §Non-Goals — podgląd jest wyłącznie do odczytu, edycja zostaje w widoku dnia.
 - **Wstępne pobieranie danych całego miesiąca** — Why parked: PRD v2 §Non-Goals — podgląd dociąga dzień na żądanie; pobieranie z wyprzedzeniem to możliwa późniejsza optymalizacja.
@@ -272,6 +274,9 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
   - **Zamknięty z niepełnym zakresem.** `S-07` (`month-day-preview`, podgląd aktywności w siatce miesiąca) został 2026-08-30 jawnie wypisany z kamienia i przeniesiony do `M-02`. Kamień zamknął się więc **bez odczytu aktywności z siatki**, mimo że ten człon stoi wprost w jego intencie.
   - **Dlaczego mimo to zamknięty:** `S-07` był `ready`, ale bez własnego FR (PRD v1 wyczerpał się na `S-03` — Open Roadmap Questions #3). Zbudowanie go przed PRD v2 oznaczałoby dopisywanie wymagania wstecz do gotowego kodu; trzymanie kamienia otwartego oznaczałoby blokowanie go zależnością papierową. Wybrano trzecią drogę: skrócić zakres świadomie i wejść w `M-02` z czystym kontem.
   - **Dług przeniesiony dalej:** `S-04`, `S-05` i `S-08` są zarchiwizowane z pustą rubryką „PRD refs". **Poprawka 2026-09-19:** PRD v2 tego długu **nie** spłaca — patrz Open Roadmap Questions #3. Wcześniejszy zapis („PRD v2 spłaca to wstecz") był obietnicą wycofaną decyzją użytkownika.
+- **M-02: Plan, którym da się zarządzać** (`manageable-month-plan`) — closed 2026-09-29. Nauczyciel poprawia, odczytuje i wynosi plan poza aplikację: regeneruje tydzień z zastępowaniem (także dni zaakceptowanych, po jawnej zgodzie), edytuje dzień zaakceptowany kosztem akceptacji, cofa akceptację i usuwa dzień z widoku tygodnia, podgląda aktywności w siatce miesiąca, drukuje tydzień i miesiąc oraz poprawia pojedynczą aktywność poleceniem dla modelu.
+  - **Zamknięty w pełnym zakresie**, łącznie z `S-10` (FR-013, jedyny nice-to-have) i z `S-15` dopisanym w trakcie bez FR w PRD v2.
+  - **Dług przeniesiony dalej:** bramka bezpieczeństwa treści zawieszona od 2026-09-19 (`src/lib/services/gate-suspension.ts`); `refine-activity.pl.md` z `S-15` wszedł na produkcję oceniony tylko ręcznie. Dług PRD za `S-04`, `S-05`, `S-08` bez zmian (Open Roadmap Questions #3). Faza 3 `test-plan.md` wciąż `not started`.
 
 ## Done
 
@@ -290,3 +295,4 @@ odblokowuje nazwane pozycje pionowe. W `M-02` żaden kandydat nie przechodzi teg
 - **S-13: Nauczyciel może wydrukować tydzień w postaci czytelnej na papierze i oddać go bez przepisywania czegokolwiek do innego narzędzia; wydruk obejmuje wszystkie dni robocze, a dni niezaakceptowane są na nim widocznie oznaczone jako szkic roboczy.** — Archived 2026-09-27 → `context/archive/2026-09-27-week-print/`. Lesson: —.
 - **S-14: Nauczyciel może pobrać z widoku miesiąca plik PDF z planem całego miesiąca, czytelny na papierze; wydruk obejmuje wszystkie dni robocze miesiąca, a dni niezaakceptowane i dni bez planu są oznaczone tak samo jak w wydruku tygodnia.** — Archived 2026-09-27 → `context/archive/2026-09-27-month-print/`. Lesson: —.
 - **S-15: Nauczyciel może przy jednej aktywności w widoku dnia wpisać polecenie dla modelu („dopisz słowa piosenki", „zamień na zabawę ruchową"); poprawiony tytuł i opis trafiają do szkicu tej aktywności i zapisują się dopiero przyciskiem „Zapisz".** — Archived 2026-09-28 → `context/archive/2026-09-28-follow-up-questions/`. Lesson: —.
+- **S-10: Nauczyciel może jawnie rozszerzyć regenerację tygodnia na dni zaakceptowane, zamiast najpierw cofać akceptacje po kolei.** — Archived 2026-09-29 → `context/archive/2026-09-28-accepted-day-replacement/`. Lesson: —.
