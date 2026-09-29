@@ -1,0 +1,21 @@
+---
+// A single centred card on Owies with decorative blobs - for small, focused
+// account steps (today: the e-mail confirmation; later the M-03 password reset).
+import Blob from "@/components/brand/Blob.astro";
+import Logo from "@/components/brand/Logo.astro";
+---
+
+<div class="relative flex min-h-screen flex-col overflow-hidden">
+  <Blob shape="a" color="sage" class="-top-35 -right-25 h-[460px] w-[520px]" />
+  <Blob shape="b" color="apricot-soft" class="-bottom-30 -left-25 h-[340px] w-[380px]" />
+  <header class="sm:px-gutter relative z-10 px-5 py-[18px] sm:py-[30px]">
+    <Logo size="lg" />
+  </header>
+  <main class="relative z-10 flex flex-1 items-center justify-center px-4 pb-20">
+    <div
+      class="rounded-card bg-mleko shadow-panel flex w-full max-w-[540px] flex-col gap-[22px] px-6 py-8 sm:rounded-[36px] sm:p-[52px]"
+    >
+      <slot />
+    </div>
+  </main>
+</div>

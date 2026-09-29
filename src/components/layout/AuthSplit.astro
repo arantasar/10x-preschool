@@ -1,0 +1,27 @@
+---
+// Two-column auth layout ("Ogród", mock-ups 02 and 06): logo + form on Owies,
+// a dark Las panel with blobs beside it. Below 900 px the panel goes away and
+// the form fills the screen. The panel only repeats the landing's pitch, so it
+// is hidden from assistive tech, as in the design package.
+import Blob from "@/components/brand/Blob.astro";
+import Logo from "@/components/brand/Logo.astro";
+---
+
+<div class="grid min-h-screen min-[900px]:grid-cols-2">
+  <div class="flex flex-col px-5 py-[18px] min-[900px]:px-[clamp(20px,6.6vw,96px)] min-[900px]:py-9">
+    <Logo size="lg" class="self-start" />
+    <main class="my-auto flex w-full max-w-[440px] flex-col gap-[22px] py-10">
+      <slot />
+    </main>
+  </div>
+  <aside
+    class="rounded-panel bg-las text-owies relative m-5 ml-0 hidden flex-col justify-center overflow-hidden p-20 min-[900px]:flex"
+    aria-hidden="true"
+  >
+    <Blob shape="a" color="forest" class="-top-30 -right-25 h-[400px] w-[440px]" />
+    <Blob shape="b" color="apricot" class="-bottom-22 -left-18 h-[250px] w-[280px]" />
+    <div class="relative z-10 flex flex-col gap-8">
+      <slot name="panel" />
+    </div>
+  </aside>
+</div>

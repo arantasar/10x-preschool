@@ -50,10 +50,10 @@ const isPanel = variant === "panel";
           {index + 1}
         </span>
         <div class="flex flex-col gap-1.5 md:gap-3">
-          <h3 class:list={cn("text-xl font-extrabold md:text-2xl", isPanel ? "text-owies" : "text-las")}>
+          <h3 class:list={cn("text-xl font-extrabold md:text-2xl", isPanel ? "text-owies md:text-lg" : "text-las")}>
             {step.title}
           </h3>
-          <p class:list={cn("leading-relaxed", isPanel ? "text-szalwia" : "text-las-szary")}>{step.text}</p>
+          <p class:list={cn("leading-relaxed", isPanel ? "text-szalwia text-[15px]" : "text-las-szary")}>{step.text}</p>
         </div>
       </li>
     ))

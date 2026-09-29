@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Mail, Lock, LogIn } from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
@@ -50,9 +49,8 @@ export default function SignInForm({ serverError }: Props) {
           setEmail(v);
           clearError("email");
         }}
-        placeholder="you@example.com"
+        placeholder="imie@przedszkole.pl"
         error={errors.email}
-        icon={<Mail className="size-4" />}
       />
 
       <FormField
@@ -66,7 +64,6 @@ export default function SignInForm({ serverError }: Props) {
         }}
         placeholder="Twoje hasło"
         error={errors.password}
-        icon={<Lock className="size-4" />}
         endContent={
           <PasswordToggle
             visible={showPassword}
@@ -79,9 +76,7 @@ export default function SignInForm({ serverError }: Props) {
 
       <ServerError message={serverError} />
 
-      <SubmitButton pendingText="Logowanie..." icon={<LogIn className="size-4" />}>
-        Zaloguj się
-      </SubmitButton>
+      <SubmitButton pendingText="Logowanie...">Zaloguj się</SubmitButton>
     </form>
   );
 }

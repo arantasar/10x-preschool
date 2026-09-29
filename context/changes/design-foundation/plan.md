@@ -489,12 +489,12 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Automated
 
-- [x] 2.1 Lint, build, testy
-- [x] 2.2 Topbar usunięty i nikt go nie importuje
-- [x] 2.3 Fałszywa obietnica zniknęła z landingu
-- [x] 2.4 Brak kosmicznych klas na landingu
-- [x] 2.5 Formularz tematu wysyła GET na rejestrację
-- [x] 2.6 Cały e2e zielony
+- [x] 2.1 Lint, build, testy — c8adcc9
+- [x] 2.2 Topbar usunięty i nikt go nie importuje — c8adcc9
+- [x] 2.3 Fałszywa obietnica zniknęła z landingu — c8adcc9
+- [x] 2.4 Brak kosmicznych klas na landingu — c8adcc9
+- [x] 2.5 Formularz tematu wysyła GET na rejestrację — c8adcc9
+- [x] 2.6 Cały e2e zielony — c8adcc9
 
 #### Manual
 
@@ -508,10 +508,10 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Automated
 
-- [ ] 3.1 Lint, build, testy
-- [ ] 3.2 Brak kosmicznych klas w auth
-- [ ] 3.3 Etykiety wiązane przez e2e zostały
-- [ ] 3.4 Cały e2e zielony
+- [x] 3.1 Lint, build, testy
+- [x] 3.2 Brak kosmicznych klas w auth
+- [x] 3.3 Etykiety wiązane przez e2e zostały
+- [x] 3.4 Cały e2e zielony
 
 #### Manual
 

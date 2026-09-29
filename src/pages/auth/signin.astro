@@ -1,5 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import AuthSplit from "@/components/layout/AuthSplit.astro";
+import SampleDayCard from "@/components/marketing/SampleDayCard.astro";
 import SignInForm from "@/components/auth/SignInForm";
 import { authErrorMessage } from "@/lib/auth-error-messages";
 
@@ -13,17 +15,26 @@ const serverError = errorCode ? authErrorMessage(errorCode) : null;
 ---
 
 <Layout title="Zaloguj się">
-  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
-    <div class="w-full max-w-sm rounded-2xl border border-white/10 bg-white/10 p-8 text-white backdrop-blur-xl">
-      <h1
-        class="mb-6 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-center text-2xl font-bold text-transparent"
-      >
-        Zaloguj się
-      </h1>
-      <SignInForm serverError={serverError} client:load />
-      <p class="mt-4 text-center text-sm text-blue-100/60">
-        Nie masz konta? <a href="/auth/signup" class="text-purple-300 hover:underline">Załóż konto</a>
-      </p>
+  <AuthSplit>
+    <div class="flex flex-col gap-2">
+      <h1 class="font-display text-las text-[clamp(36px,3.4vw,48px)] leading-[1.1] font-normal">Witaj ponownie</h1>
+      <p class="text-las-szary">Zaloguj się, żeby wrócić do swojego planu zajęć.</p>
     </div>
-  </div>
+    <SignInForm serverError={serverError} client:load />
+    <p class="border-linia text-las-szary border-t-[1.5px] pt-5 text-center text-base">
+      Nie masz konta? <a href="/auth/signup" class="text-las hover:text-mech font-extrabold underline">Załóż konto</a>
+    </p>
+
+    <Fragment slot="panel">
+      <p class="font-display text-owies text-[clamp(40px,3.9vw,56px)] leading-[1.05]">
+        Jedno hasło.<br />Cały miesiąc <em class="text-szalwia">zajęć.</em>
+      </p>
+      <SampleDayCard
+        day="Czwartek"
+        theme="Wykopaliska w piaskownicy"
+        activities={["Pędzelkami szukamy „kości”", "Składamy szkielet z makaronu", "Muzeum w naszej sali"]}
+        class="max-w-[440px] rotate-[-2deg]"
+      />
+    </Fragment>
+  </AuthSplit>
 </Layout>
