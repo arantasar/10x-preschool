@@ -1,0 +1,31 @@
+---
+// An example day as the planner produces it: day name, the day's theme and its
+// three activity titles. Three, because that is the contract (`ACTIVITY_COUNT`),
+// not one as in the design mock-up; and no category tag, duration or place,
+// because activities carry none of those yet (M-04).
+import { cn } from "@/lib/utils";
+
+interface Props {
+  day: string;
+  theme: string;
+  activities: string[];
+  class?: string;
+}
+
+const { day, theme, activities, class: className } = Astro.props;
+---
+
+<article class:list={cn("rounded-card bg-mleko text-las shadow-card flex flex-col gap-3 p-7", className)}>
+  <p class="font-display text-lg">{day}</p>
+  <h3 class="text-title font-extrabold">{theme}</h3>
+  <ul class="text-las-szary flex flex-col gap-1.5 text-[15px] leading-normal">
+    {
+      activities.map((activity) => (
+        <li class="flex gap-2">
+          <span class="bg-mech mt-[9px] size-1.5 shrink-0 rounded-full" aria-hidden="true" />
+          {activity}
+        </li>
+      ))
+    }
+  </ul>
+</article>

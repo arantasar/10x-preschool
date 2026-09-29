@@ -472,13 +472,13 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Automated
 
-- [x] 1.1 Lint przechodzi (dziś czerwony przez pakiet)
-- [x] 1.2 Build przechodzi
-- [x] 1.3 Testy jednostkowe przechodzą
-- [x] 1.4 Pakiet przeniesiony i nic nie zostało w korzeniu
-- [x] 1.5 Planer przypięty na wszystkich trzech ekranach
-- [x] 1.6 Istniejące warianty przycisku nietknięte
-- [x] 1.7 Cały e2e zielony
+- [x] 1.1 Lint przechodzi (dziś czerwony przez pakiet) — 226a913
+- [x] 1.2 Build przechodzi — 226a913
+- [x] 1.3 Testy jednostkowe przechodzą — 226a913
+- [x] 1.4 Pakiet przeniesiony i nic nie zostało w korzeniu — 226a913
+- [x] 1.5 Planer przypięty na wszystkich trzech ekranach — 226a913
+- [x] 1.6 Istniejące warianty przycisku nietknięte — 226a913
+- [x] 1.7 Cały e2e zielony — 226a913
 
 #### Manual
 
@@ -489,12 +489,12 @@ Brak migracji danych. Wycofanie = revert PR; ciasteczko `pending_topic` wygasa s
 
 #### Automated
 
-- [ ] 2.1 Lint, build, testy
-- [ ] 2.2 Topbar usunięty i nikt go nie importuje
-- [ ] 2.3 Fałszywa obietnica zniknęła z landingu
-- [ ] 2.4 Brak kosmicznych klas na landingu
-- [ ] 2.5 Formularz tematu wysyła GET na rejestrację
-- [ ] 2.6 Cały e2e zielony
+- [x] 2.1 Lint, build, testy
+- [x] 2.2 Topbar usunięty i nikt go nie importuje
+- [x] 2.3 Fałszywa obietnica zniknęła z landingu
+- [x] 2.4 Brak kosmicznych klas na landingu
+- [x] 2.5 Formularz tematu wysyła GET na rejestrację
+- [x] 2.6 Cały e2e zielony
 
 #### Manual
 
