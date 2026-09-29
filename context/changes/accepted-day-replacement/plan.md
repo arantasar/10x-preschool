@@ -518,7 +518,7 @@ migration and the code in the same merge. Rollback: drop the `date[]` signature,
 
 #### Manual
 
-- [ ] 1.7 From psql: unconsented accepted day refuses and changes nothing; consented one replaces both and clears acceptance
+- [x] 1.7 From psql: unconsented accepted day refuses and changes nothing; consented one replaces both and clears acceptance
 
 ### Phase 2: Write route carries consent
 
@@ -531,7 +531,7 @@ migration and the code in the same merge. Rollback: drop the `date[]` signature,
 
 #### Manual
 
-- [ ] 2.5 Browser-console POST with consent replaces both days; without consent returns 409 naming the day and changes neither
+- [x] 2.5 Browser-console POST with consent replaces both days; without consent returns 409 naming the day and changes neither
 
 ### Phase 3: Board — scope question, honest count, run-scoped targets
 
@@ -547,10 +547,10 @@ migration and the code in the same merge. Rollback: drop the `date[]` signature,
 
 #### Manual
 
-- [ ] 3.8 Mixed week, "replace them too": dialog 2 states total and accepted count; all 5 become drafts
-- [ ] 3.9 Mixed week, "only drafts": accepted days keep hasło, theme and badge
-- [ ] 3.10 Declining dialog 2 in either scope requests and changes nothing
-- [ ] 3.11 All-accepted week: one dialog; OK replaces all 5; Anuluj spends nothing
-- [ ] 3.12 Failed consented day blocks „Zapisz tydzień" until retried; retry writes it
-- [ ] 3.13 Draft accepted in another tab mid-run: write refused, day named, week unchanged after reload
-- [ ] 3.14 A second account's week is unaffected
+- [x] 3.8 Mixed week, "replace them too": dialog 2 states total and accepted count; all 5 become drafts
+- [x] 3.9 Mixed week, "only drafts": accepted days keep hasło, theme and badge
+- [x] 3.10 Declining dialog 2 in either scope requests and changes nothing
+- [x] 3.11 All-accepted week: one dialog; OK replaces all 5; Anuluj spends nothing
+- [x] 3.12 Failed consented day blocks „Zapisz tydzień" until retried; retry writes it
+- [x] 3.13 Draft accepted in another tab mid-run: write refused, day named, week unchanged after reload
+- [x] 3.14 A second account's week is unaffected
