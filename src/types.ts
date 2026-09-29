@@ -216,16 +216,29 @@ export type GenerateWeekDayCommand = Pick<DayPlanInsert, "plan_date"> & {
  *
  * There is no `require_absent` counterpart. This command replaces by design —
  * the caller chooses which days to send, and a day it does not send is a day
- * the writer never touches. `confirm_dates` is the accepted-day gate: a list of
- * dates rather than a boolean since `S-10`, because one flag for the whole set
- * would also replace a day accepted elsewhere after the teacher confirmed.
+ * the writer never touches. `confirm_accepted` is the accepted-day gate: one
+ * entry per acceptance the teacher agreed to lose, naming the day and the
+ * `accepted_at` they were shown. Not a boolean, which would also replace a day
+ * accepted elsewhere after the teacher confirmed; not a bare date, which would
+ * also replace a day withdrawn and accepted again since (`S-10`).
  */
 export type GenerateWeekPlanCommand = Pick<DayPlanInsert, "prompt"> & {
   readonly days: readonly GenerateWeekDayCommand[];
   /**
-   * The accepted dates the teacher saw and agreed to lose — batches and
-   * acceptance both. An accepted day in `days` whose date is not here is
-   * refused by the writer (`U0001`), and the whole set with it.
+   * The acceptances the teacher saw and agreed to lose — batches and
+   * acceptance both. An accepted day in `days` without an entry naming both
+   * its date and its current `accepted_at` is refused by the writer (`U0001`),
+   * and the whole set with it.
    */
-  readonly confirm_dates: readonly string[];
+  readonly confirm_accepted: readonly AcceptedDayConsent[];
 };
+
+/**
+ * Consent to replace one accepted day: the day, and the acceptance of it the
+ * teacher was shown. `accepted_at` is the value read back from the row, carried
+ * verbatim - the writer compares it with the row's under `for update`.
+ */
+export interface AcceptedDayConsent {
+  readonly plan_date: string;
+  readonly accepted_at: string;
+}

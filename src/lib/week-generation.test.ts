@@ -16,11 +16,21 @@ import {
 
 const DATES = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18"];
 
+/** Distinct per day, so a consent carrying the wrong day's acceptance shows. */
+function acceptedAt(planDate: string): string {
+  return `${planDate}T07:30:00.123+00:00`;
+}
+
+/** The consents the writer would get for these days, in the shape it gets them. */
+function consents(dates: readonly string[]) {
+  return dates.map((planDate) => ({ plan_date: planDate, accepted_at: acceptedAt(planDate) }));
+}
+
 function week(spec: readonly ("empty" | "draft" | "accepted")[]): WeekDayAcceptance[] {
   return spec.map((kind, index) => ({
     planDate: DATES[index],
     planned: kind !== "empty",
-    accepted: kind === "accepted",
+    acceptedAt: kind === "accepted" ? acceptedAt(DATES[index]) : null,
   }));
 }
 
@@ -48,13 +58,14 @@ describe("partitionWeek", () => {
   });
 
   // The case S-10 exists for: the teacher said yes, so the accepted days are
-  // targets - and they are named, because the writer replaces only named ones.
+  // targets - and they are named with the acceptance the teacher saw, because
+  // the writer replaces only that acceptance of that day.
   it("targets every day and names the accepted ones when they are in scope", () => {
     const partition = partitionWeek(THREE_DRAFT_TWO_ACCEPTED, true);
 
     expect(partition.targets).toEqual(DATES);
     expect(partition.untouched).toEqual([]);
-    expect(partition.consented).toEqual(DATES.slice(3));
+    expect(partition.consented).toEqual(consents(DATES.slice(3)));
   });
 
   it("targets a full week of drafts — having a plan is no longer a reason to skip", () => {
@@ -67,7 +78,7 @@ describe("partitionWeek", () => {
     const partition = partitionWeek(FIVE_ACCEPTED, true);
 
     expect(partition.targets).toEqual(DATES);
-    expect(partition.consented).toEqual(DATES);
+    expect(partition.consented).toEqual(consents(DATES));
     expect(partition.untouched).toEqual([]);
   });
 
@@ -94,7 +105,7 @@ describe("partitionWeek", () => {
 
     expect(partitionWeek(THREE_DRAFT_TWO_ACCEPTED, false).targets).toEqual([DATES[0], DATES[1], DATES[2]]);
     expect(partitionWeek(mixed, true).targets).toEqual(DATES);
-    expect(partitionWeek(mixed, true).consented).toEqual([DATES[0], DATES[2]]);
+    expect(partitionWeek(mixed, true).consented).toEqual(consents([DATES[0], DATES[2]]));
   });
 });
 

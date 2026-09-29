@@ -3,24 +3,25 @@
 -- separate from day_plan_write.test.sql, which is the single-day writer's
 -- contract. this file holds the one property s-10 adds, and it is the last
 -- barrier before a bulk deletion with no undo: an accepted day is replaced only
--- if its date is in p_confirm_dates. the island's copy of `accepted_at` can be
--- stale for the length of a week run, so nothing above this function can hold
--- the line - a day accepted in another tab after the dialog reaches here as an
--- accepted day the teacher never counted.
+-- if p_confirm_accepted names its date *and* the accepted_at the teacher saw.
+-- the island's copy of `accepted_at` can be stale for the length of a week run,
+-- so nothing above this function can hold the line - a day accepted (or
+-- re-accepted) in another tab after the dialog reaches here as an acceptance
+-- the teacher never counted.
 --
 -- same method as the sibling suites: every assertion below was checked by
 -- mutation - break the thing it claims to test, confirm it goes red.
 
 begin;
 
-select plan(15);
+select plan(19);
 
 -- ---------------------------------------------------------------------------
--- the signature: one writer, taking the list
+-- the signature: one writer, taking the consents
 -- ---------------------------------------------------------------------------
 
--- a leftover boolean overload is the bypass the list exists to close: a caller
--- could still say "replace every accepted day" without naming one.
+-- a leftover boolean or date[] overload is the bypass the consents exist to
+-- close: a caller could still name a day without naming the acceptance.
 select is(
   (select count(*)::int from pg_proc
     where proname = 'save_week_plan_generation'
@@ -33,22 +34,22 @@ select is(
   (select pg_get_function_identity_arguments(oid) from pg_proc
     where proname = 'save_week_plan_generation'
       and pronamespace = 'public'::regnamespace),
-  'p_prompt text, p_days jsonb, p_confirm_dates date[]',
-  'the week writer takes a list of consented dates, not a boolean'
+  'p_prompt text, p_days jsonb, p_confirm_accepted jsonb',
+  'the week writer takes consents to acceptances, not dates or a boolean'
 );
 
 -- grants do not survive `drop function`, so what needs proving is that the
 -- migration re-issued the triple - the revoke from anon in particular, which a
 -- revoke from public does not reach.
 select ok(
-  not has_function_privilege('anon', 'public.save_week_plan_generation(text, jsonb, date[])', 'execute'),
+  not has_function_privilege('anon', 'public.save_week_plan_generation(text, jsonb, jsonb)', 'execute'),
   'anon holds no execute privilege on the week writer'
 );
 
 -- the positive control: without it the assertion above would read identically
 -- against a function nobody can execute.
 select ok(
-  has_function_privilege('authenticated', 'public.save_week_plan_generation(text, jsonb, date[])', 'execute'),
+  has_function_privilege('authenticated', 'public.save_week_plan_generation(text, jsonb, jsonb)', 'execute'),
   'authenticated does hold execute on the week writer'
 );
 
@@ -65,23 +66,27 @@ insert into auth.users (instance_id, id, aud, role, email, encrypted_password, e
 values
   ('00000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'authenticated', 'authenticated', 'teacher-a@test.local', 'x', now(), now(), now());
 
-insert into public.day_plans (id, user_id, plan_date, prompt, current_generation)
+-- created_at pinned before the fixed acceptance instant below, which
+-- day_plans_accepted_after_created would otherwise refuse.
+insert into public.day_plans (id, user_id, plan_date, prompt, current_generation, created_at)
 values
-  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000001', '11111111-1111-1111-1111-111111111111', date '2026-06-01', 'stare', 1),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000002', '11111111-1111-1111-1111-111111111111', date '2026-06-02', 'stare', 1),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000003', '11111111-1111-1111-1111-111111111111', date '2026-06-08', 'stare', 1),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000004', '11111111-1111-1111-1111-111111111111', date '2026-06-09', 'stare', 1),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000005', '11111111-1111-1111-1111-111111111111', date '2026-06-15', 'stare', 1),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000006', '11111111-1111-1111-1111-111111111111', date '2026-06-16', 'stare', 1);
+  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000001', '11111111-1111-1111-1111-111111111111', date '2026-06-01', 'stare', 1, timestamptz '2026-05-01 08:00:00+00'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000002', '11111111-1111-1111-1111-111111111111', date '2026-06-02', 'stare', 1, timestamptz '2026-05-01 08:00:00+00'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000003', '11111111-1111-1111-1111-111111111111', date '2026-06-08', 'stare', 1, timestamptz '2026-05-01 08:00:00+00'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000004', '11111111-1111-1111-1111-111111111111', date '2026-06-09', 'stare', 1, timestamptz '2026-05-01 08:00:00+00'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000005', '11111111-1111-1111-1111-111111111111', date '2026-06-15', 'stare', 1, timestamptz '2026-05-01 08:00:00+00'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-000000000006', '11111111-1111-1111-1111-111111111111', date '2026-06-16', 'stare', 1, timestamptz '2026-05-01 08:00:00+00');
 
 insert into public.activities (plan_id, user_id, generation, ordinal, title, description)
 select id, user_id, 1, 1, 'old-' || plan_date::text, 'opis'
   from public.day_plans
  where user_id = '11111111-1111-1111-1111-111111111111';
 
--- after the activities, so no trigger on them can have withdrawn it.
+-- after the activities, so no trigger on them can have withdrawn it. a fixed
+-- instant rather than now(), so a consent can name it - in the form PostgREST
+-- hands the island ("2026-05-30T08:00:00+00:00").
 update public.day_plans
-   set accepted_at = now()
+   set accepted_at = timestamptz '2026-05-30 08:00:00+00'
  where plan_date in (date '2026-06-02', date '2026-06-09', date '2026-06-16');
 
 set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
@@ -96,7 +101,7 @@ select lives_ok(
       'nowe',
       '[{"plan_date":"2026-06-01","activities":[{"title":"new-2026-06-01","description":"opis"}]},
         {"plan_date":"2026-06-02","activities":[{"title":"new-2026-06-02","description":"opis"}]}]'::jsonb,
-      p_confirm_dates => array[date '2026-06-02']
+      p_confirm_accepted => jsonb_build_array('{"plan_date":"2026-06-02","accepted_at":"2026-05-30T08:00:00+00:00"}'::jsonb)
     )$$,
   'a set of {draft, consented accepted} is written'
 );
@@ -135,7 +140,7 @@ select throws_ok(
       'nowe',
       '[{"plan_date":"2026-06-08","activities":[{"title":"new-2026-06-08","description":"opis"}]},
         {"plan_date":"2026-06-09","activities":[{"title":"new-2026-06-09","description":"opis"}]}]'::jsonb,
-      p_confirm_dates => '{}'
+      p_confirm_accepted => '[]'
     )$$,
   'U0001',
   'plan for 2026-06-09 is accepted; regeneration must be confirmed',
@@ -168,27 +173,76 @@ select throws_ok(
   $$select public.save_week_plan_generation(
       'nowe',
       '[{"plan_date":"2026-06-16","activities":[{"title":"new-2026-06-16","description":"opis"}]}]'::jsonb,
-      p_confirm_dates => array[date '2026-06-15']
+      p_confirm_accepted => jsonb_build_array('{"plan_date":"2026-06-15","accepted_at":"2026-05-30T08:00:00+00:00"}'::jsonb)
     )$$,
   'U0001',
   null,
   'consent to one date does not cover another accepted day'
 );
 
+-- withdrawn, edited and accepted again in another tab: same date, a different
+-- acceptance. consent was to lose the plan the teacher saw, not whatever
+-- carries that date now.
+select throws_ok(
+  $$select public.save_week_plan_generation(
+      'nowe',
+      '[{"plan_date":"2026-06-16","activities":[{"title":"new-2026-06-16","description":"opis"}]}]'::jsonb,
+      p_confirm_accepted => '[{"plan_date":"2026-06-16","accepted_at":"2026-05-29T08:00:00+00:00"}]'
+    )$$,
+  'U0001',
+  null,
+  'consent to an earlier acceptance of the same day does not cover a re-acceptance'
+);
+
+-- three-valued logic: with date[] and `= any`, a null element made the test
+-- null and `if` let it through. every unknown must land on the refusal side.
+select throws_ok(
+  $$select public.save_week_plan_generation(
+      'nowe',
+      '[{"plan_date":"2026-06-16","activities":[{"title":"new-2026-06-16","description":"opis"}]}]'::jsonb,
+      p_confirm_accepted => '[null]'
+    )$$,
+  'U0001',
+  null,
+  'a null consent entry covers nothing'
+);
+
+select throws_ok(
+  $$select public.save_week_plan_generation(
+      'nowe',
+      '[{"plan_date":"2026-06-16","activities":[{"title":"new-2026-06-16","description":"opis"}]}]'::jsonb,
+      p_confirm_accepted => jsonb_build_array('{"plan_date":"2026-06-15","accepted_at":"2026-05-30T08:00:00+00:00"}'::jsonb, null, '{"plan_date":"2026-06-16"}'::jsonb)
+    )$$,
+  'U0001',
+  null,
+  'a null entry, or one without accepted_at, beside a valid one covers nothing'
+);
+
+select throws_ok(
+  $$select public.save_week_plan_generation(
+      'nowe',
+      '[{"plan_date":"2026-06-16","activities":[{"title":"new-2026-06-16","description":"opis"}]}]'::jsonb,
+      p_confirm_accepted => null
+    )$$,
+  'U0001',
+  null,
+  'an explicit null p_confirm_accepted consents to nothing'
+);
+
 -- ---------------------------------------------------------------------------
 -- edges of the list
 -- ---------------------------------------------------------------------------
 
--- a date consented while it was accepted may be a draft by the time the write
+-- a day consented while it was accepted may be a draft by the time the write
 -- runs (withdrawn elsewhere). replacing it as a draft is what would have
 -- happened without the consent, so it must not error.
 select lives_ok(
   $$select public.save_week_plan_generation(
       'nowe',
       '[{"plan_date":"2026-06-15","activities":[{"title":"new-2026-06-15","description":"opis"}]}]'::jsonb,
-      p_confirm_dates => array[date '2026-06-15']
+      p_confirm_accepted => jsonb_build_array('{"plan_date":"2026-06-15","accepted_at":"2026-05-30T08:00:00+00:00"}'::jsonb)
     )$$,
-  'a consented date that is only a draft is replaced without error'
+  'a consented day that is only a draft is replaced without error'
 );
 
 select is(
@@ -206,7 +260,7 @@ select throws_ok(
     )$$,
   'U0001',
   null,
-  'an omitted p_confirm_dates behaves as an empty list'
+  'an omitted p_confirm_accepted behaves as an empty list'
 );
 
 select isnt(

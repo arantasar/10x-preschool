@@ -2,7 +2,7 @@
  * Who gets replaced when a week is regenerated, and what the teacher is told
  * before it happens.
  *
- * Lives in `src/lib/` and imports nothing — no zod, no React — for the reason
+ * Lives in `src/lib/` and imports nothing at runtime — no zod, no React — for the reason
  * `day-plan-limits` and `day-plan-guards` do: the island needs all of this and
  * must not drag a validator into the client bundle. It is also why it is a
  * module rather than three functions inside `WeekPlanBoard.tsx`: the partition
@@ -16,17 +16,24 @@
  * teacher open five days one at a time. Acceptance is what is protected, and
  * since `S-10` (FR-013) it is protected by consent rather than absolutely: an
  * accepted day becomes a target only when the teacher says so, in a dialog
- * that names how many accepted days lose their acceptance. The dates they
- * agreed to travel to the writer as `consented`, and the writer refuses any
- * other accepted day it meets.
+ * that names how many accepted days lose their acceptance. The acceptances
+ * they agreed to lose - each day with the `accepted_at` they were shown -
+ * travel to the writer as `consented`, and the writer refuses any other
+ * acceptance it meets.
  */
+
+import type { AcceptedDayConsent } from "@/types";
 
 export interface WeekDayAcceptance {
   readonly planDate: string;
   /** The day has a saved plan of any kind. */
   readonly planned: boolean;
-  /** The saved plan carries `accepted_at`. */
-  readonly accepted: boolean;
+  /**
+   * The saved plan's `accepted_at`, as read back from the row; `null` for a
+   * draft or an empty day. The value itself, not a boolean, because consent
+   * names the acceptance and the writer compares it verbatim.
+   */
+  readonly acceptedAt: string | null;
 }
 
 export interface WeekPartition {
@@ -38,25 +45,25 @@ export interface WeekPartition {
   /** Days this run will deliberately leave alone: accepted days left out of scope. */
   readonly untouched: readonly string[];
   /**
-   * The accepted dates among `targets` — what the teacher agreed to lose, and
-   * exactly what the writer is told it may replace. Empty whenever accepted
-   * days are out of scope.
+   * The accepted days among `targets`, each with the acceptance the teacher
+   * was shown — what they agreed to lose, and exactly what the writer is told
+   * it may replace. Empty whenever accepted days are out of scope.
    */
-  readonly consented: readonly string[];
+  readonly consented: readonly AcceptedDayConsent[];
 }
 
 export function partitionWeek(days: readonly WeekDayAcceptance[], includeAccepted: boolean): WeekPartition {
   const targets: string[] = [];
   const untouched: string[] = [];
-  const consented: string[] = [];
+  const consented: AcceptedDayConsent[] = [];
   for (const day of days) {
-    // `accepted` alone decides. A day that is planned but not accepted is a
+    // Acceptance alone decides. A day that is planned but not accepted is a
     // draft, and a draft is exactly what this operation is for.
-    if (!day.accepted) {
+    if (day.acceptedAt === null) {
       targets.push(day.planDate);
     } else if (includeAccepted) {
       targets.push(day.planDate);
-      consented.push(day.planDate);
+      consented.push({ plan_date: day.planDate, accepted_at: day.acceptedAt });
     } else {
       untouched.push(day.planDate);
     }

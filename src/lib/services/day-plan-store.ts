@@ -114,8 +114,8 @@ function categorize(error: PostgrestError): StoreErrorCategory {
     case "42501":
       return "config";
     // U0001: save_day_plan_generation refusing to supersede an accepted plan
-    // without p_confirm_replace, or save_week_plan_generation refusing one whose
-    // date is not in p_confirm_dates. U0002: save_day_plan_generation declining
+    // without p_confirm_replace, or save_week_plan_generation refusing one
+    // p_confirm_accepted does not name. U0002: save_day_plan_generation declining
     // to touch a day that already has a plan, which is the week generation's
     // skip policy.
     // Both are deliberate refusals rather than broken values, and both are the
@@ -281,9 +281,9 @@ const REFUSED_PLAN_DATE = /plan for (\d{4}-\d{2}-\d{2}) is accepted/;
  * (i.e. to that default) when the message is not the shape we expect, because a
  * wrong date on screen is worse than a vague sentence.
  *
- * Since `S-10` the refusal has one meaning: the island sends every accepted
- * date the teacher agreed to lose, so an accepted day the writer still refuses
- * is one that was accepted *after* the dialog - in another tab, mid-run. The
+ * Since `S-10` the refusal has one meaning: the island sends every acceptance
+ * the teacher agreed to lose, so an accepted day the writer still refuses is
+ * one that was accepted - or accepted again - *after* the dialog, elsewhere. The
  * advice says so and points at the only way out, a fresh page and a fresh run.
  */
 function weekConflictMessage(error: PostgrestError): string | undefined {
@@ -308,10 +308,14 @@ async function callSaveWeekGeneration(supabase: DayPlanClient, command: Generate
       ...(day.theme === undefined ? {} : { theme: day.theme }),
       activities: toJsonActivities(day.activities),
     })),
-    // Sent verbatim. The writer checks each accepted day against this list
-    // under the row lock, so a day accepted since the teacher confirmed is
-    // refused rather than replaced on the strength of someone else's consent.
-    p_confirm_dates: command.confirm_dates.slice(),
+    // Sent verbatim. The writer checks each accepted day against these under
+    // the row lock, so a day accepted - or re-accepted - since the teacher
+    // confirmed is refused rather than replaced on the strength of a consent
+    // to something else.
+    p_confirm_accepted: command.confirm_accepted.map((consent) => ({
+      plan_date: consent.plan_date,
+      accepted_at: consent.accepted_at,
+    })),
   });
 
   if (error) {
@@ -350,7 +354,7 @@ async function callSaveWeekGeneration(supabase: DayPlanClient, command: Generate
  * higher than the teacher pressed for, showing the right plan.
  *
  * `conflict` is the exception because it is a refusal rather than a failure —
- * an accepted day whose date is not in `confirm_dates`. Repeating it would ask
+ * an accepted day `confirm_accepted` does not name. Repeating it would ask
  * the same question twice and tell the teacher nothing new.
  */
 export async function saveWeekGeneration(supabase: DayPlanClient, command: GenerateWeekPlanCommand): Promise<void> {

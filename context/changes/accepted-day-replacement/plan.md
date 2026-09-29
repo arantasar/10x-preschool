@@ -500,6 +500,37 @@ migration and the code in the same merge. Rollback: drop the `date[]` signature,
 - Rules consulted: `context/foundation/lessons.md` (grep gates anchored on constructs and able to fail;
   prompt-change gate — not triggered)
 
+## Addendum — implementation review fixes (2026-09-29)
+
+The implementation review (`reviews/impl-review.md`) changed the consent shape after the three phases
+landed. The phase text above is kept as it was planned; where it and the code disagree, this section
+wins.
+
+- **Consent names the acceptance, not only the date (F2, F1).** A date list let a day withdrawn,
+  edited and accepted again in another tab be replaced on the strength of consent to its *earlier*
+  acceptance, and `= any` over a `date[]` holding a `null` let every accepted day through.
+  `supabase/migrations/20260929120000_week_writer_consent_versions.sql` replaces
+  `p_confirm_dates date[]` with `p_confirm_accepted jsonb` — `[{plan_date, accepted_at}]` — and the
+  writer refuses an accepted day unless an entry names both its date and its current `accepted_at`
+  (an `exists`, so null and partial entries match nothing). A new migration rather than an edit of
+  `20260928120000`, because whether that one already reached the remote database was not verified.
+  Downstream: `GenerateWeekPlanCommand.confirm_accepted: readonly AcceptedDayConsent[]`, request
+  field `confirm_accepted`, `WeekDayAcceptance.acceptedAt: string | null`, `WeekPartition.consented`
+  carries `{plan_date, accepted_at}`. pgTAP gained re-acceptance, `[null]`, mixed null/partial and
+  explicit-null cases (19 assertions).
+- **An untouched day drops a previous run's batch (F3)**, so a drafts-only run after a run that
+  included it can no longer leave a held batch on a „Nietknięty” card that locks the board.
+- **A 409 ends the run (F4).** The held batches are dropped and each day goes back to its saved plan,
+  matching the alert's „Odśwież stronę”; network failures still keep the batches for „Zapisz tydzień”.
+- **Gates restated for the new names (F5).** 1.3 prints `p_prompt text, p_days jsonb,
+  p_confirm_accepted jsonb`, and runs as
+  `docker exec supabase_db_10x-astro-starter psql -U postgres -tAc "…"` where host `psql` is absent.
+  1.4 becomes `grep -n "p_confirm_accepted: command.confirm_accepted" src/lib/services/day-plan-store.ts`;
+  3.3 becomes `grep -n "confirm_accepted: consented" src/components/plan/WeekPlanBoard.tsx` — both
+  return one line now and nothing on `3aa00a9`. 3.7 must run against a freshly started dev server:
+  `reuseExistingServer` picks up whatever is listening on `:4321`, and a long-running one failed the
+  four print specs that pass on a fresh server for both this branch and `master`.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not

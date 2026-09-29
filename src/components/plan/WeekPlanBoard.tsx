@@ -14,7 +14,7 @@ import {
   type WeekDayAcceptance,
 } from "@/lib/week-generation";
 import { acceptanceNotice, CONFLICT_MESSAGE, deleteConfirmation, deletedNotice } from "@/lib/week-day-controls";
-import type { ActivityDraft, DayPlanView, WeekPlanView } from "@/types";
+import type { AcceptedDayConsent, ActivityDraft, DayPlanView, WeekPlanView } from "@/types";
 
 /**
  * The orchestrator. One hasło in, one week replaced - or none of it.
@@ -25,12 +25,12 @@ import type { ActivityDraft, DayPlanView, WeekPlanView } from "@/types";
  *
  *   * **Targets are chosen by acceptance, not by emptiness.** A draft is
  *     replaceable; an accepted day is replaced only when the teacher includes
- *     it in the run (`S-10`), and its date then travels to the writer as
- *     consent. See `@/lib/week-generation`, where the partition, the scope
+ *     it in the run (`S-10`), and its date and `accepted_at` then travel to
+ *     the writer as consent. See `@/lib/week-generation`, where the partition, the scope
  *     question and the confirmation sentence live so they can be tested
  *     without rendering anything.
  *   * **A run is a value, not a derivation.** Once the teacher confirms, the
- *     run's targets, consented dates and hasło are held in `run` until the
+ *     run's targets, consents and hasło are held in `run` until the
  *     write lands. Retries and "Zapisz tydzień" read it; nothing re-derives
  *     the targets from acceptance, because a consented accepted day stays
  *     accepted until the write clears it.
@@ -87,8 +87,8 @@ interface Failure {
 interface WeekRun {
   /** The days this run replaces, in calendar order. */
   readonly targets: readonly string[];
-  /** The accepted dates among `targets` the teacher agreed to lose. */
-  readonly consented: readonly string[];
+  /** The accepted days among `targets`, with the acceptance the teacher agreed to lose. */
+  readonly consented: readonly AcceptedDayConsent[];
   /** The hasło the run generated with - not whatever the field says now. */
   readonly keyword: string;
 }
@@ -297,10 +297,10 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
       const response = await fetch("/api/day-plan/week/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // The consented dates exactly as the teacher confirmed them, never
-        // recomputed from the board: an accepted day nobody named must reach
-        // the writer unconsented so it can refuse it.
-        body: JSON.stringify({ prompt: keyword, days: held, confirm_dates: consented }),
+        // The consents exactly as the teacher confirmed them, never recomputed
+        // from the board: an acceptance nobody named must reach the writer
+        // unconsented so it can refuse it.
+        body: JSON.stringify({ prompt: keyword, days: held, confirm_accepted: consented }),
       });
       const body: unknown = await response.json().catch(() => null);
 
@@ -338,6 +338,28 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
         });
         // The run is over. Leaving it would keep "Zapisz tydzień" reachable
         // for a set that is already written.
+        setRun(null);
+        return;
+      }
+
+      // Refused: an acceptance in the set that the teacher did not consent to,
+      // made elsewhere after the dialog. Re-sending the same consent would be
+      // refused the same way, and the alert already says to refresh, so the
+      // run ends here and its batches go - leaving them held would keep every
+      // control locked behind a "Zapisz tydzień" that cannot succeed. Nothing
+      // was written, so each day goes back to the plan it had.
+      if (response.status === 409) {
+        setFailure({
+          message: isErrorBody(body) ? body.error : "Nie udało się zapisać tygodnia.",
+          signInRequired: false,
+        });
+        setDays((current) => {
+          const next = { ...current };
+          for (const date of targets) {
+            next[date] = { ...next[date], ...planFields(next[date].plan) };
+          }
+          return next;
+        });
         setRun(null);
         return;
       }
@@ -457,8 +479,12 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
           // alone. Marking them before the outline would have a failed outline
           // report successful skips. Empty when the teacher included the
           // accepted days - then nothing is left alone.
+          // The batch goes too: a previous run that included this day may
+          // have left one held here, and this run will neither write nor
+          // clear it - it would sit on a "Nietknięty" card, keep the board
+          // locked, and outlive the run it belonged to.
           for (const date of untouched) {
-            next[date] = { ...next[date], status: "skipped" };
+            next[date] = { ...next[date], status: "skipped", batch: null, error: null, retryable: false };
           }
           return next;
         });
@@ -1082,6 +1108,6 @@ function weekAcceptance(dates: readonly string[], days: Record<string, DayState>
   return dates.map((planDate) => ({
     planDate,
     planned: days[planDate].plan !== null,
-    accepted: days[planDate].plan?.plan.accepted_at != null,
+    acceptedAt: days[planDate].plan?.plan.accepted_at ?? null,
   }));
 }

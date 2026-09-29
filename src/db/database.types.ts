@@ -128,7 +128,7 @@ export type Database = {
         Returns: string
       }
       save_week_plan_generation: {
-        Args: { p_confirm_dates?: string[]; p_days: Json; p_prompt: string }
+        Args: { p_confirm_accepted?: Json; p_days: Json; p_prompt: string }
         Returns: Json
       }
     }
