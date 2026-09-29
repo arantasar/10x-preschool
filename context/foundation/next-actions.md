@@ -1,48 +1,27 @@
-# Next Actions — ustalenia z 2026-08-30, stan na 2026-09-19
+# Next Actions — ustalenia z 2026-08-30, stan na 2026-09-29
 
 > Runbook kolejności prac i komend 10x. Dokument roboczy, edytowany w miejscu:
 > odhaczaj kroki i dopisuj nowe zgłoszenia. Decyzje produktowe mieszkają w
-> `roadmap.md` (S-07 §Decyzje, §Kandydaci do następnego kamienia) — tutaj jest
-> **kolejność i to, co uruchomić**, nie druga kopia tamtych decyzji.
+> `roadmap.md` — tutaj jest **kolejność i to, co uruchomić**, nie druga kopia tamtych decyzji.
 
-## Stan (2026-09-19)
+## Stan (2026-09-29)
 
-- **Krok 1 (`pl-landing-copy`) zamknięty 2026-08-30**, PR #19 zmergowany do `master` —
-  czyli wydany na produkcję. Archiwum: `context/archive/2026-08-30-pl-landing-copy/`.
-- **Krok 1a (`supabase-error-copy`) zamknięty 2026-08-31** — trzy fazy, przegląd implementacji
-  (0 critical / 3 warnings / 3 observations; pięć findingów naprawionych, jeden świadomie
-  pominięty) i archiwizacja (`73b0d85`). Archiwum:
-  `context/archive/2026-08-31-supabase-error-copy/`. Wszedł przed Krokiem 2 jako ogon po
-  Kroku 1, którego bramka wejścia („najbliższa zmiana dotykająca `src/pages/api/auth/*`")
-  została spełniona przez samego siebie.
-- **PR #20 zmergowany 2026-08-31** (`bed1c12`) — czyli wydany na produkcję przez Workers
-  Builds. CI i Workers Builds były zielone przed merge'em. Gałąź `fix/supabase-error-copy`
-  nadal istnieje zdalnie — do sprzątnięcia.
-- **Krok 2 (`testing-content-safety-gate`) zmergowany 2026-09-02** — PR #21 (`92342d3`), czyli
-  wydany na produkcję przez Workers Builds. Archiwum:
-  `context/archive/2026-08-31-testing-content-safety-gate/`. **Krok 3 jest następny i nic go
-  nie blokuje.**
-- **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie.
-- **`M-01` zamknięty 2026-08-30** z ośmioma pozycjami `done` z dziewięciu. `S-07` jawnie
-  wypisany z zakresu i przeniesiony do `M-02` — powód i koszt zapisane w `roadmap.md`
-  §Milestone History.
-- `S-07` jest `ready`, decyzje zamknięte, czeka na FR z PRD v2. Żaden kamień nie jest teraz
-  otwarty (`milestone_status: done`).
-- `test-plan.md` §3: faza 1 i faza 2 `complete` (faza 2 przez Krok 2, `testing-content-safety-gate`),
-  fazy 3–4 `not started`. Ani `pl-landing-copy`, ani `supabase-error-copy` nie ruszyły żadnej
-  fazy rolloutu — ten drugi dołożył test jednostkowy wprost wg wzorca §6.1
-  (`src/lib/auth-error-messages.test.ts`), ale to konsumpcja cookbooka, nie postęp rolloutu.
-- **Warstwa e2e postawiona 2026-09-03 poza rolloutem, zmergowana 2026-09-05** — ćwiczenie
-  kursowe `/10x-e2e` (Moduł 3, Lekcja 4), bez `/10x-new` i bez folderu zmiany. Playwright +
-  trzy testy ryzyk **#4** (wyciek planu między kontami) i **#7** (zakres kasowania, odmowa
-  w dialogu). Gałąź `test/e2e-ownership-delete`, commit `5ba1d12`, **PR #22 zmergowany
-  2026-09-05** (`1282ea2`) — czyli wydany na produkcję przez Workers Builds. Na `master`
-  stoją `@playwright/test`, skrypty `test:e2e` / `test:e2e:ui` oraz `tests/e2e/` razem
-  z `E2E-RULES.md`. Statusy faz 3 i 4 celowo bez zmian; dlaczego to nie jest postęp rolloutu — `test-plan.md`
-  §3 („Pokrycie e2e spoza rolloutu"). Wzorzec dla kolejnych testów: `test-plan.md` §6.6,
-  wnioski: §6.7.
-- PRD v1 wyczerpał się na `S-03`; `S-04`, `S-05`, `S-08` zarchiwizowane z pustą rubryką
-  „PRD refs" (Open Roadmap Questions #3, wciąż otwarte).
+- **`M-02` zamknięty 2026-09-29 w pełnym zakresie** — osiem pozycji `done` (`S-07`, `S-09`…`S-15`),
+  łącznie z nice-to-have `S-10` (`accepted-day-replacement`, PR #35) i dopisanym w trakcie
+  `S-15` (`follow-up-questions`). Wszystko jest na produkcji. Wpis: `roadmap.md` §Milestone History.
+- **Kroki 1–5 zamknięte.** **Krok 6 (faza 3 test-planu) jest następny i nic go nie blokuje** —
+  jego warunek wejścia (Pułapka 2: najpierw regeneracja tygodnia) jest spełniony, a `S-10`
+  ustalił ostateczną semantykę ochrony dnia zaakceptowanego: „nigdy bez jawnej zgody".
+- **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie. Żaden kamień nie
+  jest otwarty (`milestone_status: done`).
+- `test-plan.md` §3: fazy 1–2 `complete`, fazy 3–4 `not started`. Warstwa e2e (Playwright,
+  ryzyka #4 i #7) stoi na `master` od 2026-09-05 poza rolloutem.
+- **Bramka bezpieczeństwa treści zawieszona od 2026-09-19** (koszt OpenRouter,
+  `src/lib/services/gate-suspension.ts`). `refine-activity.pl.md` z `S-15` wszedł na produkcję
+  oceniony tylko ręcznie — po odwieszeniu pierwszy do uruchomienia jest tryb `activity`.
+- Otwarte pytania roadmapy bez właściciela w kolejce: #4 reset hasła, #5 limit regeneracji,
+  #9 generator bez tekstów piosenek i wierszyków; #3 (dług PRD za `S-04`, `S-05`, `S-08`)
+  zostaje otwarte z wyboru.
 
 ## Triage dziesięciu zgłoszeń
 
@@ -138,7 +117,7 @@ przebiegu uznany za nieuzasadniony). Oba zapisane jako zaakceptowane ryzyko w
 **Do sprzątnięcia**: gałąź `feat/testing-content-safety-gate` nadal istnieje zdalnie i
 lokalnie po merge'u (ten sam wzorzec co `fix/supabase-error-copy` po Kroku 1a).
 
-### Krok 3 — PRD v2 i otwarcie `M-02` (zgłoszenia #3, #4, #5, #6, #9 + `S-07`)
+### ✅ Krok 3 — PRD v2 i otwarcie `M-02` (zgłoszenia #3, #4, #5, #6, #9 + `S-07`) — ZROBIONE 2026-09-19
 
 ```
 /10x-shape           # UWAGA: wybierz "Restart from scratch" — patrz niżej
@@ -200,7 +179,7 @@ zarchiwizowane slice'y zostają z pustą rubryką „PRD refs". Uzasadnienie i k
 Wejście merytoryczne: `roadmap.md` §Kandydaci do następnego kamienia (M-02) — **skonsumuj tę
 sekcję w `/10x-shape`, zanim `/10x-roadmap` zregeneruje plik i ją usunie** (Pułapka 1).
 
-### Krok 4 — `S-07` + powiększony kafelek (zgłoszenia #2 i #1), pierwszy slice `M-02`
+### ✅ Krok 4 — `S-07` + powiększony kafelek (zgłoszenia #2 i #1) — ZROBIONE 2026-09-27
 
 ```
 git checkout -b feat/month-day-preview
@@ -217,18 +196,20 @@ git checkout -b feat/month-day-preview
 Decyzje zamknięte 2026-08-30 — nic tu nie zostało do rozstrzygnięcia poza tym, co należy do
 `/10x-research`. To najlepiej opisany slice na całej liście, więc dobry rozpęd po kroku 3.
 
-### Krok 5 — reszta paczki `M-02` (zgłoszenia #3, #4, #5, #6, #9)
+### ✅ Krok 5 — reszta paczki `M-02` (zgłoszenia #3, #4, #5, #6, #9) — ZROBIONE 2026-09-29
 
 Każdy slice standardowym łańcuchem, kolejność ustali `/10x-roadmap`.
 Zacznij od **regeneracji tygodnia z zastępowaniem** — reszta paczki się o nią opiera.
 
-### Krok 6 — faza 3 test-planu (ochrona zapisu i własności)
+### Krok 6 — faza 3 test-planu (ochrona zapisu i własności) — NASTĘPNY
 
 ```
 /10x-test-plan
 ```
 
-**Dopiero po** slice'ie regeneracji tygodnia — patrz Pułapka 2.
+**Dopiero po** slice'ie regeneracji tygodnia — patrz Pułapka 2. Spełnione: `S-09` i `S-10`
+są wydane, więc Ryzyko #3 ma już docelową semantykę — „dzień zaakceptowany ginie tylko po
+jawnej zgodzie na ten konkretny dzień” (zgoda per data w `S-10`).
 
 **Zakres zmniejszył się, ale nie zniknął.** Ryzyka #4 i #7 mają od 2026-09-03 warstwę
 przeglądarkową, a od 2026-09-05 (PR #22) stoi ona na `master`, więc faza wchodzi w nie
@@ -328,7 +309,7 @@ Nie blokują żadnego kroku. Oba wyszły z przeglądu implementacyjnego
 
 | Co | Właściciel / bramka wejścia |
 | --- | --- |
-| **`prd-v2.md` §Business Logic Changes reguła 2 opisuje nieprawdę** — mówi, że „edycja treści nie rusza tej etykiety [akceptacji]", co przestało być prawdą **2026-08-23** wraz z S-02: trigger `activities_edit_clears_acceptance` zeruje `accepted_at` przy każdej zmianie `title` albo `description`. `edit-unaccepts-day` świadomie tego nie poprawił (PRD v2 jest zamrożonym artefaktem M-02, a `CLAUDE.md` traktuje edycje `context/foundation/*` jako osobny tor) i zapisał to w §Migration Notes planu. Konsekwencja, jeśli zostanie: `S-10` ma `S-12` w prerekwizytach i będzie czytać ten akapit jako opis stanu wyjściowego | Brak formalnej bramki — edycja `context/foundation/*` idzie wprost na `master`. **Zrobić przed otwarciem `S-10`**, nie „kiedyś": to jedyna pozycja, która czyta ten akapit jako prawdę. Przy okazji sprawdzić §Constraints „Semantyka zastanych danych" (`prd-v2.md:281-285`), który ostrzega przed dniami zaakceptowanymi i edytowanymi po akceptacji — żadna ścieżka aplikacji nie mogła takiego wiersza wyprodukować od S-02 |
+| **`prd-v2.md` §Business Logic Changes reguła 2 opisuje nieprawdę** — mówi, że „edycja treści nie rusza tej etykiety [akceptacji]", co przestało być prawdą **2026-08-23** wraz z S-02: trigger `activities_edit_clears_acceptance` zeruje `accepted_at` przy każdej zmianie `title` albo `description`. `edit-unaccepts-day` świadomie tego nie poprawił (PRD v2 jest zamrożonym artefaktem M-02, a `CLAUDE.md` traktuje edycje `context/foundation/*` jako osobny tor) i zapisał to w §Migration Notes planu. Konsekwencja, jeśli zostanie: `S-10` ma `S-12` w prerekwizytach i będzie czytać ten akapit jako opis stanu wyjściowego | Brak formalnej bramki — edycja `context/foundation/*` idzie wprost na `master`. ✅ **Poprawione 2026-09-29** (po wydaniu `S-10`, więc z opóźnieniem): reguła 2 opisuje teraz trigger z `S-02`, reguła 1 opisuje stan po `S-10`, a akapit „Semantyka zastanych danych” ma dopisek, że obawa była bezpodstawna. Przy okazji sprawdzić §Constraints „Semantyka zastanych danych" (`prd-v2.md:281-285`), który ostrzega przed dniami zaakceptowanymi i edytowanymi po akceptacji — żadna ścieżka aplikacji nie mogła takiego wiersza wyprodukować od S-02 |
 | **`npm run build` tuż przed `npm run test:e2e` wywraca reużywany serwer dev** — `playwright.config.ts` ma `reuseExistingServer: !process.env.CI`, a build regeneruje `node_modules/.vite`. Serwer, który już stoi, miesza wtedy dwie generacje zoptymalizowanych zależności (`chunk-*.js?v=ecd2270b` obok `react-dom_server.js?v=e0d79318`), React dostaje pusty dispatcher i SSR wyspy pada na `TypeError: Cannot read properties of null (reading 'useState')` w pierwszym `useState` `DayPlanEditor`. Strona dnia renderuje się bez planu, więc **padają testy, które akurat weszły w to okno — najczęściej ryzyko #4 (`seed.spec`, `day-plan-ownership`), których żadna świeża zmiana nie dotyka**. Wyizolowane: mój kod + 6 starych testów przechodzi, 9 testów przy `--workers=2` przechodzi, 9 przy 5 workerach pada. To wyścig, więc większy zestaw trafia w nie częściej — `edit-unaccepts-day` podniósł zestaw z 6 do 9 testów i dlatego zaczęło być widać. **Dotyczy wyłącznie serwera dev; produkcja jedzie z artefaktu buildu, bez optymalizacji zależności w runtime.** Pułapka jest w diagnozie, nie w produkcie: następna osoba zobaczy czerwone ryzyko #4 i wyciągnie wniosek o regresji, której nie ma | Brak bramki — e2e nie stoi w CI (to treść **Kroku 9**), więc nic tego dziś nie łapie. Kandydaci na obejście, do rozstrzygnięcia razem z wpinaniem e2e do CI: `reuseExistingServer: false` (koszt: pełny start serwera na każdy przebieg lokalnie), czyszczenie `node_modules/.vite` w skrypcie `test:e2e`, albo rozgrzanie serwera jednym żądaniem przed wpuszczeniem workerów. **Nie zmieniaj `fullyParallel` ani liczby workerów jako lekarstwa** — równoległość jest tu celowo testem niezależności testów (`playwright.config.ts:22-23`), a jej obniżenie schowałoby objaw i zabrało sygnał |
 | **Wyścig odczyt–zapis w trasie edycji raportuje stan sprzed zapisu, nie skutek** — `acceptance_cleared` to dosłownie `wasAccepted`, a trigger jest warunkowy (`when old.title is distinct from new.title or …`), więc zapis bez zmiany treści zwraca `true`, choć nic nie zdjął. Wyspę ratuje dopiero złożony warunek w `AcceptanceBanner` (`!acceptedAt && clearedByEdit`), czyli obrona w głąb, nie kontrakt. Finding F2 przeglądu, świadomie pominięty przy triage'u | Brak bramki. Jeśli pole zacznie czytać ktokolwiek poza `DayPlanEditor` — np. powierzchnie akceptacji w tygodniu z `S-11` — **najpierw** policzyć je z faktu po zapisie: `wasAccepted && saved.plan.accepted_at === null`, i dołożyć piąty przypadek do `activity/[id].test.ts` (dziś `savedDay()` zawsze buduje `accepted_at: null`, więc wszystkie cztery dzielą jeden kształt po zapisie) |
 

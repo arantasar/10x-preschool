@@ -289,8 +289,10 @@ którą wcześniejsza migracja musiała rozbrajać jawnie.
 
 **Semantyka zastanych danych.** FR-017 zmienia znaczenie stanu „zaakceptowany" dla planów, które już
 są zapisane — zostały zaakceptowane pod regułą „etykieta stanu", a będą czytane pod regułą
-„stwierdzenie o konkretnej treści". Zmiana nie wymaga przepisania danych, ale wymaga świadomości, że
-część istniejących zaakceptowanych dni mogła być edytowana po akceptacji.
+„stwierdzenie o konkretnej treści". Zmiana nie wymaga przepisania danych. _(Poprawka 2026-09-29:
+wcześniejsza obawa, że część zaakceptowanych dni mogła zostać edytowana po akceptacji, jest
+bezpodstawna. Od `S-02` trigger zdejmował akceptację przy każdej edycji treści, więc żadna ścieżka
+aplikacji nie mogła zostawić takiego dnia.)_
 
 **Warunek układu (dawne FR-018).** Pozycja zakresu, która rusza operacje akceptacji w widoku dnia,
 ustawia przy okazji cofnięcie akceptacji i usunięcie dnia w ich docelowym miejscu — przy przycisku
@@ -337,12 +339,24 @@ Zmieniają się **dwie reguły wokół rdzenia**:
    - Po zmianie: generowanie tygodnia **zastępuje** dni niezaakceptowane po jawnym potwierdzeniu
      podającym ich liczbę (FR-012, FR-014); dni zaakceptowane pozostają poza zasięgiem, dopóki
      nauczyciel nie rozszerzy operacji jawnie (FR-013, nice-to-have).
+   - _Stan po `S-10` (2026-09-29):_ rozszerzenie istnieje. Przy tygodniu mieszanym nauczyciel
+     najpierw odpowiada, czy zastąpić także dni zaakceptowane, a potem dostaje potwierdzenie
+     podające łączną liczbę dni i liczbę zaakceptowanych; tydzień w całości zaakceptowany dostaje
+     jedno takie potwierdzenie zamiast odmowy. Zastąpiony dzień zaakceptowany **traci akceptację**
+     i wraca jako szkic roboczy. Zgoda dotyczy konkretnych dat pokazanych w potwierdzeniu: dzień
+     zaakceptowany w innej karcie już po potwierdzeniu powoduje odmowę całego zapisu, a nie ciche
+     nadpisanie.
 2. **Co znaczy „dzień zaakceptowany".**
-   - Dziś: akceptacja jest etykietą stanu, ustawianą i zdejmowaną wyłącznie jawnie. Edycja treści nie
-     rusza tej etykiety — zaakceptowany dzień może mieć treść zmienioną po akceptacji i nadal
-     wyglądać na zatwierdzony.
-   - Po zmianie: akceptacja staje się **stwierdzeniem o konkretnej treści**. Edycja treści dnia
-     zaakceptowanego pyta o zgodę i po niej zdejmuje akceptację (FR-017). Reguła nadrzędna dla całej
+   - Dziś: edycja treści dnia zaakceptowanego zdejmuje akceptację **bez pytania**. Robi to trigger
+     bazy (`activities_edit_clears_acceptance`, od `S-02`, 2026-08-23) przy każdej zmianie tytułu
+     albo opisu aktywności. Nauczyciel nie dostaje ostrzeżenia przed zapisem, a o skutku dowiaduje
+     się dopiero z tego, że dzień przestaje wyglądać na zatwierdzony.
+     _(Poprawione 2026-09-29. Do tego dnia ten punkt twierdził, że edycja nie rusza akceptacji i
+     że dzień może wyglądać na zatwierdzony mimo zmienionej treści. Od `S-02` nie było to prawdą.)_
+   - Po zmianie: akceptacja jest **stwierdzeniem o konkretnej treści**. Edycja treści dnia
+     zaakceptowanego pyta o zgodę i dopiero po niej zdejmuje akceptację (FR-017, `S-12`). To samo
+     obowiązuje przy regeneracji tygodnia: akceptacja znika tylko po potwierdzeniu, które ją
+     wymienia (reguła 1, `S-10`). Reguła nadrzędna dla całej
      paczki: **jawność proporcjonalna do skutku** — nic nie jest zakazane, ale wszystko, co niszczy
      pracę oznaczoną jako gotowa, pyta.
 
