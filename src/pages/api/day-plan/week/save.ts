@@ -29,12 +29,15 @@ export const prerender = false;
  * FR-008 edits, and no new one: content safety has never been a runtime filter
  * in this project, it is a CI gate over the prompts.
  *
- * `confirm_replace` is hard-coded `false`. Accepted days are out of reach in
- * this slice (FR-013 is `S-10`), so the writer refuses any accepted day in the
- * set with `U0001`, which surfaces here as a `409`. The island's confirmation
- * dialog is what makes that refusal rare; it is not what makes it safe - the
- * island's `accepted_at` can be stale, and the writer's `for update` is the
- * thing that cannot be.
+ * **Consent to lose an accepted day names the acceptance** (`S-10`, FR-013).
+ * `confirm_accepted` lists, per day, the date and the `accepted_at` the teacher
+ * was shown and agreed to replace; the writer refuses any other acceptance in
+ * the set with `U0001`, which surfaces here as a `409` naming the day. A
+ * boolean would also replace a draft accepted in another tab during the run;
+ * a bare date would also replace a day withdrawn and accepted again since.
+ * The island's `accepted_at` can be stale; the writer's `for update` cannot,
+ * so the comparison lives there and the route only checks that the list is
+ * well-formed and names days it is writing.
  */
 
 /**
@@ -75,9 +78,9 @@ export const POST: APIRoute = async (context) => {
     await saveWeekGeneration(supabase, {
       prompt: parsed.data.prompt,
       days: parsed.data.days,
-      // Never `true` in this slice. The parameter exists so `S-10` (FR-013)
-      // flips a boolean instead of rewriting the writer.
-      confirm_replace: false,
+      // Passed through verbatim. `[]` when the island sent nothing, which the
+      // writer answers by refusing every accepted day in the set.
+      confirm_accepted: parsed.data.confirm_accepted,
     });
 
     // Read back rather than echoing the request: the response is what the board
@@ -92,8 +95,9 @@ export const POST: APIRoute = async (context) => {
     const body: SaveWeekResponse = { plans: Object.fromEntries(saved) };
     return json({ ...body }, 200);
   } catch (error) {
-    // A `U0001` from an accepted day arrives here as `conflict` -> 409, with the
-    // refused `plan_date` carried in the logged message by `toStoreError`.
+    // A `U0001` from an unconsented acceptance arrives here as `conflict` ->
+    // 409, with the refused `plan_date` carried in the logged message by
+    // `toStoreError` and in the teacher's sentence by `weekConflictMessage`.
     return storeFailure(error);
   }
 };

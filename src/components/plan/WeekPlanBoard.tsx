@@ -7,14 +7,14 @@ import { PROMPT_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
 import { cn } from "@/lib/utils";
 import { isDayPlanBody, isErrorBody, isGeneratedDayBody, isOutlineBody, isSaveWeekBody } from "@/lib/day-plan-guards";
 import {
-  ALL_ACCEPTED_MESSAGE,
   isWeekEmpty,
   partitionWeek,
   replacementConfirmation,
+  scopeQuestion,
   type WeekDayAcceptance,
 } from "@/lib/week-generation";
 import { acceptanceNotice, CONFLICT_MESSAGE, deleteConfirmation, deletedNotice } from "@/lib/week-day-controls";
-import type { ActivityDraft, DayPlanView, WeekPlanView } from "@/types";
+import type { AcceptedDayConsent, ActivityDraft, DayPlanView, WeekPlanView } from "@/types";
 
 /**
  * The orchestrator. One hasło in, one week replaced - or none of it.
@@ -24,9 +24,16 @@ import type { ActivityDraft, DayPlanView, WeekPlanView } from "@/types";
  * outcome. Both of those stopped being true:
  *
  *   * **Targets are chosen by acceptance, not by emptiness.** A draft is
- *     replaceable; an accepted day is not (until `S-10`). See
- *     `@/lib/week-generation`, where the partition and the confirmation
- *     sentence live so they can be tested without rendering anything.
+ *     replaceable; an accepted day is replaced only when the teacher includes
+ *     it in the run (`S-10`), and its date and `accepted_at` then travel to
+ *     the writer as consent. See `@/lib/week-generation`, where the partition, the scope
+ *     question and the confirmation sentence live so they can be tested
+ *     without rendering anything.
+ *   * **A run is a value, not a derivation.** Once the teacher confirms, the
+ *     run's targets, consents and hasło are held in `run` until the
+ *     write lands. Retries and "Zapisz tydzień" read it; nothing re-derives
+ *     the targets from acceptance, because a consented accepted day stays
+ *     accepted until the write clears it.
  *   * **The write is all-or-nothing.** Days are generated through
  *     `/api/day-plan/week/day`, which writes nothing, and the batches are held
  *     *here* until every target has one. Only then does
@@ -71,6 +78,21 @@ interface Failure {
   readonly signInRequired: boolean;
 }
 
+/**
+ * One week run, from the teacher's confirmation until its write lands.
+ *
+ * State rather than a ref: `heldSetIsComplete` is computed at render from it
+ * and decides whether "Zapisz tydzień" appears.
+ */
+interface WeekRun {
+  /** The days this run replaces, in calendar order. */
+  readonly targets: readonly string[];
+  /** The accepted days among `targets`, with the acceptance the teacher agreed to lose. */
+  readonly consented: readonly AcceptedDayConsent[];
+  /** The hasło the run generated with - not whatever the field says now. */
+  readonly keyword: string;
+}
+
 /** One day of the payload `/api/day-plan/week/save` expects. */
 interface WeekWriteDay {
   readonly plan_date: string;
@@ -84,6 +106,7 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
   const [promptError, setPromptError] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState<Busy>("idle");
   const [failure, setFailure] = useState<Failure | null>(null);
+  const [run, setRun] = useState<WeekRun | null>(null);
 
   // Per day, not per island. Five generations run at once and each one owns only
   // its own row; a shared flag here would serialise the week for no reason.
@@ -113,12 +136,13 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
   const readyCount = dayList.filter((day) => day.plan !== null).length;
   const acceptableCount = dayList.filter((day) => day.plan !== null && !day.plan.plan.accepted_at).length;
   const heldCount = dayList.filter((day) => day.batch !== null).length;
-  // Every day this run could target - i.e. every unaccepted day - must be
-  // holding a batch before the write may be re-issued. Writing whatever happens
-  // to be held while one day is still failed would commit a partial week, which
-  // is the one outcome this whole slice exists to make impossible.
-  const heldSetIsComplete =
-    heldCount > 0 && dayList.every((day) => day.plan?.plan.accepted_at != null || day.batch !== null);
+  // Every day the run targets must be holding a batch before the write may be
+  // re-issued. Writing whatever happens to be held while one day is still failed
+  // would commit a partial week, which is the one outcome `S-09` exists to make
+  // impossible. Read off the run, not off acceptance: a consented accepted day
+  // is a target, and counting it as satisfied because it is accepted would offer
+  // the write for a week missing that day.
+  const heldSetIsComplete = run?.targets.every((date) => days[date].batch !== null) ?? false;
 
   function patchDay(planDate: string, patch: Partial<DayState>): void {
     setDays((current) => ({ ...current, [planDate]: { ...current[planDate], ...patch } }));
@@ -223,17 +247,17 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
    * `retryDay` reaches this after a 10-30s generation, so a check it made
    * before that generation says nothing about now.
    */
-  async function writeWeek(targets: readonly string[], keyword: string): Promise<void> {
+  async function writeWeek(weekRun: WeekRun): Promise<void> {
     if (writeInFlight.current) return;
     writeInFlight.current = true;
     try {
-      await writeWeekOnce(targets, keyword);
+      await writeWeekOnce(weekRun);
     } finally {
       writeInFlight.current = false;
     }
   }
 
-  async function writeWeekOnce(targets: readonly string[], keyword: string): Promise<void> {
+  async function writeWeekOnce({ targets, consented, keyword }: WeekRun): Promise<void> {
     const held = await new Promise<WeekWriteDay[] | null>((resolve) => {
       // Read through `setDays` rather than from the `days` closure: the two
       // callers reach this from different places - the end of a week run and
@@ -273,7 +297,10 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
       const response = await fetch("/api/day-plan/week/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: keyword, days: held }),
+        // The consents exactly as the teacher confirmed them, never recomputed
+        // from the board: an acceptance nobody named must reach the writer
+        // unconsented so it can refuse it.
+        body: JSON.stringify({ prompt: keyword, days: held, confirm_accepted: consented }),
       });
       const body: unknown = await response.json().catch(() => null);
 
@@ -309,6 +336,31 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
           }
           return next;
         });
+        // The run is over. Leaving it would keep "Zapisz tydzień" reachable
+        // for a set that is already written.
+        setRun(null);
+        return;
+      }
+
+      // Refused: an acceptance in the set that the teacher did not consent to,
+      // made elsewhere after the dialog. Re-sending the same consent would be
+      // refused the same way, and the alert already says to refresh, so the
+      // run ends here and its batches go - leaving them held would keep every
+      // control locked behind a "Zapisz tydzień" that cannot succeed. Nothing
+      // was written, so each day goes back to the plan it had.
+      if (response.status === 409) {
+        setFailure({
+          message: isErrorBody(body) ? body.error : "Nie udało się zapisać tygodnia.",
+          signInRequired: false,
+        });
+        setDays((current) => {
+          const next = { ...current };
+          for (const date of targets) {
+            next[date] = { ...next[date], ...planFields(next[date].plan) };
+          }
+          return next;
+        });
+        setRun(null);
         return;
       }
 
@@ -355,27 +407,35 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
 
     // Acceptance decides, not emptiness. See `@/lib/week-generation`.
     const acceptance = weekAcceptance(week.days, days);
-    const partition = partitionWeek(acceptance);
+    const draftsOnly = partitionWeek(acceptance, false);
+    const acceptedCount = draftsOnly.untouched.length;
 
-    // The only condition that can refuse a whole week now. "Wszystkie dni mają
-    // już plan" was the old test and is no longer true of anything: a week of
-    // drafts generates.
-    if (partition.targets.length === 0) {
-      setFailure({ message: ALL_ACCEPTED_MESSAGE, signInRequired: false });
-      return;
-    }
+    // Whether the accepted days go too. Asked only on a mixed week: with none
+    // accepted there is nothing to ask, and with all of them accepted "only the
+    // drafts" would be a run over no days - that week is the case FR-013 exists
+    // for, so it goes straight to the count. Anuluj here narrows the run rather
+    // than cancelling it, which is why `scopeQuestion` spells out both outcomes
+    // and why the count dialog below always follows.
+    const includeAccepted =
+      acceptedCount > 0 && (draftsOnly.targets.length === 0 || window.confirm(scopeQuestion(acceptedCount)));
+    const partition = includeAccepted ? partitionWeek(acceptance, true) : draftsOnly;
 
-    // An affordance, not the guard. The island's `accepted_at` can be stale, so
-    // `save_week_plan_generation` still refuses an unconfirmed accepted day
-    // with U0001 - the dialog is what makes that refusal rare, not what makes
-    // it safe. Same division as `DayPlanEditor.generate()`.
+    // The go / stop dialog, stating how many days are replaced and how many of
+    // them are accepted. It is an affordance, not the guard: the island's
+    // `accepted_at` can be stale, so `save_week_plan_generation` refuses any
+    // accepted day whose date is not in the consent list with U0001 - a day
+    // accepted in another tab after this dialog is refused, not replaced. Same
+    // division as `DayPlanEditor.generate()`.
     const confirmation = replacementConfirmation(partition, isWeekEmpty(acceptance));
     if (confirmation !== null && !window.confirm(confirmation)) {
       return;
     }
 
-    const targets = partition.targets;
-    const untouched = partition.untouched;
+    // Captured here, at dialog time, and carried unchanged to the write: the
+    // consent is what the teacher was shown, not what is accepted when the
+    // write fires.
+    const { targets, untouched, consented } = partition;
+    const keyword = prompt;
 
     weekInFlight.current = true;
     setFailure(null);
@@ -389,7 +449,7 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
         const response = await fetch("/api/day-plan/week/outline", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt, dates: targets }),
+          body: JSON.stringify({ prompt: keyword, dates: targets }),
         });
         const body: unknown = await response.json().catch(() => null);
 
@@ -401,6 +461,13 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
           return;
         }
 
+        // The run exists from here on. Not before the outline: a failed outline
+        // generates nothing, and replacing the previous run's scope with this
+        // one would let a retry of a day that failed in the previous run write
+        // the old batches under this run's hasło and consent.
+        const weekRun: WeekRun = { targets, consented, keyword };
+        setRun(weekRun);
+
         const themeByDate = new Map(body.themes.map((theme) => [theme.plan_date, theme.theme]));
         setDays((current) => {
           const next = { ...current };
@@ -410,9 +477,14 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
           // Marked only once the run is genuinely under way, so the badge means
           // what it says: this run reached them and deliberately left them
           // alone. Marking them before the outline would have a failed outline
-          // report successful skips.
+          // report successful skips. Empty when the teacher included the
+          // accepted days - then nothing is left alone.
+          // The batch goes too: a previous run that included this day may
+          // have left one held here, and this run will neither write nor
+          // clear it - it would sit on a "Nietknięty" card, keep the board
+          // locked, and outlive the run it belonged to.
           for (const date of untouched) {
-            next[date] = { ...next[date], status: "skipped" };
+            next[date] = { ...next[date], status: "skipped", batch: null, error: null, retryable: false };
           }
           return next;
         });
@@ -420,12 +492,12 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
         setBusy("generating");
         // All targets at once, so the week costs the slowest day rather than
         // the sum. Nothing is written by any of them.
-        await Promise.allSettled(targets.map((date) => generateDay(date, themeByDate.get(date) ?? null, prompt)));
+        await Promise.allSettled(targets.map((date) => generateDay(date, themeByDate.get(date) ?? null, keyword)));
 
         // One write, after the whole set is in hand. `writeWeek` returns
         // without writing if any target failed, leaving the successes held for
         // a per-day retry.
-        await writeWeek(targets, prompt);
+        await writeWeek(weekRun);
       } catch {
         // The outline's own `fetch` - `response.json()` is already guarded. Left
         // uncaught this rejects the void-ed promise and the button simply returns
@@ -465,7 +537,11 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
    */
   function retryDay(planDate: string): void {
     if (weekInFlight.current) return;
-    const keyword = prompt;
+    // The run this day failed in: its targets, its consent and its hasło. The
+    // hasło field may have been edited since, and writing the week under a
+    // hasło the teacher never generated with would be a lie on every card.
+    const weekRun = run;
+    if (!weekRun?.targets.includes(planDate)) return;
 
     // Registered synchronously, before the generation starts. A week run
     // checks this counter, so the window between "this retry began" and "this
@@ -475,18 +551,14 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
 
     void (async () => {
       try {
-        await generateDay(planDate, days[planDate].theme, keyword);
+        await generateDay(planDate, days[planDate].theme, weekRun.keyword);
 
-        // The set this day belongs to, recomputed from the board: the accepted
-        // days are still out, and every other day either holds a batch or is the
-        // one that just failed again.
-        const targets = weekAcceptance(week.days, days)
-          .filter((day) => !day.accepted)
-          .map((day) => day.planDate);
-
+        // The set this day belongs to is the run's, not one recomputed from
+        // acceptance: a consented accepted day is still accepted here, and
+        // dropping it would write a narrower week than the one confirmed.
         // `writeWeek` takes `writeInFlight` itself, so two retries completing
         // together produce one write, not two.
-        await writeWeek(targets, keyword);
+        await writeWeek(weekRun);
       } finally {
         retriesInFlight.current -= 1;
         // Only the last retry standing clears the banner. Clearing it
@@ -509,15 +581,15 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
    */
   function retryWrite(): void {
     if (weekInFlight.current) return;
-    const targets = weekAcceptance(week.days, days)
-      .filter((day) => !day.accepted)
-      .map((day) => day.planDate);
+    // The run as confirmed - same targets, same consent, same hasło.
+    const weekRun = run;
+    if (weekRun === null) return;
 
     weekInFlight.current = true;
     setFailure(null);
     void (async () => {
       try {
-        await writeWeek(targets, prompt);
+        await writeWeek(weekRun);
       } finally {
         weekInFlight.current = false;
         setBusy("idle");
@@ -839,13 +911,13 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
         </Button>
         {/* The teacher is spending their own credits; the count is not a detail
             to bury. "Pusty dzień" stopped being the divisor at S-09 - every
-            unaccepted day is regenerated now, so the worst case rose from
-            "however many days were empty" to five. This is the only answer this
-            slice gives to the open question about a generation limit, and that
-            is deliberate. */}
+            unaccepted day is regenerated, and since S-10 accepted days too when
+            the teacher agrees, so the worst case is five. This is the only
+            answer these slices give to the open question about a generation
+            limit, and that is deliberate. */}
         <p className="text-xs text-blue-100/50">
           Generowanie tygodnia to jedno wywołanie na plan tygodnia i po jednym na każdy zastępowany dzień. Zaakceptowane
-          dni zostają nietknięte.
+          dni zastąpię tylko wtedy, gdy zgodzisz się na to w oknie potwierdzenia.
         </p>
       </form>
 
@@ -897,8 +969,8 @@ export default function WeekPlanBoard({ week }: WeekPlanBoardProps) {
             day={day}
             disabled={isBusy}
             // Off while anything is held, not only while busy: the held set is
-            // exactly the unaccepted days, and "Zapisz tydzień" is offered only
-            // while every one of them has a batch. Accepting or deleting a day
+            // the run's targets, and "Zapisz tydzień" is offered only while
+            // every one of them has a batch. Accepting or deleting a day
             // under it changes that set, the button disappears, and generations
             // already paid for are stranded. The banner above says why.
             controlsDisabled={isBusy || heldCount > 0}
@@ -1036,6 +1108,6 @@ function weekAcceptance(dates: readonly string[], days: Record<string, DayState>
   return dates.map((planDate) => ({
     planDate,
     planned: days[planDate].plan !== null,
-    accepted: days[planDate].plan?.plan.accepted_at != null,
+    acceptedAt: days[planDate].plan?.plan.accepted_at ?? null,
   }));
 }

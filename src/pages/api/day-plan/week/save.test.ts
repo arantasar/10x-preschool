@@ -68,7 +68,7 @@ afterEach(() => {
 });
 
 describe("POST /api/day-plan/week/save — the write", () => {
-  it("calls the week writer exactly once, with confirm_replace false", async () => {
+  it("calls the week writer exactly once", async () => {
     const supabase = writtenWeek();
 
     const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
@@ -77,8 +77,6 @@ describe("POST /api/day-plan/week/save — the write", () => {
     expect(supabase.rpc).toHaveBeenCalledTimes(1);
     const [fn, args] = supabase.rpc.mock.calls[0] as [string, Record<string, unknown>];
     expect(fn).toBe("save_week_plan_generation");
-    // Never true in this slice: accepted days are S-10's.
-    expect(args.p_confirm_replace).toBe(false);
     expect(args.p_days).toHaveLength(2);
   });
 
@@ -91,6 +89,82 @@ describe("POST /api/day-plan/week/save — the write", () => {
     expect(Object.keys(parsed.plans).sort()).toEqual([DATES[0], DATES[1]]);
     // The read-back's counter, which the request never carried.
     expect(parsed.plans[DATES[0]].plan.current_generation).toBe(2);
+  });
+});
+
+// S-10: consent to lose an accepted day names the day and the acceptance the
+// teacher was shown. The writer is what holds the line - it compares both under
+// the row lock - so what this route owes it is the list exactly as the teacher
+// gave it, and a refusal of any list that does not describe the set being
+// written.
+const ACCEPTED_AT = "2026-09-10T08:00:00.123+00:00";
+
+function consent(planDate: string, acceptedAt: unknown = ACCEPTED_AT) {
+  return { plan_date: planDate, accepted_at: acceptedAt };
+}
+
+describe("POST /api/day-plan/week/save — consent names the acceptance", () => {
+  it("hands the consents to the writer verbatim", async () => {
+    const supabase = writtenWeek();
+
+    const response = await call({
+      request: request(body({ confirm_accepted: [consent(DATES[1])] })),
+      locals: { user: USER, supabase: supabase.client },
+    });
+
+    expect(response.status).toBe(200);
+    const [, args] = supabase.rpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(args.p_confirm_accepted).toEqual([consent(DATES[1])]);
+    // Neither earlier shape survives beside it: a boolean would replace every
+    // accepted day, a bare date list would replace a re-accepted one.
+    expect(args).not.toHaveProperty("p_confirm_replace");
+    expect(args).not.toHaveProperty("p_confirm_dates");
+  });
+
+  // An older client, or one that simply says nothing, gets the refusal rather
+  // than the deletion.
+  it("consents to nothing when the request omits confirm_accepted", async () => {
+    const supabase = writtenWeek();
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(200);
+    const [, args] = supabase.rpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(args.p_confirm_accepted).toEqual([]);
+  });
+
+  const rejected: { name: string; payload: unknown }[] = [
+    { name: "a consented day that is not among the days", payload: body({ confirm_accepted: [consent(DATES[3])] }) },
+    {
+      name: "the same consented day twice",
+      payload: body({ confirm_accepted: [consent(DATES[1]), consent(DATES[1], "2026-09-11T08:00:00+00:00")] }),
+    },
+    { name: "a consented day that is not a date", payload: body({ confirm_accepted: [consent("wtorek")] }) },
+    { name: "a consent without accepted_at", payload: body({ confirm_accepted: [{ plan_date: DATES[1] }] }) },
+    { name: "a consent whose accepted_at is null", payload: body({ confirm_accepted: [consent(DATES[1], null)] }) },
+    {
+      name: "a consent whose accepted_at is not a timestamp",
+      payload: body({ confirm_accepted: [consent(DATES[1], "wczoraj")] }),
+    },
+    { name: "a null consent", payload: body({ confirm_accepted: [null] }) },
+    { name: "a bare date list, the previous shape", payload: body({ confirm_accepted: [DATES[1]] }) },
+    { name: "confirm_accepted as a boolean", payload: body({ confirm_accepted: true }) },
+    {
+      name: `more than ${String(WEEK_DAYS)} consents`,
+      payload: body({
+        days: DATES.map((d) => day(d)),
+        confirm_accepted: [...DATES, "2026-09-19"].map((d) => consent(d)),
+      }),
+    },
+  ];
+
+  it.each(rejected)("answers 400 on $name and never reaches the store", async ({ payload }) => {
+    const supabase = writtenWeek();
+
+    const response = await call({ request: request(payload), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(400);
+    expect(supabase.rpc).not.toHaveBeenCalled();
   });
 });
 
@@ -177,8 +251,11 @@ describe("POST /api/day-plan/week/save — refusals and failures", () => {
     expect(parsed.retryable).toBe(false);
   });
 
-  // U0001: an accepted day in the set, unconfirmed. The teacher resolves this,
-  // not a retry — which is why `saveWeekGeneration` must not re-issue it.
+  // U0001: an accepted day in the set whose acceptance the teacher did not
+  // consent to - since S-10, one accepted (or re-accepted) elsewhere after the
+  // dialog. The teacher
+  // resolves this, not a retry — which is why `saveWeekGeneration` must not
+  // re-issue it.
   it("surfaces a store conflict as 409 and does not retry it", async () => {
     const supabase = supabaseStub({
       rpcError: {
@@ -200,6 +277,10 @@ describe("POST /api/day-plan/week/save — refusals and failures", () => {
     // nothing to go and look at, which is the whole reason the function
     // interpolates the date into its exception.
     expect(parsed.error).toContain("15 września 2026");
+    // The advice is for the case the refusal now means: accepted in the
+    // meantime, so the page is stale and the run has to start again.
+    expect(parsed.error).toContain("w międzyczasie");
+    expect(parsed.error).toContain("Odśwież stronę");
   });
 
   // The date is lifted out of the function's prose with a regex, so the two can

@@ -34,7 +34,10 @@ import type { ActivityDraft, DayPlanView } from "@/types";
  * change is not mistaken for a rename: it used to mean "this day already had a
  * plan, so the week generation left it alone". Having a plan is no longer a
  * reason to be left alone — a draft is exactly what gets replaced — so it now
- * means "accepted, and therefore deliberately out of reach".
+ * means "accepted, and deliberately left alone by this run". Since `S-10` an
+ * accepted day is out of reach only when the teacher scoped the run to the
+ * drafts; one they included is a target like any other and shows the held /
+ * saving badge, which already outranks the acceptance badge below.
  *
  * `held` is new: generated, sitting in this island's memory, **not written**.
  * It is the state that makes an all-or-nothing week possible, and the one the

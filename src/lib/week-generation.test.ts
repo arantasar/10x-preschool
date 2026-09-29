@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  ALL_ACCEPTED_MESSAGE,
   isWeekEmpty,
   partitionWeek,
   replacementConfirmation,
+  scopeQuestion,
   type WeekDayAcceptance,
 } from "./week-generation";
 
@@ -16,11 +16,21 @@ import {
 
 const DATES = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18"];
 
+/** Distinct per day, so a consent carrying the wrong day's acceptance shows. */
+function acceptedAt(planDate: string): string {
+  return `${planDate}T07:30:00.123+00:00`;
+}
+
+/** The consents the writer would get for these days, in the shape it gets them. */
+function consents(dates: readonly string[]) {
+  return dates.map((planDate) => ({ plan_date: planDate, accepted_at: acceptedAt(planDate) }));
+}
+
 function week(spec: readonly ("empty" | "draft" | "accepted")[]): WeekDayAcceptance[] {
   return spec.map((kind, index) => ({
     planDate: DATES[index],
     planned: kind !== "empty",
-    accepted: kind === "accepted",
+    acceptedAt: kind === "accepted" ? acceptedAt(DATES[index]) : null,
   }));
 }
 
@@ -31,33 +41,99 @@ const FIVE_DRAFT = week(["draft", "draft", "draft", "draft", "draft"]);
 
 describe("partitionWeek", () => {
   it("targets every day of an empty week and spares none", () => {
-    const partition = partitionWeek(FIVE_EMPTY);
+    const partition = partitionWeek(FIVE_EMPTY, false);
 
     expect(partition.targets).toEqual(DATES);
     expect(partition.untouched).toEqual([]);
+    expect(partition.consented).toEqual([]);
   });
 
   // The case S-09 exists for: a draft is not protected, an acceptance is.
-  it("targets drafts and spares accepted days", () => {
-    const partition = partitionWeek(THREE_DRAFT_TWO_ACCEPTED);
+  it("targets drafts and spares accepted days when they are out of scope", () => {
+    const partition = partitionWeek(THREE_DRAFT_TWO_ACCEPTED, false);
 
     expect(partition.targets).toEqual(DATES.slice(0, 3));
     expect(partition.untouched).toEqual(DATES.slice(3));
+    expect(partition.consented).toEqual([]);
+  });
+
+  // The case S-10 exists for: the teacher said yes, so the accepted days are
+  // targets - and they are named with the acceptance the teacher saw, because
+  // the writer replaces only that acceptance of that day.
+  it("targets every day and names the accepted ones when they are in scope", () => {
+    const partition = partitionWeek(THREE_DRAFT_TWO_ACCEPTED, true);
+
+    expect(partition.targets).toEqual(DATES);
+    expect(partition.untouched).toEqual([]);
+    expect(partition.consented).toEqual(consents(DATES.slice(3)));
   });
 
   it("targets a full week of drafts — having a plan is no longer a reason to skip", () => {
-    expect(partitionWeek(FIVE_DRAFT).targets).toEqual(DATES);
+    expect(partitionWeek(FIVE_DRAFT, false).targets).toEqual(DATES);
+    // Nothing accepted, so nothing to consent to, whichever scope was asked.
+    expect(partitionWeek(FIVE_DRAFT, true).consented).toEqual([]);
   });
 
-  it("targets nothing when every day is accepted", () => {
-    const partition = partitionWeek(FIVE_ACCEPTED);
+  it("targets and consents to every day of a fully accepted week in scope", () => {
+    const partition = partitionWeek(FIVE_ACCEPTED, true);
+
+    expect(partition.targets).toEqual(DATES);
+    expect(partition.consented).toEqual(consents(DATES));
+    expect(partition.untouched).toEqual([]);
+  });
+
+  it("targets nothing in a fully accepted week out of scope", () => {
+    const partition = partitionWeek(FIVE_ACCEPTED, false);
 
     expect(partition.targets).toEqual([]);
     expect(partition.untouched).toEqual(DATES);
   });
 
+  // The guarantee the writer relies on: a scope without accepted days never
+  // produces consent, whatever the week holds.
+  it.each([
+    ["five empty days", FIVE_EMPTY],
+    ["three drafts and two accepted", THREE_DRAFT_TWO_ACCEPTED],
+    ["five accepted days", FIVE_ACCEPTED],
+    ["five drafts", FIVE_DRAFT],
+  ])("consents to nothing on %s when accepted days are out of scope", (_name, days) => {
+    expect(partitionWeek(days, false).consented).toEqual([]);
+  });
+
   it("keeps calendar order, which the outline then indexes by position", () => {
-    expect(partitionWeek(THREE_DRAFT_TWO_ACCEPTED).targets).toEqual([DATES[0], DATES[1], DATES[2]]);
+    const mixed = week(["accepted", "draft", "accepted", "empty", "draft"]);
+
+    expect(partitionWeek(THREE_DRAFT_TWO_ACCEPTED, false).targets).toEqual([DATES[0], DATES[1], DATES[2]]);
+    expect(partitionWeek(mixed, true).targets).toEqual(DATES);
+    expect(partitionWeek(mixed, true).consented).toEqual(consents([DATES[0], DATES[2]]));
+  });
+});
+
+describe("scopeQuestion", () => {
+  // Anuluj narrows rather than cancels here, which is not what the button's
+  // name says - so the sentence has to say what each button does.
+  it("names what OK does and what Anuluj does", () => {
+    const question = scopeQuestion(2);
+
+    expect(question).toContain("OK — zastąpię także te dni, a ich akceptacja zostanie cofnięta.");
+    expect(question).toContain("Anuluj — zastąpię tylko dni niezaakceptowane.");
+  });
+
+  // It states no count of what is destroyed, so it must never be the last word.
+  it("says a confirmation follows either way", () => {
+    expect(scopeQuestion(2)).toContain("W obu przypadkach zapytam jeszcze o potwierdzenie.");
+  });
+
+  it.each([
+    [1, "1 dzień tego tygodnia jest zaakceptowany."],
+    [2, "2 dni tego tygodnia są zaakceptowane."],
+    [4, "4 dni tego tygodnia są zaakceptowane."],
+  ])("agrees the accepted count at %i", (count, expected) => {
+    expect(scopeQuestion(count)).toMatch(new RegExp(`^${expected}`));
+  });
+
+  it("speaks of one day in the singular", () => {
+    expect(scopeQuestion(1)).toContain("OK — zastąpię także ten dzień, a jego akceptacja zostanie cofnięta.");
   });
 });
 
@@ -72,8 +148,8 @@ describe("isWeekEmpty", () => {
 });
 
 describe("replacementConfirmation", () => {
-  function confirm(days: readonly WeekDayAcceptance[]): string | null {
-    return replacementConfirmation(partitionWeek(days), isWeekEmpty(days));
+  function confirm(days: readonly WeekDayAcceptance[], includeAccepted = false): string | null {
+    return replacementConfirmation(partitionWeek(days, includeAccepted), isWeekEmpty(days));
   }
 
   // Nothing to overwrite, so nothing to ask. A dialog here would be the one
@@ -82,11 +158,33 @@ describe("replacementConfirmation", () => {
     expect(confirm(FIVE_EMPTY)).toBeNull();
   });
 
-  it("states both numbers on a mixed week", () => {
+  it("states both numbers on a mixed week with only the drafts in scope", () => {
     const message = confirm(THREE_DRAFT_TWO_ACCEPTED);
 
     expect(message).toBe(
       "Zastąpię 3 dni nowymi propozycjami. 2 zaakceptowane dni zostaną nietknięte. Tej operacji nie można cofnąć.",
+    );
+  });
+
+  // FR-014's "ile z nich jest zaakceptowanych", non-zero for the first time.
+  it("states the total and the accepted count on a mixed week with accepted days in scope", () => {
+    const message = confirm(THREE_DRAFT_TWO_ACCEPTED, true);
+
+    expect(message).toBe(
+      "Zastąpię 5 dni nowymi propozycjami, w tym 2 zaakceptowane — ich akceptacja zostanie cofnięta. " +
+        "Tej operacji nie można cofnąć.",
+    );
+    // Nothing is spared, so nothing may claim to be.
+    expect(message).not.toContain("nietknięt");
+  });
+
+  it("names a fully accepted week as such", () => {
+    const message = confirm(FIVE_ACCEPTED, true);
+
+    expect(message).toBe(
+      "Wszystkie dni tego tygodnia są zaakceptowane. " +
+        "Zastąpię wszystkie 5 dni nowymi propozycjami, a ich akceptacja zostanie cofnięta. " +
+        "Tej operacji nie można cofnąć.",
     );
   });
 
@@ -99,13 +197,14 @@ describe("replacementConfirmation", () => {
     expect(message).not.toContain("zaakceptowan");
   });
 
-  it("asks nothing when every day is accepted — that run is refused, not confirmed", () => {
-    expect(confirm(FIVE_ACCEPTED)).toBeNull();
-  });
-
   it("always warns that the operation cannot be undone", () => {
-    for (const days of [THREE_DRAFT_TWO_ACCEPTED, FIVE_DRAFT]) {
-      expect(confirm(days)).toContain("nie można cofnąć");
+    for (const message of [
+      confirm(THREE_DRAFT_TWO_ACCEPTED),
+      confirm(THREE_DRAFT_TWO_ACCEPTED, true),
+      confirm(FIVE_ACCEPTED, true),
+      confirm(FIVE_DRAFT),
+    ]) {
+      expect(message).toContain("nie można cofnąć");
     }
   });
 
@@ -121,7 +220,7 @@ describe("replacementConfirmation", () => {
       count,
     );
 
-    expect(replacementConfirmation(partitionWeek(days), false)).toContain(expected);
+    expect(replacementConfirmation(partitionWeek(days, false), false)).toContain(expected);
   });
 
   it.each([
@@ -131,19 +230,16 @@ describe("replacementConfirmation", () => {
   ])("agrees the untouched count at %i", (count, expected) => {
     const days = week(["draft", ...Array<"accepted">(count).fill("accepted")] as ("empty" | "draft" | "accepted")[]);
 
-    expect(replacementConfirmation(partitionWeek(days), false)).toContain(expected);
-  });
-});
-
-describe("ALL_ACCEPTED_MESSAGE", () => {
-  // The old copy said "mają już plan", which stops being the operative
-  // condition the moment a draft becomes replaceable.
-  it("names acceptance as the reason and not the presence of a plan", () => {
-    expect(ALL_ACCEPTED_MESSAGE).toContain("zaakceptowane");
-    expect(ALL_ACCEPTED_MESSAGE).not.toContain("mają już plan");
+    expect(replacementConfirmation(partitionWeek(days, false), false)).toContain(expected);
   });
 
-  it("names the way out", () => {
-    expect(ALL_ACCEPTED_MESSAGE).toContain("Cofnij akceptację");
+  it.each([
+    [1, "Zastąpię 2 dni nowymi propozycjami, w tym 1 zaakceptowany — jego akceptacja zostanie cofnięta."],
+    [2, "Zastąpię 3 dni nowymi propozycjami, w tym 2 zaakceptowane — ich akceptacja zostanie cofnięta."],
+    [4, "Zastąpię 5 dni nowymi propozycjami, w tym 4 zaakceptowane — ich akceptacja zostanie cofnięta."],
+  ])("agrees the consented count at %i", (count, expected) => {
+    const days = week(["draft", ...Array<"accepted">(count).fill("accepted")] as ("empty" | "draft" | "accepted")[]);
+
+    expect(replacementConfirmation(partitionWeek(days, true), false)).toContain(expected);
   });
 });
