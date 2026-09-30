@@ -824,11 +824,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [x] 3.1 Lint, build, testy
-- [x] 3.2 Strona tygodnia bez przypięcia
-- [x] 3.3 Brak kosmicznych klas na tygodniu
-- [x] 3.4 Etykieta wiązana przez e2e została
-- [x] 3.5 Cały e2e zielony
+- [x] 3.1 Lint, build, testy — 2f3ea34
+- [x] 3.2 Strona tygodnia bez przypięcia — 2f3ea34
+- [x] 3.3 Brak kosmicznych klas na tygodniu — 2f3ea34
+- [x] 3.4 Etykieta wiązana przez e2e została — 2f3ea34
+- [x] 3.5 Cały e2e zielony — 2f3ea34
 
 #### Manual
 
@@ -842,11 +842,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [ ] 4.1 Lint, build, testy
-- [ ] 4.2 Żadna strona planera nie jest przypięta
-- [ ] 4.3 Brak kosmicznych klas w całym planerze
-- [ ] 4.4 Tytuł propozycji nadal jest nagłówkiem
-- [ ] 4.5 Cały e2e zielony
+- [x] 4.1 Lint, build, testy
+- [x] 4.2 Żadna strona planera nie jest przypięta
+- [x] 4.3 Brak kosmicznych klas w całym planerze
+- [x] 4.4 Tytuł propozycji nadal jest nagłówkiem
+- [x] 4.5 Cały e2e zielony
 
 #### Manual
 
