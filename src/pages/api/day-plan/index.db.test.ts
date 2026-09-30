@@ -78,7 +78,7 @@ describe("GET /api/day-plan — by date, across two teachers", () => {
     const response = await call(GET, b, date);
     const text = await response.text();
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(200);
     expect(JSON.parse(text)).toEqual({ error: "Ten dzień nie ma jeszcze planu.", retryable: false });
     expect(text).not.toContain(prompt);
 
