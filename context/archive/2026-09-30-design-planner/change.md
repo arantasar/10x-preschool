@@ -1,10 +1,10 @@
 ---
 change_id: design-planner
 title: Design planner
-status: impl_reviewed
+status: archived
 created: 2026-09-30
 updated: 2026-09-30
-archived_at: null
+archived_at: 2026-09-30T17:06:49Z
 ---
 
 ## Notes
