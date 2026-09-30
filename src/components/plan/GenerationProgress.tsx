@@ -69,20 +69,20 @@ export function GenerationProgress({ startedAt }: GenerationProgressProps) {
   return (
     <div
       className={cn(
-        "rounded-xl border p-4",
-        stage.isRetry ? "border-amber-400/40 bg-amber-500/10" : "border-white/15 bg-white/5",
+        "rounded-input border-[1.5px] p-4",
+        stage.isRetry ? "border-ostrzezenie-ramka bg-ostrzezenie-tlo" : "border-linia bg-owies",
       )}
     >
       {/* Announced, not just animated: a teacher using a screen reader gets the
           same "still working" signal as one watching the spinner. */}
-      <p aria-live="polite" className="flex items-center gap-2 text-sm text-white">
+      <p aria-live="polite" className="text-las flex items-center gap-2 text-[15px] font-bold">
         {stage.isRetry ? (
-          <RefreshCw className="size-4 shrink-0 animate-spin text-amber-300" />
+          <RefreshCw className="text-ostrzezenie size-4 shrink-0 animate-spin" />
         ) : (
-          <Loader2 className="size-4 shrink-0 animate-spin text-purple-300" />
+          <Loader2 className="text-mech size-4 shrink-0 animate-spin" />
         )}
         <span>{stage.label}</span>
-        <span className="ml-auto shrink-0 text-blue-100/60 tabular-nums">{seconds} s</span>
+        <span className="text-las-szary ml-auto shrink-0 font-normal tabular-nums">{seconds} s</span>
       </p>
 
       {/* Position in the sequence, not a share of the remaining time. */}
@@ -91,19 +91,16 @@ export function GenerationProgress({ startedAt }: GenerationProgressProps) {
           <li
             key={candidate.label}
             className={cn(
-              "h-1 flex-1 rounded-full transition-colors",
-              index < stageIndex && "bg-purple-400/70",
-              index === stageIndex &&
-                (candidate.isRetry ? "animate-pulse bg-amber-300" : "animate-pulse bg-purple-300"),
-              index > stageIndex && "bg-white/15",
+              "h-1.5 flex-1 rounded-full transition-colors",
+              index < stageIndex && "bg-mech",
+              index === stageIndex && (candidate.isRetry ? "bg-ostrzezenie animate-pulse" : "bg-las animate-pulse"),
+              index > stageIndex && "bg-linia",
             )}
           />
         ))}
       </ol>
 
-      <p className="mt-3 text-xs text-blue-100/50">
-        Generowanie zwykle trwa od 10 do 30 sekund. Nie zamykaj tej strony.
-      </p>
+      <p className="text-las-szary mt-3 text-sm">Generowanie zwykle trwa od 10 do 30 sekund. Nie zamykaj tej strony.</p>
     </div>
   );
 }

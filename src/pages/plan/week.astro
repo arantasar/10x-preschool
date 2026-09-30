@@ -1,7 +1,7 @@
 ---
 import PlannerLayout from "@/layouts/PlannerLayout.astro";
 import WeekPlanBoard from "@/components/plan/WeekPlanBoard";
-import { addDays, formatWeekRange, resolveWeekStart, workingDaysOf } from "@/lib/day-plan-dates";
+import { addDays, formatWeekRange, resolveWeekStart, todayIsoDate, workingDaysOf } from "@/lib/day-plan-dates";
 import { normalizePendingTopic, PENDING_TOPIC_COOKIE } from "@/lib/pending-topic";
 import { readWeekPlans } from "@/lib/services/day-plan-store";
 import type { DayPlanView, WeekPlanView } from "@/types";
@@ -46,65 +46,78 @@ if (!readFailed && Astro.cookies.has(PENDING_TOPIC_COOKIE)) {
 const previousWeek = addDays(weekStart, -7);
 const nextWeek = addDays(weekStart, 7);
 const month = weekStart.slice(0, 7);
+
+// Where the scope toggle's "Jeden dzień" leads: today when it is one of this
+// week's working days, the week's Monday otherwise.
+const today = todayIsoDate();
+const dayHref = `/plan?date=${days.includes(today) ? today : weekStart}`;
+
+const stepLink =
+  "border-obrys bg-mleko text-las hover:border-las flex size-11 shrink-0 items-center justify-center rounded-full border-[1.5px] no-underline";
 ---
 
 <PlannerLayout title={`Plan tygodnia — ${formatWeekRange(weekStart)}`} active="generate">
-  <div class="theme-legacy bg-cosmic min-h-screen p-4">
-    <main class="mx-auto w-full max-w-3xl py-10">
-      <header class="mb-8">
-        <a href={`/plan/month?month=${month}`} class="text-sm text-purple-300 hover:underline"
-          >&larr; Wróć do miesiąca</a
-        >
-        <h1 class="mt-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-          Plan tygodnia
-        </h1>
-        <p class="mt-1 text-lg text-blue-100">{formatWeekRange(weekStart)}</p>
-        {
-          !readFailed && (
-            <p class="mt-2 text-blue-100/80">
-              Wpisz jedno hasło na cały tydzień. Ułożymy z niego pięć różnych tematów — po jednym na dzień roboczy — i
-              wygenerujemy propozycje zajęć dla każdego dnia osobno.
-            </p>
-          )
-        }
-
-        <nav class="mt-4 flex items-center gap-3 text-sm">
-          <a
-            href={`/plan/week?from=${previousWeek}`}
-            class="rounded-lg bg-white/10 px-3 py-1.5 text-white hover:bg-white/20"
-          >
-            &larr; Poprzedni tydzień
+  <main class="max-w-content px-app-gutter mx-auto w-full py-8 min-[900px]:py-10">
+    <header class="mb-6">
+      <a
+        href={`/plan/month?month=${month}`}
+        class="text-las hover:text-mech inline-flex min-h-11 items-center text-[15px] font-bold underline underline-offset-4"
+        >&larr; Wróć do miesiąca</a
+      >
+      <div class="mt-2 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p class="text-mech text-sm font-extrabold">{formatWeekRange(weekStart)}</p>
+          <h1 class="font-display text-display-md text-las">Plan tygodnia</h1>
+        </div>
+        <nav aria-label="Tygodnie" class="flex items-center gap-2">
+          <a href={`/plan/week?from=${previousWeek}`} aria-label="Poprzedni tydzień" class:list={stepLink}>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg
+            >
           </a>
-          <a
-            href={`/plan/week?from=${nextWeek}`}
-            class="rounded-lg bg-white/10 px-3 py-1.5 text-white hover:bg-white/20"
-          >
-            Następny tydzień &rarr;
+          <a href={`/plan/week?from=${nextWeek}`} aria-label="Następny tydzień" class:list={stepLink}>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg
+            >
           </a>
         </nav>
-      </header>
-
-      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-xl">
-        {
-          readFailed ? (
-            <div class="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
-              <p class="font-medium text-amber-100">Nie udało się wczytać tego tygodnia.</p>
-              <p class="mt-1 text-sm text-amber-100/80">
-                Nie wiemy, które dni mają już plan, więc nie pokazujemy formularza generowania — moglibyśmy nadpisać
-                pracę, która już tu jest. Odśwież stronę i spróbuj ponownie.
-              </p>
-              <a
-                href={`/plan/week?from=${weekStart}`}
-                class="mt-3 inline-block rounded-lg bg-amber-400/20 px-4 py-2 text-sm font-medium text-amber-100 hover:bg-amber-400/30"
-              >
-                Odśwież
-              </a>
-            </div>
-          ) : (
-            <WeekPlanBoard client:load week={week} initialPrompt={pendingTopic ?? undefined} />
-          )
-        }
       </div>
-    </main>
-  </div>
+    </header>
+
+    {
+      readFailed ? (
+        <div class="border-ostrzezenie-ramka bg-ostrzezenie-tlo text-ostrzezenie rounded-row border-[1.5px] p-5">
+          <p class="font-extrabold">Nie udało się wczytać tego tygodnia.</p>
+          <p class="mt-1 text-[15px]">
+            Nie wiemy, które dni mają już plan, więc nie pokazujemy formularza generowania — moglibyśmy nadpisać pracę,
+            która już tu jest. Odśwież stronę i spróbuj ponownie.
+          </p>
+          <a
+            href={`/plan/week?from=${weekStart}`}
+            class="border-ostrzezenie text-ostrzezenie mt-3 inline-flex min-h-11 items-center rounded-full border-[1.5px] px-5 font-extrabold no-underline"
+          >
+            Odśwież
+          </a>
+        </div>
+      ) : (
+        <WeekPlanBoard client:load week={week} initialPrompt={pendingTopic ?? undefined} dayHref={dayHref} />
+      )
+    }
+  </main>
 </PlannerLayout>

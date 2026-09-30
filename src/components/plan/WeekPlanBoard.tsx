@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { Check, CircleAlert, Sparkles } from "lucide-react";
 import { WeekDayCard, type DayState } from "@/components/plan/WeekDayCard";
+import { FIELD_BASE, FIELD_BORDER, FIELD_BORDER_ERROR, FIELD_ERROR, FIELD_LABEL } from "@/components/plan/field-styles";
+import { ScopeToggle } from "@/components/plan/ScopeToggle";
 import WeekPdfControls from "@/components/plan/WeekPdfControls";
 import { Button } from "@/components/ui/button";
 import { PROMPT_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
@@ -69,6 +71,8 @@ interface WeekPlanBoardProps {
   readonly week: WeekPlanView;
   /** A hasło carried over from the landing (`@/lib/pending-topic`); wins over the saved one. */
   readonly initialPrompt?: string;
+  /** Where "Jeden dzień" leads: today when it lies in this week, its Monday otherwise. */
+  readonly dayHref: string;
 }
 
 // `managing` is a day operation from a card. The generate button does not name
@@ -102,7 +106,7 @@ interface WeekWriteDay {
   readonly activities: readonly ActivityDraft[];
 }
 
-export default function WeekPlanBoard({ week, initialPrompt }: WeekPlanBoardProps) {
+export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlanBoardProps) {
   const [days, setDays] = useState<Record<string, DayState>>(() => initialDays(week));
   const [prompt, setPrompt] = useState(() => initialPrompt ?? firstPrompt(week));
   const [promptError, setPromptError] = useState<string | undefined>(undefined);
@@ -852,19 +856,22 @@ export default function WeekPlanBoard({ week, initialPrompt }: WeekPlanBoardProp
   }
 
   return (
-    <div className="space-y-6">
+    <div className="grid gap-6 min-[900px]:grid-cols-[minmax(0,380px)_minmax(0,1fr)] min-[900px]:items-start min-[900px]:gap-10">
       <form
-        className="space-y-4"
+        className="bg-mleko rounded-panel shadow-panel space-y-5 p-6 min-[900px]:sticky min-[900px]:top-6 min-[900px]:p-7"
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
           generateWeek();
         }}
       >
+        <h2 className="font-display text-display-sm text-las">Nowe propozycje</h2>
+
         <div>
-          <label htmlFor="week-prompt" className="mb-1 block text-sm text-blue-100/80">
-            Hasło tygodnia
-          </label>
+          {/* The label's text is what `landing-topic-carry.spec.ts` finds the field by. */}
+          <div className={FIELD_LABEL}>
+            <label htmlFor="week-prompt">Hasło tygodnia</label>
+          </div>
           <textarea
             id="week-prompt"
             name="prompt"
@@ -877,31 +884,29 @@ export default function WeekPlanBoard({ week, initialPrompt }: WeekPlanBoardProp
               setPrompt(event.target.value);
               setPromptError(undefined);
             }}
-            className={cn(
-              "w-full resize-y rounded-lg border bg-white/10 px-3 py-2 text-white placeholder-white/40 transition-colors focus:ring-2 focus:outline-none disabled:opacity-60",
-              promptError ? "border-red-400/60 focus:ring-red-400" : "border-white/20 focus:ring-purple-400",
-            )}
+            className={cn(FIELD_BASE, "resize-y", promptError ? FIELD_BORDER_ERROR : FIELD_BORDER)}
           />
-          <div className="mt-1 flex items-start justify-between gap-2">
+          <div className="mt-1.5 flex items-start justify-between gap-2">
             {promptError && (
-              <p className="flex items-center gap-1 text-xs text-red-300">
-                <CircleAlert className="size-3" />
+              <p className={FIELD_ERROR}>
+                <CircleAlert className="size-4 shrink-0" />
                 {promptError}
               </p>
             )}
             <span
-              className={cn("ml-auto text-xs tabular-nums", remaining < 100 ? "text-amber-300" : "text-blue-100/50")}
+              className={cn(
+                "ml-auto text-sm tabular-nums",
+                remaining < 100 ? "text-ostrzezenie font-bold" : "text-las-szary",
+              )}
             >
               {prompt.length} / {PROMPT_MAX}
             </span>
           </div>
         </div>
 
-        <Button
-          type="submit"
-          disabled={isBusy}
-          className="w-full rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-500"
-        >
+        <ScopeToggle active="week" dayHref={dayHref} weekHref={`/plan/week?from=${week.weekStart}`} />
+
+        <Button type="submit" variant="primary" size="pill" disabled={isBusy} className="w-full cursor-pointer">
           <Sparkles className="size-4" />
           {busy === "outlining"
             ? "Układam plan tygodnia…"
@@ -911,130 +916,149 @@ export default function WeekPlanBoard({ week, initialPrompt }: WeekPlanBoardProp
                 ? "Zapisuję tydzień…"
                 : "Generuj tydzień"}
         </Button>
+        <p className="text-las-szary text-sm">
+          Wpisz jedno hasło na cały tydzień. Ułożymy z niego pięć różnych tematów — po jednym na dzień roboczy — i
+          wygenerujemy propozycje zajęć dla każdego dnia osobno.
+        </p>
         {/* The teacher is spending their own credits; the count is not a detail
             to bury. "Pusty dzień" stopped being the divisor at S-09 - every
             unaccepted day is regenerated, and since S-10 accepted days too when
             the teacher agrees, so the worst case is five. This is the only
             answer these slices give to the open question about a generation
             limit, and that is deliberate. */}
-        <p className="text-xs text-blue-100/50">
+        <p className="text-las-szary text-sm">
           Generowanie tygodnia to jedno wywołanie na plan tygodnia i po jednym na każdy zastępowany dzień. Zaakceptowane
           dni zastąpię tylko wtedy, gdy zgodzisz się na to w oknie potwierdzenia.
         </p>
       </form>
 
-      {failure && (
-        <div
-          role="alert"
-          className="space-y-3 rounded-xl border border-red-500/30 bg-red-900/30 p-4 text-sm text-red-200"
-        >
-          <p className="flex items-start gap-2">
+      <div className="min-w-0 space-y-4">
+        {failure && (
+          <div
+            role="alert"
+            className="border-blad-ramka bg-blad-tlo text-blad rounded-input space-y-3 border-[1.5px] p-4 text-[15px] font-bold"
+          >
+            <p className="flex items-start gap-2">
+              <CircleAlert className="mt-0.5 size-4 shrink-0" />
+              {failure.message}
+            </p>
+            {failure.signInRequired && (
+              <a href="/auth/signin" className="text-blad inline-flex min-h-11 items-center font-extrabold underline">
+                Zaloguj się ponownie
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* Said on screen rather than discovered. Between generation and the
+            write the proposals exist only here, so a closed tab loses them - and
+            because nothing was written, that is the correct outcome rather than a
+            failure. The teacher still has to know it before it happens. */}
+        {heldCount > 0 && (
+          <div
+            role="status"
+            className="border-ostrzezenie-ramka bg-ostrzezenie-tlo text-ostrzezenie rounded-input flex items-start gap-2 border-[1.5px] px-4 py-3 text-[15px]"
+          >
             <CircleAlert className="mt-0.5 size-4 shrink-0" />
-            {failure.message}
-          </p>
-          {failure.signInRequired && (
-            <a href="/auth/signin" className="inline-block font-medium text-purple-300 hover:underline">
-              Zaloguj się ponownie
-            </a>
-          )}
-        </div>
-      )}
+            <span>
+              <strong className="font-extrabold">
+                {heldCount === 1
+                  ? "1 dzień czeka na zapis i istnieje tylko na tej stronie."
+                  : `${String(heldCount)} dni czeka na zapis i istnieje tylko na tej stronie.`}
+              </strong>{" "}
+              Zamknięcie karty albo odświeżenie strony je odrzuci — w planie nic się wtedy nie zmieni. Dopóki tydzień
+              nie zostanie zapisany albo propozycje odrzucone, pojedynczych dni nie można akceptować ani usuwać.
+            </span>
+          </div>
+        )}
 
-      {/* Said on screen rather than discovered. Between generation and the
-          write the proposals exist only here, so a closed tab loses them - and
-          because nothing was written, that is the correct outcome rather than a
-          failure. The teacher still has to know it before it happens. */}
-      {heldCount > 0 && (
-        <div
-          role="status"
-          className="flex items-start gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-100"
-        >
-          <CircleAlert className="mt-0.5 size-4 shrink-0" />
-          <span>
-            {heldCount === 1
-              ? "1 dzień czeka na zapis i istnieje tylko na tej stronie."
-              : `${String(heldCount)} dni czeka na zapis i istnieje tylko na tej stronie.`}{" "}
-            Zamknięcie karty albo odświeżenie strony je odrzuci — w planie nic się wtedy nie zmieni. Dopóki tydzień nie
-            zostanie zapisany albo propozycje odrzucone, pojedynczych dni nie można akceptować ani usuwać.
-          </span>
-        </div>
-      )}
-
-      <p className="text-sm text-blue-100/70">
-        Gotowe {readyCount} z {WEEK_DAYS} dni.
-      </p>
-
-      <ol className="space-y-3">
-        {dayList.map((day) => (
-          <WeekDayCard
-            key={day.planDate}
-            day={day}
-            disabled={isBusy}
-            // Off while anything is held, not only while busy: the held set is
-            // the run's targets, and "Zapisz tydzień" is offered only while
-            // every one of them has a batch. Accepting or deleting a day
-            // under it changes that set, the button disappears, and generations
-            // already paid for are stranded. The banner above says why.
-            controlsDisabled={isBusy || heldCount > 0}
-            onRetry={() => {
-              retryDay(day.planDate);
-            }}
-            onToggleAcceptance={() => {
-              toggleAcceptance(day.planDate);
-            }}
-            onDelete={() => {
-              deleteDay(day.planDate);
-            }}
-          />
-        ))}
-      </ol>
-
-      {heldSetIsComplete && (
-        <Button
-          type="button"
-          disabled={isBusy}
-          onClick={() => {
-            retryWrite();
-          }}
-          className="w-full rounded-lg bg-amber-600 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-500"
-        >
-          <Sparkles className="size-4" />
-          {busy === "saving" ? "Zapisuję tydzień…" : "Zapisz tydzień"}
-        </Button>
-      )}
-
-      {acceptableCount > 0 && (
-        <Button
-          type="button"
-          disabled={isBusy}
-          onClick={acceptWeek}
-          className="w-full rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white transition-colors hover:bg-emerald-500"
-        >
-          <Check className="size-4" />
-          {busy === "accepting" ? "Akceptuję…" : `Akceptuj tydzień (${String(acceptableCount)})`}
-        </Button>
-      )}
-
-      {busy === "idle" && readyCount > 0 && acceptableCount === 0 && (
-        <p className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200">
-          <Check className="size-4 shrink-0" />
-          Wszystkie gotowe dni tego tygodnia są zaakceptowane.
+        <p className="text-las text-right text-base font-extrabold">
+          Gotowe {readyCount} z {WEEK_DAYS} dni.
         </p>
-      )}
 
-      {/* Same rule as the day controls, for the same reason: a held batch is
-          on screen but not in the database, and a PDF taken now would leave out
-          what the teacher is looking at without a word. Busy needs no sentence -
-          every other button on the board already says what is running. */}
-      <WeekPdfControls
-        weekStart={week.weekStart}
-        days={week.days}
-        plans={savedPlans}
-        disabled={isBusy || heldCount > 0}
-        disabledReason={
-          heldCount > 0 ? "Zapisz tydzień, zanim pobierzesz PDF — niezapisane propozycje nie trafią do pliku." : null
-        }
-      />
+        <ol className="space-y-3">
+          {dayList.map((day) => (
+            <WeekDayCard
+              key={day.planDate}
+              day={day}
+              disabled={isBusy}
+              // Off while anything is held, not only while busy: the held set is
+              // the run's targets, and "Zapisz tydzień" is offered only while
+              // every one of them has a batch. Accepting or deleting a day
+              // under it changes that set, the button disappears, and generations
+              // already paid for are stranded. The banner above says why.
+              controlsDisabled={isBusy || heldCount > 0}
+              onRetry={() => {
+                retryDay(day.planDate);
+              }}
+              onToggleAcceptance={() => {
+                toggleAcceptance(day.planDate);
+              }}
+              onDelete={() => {
+                deleteDay(day.planDate);
+              }}
+            />
+          ))}
+        </ol>
+
+        {(heldSetIsComplete || acceptableCount > 0) && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
+            {acceptableCount > 0 && (
+              <Button
+                type="button"
+                variant="outlinePill"
+                size="pill"
+                disabled={isBusy}
+                onClick={acceptWeek}
+                className="cursor-pointer"
+              >
+                <Check className="size-4" />
+                {busy === "accepting" ? "Akceptuję…" : `Akceptuj tydzień (${String(acceptableCount)})`}
+              </Button>
+            )}
+            {heldSetIsComplete && (
+              <Button
+                type="button"
+                variant="accent"
+                size="pill"
+                disabled={isBusy}
+                onClick={() => {
+                  retryWrite();
+                }}
+                className="cursor-pointer"
+              >
+                <Sparkles className="size-4" />
+                {busy === "saving" ? "Zapisuję tydzień…" : "Zapisz tydzień"}
+              </Button>
+            )}
+          </div>
+        )}
+
+        {busy === "idle" && readyCount > 0 && acceptableCount === 0 && (
+          <p className="bg-szalwia-soft text-mech-ciemny rounded-input flex items-center gap-2 px-4 py-3 text-[15px] font-bold">
+            <Check className="size-4 shrink-0" />
+            Wszystkie gotowe dni tego tygodnia są zaakceptowane.
+          </p>
+        )}
+
+        {/* Same rule as the day controls, for the same reason: a held batch is
+            on screen but not in the database, and a PDF taken now would leave out
+            what the teacher is looking at without a word. Busy needs no sentence -
+            every other button on the board already says what is running. */}
+        <div className="border-linia flex border-t pt-4 sm:justify-end">
+          <WeekPdfControls
+            weekStart={week.weekStart}
+            days={week.days}
+            plans={savedPlans}
+            disabled={isBusy || heldCount > 0}
+            disabledReason={
+              heldCount > 0
+                ? "Zapisz tydzień, zanim pobierzesz PDF — niezapisane propozycje nie trafią do pliku."
+                : null
+            }
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -803,13 +803,13 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [x] 2.1 Lint, build
-- [x] 2.2 Testy modelu siatki przechodzą
-- [x] 2.3 Strona miesiąca bez przypięcia
-- [x] 2.4 Brak kosmicznych klas w siatce
-- [x] 2.5 Siatka nie renderuje weekendu jako kolumny
-- [x] 2.6 Nowy test wysokości przechodzi i był widziany na czerwono
-- [x] 2.7 Cały e2e zielony
+- [x] 2.1 Lint, build — 183ca25
+- [x] 2.2 Testy modelu siatki przechodzą — 183ca25
+- [x] 2.3 Strona miesiąca bez przypięcia — 183ca25
+- [x] 2.4 Brak kosmicznych klas w siatce — 183ca25
+- [x] 2.5 Siatka nie renderuje weekendu jako kolumny — 183ca25
+- [x] 2.6 Nowy test wysokości przechodzi i był widziany na czerwono — 183ca25
+- [x] 2.7 Cały e2e zielony — 183ca25
 
 #### Manual
 
@@ -824,11 +824,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [ ] 3.1 Lint, build, testy
-- [ ] 3.2 Strona tygodnia bez przypięcia
-- [ ] 3.3 Brak kosmicznych klas na tygodniu
-- [ ] 3.4 Etykieta wiązana przez e2e została
-- [ ] 3.5 Cały e2e zielony
+- [x] 3.1 Lint, build, testy
+- [x] 3.2 Strona tygodnia bez przypięcia
+- [x] 3.3 Brak kosmicznych klas na tygodniu
+- [x] 3.4 Etykieta wiązana przez e2e została
+- [x] 3.5 Cały e2e zielony
 
 #### Manual
 
