@@ -134,7 +134,7 @@ export function isRefinedActivityBody(body: unknown): body is ActivityDraft {
  *
  * Each value is checked with {@link isDayPlanBody} rather than by hand - these
  * are saved plans and must carry everything a saved plan carries, including the
- * `current_generation` that a later "Akceptuj tydzień" builds
+ * `current_generation` that a later "Zatwierdź wszystkie" builds
  * `expected_generation` from.
  *
  * An empty `plans` object is refused for the same reason the arrays are: the

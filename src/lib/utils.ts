@@ -11,7 +11,7 @@ const twMerge = extendTailwindMerge({
       text: ["display-xl", "display-lg", "display-md", "display-sm", "title", "lead"],
       shadow: ["card", "panel", "input"],
       radius: ["input", "row", "card", "panel", "logo", "blob-a", "blob-b"],
-      spacing: ["gutter"],
+      spacing: ["gutter", "app-gutter"],
       container: ["content"],
     },
   },

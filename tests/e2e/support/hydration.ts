@@ -4,7 +4,7 @@ import { expect, type Page } from "@playwright/test";
  * Czeka, aż wyspy Astro na stronie staną się interaktywne.
  *
  * **Dlaczego to w ogóle istnieje.** `plan.astro` renderuje `DayPlanEditor`
- * serwerowo (`client:load`), więc przyciski „Usuń plan dnia" i „Akceptuj plan"
+ * serwerowo (`client:load`), więc przyciski „Usuń plan dnia" i „Zatwierdź plan"
  * są w DOM-ie — widoczne, klikalne i **bez podpiętych handlerów** — zanim
  * dojedzie i wykona się JavaScript wyspy. Playwright uznaje taki przycisk za
  * gotowy do kliknięcia (jest widoczny i włączony), klika, i nie dzieje się nic:

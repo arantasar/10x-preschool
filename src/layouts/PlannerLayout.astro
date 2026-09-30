@@ -1,0 +1,21 @@
+---
+// The shell of the signed-in planner (`/plan`, `/plan/week`, `/plan/month`):
+// the app bar across the full width, then the page. One place for it instead of
+// a copy of the wrapper on each of the three pages.
+import Layout from "@/layouts/Layout.astro";
+import AppHeader from "@/components/AppHeader.astro";
+
+interface Props {
+  title: string;
+  // Which item of the main nav is the current one: the month is `plan`, the
+  // week and the day - the two screens that generate - are `generate`.
+  active: "plan" | "generate";
+}
+
+const { title, active } = Astro.props;
+---
+
+<Layout title={title}>
+  <AppHeader active={active} />
+  <slot />
+</Layout>

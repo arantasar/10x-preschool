@@ -11,10 +11,10 @@ import { waitForIslands } from "./support/hydration";
  *
  * Wzorzec: `seed.spec.ts`. Reguły: `E2E-RULES.md`.
  *
- * **Dlaczego to musi być test e2e.** Ochroną jest tu `window.confirm`
- * (`DayPlanEditor.tsx`, `deletePlan()`) — obiekt, który istnieje wyłącznie w
- * przeglądarce. Żaden test integracyjny ani pgTAP go nie dotknie, bo na ich
- * poziomie ten dialog po prostu nie istnieje. Do tego trasa kasująca adresuje
+ * **Dlaczego to musi być test e2e.** Ochroną jest tu okno potwierdzenia
+ * (`DayPlanEditor.tsx`, `deletePlan()` → `ConfirmDialog`) — element, który
+ * istnieje wyłącznie w wyrenderowanej stronie. Żaden test integracyjny ani pgTAP
+ * go nie dotknie, bo na ich poziomie to okno po prostu nie istnieje. Do tego trasa kasująca adresuje
  * dzień **datą**, nie identyfikatorem, i nie filtruje po właścicielu
  * (`deleteDayPlan` robi `.eq("plan_date", …)` i nic więcej), więc zakres
  * kasowania wyznaczają dopiero polityki RLS.
@@ -25,9 +25,9 @@ import { waitForIslands } from "./support/hydration";
  * sąsiedniego i bez dnia drugiego konta przechodziłby także dla operacji
  * kasującej wszystko, co nauczyciel kiedykolwiek zapisał.
  *
- * **Uwaga na dialogi w Playwrighcie**: bez zarejestrowanego handlera dialog jest
- * automatycznie *odrzucany*, więc test kasowania, który go nie obsłuży, przejdzie
- * zielono nie kasując niczego.
+ * **Uwaga na okno potwierdzenia**: bez kliknięcia w oknie operacja zostaje w
+ * zawieszeniu, więc test najpierw potwierdza, że okno jest widoczne, a dopiero
+ * potem klika przycisk zgody (`E2E-RULES.md` §Okna potwierdzeń).
  */
 test.describe("Ryzyko #7 — zakres operacji kasującej plan dnia", () => {
   const seededPlanIds: string[] = [];
@@ -53,7 +53,7 @@ test.describe("Ryzyko #7 — zakres operacji kasującej plan dnia", () => {
     const teacherAId = await ensureTeacher(TEACHER_A);
     const teacherBId = await ensureTeacher(TEACHER_B);
 
-    // --- Setup: dzień do skasowania (zaakceptowany — czyli ten, którego strata
+    // --- Setup: dzień do skasowania (zatwierdzony — czyli ten, którego strata
     // boli najbardziej), dzień sąsiedni tego samego konta, i ten sam dzień
     // należący do konta B ------------------------------------------------------
     seededPlanIds.push(
@@ -90,22 +90,20 @@ test.describe("Ryzyko #7 — zakres operacji kasującej plan dnia", () => {
       await waitForIslands(ownerPage);
 
       // --- Akcja: kasowanie za zgodą w dialogu --------------------------------
-      // Handler rejestrowany PRZED kliknięciem. `confirmShown` jest asercją samą
-      // w sobie: gdyby ktoś usunął `window.confirm` z `deletePlan()`, plan
-      // znikałby bez pytania, a ten test ma to zauważyć.
-      let confirmShown = false;
-      ownerPage.once("dialog", (dialog) => {
-        confirmShown = true;
-        void dialog.accept();
-      });
-
       await ownerPage.getByRole("button", { name: "Usuń plan dnia" }).click();
+
+      // Widoczność okna jest asercją samą w sobie: gdyby ktoś usunął pytanie z
+      // `deletePlan()`, plan znikałby bez niego, a ten test ma to zauważyć —
+      // okna, którego nie ma, nie da się ani zobaczyć, ani kliknąć.
+      const dialog = ownerPage.getByRole("dialog");
+      await expect(dialog).toBeVisible();
+      await expect(dialog).toContainText("Tej operacji nie można cofnąć.");
+      await dialog.getByRole("button", { name: "Usuń plan", exact: true }).click();
 
       // Po udanym kasowaniu wyspa robi pełną nawigację na ten sam dzień, więc
       // czekamy na stan pustego dnia, nie na upływ czasu.
       await expect(ownerPage.getByText("Ten dzień nie ma jeszcze planu")).toBeVisible();
       await expect(ownerPage.getByRole("heading", { name: targetTitle })).toHaveCount(0);
-      expect(confirmShown).toBe(true);
 
       // --- Asercje zakresu: co MIAŁO przeżyć ---------------------------------
       // Bez tych dwóch test przeszedłby również dla operacji, która skasowała

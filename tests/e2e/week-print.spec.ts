@@ -20,7 +20,7 @@ import { waitForIslands } from "./support/hydration";
  * go tu przeczytać. Ten plik dowodzi struktury: że plik jest, jak się nazywa,
  * ile ma stron i w jakiej orientacji.
  *
- * **Tydzień: poniedziałek zaakceptowany, środa szkicem, reszta pusta.** Wszystkie
+ * **Tydzień: poniedziałek zatwierdzony, środa szkicem, reszta pusta.** Wszystkie
  * trzy stany dnia naraz, bo FR-020 każe drukować każdy dzień roboczy — pięć
  * stron w układzie „dzień na stronę" pada, jeśli którykolwiek dzień wypadnie.
  *

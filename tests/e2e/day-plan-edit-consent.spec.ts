@@ -4,7 +4,7 @@ import { activitiesFor, uniquePlanDate, uniqueStamp } from "./support/test-data"
 import { waitForIslands } from "./support/hydration";
 
 /**
- * FR-017, drugi takt: po zgodzie dzień traci akceptację i **dowiaduje się o tym**.
+ * FR-017, drugi takt: po zgodzie dzień traci zatwierdzenie i **dowiaduje się o tym**.
  *
  * Wzorzec: `seed.spec.ts`. Reguły: `E2E-RULES.md`.
  * Siostrzany test: `day-plan-edit-confirmation.spec.ts` — ta sama ścieżka, ale
@@ -13,7 +13,7 @@ import { waitForIslands } from "./support/hydration";
  * **Dlaczego ten plik w ogóle powstał.** Przegląd implementacyjny (`reviews/impl-review.md`,
  * F4) zauważył, że ścieżki zgody nie ćwiczyło nic: test odmowy kończy się na
  * „Anuluj" świadomie, test trasy kończy się na JSON-ie, a wszystkie wiersze
- * `#### Manual` stały nieodhaczone. Bursztynowy banner, jego kopia i „Akceptuj
+ * `#### Manual` stały nieodhaczone. Bursztynowy banner, jego kopia i „Zatwierdź
  * ponownie" nie miały żadnego dowodu renderowania — a to one są drugim taktem
  * FR-017, czyli tym, dla którego Faza 1 dokłada odczyt przed zapisem.
  *
@@ -27,7 +27,7 @@ import { waitForIslands } from "./support/hydration";
  * dwóch kontekstów przeglądarki na jedno konto i zostają przy weryfikacji
  * ręcznej — `test-plan.md` §1 zasada 1.
  */
-test.describe("Ryzyko #8 — zgoda w dialogu przy edycji dnia zaakceptowanego", () => {
+test.describe("Ryzyko #8 — zgoda w dialogu przy edycji dnia zatwierdzonego", () => {
   const seededPlanIds: string[] = [];
 
   test.afterEach(async () => {
@@ -35,7 +35,7 @@ test.describe("Ryzyko #8 — zgoda w dialogu przy edycji dnia zaakceptowanego", 
     seededPlanIds.length = 0;
   });
 
-  test("ryzyko #8: zgoda zapisuje zmianę, banner nazywa przyczynę, a droga powrotna przywraca akceptację", async ({
+  test("ryzyko #8: zgoda zapisuje zmianę, banner nazywa przyczynę, a droga powrotna przywraca zatwierdzenie", async ({
     page,
   }) => {
     const planDate = uniquePlanDate();
@@ -55,18 +55,10 @@ test.describe("Ryzyko #8 — zgoda w dialogu przy edycji dnia zaakceptowanego", 
     );
 
     await page.goto(`/plan?date=${planDate}`);
-    await expect(page.getByText(/Plan zaakceptowany/)).toBeVisible();
+    await expect(page.getByText(/Plan zatwierdzony/)).toBeVisible();
     // Bez tego kliknięcie trafia w przycisk wyrenderowany serwerowo i jeszcze bez
     // handlera — dialog by nie padł, a test przeszedłby nie sprawdziwszy niczego.
     await waitForIslands(page);
-
-    // Zgoda, nie odmowa. Zbieramy treści wszystkich dialogów, bo liczba wywołań
-    // jest tu asercją na równi z ich treścią.
-    const dialogs: string[] = [];
-    page.on("dialog", (dialog) => {
-      dialogs.push(dialog.message());
-      void dialog.accept();
-    });
 
     await page.getByRole("button", { name: `Edytuj propozycję: ${originalTitle}` }).click();
     const titleField = page.getByLabel("Tytuł", { exact: true });
@@ -74,36 +66,39 @@ test.describe("Ryzyko #8 — zgoda w dialogu przy edycji dnia zaakceptowanego", 
     await titleField.fill(editedTitle);
     await page.getByRole("button", { name: "Zapisz" }).click();
 
-    // 1. Dialog padł i nazwał skutek, a nie zapytał generycznie „czy na pewno".
+    // 1. Okno padło i nazwało skutek, a nie zapytało generycznie „czy na pewno".
     //    Bez tej asercji reszta testu przeszłaby też na implementacji, która o
-    //    nic nie pyta i po prostu zapisuje.
-    expect(dialogs).toHaveLength(1);
-    expect(dialogs[0]).toContain("cofnie akceptację");
+    //    nic nie pyta i po prostu zapisuje. Zgoda, nie odmowa — przyciskiem
+    //    nazwanym po skutku.
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText("cofnie zatwierdzenie");
+    await dialog.getByRole("button", { name: "Zapisz i cofnij zatwierdzenie", exact: true }).click();
 
     // 2. Zapis przeszedł.
     await expect(page.getByRole("heading", { name: editedTitle })).toBeVisible();
 
     // 3. Drugi takt FR-017: w miejscu zielonej plakietki stoi zdanie mówiące
-    //    **dlaczego**, a nie samo „Plan roboczy". To jest ta różnica, dla której
-    //    trasa czyta stan akceptacji przed zapisem.
-    await expect(page.getByText(/Akceptacja została cofnięta, bo zmieniła się treść propozycji/)).toBeVisible();
-    await expect(page.getByText(/Plan zaakceptowany/)).toHaveCount(0);
+    //    **dlaczego**, a nie samo „Do przejrzenia". To jest ta różnica, dla której
+    //    trasa czyta stan zatwierdzenia przed zapisem.
+    await expect(page.getByText(/Zatwierdzenie zostało cofnięte, bo zmieniła się treść propozycji/)).toBeVisible();
+    await expect(page.getByText(/Plan zatwierdzony/)).toHaveCount(0);
 
     // 4. Droga powrotna działa i kosztuje jedno kliknięcie — to jest założenie,
     //    na którym plan oparł decyzję „dialog jest jedyną barierą".
-    await page.getByRole("button", { name: "Akceptuj ponownie" }).click();
-    await expect(page.getByText(/Plan zaakceptowany/)).toBeVisible();
-    await expect(page.getByText(/Akceptacja została cofnięta/)).toHaveCount(0);
+    await page.getByRole("button", { name: "Zatwierdź ponownie" }).click();
+    await expect(page.getByText(/Plan zatwierdzony/)).toBeVisible();
+    await expect(page.getByText(/Zatwierdzenie zostało cofnięte/)).toHaveCount(0);
 
     // 5. Stan jest ulotny zgodnie z decyzją: po przeładowaniu zostaje sama
     //    plakietka, bez zdania o przyczynie — i nowy tytuł naprawdę jest w bazie.
     await page.reload();
     await expect(page.getByRole("heading", { name: editedTitle })).toBeVisible();
-    await expect(page.getByText(/Plan zaakceptowany/)).toBeVisible();
-    await expect(page.getByText(/Akceptacja została cofnięta/)).toHaveCount(0);
+    await expect(page.getByText(/Plan zatwierdzony/)).toBeVisible();
+    await expect(page.getByText(/Zatwierdzenie zostało cofnięte/)).toHaveCount(0);
   });
 
-  test("ryzyko #8: druga edycja tego samego dnia — już roboczego — nie pyta o nic", async ({ page }) => {
+  test("ryzyko #8: druga edycja tego samego dnia — już niezatwierdzonego — nie pyta o nic", async ({ page }) => {
     const planDate = uniquePlanDate();
     const stamp = uniqueStamp();
     const firstTitle = `Powitanie ${stamp}`;
@@ -121,36 +116,37 @@ test.describe("Ryzyko #8 — zgoda w dialogu przy edycji dnia zaakceptowanego", 
     );
 
     await page.goto(`/plan?date=${planDate}`);
-    await expect(page.getByText(/Plan zaakceptowany/)).toBeVisible();
+    await expect(page.getByText(/Plan zatwierdzony/)).toBeVisible();
     await waitForIslands(page);
 
-    const dialogs: string[] = [];
-    page.on("dialog", (dialog) => {
-      dialogs.push(dialog.message());
-      void dialog.accept();
-    });
+    const dialog = page.getByRole("dialog");
 
-    // Pierwsza edycja zdejmuje akceptację — po niej nie ma już czego odbierać.
+    // Pierwsza edycja zdejmuje zatwierdzenie — po niej nie ma już czego odbierać.
+    // Tu okno ma paść: dokładnie raz, przy tej edycji.
     await page.getByRole("button", { name: `Edytuj propozycję: ${firstTitle}` }).click();
     await page.getByLabel("Tytuł", { exact: true }).fill(`${firstTitle} (raz)`);
     await page.getByRole("button", { name: "Zapisz" }).click();
-    expect(dialogs).toHaveLength(1);
-    await expect(page.getByText(/Akceptacja została cofnięta/)).toBeVisible();
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Zapisz i cofnij zatwierdzenie", exact: true }).click();
+    await expect(page.getByText(/Zatwierdzenie zostało cofnięte/)).toBeVisible();
+    await expect(dialog).toHaveCount(0);
 
-    // Druga edycja na tym samym, już roboczym dniu. Licznik dialogów jest tu
-    // jedyną asercją, która potrafi zawieść: gdyby bramka na stanie akceptacji
-    // zniknęła, nauczyciel dostałby pytanie o skutek, który już nastąpił.
+    // Druga edycja na tym samym, już niezatwierdzonym dniu. Brak okna jest tu
+    // asercją, która potrafi zawieść: gdyby bramka na stanie zatwierdzenia
+    // zniknęła, nauczyciel dostałby pytanie o skutek, który już nastąpił — a
+    // zapis czekałby na odpowiedź, więc nagłówek z nowym tytułem by się nie
+    // pojawił. Sprawdzane po zakończeniu operacji, nie w jej trakcie.
     await page.getByRole("button", { name: `Edytuj propozycję: ${secondTitle}` }).click();
     await page.getByLabel("Tytuł", { exact: true }).fill(`${secondTitle} (dwa)`);
     await page.getByRole("button", { name: "Zapisz" }).click();
 
     await expect(page.getByRole("heading", { name: `${secondTitle} (dwa)` })).toBeVisible();
-    expect(dialogs).toHaveLength(1);
+    await expect(dialog).toHaveCount(0);
 
     // Banner przyczyny nie przeżył drugiej mutacji: ten zapis nic nie zdjął, więc
-    // zostaje zwykły „Plan roboczy". Zdanie o przyczynie stojące tutaj byłoby
+    // zostaje zwykły „Do przejrzenia". Zdanie o przyczynie stojące tutaj byłoby
     // nieprawdą o operacji, która właśnie się wykonała.
-    await expect(page.getByText(/Plan roboczy/)).toBeVisible();
-    await expect(page.getByText(/Akceptacja została cofnięta/)).toHaveCount(0);
+    await expect(page.getByText(/Do przejrzenia/)).toBeVisible();
+    await expect(page.getByText(/Zatwierdzenie zostało cofnięte/)).toHaveCount(0);
   });
 });

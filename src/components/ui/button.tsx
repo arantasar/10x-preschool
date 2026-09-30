@@ -4,6 +4,10 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+// The "Ogród" focus pair (Las ring, Morela halo) - see `global.css`.
+const pillFocus =
+  "focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-las focus-visible:shadow-[0_0_0_2px_var(--color-morela)]";
+
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
@@ -23,16 +27,23 @@ const buttonVariants = cva(
         primary: "bg-las text-owies hover:bg-las-2",
         accent: "bg-morela text-las hover:bg-morela-hover",
         inverse: "bg-owies text-las hover:bg-white",
-        outlinePill: "border-[1.5px] border-obrys bg-transparent text-las hover:border-las",
+        // The two outlined pills keep their own border under focus: the base
+        // `focus-visible:border-ring` would repaint it, and the focus is already
+        // carried by the outline pair.
+        outlinePill: "border-[1.5px] border-obrys bg-transparent text-las hover:border-las focus-visible:border-obrys",
+        // An operation that cannot be undone: outlined, in the error colour.
+        dangerPill:
+          "border-[1.5px] border-blad-ramka bg-transparent text-blad hover:border-blad hover:bg-blad-tlo focus-visible:border-blad-ramka",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
-        pill: "min-h-11 rounded-full px-[22px] py-[13px] font-body text-base font-extrabold focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-las focus-visible:shadow-[0_0_0_2px_var(--color-morela)]",
-        pillLg:
-          "min-h-11 rounded-full px-[30px] py-[17px] font-body text-lg font-extrabold focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-las focus-visible:shadow-[0_0_0_2px_var(--color-morela)]",
+        pill: ["min-h-11 rounded-full px-[22px] py-[13px] font-body text-base font-extrabold", pillFocus],
+        pillLg: ["min-h-11 rounded-full px-[30px] py-[17px] font-body text-lg font-extrabold", pillFocus],
+        // The planner's card-level actions.
+        pillSm: ["min-h-11 rounded-full px-4 py-2.5 font-body text-[15px] font-extrabold", pillFocus],
       },
     },
     defaultVariants: {

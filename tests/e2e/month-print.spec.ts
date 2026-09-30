@@ -81,7 +81,7 @@ test.describe("Ryzyko #12 — wydruk miesiąca", () => {
     seededPlanIds.length = 0;
   });
 
-  /** Poniedziałek A zaakceptowany, środa A szkicem, czwartek B. */
+  /** Poniedziałek A zatwierdzony, środa A szkicem, czwartek B. */
   async function seedMonth(weekStart: string): Promise<{ stampA: string; stampB: string }> {
     const stampA = uniqueStamp();
     const stampB = uniqueStamp();

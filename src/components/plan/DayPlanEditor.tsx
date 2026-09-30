@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, Check, CircleAlert, Pencil, RotateCcw, Sparkles, Trash2, Undo2, X } from "lucide-react";
+import { FIELD_BASE, FIELD_BORDER, FIELD_BORDER_ERROR, FIELD_ERROR, FIELD_LABEL } from "@/components/plan/field-styles";
+import { useConfirmDialog } from "@/components/hooks/useConfirmDialog";
 import { GenerationProgress } from "@/components/plan/GenerationProgress";
+import { ScopeToggle } from "@/components/plan/ScopeToggle";
 import { Button } from "@/components/ui/button";
+import {
+  deleteDayPlanConfirmation,
+  editApprovedDayConfirmation,
+  regenerateApprovedDayConfirmation,
+} from "@/lib/confirmations";
 import { DESCRIPTION_MAX, INSTRUCTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
 import { formatAcceptedAt, formatPlanDate } from "@/lib/day-plan-dates";
 import { cn } from "@/lib/utils";
@@ -27,6 +35,8 @@ interface DayPlanEditorProps {
   readonly planDate: string;
   /** What the server read for that day, or `null` when there is no plan yet. */
   readonly initialPlan: DayPlanView | null;
+  /** Where the scope toggle's "Cały tydzień" leads: the week this day falls in. */
+  readonly weekHref: string;
 }
 
 type Busy = "idle" | "generating" | "saving" | "deleting" | "refining";
@@ -43,7 +53,7 @@ interface Draft {
   readonly description: string;
 }
 
-export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorProps) {
+export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPlanEditorProps) {
   const [plan, setPlanState] = useState<DayPlanView | null>(initialPlan);
   const [prompt, setPrompt] = useState(initialPlan?.plan.prompt ?? "");
   const [promptError, setPromptError] = useState<string | undefined>(undefined);
@@ -128,6 +138,23 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
   // enabled, relabelled, and still showing the plan that is already gone.
   const navigatingAway = useRef(false);
 
+  // The application's own confirmation window. Unlike `window.confirm` it does
+  // not freeze the page while it is open, so each of the three questions below
+  // checks `inFlight` before asking and again after the answer: an operation
+  // whose lock was taken in between is dropped without a request, the same way
+  // `mutate` drops a second submit.
+  const { confirm, dialog } = useConfirmDialog();
+
+  /**
+   * The lock as it is *now*. A function rather than `inFlight.current` inline:
+   * the questions check it on both sides of an `await`, and a bare property
+   * read is narrowed by the first check - the second would be taken for dead
+   * code, by the compiler and by the next reader.
+   */
+  function isLocked(): boolean {
+    return inFlight.current;
+  }
+
   const isBusy = busy !== "idle";
   const accepted = plan?.plan.accepted_at ?? null;
   const hasActivities = (plan?.activities.length ?? 0) > 0;
@@ -179,9 +206,9 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
     setBusy(busyKind);
     setFailure(null);
     // Cleared at the *start* of every mutation, not only when one succeeds.
-    // "Ten plan wrócił do roboczego, bo zmieniłeś treść" must not outlive the
+    // "Ten plan jest znów do przejrzenia, bo zmieniłeś treść" must not outlive the
     // operation it describes: an acceptance made right afterwards would leave
-    // that sentence standing directly under a green "Plan zaakceptowany" badge,
+    // that sentence standing directly under a green "Plan zatwierdzony" badge,
     // contradicting it.
     setClearedByEdit(false);
 
@@ -256,7 +283,7 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
     }
   }
 
-  function generate(): void {
+  async function generate(): Promise<void> {
     const trimmed = prompt.trim();
     if (!trimmed) {
       setPromptError("Wpisz hasło dnia, np. „Andrzejki”.");
@@ -272,20 +299,29 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
     // supersedes, but on a draft the teacher is still iterating and has invested
     // nothing in what is there - interrupting that is friction without a
     // decision behind it. An acceptance is the thing worth asking about, and the
-    // prompt names what it costs rather than asking a generic "are you sure?".
+    // window names what it costs rather than asking a generic "are you sure?".
     //
-    // This dialog is an affordance, not the guard. `accepted` is this island's
+    // The window is an affordance, not the guard. `accepted` is this island's
     // copy of the truth and can be stale - another tab, or a page rendered while
     // the plan could not be read. `save_day_plan_generation` refuses an
     // unconfirmed replacement itself and answers 409, which arrives here as an
     // ordinary non-retryable failure telling the teacher to refresh.
-    if (accepted) {
-      const consequence =
-        "Wygenerowanie nowych propozycji usunie obecne i cofnie akceptację tego planu. " +
-        "Tej operacji nie można cofnąć.";
-      if (!window.confirm(consequence)) {
+    //
+    // The lock is read before the question and again after the answer: the
+    // window does not block the page, so consent collected for an operation
+    // that can no longer start must be dropped, not acted on.
+    //
+    // `planRef`, not `accepted`, for the reason `saveDraft` gives: "Spróbuj
+    // ponownie" re-enters this function through the closure built at the first
+    // attempt, and the `reconcile()` after a failure can bring back a day that
+    // is approved now although it was not when the teacher first clicked.
+    const approved = planRef.current?.plan.accepted_at ?? null;
+    if (approved) {
+      if (isLocked()) return;
+      if (!(await confirm(regenerateApprovedDayConfirmation()))) {
         return;
       }
+      if (isLocked()) return;
     }
 
     void mutate(
@@ -293,9 +329,15 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
         fetch("/api/day-plan/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan_date: planDate, prompt, confirm_replace: accepted !== null }),
+          body: JSON.stringify({ plan_date: planDate, prompt, confirm_replace: approved !== null }),
         }),
       "generating",
+      // Re-enters `generate` rather than replaying the request: the consent
+      // frozen in `confirm_replace` was given for the plan that was on screen
+      // then, and a retry is asked again against the one that is there now.
+      () => {
+        void generate();
+      },
     );
   }
 
@@ -319,12 +361,12 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
    * from the server rather than from this dialog - because the stale-copy case
    * is precisely the one where the dialog never appears.
    */
-  function saveDraft(current: Draft): void {
-    // Asked before the dialog, not after it. `mutate` opens with the same guard
-    // and returns silently, so prompting first would collect a consent for an
-    // operation that is then dropped without a request, a message or a reset -
+  async function saveDraft(current: Draft): Promise<void> {
+    // Asked before the window, not only after it. `mutate` opens with the same
+    // guard and returns silently, so prompting first would collect a consent for
+    // an operation that is then dropped without a request, a message or a reset -
     // the teacher answers a question about a save that never happens.
-    if (inFlight.current) return;
+    if (isLocked()) return;
     // `planRef`, not `accepted`: "Spróbuj ponownie" re-enters this function
     // through the closure built at the first attempt, and a failed save runs
     // `reconcile()`, which can bring back a day that is accepted now although it
@@ -332,12 +374,12 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
     // would skip the dialog in exactly that case and take the acceptance away
     // silently - the one outcome this change exists to prevent.
     if (planRef.current?.plan.accepted_at) {
-      const consequence =
-        "Ten dzień jest zaakceptowany. Zapisanie zmiany cofnie akceptację i plan wróci do roboczego. " +
-        "Akceptację można przywrócić jednym kliknięciem.";
-      if (!window.confirm(consequence)) {
+      if (!(await confirm(editApprovedDayConfirmation()))) {
         return;
       }
+      // And again after the answer: the window does not freeze the page, so
+      // the lock may have been taken while it was open.
+      if (isLocked()) return;
     }
 
     void mutate(
@@ -360,7 +402,7 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
       // continuation of consent already given.
       () => {
         const live = draftRef.current;
-        if (live) saveDraft(live);
+        if (live) void saveDraft(live);
       },
     );
   }
@@ -468,260 +510,277 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
    * a misclick. Hence text that names what is lost rather than a generic
    * "are you sure?".
    */
-  function deletePlan(): void {
-    if (!plan) return;
-    const consequence =
-      "Usunięcie planu dnia skasuje hasło i wszystkie propozycje tego dnia. " +
-      "Dzień wróci do stanu sprzed planowania. Tej operacji nie można cofnąć.";
-    if (!window.confirm(consequence)) {
+  async function deletePlan(): Promise<void> {
+    // `planRef`, not `plan`: the retry below re-enters this closure, and the
+    // failed attempt's `reconcile()` may have found the day already gone.
+    if (!planRef.current) return;
+    // Before the question and after the answer - see `useConfirmDialog` above.
+    // A second click while the window is open gets `false` from `confirm`, so
+    // it neither opens a second window nor sends a second request.
+    if (isLocked()) return;
+    if (!(await confirm(deleteDayPlanConfirmation()))) {
       return;
     }
+    if (isLocked()) return;
     // No headers and no body: the route reads the day from the query string,
     // exactly as `GET` does.
-    void mutate(() => fetch(`/api/day-plan?date=${planDate}`, { method: "DELETE" }), "deleting");
+    void mutate(
+      () => fetch(`/api/day-plan?date=${planDate}`, { method: "DELETE" }),
+      "deleting",
+      // Asked again on "Spróbuj ponownie": after a failure the screen shows
+      // whatever the server holds now, and the first answer was not about that.
+      () => {
+        void deletePlan();
+      },
+    );
   }
 
   const remaining = PROMPT_MAX - prompt.length;
 
   return (
-    <div className="space-y-6">
-      <form
-        className="space-y-4"
-        noValidate
-        onSubmit={(event) => {
-          event.preventDefault();
-          generate();
-        }}
-      >
-        <div>
-          <label htmlFor="plan-date" className="mb-1 block text-sm text-blue-100/80">
-            Dzień
-          </label>
-          <div className="relative">
-            <CalendarDays className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/40" />
-            <input
-              id="plan-date"
-              name="plan_date"
-              type="date"
-              value={planDate}
+    <div className="grid gap-6 min-[900px]:grid-cols-[minmax(0,380px)_minmax(0,1fr)] min-[900px]:items-start min-[900px]:gap-10">
+      <div className="bg-mleko rounded-panel shadow-panel space-y-5 p-6 min-[900px]:sticky min-[900px]:top-6 min-[900px]:p-7">
+        <form
+          className="space-y-5"
+          noValidate
+          onSubmit={(event) => {
+            event.preventDefault();
+            void generate();
+          }}
+        >
+          <h2 className="font-display text-display-sm text-las">Nowe propozycje</h2>
+
+          <div>
+            <label htmlFor="plan-date" className={FIELD_LABEL}>
+              Dzień
+            </label>
+            <div className="relative">
+              <CalendarDays className="text-mech pointer-events-none absolute inset-y-0 left-4 my-auto size-4" />
+              <input
+                id="plan-date"
+                name="plan_date"
+                type="date"
+                value={planDate}
+                disabled={isBusy}
+                onChange={(event) => {
+                  // Navigation, not state: the URL is what identifies the day, so
+                  // a refresh, a bookmark and the back button all keep working.
+                  if (event.target.value) {
+                    window.location.assign(`/plan?date=${event.target.value}`);
+                  }
+                }}
+                className={cn(FIELD_BASE, FIELD_BORDER, "min-h-12 pl-11 [color-scheme:light]")}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="prompt" className={FIELD_LABEL}>
+              Hasło dnia
+            </label>
+            <textarea
+              id="prompt"
+              name="prompt"
+              rows={3}
+              value={prompt}
               disabled={isBusy}
+              maxLength={PROMPT_MAX}
+              placeholder="np. Andrzejki"
               onChange={(event) => {
-                // Navigation, not state: the URL is what identifies the day, so
-                // a refresh, a bookmark and the back button all keep working.
-                if (event.target.value) {
-                  window.location.assign(`/plan?date=${event.target.value}`);
-                }
+                setPrompt(event.target.value);
+                setPromptError(undefined);
               }}
-              className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 pl-10 text-white [color-scheme:dark] transition-colors focus:ring-2 focus:ring-purple-400 focus:outline-none disabled:opacity-60"
+              className={cn(FIELD_BASE, "resize-y", promptError ? FIELD_BORDER_ERROR : FIELD_BORDER)}
             />
+            <div className="mt-1.5 flex items-start justify-between gap-2">
+              <FieldError message={promptError} />
+              {/* Same bound as the route's zod schema, read from the same module,
+                  so the counter cannot promise what the server then rejects. */}
+              <span
+                className={cn(
+                  "ml-auto text-sm tabular-nums",
+                  remaining < 100 ? "text-ostrzezenie font-bold" : "text-las-szary",
+                )}
+              >
+                {prompt.length} / {PROMPT_MAX}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label htmlFor="prompt" className="mb-1 block text-sm text-blue-100/80">
-            Hasło dnia
-          </label>
-          <textarea
-            id="prompt"
-            name="prompt"
-            rows={3}
-            value={prompt}
-            disabled={isBusy}
-            maxLength={PROMPT_MAX}
-            placeholder="np. Andrzejki"
-            onChange={(event) => {
-              setPrompt(event.target.value);
-              setPromptError(undefined);
-            }}
-            className={cn(
-              "w-full resize-y rounded-lg border bg-white/10 px-3 py-2 text-white placeholder-white/40 transition-colors focus:ring-2 focus:outline-none disabled:opacity-60",
-              promptError ? "border-red-400/60 focus:ring-red-400" : "border-white/20 focus:ring-purple-400",
+          <ScopeToggle active="day" dayHref={`/plan?date=${planDate}`} weekHref={weekHref} />
+
+          <Button type="submit" variant="primary" size="pill" disabled={isBusy} className="w-full cursor-pointer">
+            {hasActivities ? <RotateCcw className="size-4" /> : <Sparkles className="size-4" />}
+            {busy === "generating" ? "Generuję…" : hasActivities ? "Generuj ponownie" : "Generuj"}
+          </Button>
+        </form>
+
+        {busy === "generating" && <GenerationProgress />}
+
+        <p className="text-las-szary text-sm">
+          Wpisz hasło — na przykład „Andrzejki”, „Jesień” albo „Dzień Pluszowego Misia” — i wygeneruj trzy propozycje
+          zajęć dla dzieci w wieku 3–6 lat. Możesz je poprawić i zatwierdzić; wszystko zostaje zapisane.
+        </p>
+      </div>
+
+      <div className="min-w-0 space-y-4">
+        {failure && (
+          <div
+            role="alert"
+            className="border-blad-ramka bg-blad-tlo text-blad rounded-input space-y-3 border-[1.5px] p-4 text-[15px] font-bold"
+          >
+            <p className="flex items-start gap-2">
+              <CircleAlert className="mt-0.5 size-4 shrink-0" />
+              {failure.message}
+            </p>
+            {failure.signInRequired && (
+              <a href="/auth/signin" className="text-blad inline-flex min-h-11 items-center font-extrabold underline">
+                Zaloguj się ponownie
+              </a>
             )}
-          />
-          <div className="mt-1 flex items-start justify-between gap-2">
-            <FieldError message={promptError} />
-            {/* Same bound as the route's zod schema, read from the same module,
-                so the counter cannot promise what the server then rejects. */}
-            <span
-              className={cn("ml-auto text-xs tabular-nums", remaining < 100 ? "text-amber-300" : "text-blue-100/50")}
-            >
-              {prompt.length} / {PROMPT_MAX}
-            </span>
+            {failure.retryable && !failure.signInRequired && (
+              <Button
+                type="button"
+                variant="outlinePill"
+                size="pillSm"
+                disabled={isBusy}
+                onClick={() => lastAttempt.current?.()}
+                className="border-blad text-blad cursor-pointer"
+              >
+                <RotateCcw className="size-4" />
+                Spróbuj ponownie
+              </Button>
+            )}
           </div>
-        </div>
+        )}
 
-        {/* The control row `prd-v2.md` §Constraints „Warunek układu" asks for:
-            hasło, then generowanie, then akceptacja, in that order in the DOM so
-            the tab order is the reading order. Stacked on a phone, side by side
-            from `sm` up.
+        {!hasActivities && busy !== "generating" && (
+          <div className="bg-puste text-las-szary rounded-row p-8 text-center">
+            <p className="font-display text-las text-title">Ten dzień czeka na pomysły.</p>
+            <p className="mt-2 text-base">
+              Ten dzień nie ma jeszcze planu. Wpisz hasło i wygeneruj trzy propozycje zajęć.
+            </p>
+          </div>
+        )}
 
-            The acceptance button stays `type="button"`. Inside a `<form>` a
-            bare button submits, so dropping that attribute would silently make
-            accepting run `generate()` - the one operation on this screen that
-            destroys the batch it replaces. `AcceptanceBanner` deliberately did
-            *not* come along: it describes the proposals and belongs next to
-            them, not in a row of controls.
+        {plan && hasActivities && (
+          <section className="space-y-4" aria-label={`Plan na ${formatPlanDate(planDate)}`}>
+            <AcceptanceBanner
+              acceptedAt={accepted}
+              clearedByEdit={clearedByEdit}
+              disabled={isBusy || draft !== null}
+              onReaccept={() => {
+                setAcceptance(true);
+              }}
+            />
+
+            <ol className="space-y-3">
+              {plan.activities.map((activity, index) => (
+                <li
+                  key={activity.id}
+                  className={cn(
+                    "bg-mleko text-las rounded-row border-2 border-transparent p-5 min-[900px]:px-6",
+                    accepted && "border-mech",
+                  )}
+                >
+                  {draft?.id === activity.id ? (
+                    <ActivityEditor
+                      draft={draft}
+                      disabled={isBusy}
+                      refining={busy === "refining"}
+                      instruction={instruction}
+                      fromModel={draftFromModel}
+                      unchanged={refineUnchanged}
+                      focusInstruction={focusInstruction}
+                      onInstructionChange={setInstruction}
+                      onRefine={() => {
+                        void refine(instruction.trim());
+                      }}
+                      onChange={editDraft}
+                      onCancel={() => {
+                        // The teacher's previous text was never sent, so cancelling
+                        // is simply dropping the draft. This is the one thing this
+                        // protocol buys over autosaving; it has to actually work.
+                        setDraft(null);
+                      }}
+                      onSave={() => {
+                        void saveDraft(draft);
+                      }}
+                    />
+                  ) : (
+                    <ActivityPreview
+                      activity={activity}
+                      index={index}
+                      disabled={isBusy || draft !== null}
+                      onEdit={() => {
+                        openDraft(activity, false);
+                      }}
+                      onAsk={() => {
+                        openDraft(activity, true);
+                      }}
+                    />
+                  )}
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
+        {/* The two operations on the whole day, under the proposals they act on,
+            and apart from each other (`prd-v2.md` §Constraints „Warunek układu"):
+            acceptance is reversible in one click and sits where the eye lands
+            after reading; deleting the day is neither, so it is pushed to the
+            far side and quieter - an outline, not a fill. On a narrow screen it
+            wraps onto its own row.
+
+            The delete is gated on the plan row, not on `hasActivities`. A
+            day_plans row with no live batch is unreachable through the
+            application's own paths, but if one ever existed it would be the day
+            that most needs deleting: not visible as a plan anywhere, and still
+            occupying `unique (user_id, plan_date)` so week generation skips
+            over it. Both are disabled during an open proposal edit: acting
+            mid-edit would drop unsaved text without a word.
 
             The labels are not repeated in this comment on purpose: a grep gate
             anchored on one of them must find the button, not this paragraph
             (`lessons.md`, "Bramka grepowa musi celować w konstrukcję"). */}
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button
-            type="submit"
-            disabled={isBusy}
-            className="w-full rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-500 sm:flex-1"
-          >
-            {hasActivities ? <RotateCcw className="size-4" /> : <Sparkles className="size-4" />}
-            {busy === "generating" ? "Generuję…" : hasActivities ? "Generuj ponownie" : "Generuj"}
-          </Button>
-
-          {/* Same visibility gate as before the move: a day with no proposals
-              has nothing to accept, while the hasło form renders on an empty day
-              too - so this is gated on the batch and the form is not. */}
-          {plan && hasActivities && (
+        {plan && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-4 pt-2">
+            {/* Same visibility gate as ever: a day with no proposals has nothing
+                to accept. */}
+            {hasActivities && (
+              <Button
+                type="button"
+                variant={accepted ? "outlinePill" : "primary"}
+                size="pill"
+                disabled={isBusy || draft !== null}
+                onClick={() => {
+                  setAcceptance(accepted === null);
+                }}
+                className="cursor-pointer"
+              >
+                {accepted ? <Undo2 className="size-4" /> : <Check className="size-4" />}
+                {accepted ? "Cofnij zatwierdzenie" : "Zatwierdź plan"}
+              </Button>
+            )}
             <Button
               type="button"
+              variant="dangerPill"
+              size="pillSm"
               disabled={isBusy || draft !== null}
               onClick={() => {
-                setAcceptance(accepted === null);
+                void deletePlan();
               }}
-              className={cn(
-                "w-full rounded-lg px-4 py-2 font-medium text-white transition-colors sm:flex-1",
-                accepted
-                  ? "border border-white/20 bg-white/10 hover:bg-white/20"
-                  : "bg-emerald-600 hover:bg-emerald-500",
-              )}
+              className="ml-auto cursor-pointer"
             >
-              {accepted ? <Undo2 className="size-4" /> : <Check className="size-4" />}
-              {accepted ? "Cofnij akceptację" : "Akceptuj plan"}
+              <Trash2 className="size-4" />
+              {busy === "deleting" ? "Usuwam…" : "Usuń plan dnia"}
             </Button>
-          )}
-        </div>
-      </form>
+          </div>
+        )}
+      </div>
 
-      {busy === "generating" && <GenerationProgress />}
-
-      {failure && (
-        <div
-          role="alert"
-          className="space-y-3 rounded-xl border border-red-500/30 bg-red-900/30 p-4 text-sm text-red-200"
-        >
-          <p className="flex items-start gap-2">
-            <CircleAlert className="mt-0.5 size-4 shrink-0" />
-            {failure.message}
-          </p>
-          {failure.signInRequired && (
-            <a href="/auth/signin" className="inline-block font-medium text-purple-300 hover:underline">
-              Zaloguj się ponownie
-            </a>
-          )}
-          {failure.retryable && !failure.signInRequired && (
-            <Button
-              type="button"
-              disabled={isBusy}
-              onClick={() => lastAttempt.current?.()}
-              className="rounded-lg bg-white/10 px-4 py-2 text-white transition-colors hover:bg-white/20"
-            >
-              <RotateCcw className="size-4" />
-              Spróbuj ponownie
-            </Button>
-          )}
-        </div>
-      )}
-
-      {!hasActivities && busy !== "generating" && (
-        <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-blue-100/70">
-          Ten dzień nie ma jeszcze planu. Wpisz hasło i wygeneruj trzy propozycje zajęć.
-        </p>
-      )}
-
-      {plan && hasActivities && (
-        <section className="space-y-4" aria-label={`Plan na ${formatPlanDate(planDate)}`}>
-          <AcceptanceBanner
-            acceptedAt={accepted}
-            clearedByEdit={clearedByEdit}
-            disabled={isBusy || draft !== null}
-            onReaccept={() => {
-              setAcceptance(true);
-            }}
-          />
-
-          <ol className="space-y-3">
-            {plan.activities.map((activity, index) => (
-              <li key={activity.id} className="rounded-xl border border-white/10 bg-white/5 p-4 text-white">
-                {draft?.id === activity.id ? (
-                  <ActivityEditor
-                    draft={draft}
-                    disabled={isBusy}
-                    refining={busy === "refining"}
-                    instruction={instruction}
-                    fromModel={draftFromModel}
-                    unchanged={refineUnchanged}
-                    focusInstruction={focusInstruction}
-                    onInstructionChange={setInstruction}
-                    onRefine={() => {
-                      void refine(instruction.trim());
-                    }}
-                    onChange={editDraft}
-                    onCancel={() => {
-                      // The teacher's previous text was never sent, so cancelling
-                      // is simply dropping the draft. This is the one thing this
-                      // protocol buys over autosaving; it has to actually work.
-                      setDraft(null);
-                    }}
-                    onSave={() => {
-                      saveDraft(draft);
-                    }}
-                  />
-                ) : (
-                  <ActivityPreview
-                    activity={activity}
-                    index={index}
-                    disabled={isBusy || draft !== null}
-                    onEdit={() => {
-                      openDraft(activity, false);
-                    }}
-                    onAsk={() => {
-                      openDraft(activity, true);
-                    }}
-                  />
-                )}
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-
-      {/* Gated on the plan row, not on `hasActivities`. A day_plans row with no
-          live batch is unreachable through the application's own paths, but if
-          one ever existed it would be the day that most needs deleting: not
-          visible as a plan anywhere, and still occupying `unique (user_id,
-          plan_date)` so week generation skips over it.
-
-          Left at the bottom, alone, and deliberately quieter than everything
-          above it - an outline rather than a fill. This is not an action the eye
-          should fall into. Disabled during an open proposal edit for the same
-          reason the acceptance button is: deleting mid-edit would drop unsaved
-          text without a word.
-
-          It stayed here when `prd-v2.md` §Constraints „Warunek układu" moved
-          acceptance up to the control row, and the separation is the point
-          rather than an unfinished move. The generate button is pressed many
-          times in one sitting; seating an irreversible delete beside something
-          clicked that often would satisfy the condition's letter against its
-          substance. Acceptance is reversible in one click and belongs next to
-          the operation it follows - deleting a day is neither. */}
-      {plan && (
-        <Button
-          type="button"
-          disabled={isBusy || draft !== null}
-          onClick={deletePlan}
-          className="w-full rounded-lg border border-red-400/30 bg-transparent px-4 py-2 text-sm text-red-300/90 transition-colors hover:bg-red-500/10 hover:text-red-200"
-        >
-          <Trash2 className="size-4" />
-          {busy === "deleting" ? "Usuwam…" : "Usuń plan dnia"}
-        </Button>
-      )}
+      {dialog}
     </div>
   );
 }
@@ -730,7 +789,7 @@ export default function DayPlanEditor({ planDate, initialPlan }: DayPlanEditorPr
  * Draft or accepted, said in words and in colour rather than only in colour.
  *
  * Three states, not two. The third is the second half of FR-017: after a save
- * that cost an acceptance, "Plan roboczy" is true and useless - it describes the
+ * that cost an acceptance, "Do przejrzenia" is true and useless - it describes the
  * day without mentioning that this screen is what changed it, so the green badge
  * simply disappears and the teacher is left to work out why. `clearedByEdit`
  * replaces it with the reason and the way back.
@@ -751,36 +810,38 @@ function AcceptanceBanner({
 }) {
   if (!acceptedAt && clearedByEdit) {
     return (
-      <div className="space-y-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+      <div className="border-ostrzezenie-ramka bg-ostrzezenie-tlo text-ostrzezenie rounded-input space-y-2 border-[1.5px] px-4 py-3 text-[15px]">
         <p className="flex items-start gap-2">
           <CircleAlert className="mt-0.5 size-4 shrink-0" />
           {/* Bezosobowo, jak reszta kopii w tej wyspie — komunikat nie zgaduje
               rodzaju czytającej osoby. */}
-          Akceptacja została cofnięta, bo zmieniła się treść propozycji. Plan wrócił do roboczego.
+          Zatwierdzenie zostało cofnięte, bo zmieniła się treść propozycji. Plan jest znów do przejrzenia.
         </p>
         <Button
           type="button"
+          variant="primary"
+          size="pillSm"
           disabled={disabled}
           onClick={onReaccept}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-white transition-colors hover:bg-emerald-500"
+          className="cursor-pointer"
         >
           <Check className="size-4" />
-          Akceptuj ponownie
+          Zatwierdź ponownie
         </Button>
       </div>
     );
   }
   if (!acceptedAt) {
     return (
-      <p className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-blue-100/70">
-        Plan roboczy — zmiany zapisują się od razu, ale plan nie jest jeszcze zaakceptowany.
+      <p className="border-obrys-przerywany text-las-szary rounded-input border-[1.5px] border-dashed px-4 py-3 text-[15px]">
+        Do przejrzenia — zmiany zapisują się od razu, ale plan nie jest jeszcze zatwierdzony.
       </p>
     );
   }
   return (
-    <p className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200">
+    <p className="border-mech bg-szalwia-soft text-mech-ciemny rounded-input flex items-center gap-2 border-2 px-4 py-3 text-[15px] font-extrabold">
       <Check className="size-4 shrink-0" />
-      Plan zaakceptowany {formatAcceptedAt(acceptedAt)}.
+      Plan zatwierdzony {formatAcceptedAt(acceptedAt)}.
     </p>
   );
 }
@@ -799,23 +860,25 @@ function ActivityPreview({
   onAsk: () => void;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex flex-col gap-4 min-[900px]:flex-row min-[900px]:items-start min-[900px]:justify-between min-[900px]:gap-6">
       <div className="min-w-0">
-        <h3 className="font-semibold">
-          <span className="mr-2 text-purple-300">{index + 1}.</span>
+        <h3 className="text-title font-extrabold">
+          <span className="text-mech mr-2">{index + 1}.</span>
           {activity.title}
         </h3>
-        <p className="mt-1 text-sm whitespace-pre-line text-blue-100/80">{activity.description}</p>
+        <p className="text-las-szary mt-2 text-[15px] leading-[1.55] whitespace-pre-line">{activity.description}</p>
       </div>
-      <div className="flex shrink-0 flex-col gap-2">
+      <div className="flex shrink-0 flex-wrap gap-2 min-[900px]:flex-col">
         <Button
           type="button"
           disabled={disabled}
           onClick={onEdit}
           aria-label={`Edytuj propozycję: ${activity.title}`}
-          className="rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white transition-colors hover:bg-white/20"
+          variant="outlinePill"
+          size="pillSm"
+          className="cursor-pointer"
         >
-          <Pencil className="size-3.5" />
+          <Pencil className="size-4" />
           Edytuj
         </Button>
         <Button
@@ -823,9 +886,11 @@ function ActivityPreview({
           disabled={disabled}
           onClick={onAsk}
           aria-label={`Zapytaj model o propozycję: ${activity.title}`}
-          className="rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white transition-colors hover:bg-white/20"
+          variant="outlinePill"
+          size="pillSm"
+          className="cursor-pointer"
         >
-          <Sparkles className="size-3.5" />
+          <Sparkles className="size-4" />
           Zapytaj model
         </Button>
       </div>
@@ -882,7 +947,7 @@ function ActivityEditor({
   return (
     <div className="space-y-3">
       <div>
-        <label htmlFor={`title-${draft.id}`} className="mb-1 block text-xs text-blue-100/70">
+        <label htmlFor={`title-${draft.id}`} className={FIELD_LABEL}>
           Tytuł
         </label>
         <input
@@ -894,11 +959,11 @@ function ActivityEditor({
           onChange={(event) => {
             onChange({ ...draft, title: event.target.value });
           }}
-          className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white transition-colors focus:ring-2 focus:ring-purple-400 focus:outline-none disabled:opacity-60"
+          className={cn(FIELD_BASE, FIELD_BORDER)}
         />
       </div>
       <div>
-        <label htmlFor={`description-${draft.id}`} className="mb-1 block text-xs text-blue-100/70">
+        <label htmlFor={`description-${draft.id}`} className={FIELD_LABEL}>
           Opis
         </label>
         <textarea
@@ -910,23 +975,23 @@ function ActivityEditor({
           onChange={(event) => {
             onChange({ ...draft, description: event.target.value });
           }}
-          className="w-full resize-y rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white transition-colors focus:ring-2 focus:ring-purple-400 focus:outline-none disabled:opacity-60"
+          className={cn(FIELD_BASE, FIELD_BORDER, "resize-y")}
         />
       </div>
       {fromModel && (
-        <p className="flex items-start gap-2 text-xs text-amber-200">
-          <Sparkles className="mt-0.5 size-3 shrink-0" />
+        <p className="bg-ostrzezenie-tlo text-ostrzezenie rounded-input flex items-start gap-2 px-3 py-2 text-sm font-bold">
+          <Sparkles className="mt-0.5 size-4 shrink-0" />
           Tekst pochodzi od modelu — warto go przejrzeć przed zapisem.
         </p>
       )}
       {unchanged && (
-        <p className="flex items-start gap-2 text-xs text-blue-100/70">
-          <CircleAlert className="mt-0.5 size-3 shrink-0" />
+        <p className="text-las-szary flex items-start gap-2 text-sm">
+          <CircleAlert className="mt-0.5 size-4 shrink-0" />
           Model nie zmienił tej aktywności — spróbuj innego polecenia.
         </p>
       )}
       <div>
-        <label htmlFor={`instruction-${draft.id}`} className="mb-1 block text-xs text-blue-100/70">
+        <label htmlFor={`instruction-${draft.id}`} className={FIELD_LABEL}>
           Polecenie dla modelu
         </label>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -947,45 +1012,51 @@ function ActivityEditor({
                 if (canRefine) onRefine();
               }
             }}
-            className="w-full min-w-0 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 transition-colors focus:ring-2 focus:ring-purple-400 focus:outline-none disabled:opacity-60 sm:flex-1"
+            className={cn(FIELD_BASE, FIELD_BORDER, "min-w-0 sm:flex-1")}
           />
           <Button
             type="button"
+            variant="outlinePill"
+            size="pillSm"
             disabled={!canRefine}
             onClick={onRefine}
-            className="rounded-lg bg-white/10 px-4 py-2 text-white transition-colors hover:bg-white/20"
+            className="cursor-pointer"
           >
             <Sparkles className="size-4" />
             {refining ? "Model pracuje…" : "Zapytaj model"}
           </Button>
         </div>
         {refining && (
-          <p role="status" className="mt-1 text-xs text-blue-100/70">
+          <p role="status" className="text-las-szary mt-1.5 text-sm">
             Model pracuje… Poprawiony tekst pojawi się w polach powyżej.
           </p>
         )}
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           type="button"
+          variant="primary"
+          size="pillSm"
           disabled={disabled || invalid}
           onClick={onSave}
-          className="rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-500"
+          className="cursor-pointer"
         >
           <Check className="size-4" />
           Zapisz
         </Button>
         <Button
           type="button"
+          variant="outlinePill"
+          size="pillSm"
           disabled={disabled}
           onClick={onCancel}
-          className="rounded-lg bg-white/10 px-4 py-2 text-white transition-colors hover:bg-white/20"
+          className="cursor-pointer"
         >
           <X className="size-4" />
           Anuluj
         </Button>
       </div>
-      <p className="text-xs text-blue-100/50">Anuluj przywróci poprzedni tekst — nic nie zostanie zapisane.</p>
+      <p className="text-las-szary text-sm">Anuluj przywróci poprzedni tekst — nic nie zostanie zapisane.</p>
     </div>
   );
 }
@@ -993,8 +1064,8 @@ function ActivityEditor({
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p className="flex items-center gap-1 text-xs text-red-300">
-      <CircleAlert className="size-3" />
+    <p className={FIELD_ERROR}>
+      <CircleAlert className="size-4 shrink-0" />
       {message}
     </p>
   );

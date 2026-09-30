@@ -141,18 +141,20 @@ export default function PdfDownloadControls({
   }
 
   return (
-    <section aria-label={ariaLabel} className="space-y-2 border-t border-white/10 pt-4">
-      <div className="flex flex-col gap-2 sm:flex-row">
+    <section aria-label={ariaLabel} className="space-y-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         {buttons.map(({ kind, label }) => (
           <Button
             key={kind}
             type="button"
+            variant="outlinePill"
+            size="pill"
             disabled={disabled || preparing !== null}
             aria-describedby={disabledReason !== null ? reasonId : undefined}
             onClick={() => {
               download(kind);
             }}
-            className="flex-1 cursor-pointer rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-white transition-colors hover:bg-white/10 hover:text-white"
+            className="cursor-pointer"
           >
             <FileDown className="size-4" />
             {preparing === kind ? "Przygotowuję PDF…" : label}
@@ -160,12 +162,12 @@ export default function PdfDownloadControls({
         ))}
       </div>
       {disabledReason !== null && (
-        <p id={reasonId} className="text-xs text-amber-200/80">
+        <p id={reasonId} className="text-ostrzezenie text-sm">
           {disabledReason}
         </p>
       )}
       {error !== null && (
-        <p role="alert" className="flex items-center gap-1 text-sm text-red-300">
+        <p role="alert" className="text-blad flex items-center gap-1 text-sm font-bold">
           <CircleAlert className="size-4 shrink-0" />
           {error}
         </p>

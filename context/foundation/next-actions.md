@@ -10,8 +10,9 @@
   łącznie z nice-to-have `S-10` (`accepted-day-replacement`, PR #35) i dopisanym w trakcie
   `S-15` (`follow-up-questions`). Wszystko jest na produkcji. Wpis: `roadmap.md` §Milestone History.
 - **Kroki 1–5 zamknięte.** **Kolejność dalszych prac przestawiona 2026-09-29** — patrz
-  §Kolejka po `M-02`. Następny jest **Krok 10 (design z Claude Design)**, a Krok 6 (faza 3
-  test-planu) idzie zaraz po nim; jego warunek wejścia (Pułapka 2) jest spełniony.
+  §Kolejka po `M-02`. **Krok 10 (design z Claude Design) zrobiony 2026-09-30** — `design-planner`
+  czeka jeszcze na przegląd, PR i archiwizację. Następny jest Krok 6 (faza 3 test-planu); jego
+  warunek wejścia (Pułapka 2) jest spełniony.
 - **Monetyzacja ma decyzje** (2026-09-29): Free + Basic 19,99 zł teraz, Pro 39,99 zł później
   zaczynając od materiałów, B2C, JDG. Pełny zapis: `monetization.md` §Decyzje.
 - **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie. Żaden kamień nie
@@ -297,7 +298,7 @@ nie ma:
 Rozszerz przy okazji mapę ryzyk o płatności: webhook przyznający dostęp cudzemu kontu, limit
 omijany równoległymi wywołaniami `week/day.ts`, dostęp, który nie wygasa.
 
-### Krok 10 — design z Claude Design (zgłoszenie „design z Claude Design") — W TOKU
+### ✅ Krok 10 — design z Claude Design (zgłoszenie „design z Claude Design") — ZROBIONE 2026-09-30
 
 ```
 # 0. ✅ Projekt w Claude Design gotowy (2026-09-29) — pakiet w context/foundation/design/
@@ -311,7 +312,23 @@ git checkout -b feat/design-foundation
 /10x-impl-review
 /10x-archive design-foundation
 # Drugi przebieg tym samym łańcuchem: feat/design-planner (ekrany planowania)
+# 2. ✅ design-planner zaimplementowany 2026-09-30 (7 faz) — do /10x-impl-review, PR i /10x-archive
 ```
+
+**Stan końcowy po `design-planner` (2026-09-30).** Cała aplikacja jest w „Ogrodzie”: `.theme-legacy`
+i `bg-cosmic` usunięte, trzy ekrany `/plan*` stoją na `PlannerLayout` z nowym paskiem aplikacji.
+Siatka miesiąca to pn–pt z tematem tygodnia w wierszu, licznikami w legendzie, CTA dla pustego
+tygodnia i listą tygodni poniżej 900 px (ryzyko #14 w `test-plan.md` pilnuje wysokości 558 px).
+Dzień i tydzień mają układ dwukolumnowy i przełącznik zakresu. Stan planu nazywa się wszędzie —
+także na wydrukach — „zatwierdzony / do przejrzenia”, a sześć potwierdzeń idzie przez własne okno
+(`useConfirmDialog`); reguły w `CLAUDE.md` §Key conventions i `tests/e2e/E2E-RULES.md` §Okna potwierdzeń.
+
+Świadomie **nie** zrobione, z właścicielem:
+
+- **Podgląd dnia na dotyk** — nie było go i nadal nie ma (na telefonie kafelek od razu otwiera
+  dzień). Bez właściciela w kolejce; wraca, jeśli zgłosi to nauczyciel.
+- **Strona `/konto`** — awatar w pasku jest dekoracją, nie linkiem. Właściciel: `M-03`.
+- Kategorie, czas trwania i miejsce aktywności (N2) — właściciel: `M-04`.
 
 **Bez PRD.** Design nie zmienia żadnego FR: wszystko z `prd-v2.md` §Zachowania chronione obowiązuje
 bez zmian, łącznie z adresami ekranów. To zmiana wyglądu, więc idzie standardowym łańcuchem
@@ -351,28 +368,17 @@ miesiąc pełny" i licznik darmowego tygodnia, a treść paywalla i cennika rozj
 - **Weryfikacja wzrokowa jest tu naturalna** — pozycja 1.11 z §Otwarte ogony po Kroku 1
   (układ mobilny i desktopowy strony `/`) domyka się przy okazji.
 
-**Stan po `design-foundation` (2026-09-29) — co dziedziczy `design-planner`:**
+**Co zostaje po obu zmianach (stan na 2026-09-30):**
 
 - **Pakiet Claude Design** leży w `context/foundation/design/` (README, `tokens.css`, komponenty
   `.astro` jako specyfikacja, PNG i HTML ekranów). Wykluczony z ESLint i tsconfig — to referencja,
-  nie kod. Tokeny są już w `src/styles/global.css` (`@theme`: `las`, `owies`, `mleko`, `mech`,
-  `szalwia`, `morela`…; zmienne shadcn na „Ogród”); `--cat-*` czekają na `M-04`.
-- **`.theme-legacy` — dług z właścicielem `design-planner`:** usunąć blok `.theme-legacy` z
-  `src/styles/global.css` i klasę `theme-legacy` z wrapperów w `src/pages/plan.astro`,
-  `src/pages/plan/week.astro`, `src/pages/plan/month.astro`. Do tego czasu planer celowo zostaje
-  ciemny.
-- **`AppHeader`** (N12, N8): nawigacja „Plan miesiąca” / „Nowe propozycje”, awatar + e-mail i
-  **widoczny** „Wyloguj się” (wiąże go `tests/e2e/auth.setup.ts`).
-- **Siatka miesiąca** N4–N7: temat tygodnia w wierszu, legenda z licznikami, pusty tydzień jako
-  jedna komórka z CTA, pn–pt (z sygnałem o planach weekendowych); **N11** „Zatwierdź wszystkie” jako
-  restyle „Akceptuj tydzień (N)”.
-- **Landing:** po N4 dopisać etykiety tematu tygodnia w ilustracji miesiąca w
-  `src/components/Welcome.astro`.
-- **N1 wdrożone:** hasło z landingu jedzie ciasteczkiem `pending_topic` (`src/lib/pending-topic.ts`)
-  przez rejestrację i logowanie do `/plan/week`. Przerabiając tydzień, zachowaj
-  `initialPrompt` w `WeekPlanBoard` i etykietę „Hasło tygodnia” (`landing-topic-carry.spec.ts`).
-- Pozycja 1.11 z §Otwarte ogony po Kroku 1 — domknięta nowym landingiem (weryfikacja wzrokowa:
-  pozycje 2.7 i 2.11 planu `design-foundation`).
+  nie kod. Tokeny są w `src/styles/global.css` (`@theme`); `--cat-*` czekają na `M-04`.
+- Wszystko, co `design-foundation` zostawił dla `design-planner` — dług `.theme-legacy`, `AppHeader`
+  (N12, N8), siatka N4–N7, N11 „Zatwierdź wszystkie”, etykiety tematu tygodnia w ilustracji
+  landingu — jest zrobione; patrz „Stan końcowy po `design-planner`” wyżej.
+- **N1:** hasło z landingu jedzie ciasteczkiem `pending_topic` (`src/lib/pending-topic.ts`) do
+  `/plan/week`; `initialPrompt` w `WeekPlanBoard` i etykieta „Hasło tygodnia” są związane testem
+  `landing-topic-carry.spec.ts`.
 
 ### Krok 11 — walidacja i sprawy formalne (poza kodem, równolegle z Krokiem 10)
 

@@ -13,7 +13,7 @@ export const prerender = false;
  * The same "proposal without a row" shape `week/day.ts` introduced: the result
  * lands in the teacher's open draft, and the save is the existing
  * `PATCH /api/day-plan/activity/[id]` - which already carries the confirm on an
- * accepted day, the acceptance trigger and the "Akceptuj ponownie" banner. A
+ * accepted day, the acceptance trigger and the "Zatwierdź ponownie" banner. A
  * route that wrote here would have to repeat all of that, and would overwrite
  * a description with no undo (PRD v2).
  *

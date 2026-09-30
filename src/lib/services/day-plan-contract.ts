@@ -391,7 +391,7 @@ export const acceptPlanRequestSchema = z.object({
   accepted: z.boolean(),
   // Which batch the teacher believes they are signing off on. Accept is the one
   // verb that would otherwise succeed against proposals the caller has never
-  // seen: a tab holding a superseded view still renders its "Akceptuj plan"
+  // seen: a tab holding a superseded view still renders its "Zatwierdź plan"
   // button, and without this the acceptance would attest to whatever the current
   // batch happens to be. Editing that same stale view already 404s, because the
   // rows are gone; this gives accept the same honesty.

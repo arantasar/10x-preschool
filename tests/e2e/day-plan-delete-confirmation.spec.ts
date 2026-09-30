@@ -13,8 +13,8 @@ import { waitForIslands } from "./support/hydration";
  *
  * **Dlaczego osobny test.** Test zakresu dowodzi, że dialog się pojawia — bo bez
  * jego obsłużenia kasowanie w ogóle by nie ruszyło. Nie dowodzi jednak niczego o
- * *odmowie*: `deletePlan()` mogłoby ignorować wynik `window.confirm` i kasować
- * mimo „Anuluj", a tamten test byłby dalej zielony. To jest cała ochrona przed
+ * *odmowie*: `deletePlan()` mogłoby ignorować odpowiedź z okna potwierdzenia
+ * (`ConfirmDialog`) i kasować mimo „Zostaw", a tamten test byłby dalej zielony. To jest cała ochrona przed
  * przypadkowym kliknięciem, więc zasługuje na własny dowód.
  *
  * **Dlaczego trzy asercje, a nie jedna.** „Plan nadal jest widoczny" to asercja
@@ -22,7 +22,8 @@ import { waitForIslands } from "./support/hydration";
  * nie przejść") wymaga, żeby taka potrafiła zawieść. Sama przeszłaby również
  * wtedy, gdyby kliknięcie nie doszło do przycisku albo gdyby dialog nigdy się nie
  * pojawił — czyli w stanie, w którym niczego nie sprawdziliśmy. Stąd komplet:
- *   1. dialog faktycznie się pokazał (kliknięcie dotarło do strażnika),
+ *   1. okno faktycznie się pokazało i nazwało skutek (kliknięcie dotarło do
+ *      strażnika) — okna, którego nie widać, nie da się też kliknąć,
  *   2. żadne żądanie DELETE nie poleciało (strażnik naprawdę zatrzymał operację),
  *   3. plan przeżył przeładowanie (stan po stronie serwera jest nietknięty).
  */
@@ -39,7 +40,7 @@ test.describe("Ryzyko #7 — odmowa w dialogu potwierdzenia", () => {
     const stamp = uniqueStamp();
     const title = `Powitanie ${stamp}`;
 
-    // Plan zaakceptowany — czyli ten, którego przypadkowa utrata boli najbardziej.
+    // Plan zatwierdzony — czyli ten, którego przypadkowa utrata boli najbardziej.
     const teacherAId = await ensureTeacher(TEACHER_A);
     seededPlanIds.push(
       await seedDayPlan({
@@ -67,13 +68,15 @@ test.describe("Ryzyko #7 — odmowa w dialogu potwierdzenia", () => {
       }
     });
 
-    let confirmShown = false;
-    page.once("dialog", (dialog) => {
-      confirmShown = true;
-      void dialog.dismiss();
-    });
-
     await page.getByRole("button", { name: "Usuń plan dnia" }).click();
+
+    // Okno jest elementem strony. Najpierw dowód, że się pokazało i mówi, co
+    // przepadnie — dopiero potem odmowa, przyciskiem nazwanym po skutku.
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText("Tej operacji nie można cofnąć.");
+    await dialog.getByRole("button", { name: "Zostaw", exact: true }).click();
+    await expect(dialog).toHaveCount(0);
 
     // Przeładowanie jest tu punktem synchronizacji, nie ozdobą: wymusza pełny
     // odczyt SSR, więc asercja mówi o stanie w bazie, a nie o tym, że wyspa
@@ -81,7 +84,6 @@ test.describe("Ryzyko #7 — odmowa w dialogu potwierdzenia", () => {
     await page.reload();
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
 
-    expect(confirmShown).toBe(true);
     expect(deleteRequests).toEqual([]);
   });
 });

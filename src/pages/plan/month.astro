@@ -1,9 +1,9 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import AppHeader from "@/components/AppHeader.astro";
+import PlannerLayout from "@/layouts/PlannerLayout.astro";
 import MonthGrid from "@/components/plan/MonthGrid";
 import MonthPdfControls from "@/components/plan/MonthPdfControls";
 import { addDays, addMonths, formatMonth, resolveMonth, weeksOfMonth } from "@/lib/day-plan-dates";
+import { acceptedCountLabel, monthCounts } from "@/lib/month-grid";
 import { readMonthSummary } from "@/lib/services/day-plan-store";
 import type { DayPlanSummary } from "@/types";
 
@@ -39,75 +39,104 @@ if (supabase) {
 const previousMonth = addMonths(month, -1).slice(0, 7);
 const nextMonth = addMonths(month, 1).slice(0, 7);
 const plannedCount = summaries.filter((summary) => summary.plan_date.slice(0, 7) === month).length;
+const counts = monthCounts(month, summaries);
+const monthName = formatMonth(month);
+const monthHeading = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+const stepLink =
+  "border-obrys bg-mleko text-las hover:border-las flex size-11 shrink-0 items-center justify-center rounded-full border-[1.5px] no-underline";
 ---
 
-<Layout title={`Plan miesiąca — ${formatMonth(month)}`}>
-  <div class="theme-legacy bg-cosmic min-h-screen p-4">
-    <main class="mx-auto w-full max-w-6xl py-10">
-      <AppHeader />
-      <header class="mb-8">
-        <h1 class="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-          Plan miesiąca
+<PlannerLayout title={`Plan miesiąca — ${monthName}`} active="plan">
+  <main class="max-w-content px-app-gutter mx-auto w-full py-8 min-[900px]:py-10">
+    <header class="mb-6 flex flex-col gap-4 min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between">
+      <div class="flex items-center gap-3">
+        <a href={`/plan/month?month=${previousMonth}`} aria-label="Poprzedni miesiąc" class:list={stepLink}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg
+          >
+        </a>
+        {/* The visible heading is the month; "Plan miesiąca" stays in its name for a screen reader. */}
+        <h1 class="font-display text-display-md text-las">
+          <span class="sr-only">Plan miesiąca — </span>{monthHeading}
         </h1>
-        <p class="mt-1 text-lg text-blue-100 first-letter:uppercase">{formatMonth(month)}</p>
-        {
-          !readFailed && (
-            <p class="mt-2 text-blue-100/80">
-              {plannedCount === 0
-                ? "Ten miesiąc nie ma jeszcze żadnego planu. Wybierz tydzień, żeby zacząć."
-                : `Zaplanowane dni w tym miesiącu: ${plannedCount}.`}
-            </p>
-          )
-        }
-
-        <nav class="mt-4 flex items-center gap-3 text-sm">
-          <a
-            href={`/plan/month?month=${previousMonth}`}
-            class="rounded-lg bg-white/10 px-3 py-1.5 text-white hover:bg-white/20"
+        <a href={`/plan/month?month=${nextMonth}`} aria-label="Następny miesiąc" class:list={stepLink}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg
           >
-            &larr; Poprzedni miesiąc
-          </a>
-          <a
-            href={`/plan/month?month=${nextMonth}`}
-            class="rounded-lg bg-white/10 px-3 py-1.5 text-white hover:bg-white/20"
-          >
-            Następny miesiąc &rarr;
-          </a>
-        </nav>
-
-        {
-          /* The print reads its own data on click (`GET /api/day-plan/month`);
-             this page's read stays summaries only. Hidden when that read failed,
-             like the grid - a month we could not load is not one to print. */
-          !readFailed && (
-            <div class="mt-4">
-              <MonthPdfControls client:idle month={month} />
-            </div>
-          )
-        }
-      </header>
-
-      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 backdrop-blur-xl">
-        {
-          readFailed ? (
-            <div class="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
-              <p class="font-medium text-amber-100">Nie udało się wczytać tego miesiąca.</p>
-              <p class="mt-1 text-sm text-amber-100/80">
-                Nie wiemy, które dni mają już plan, więc nie pokazujemy siatki — pusta wyglądałaby jak miesiąc bez
-                planów. Odśwież stronę i spróbuj ponownie.
-              </p>
-              <a
-                href={`/plan/month?month=${month}`}
-                class="mt-3 inline-block rounded-lg bg-amber-400/20 px-4 py-2 text-sm font-medium text-amber-100 hover:bg-amber-400/30"
-              >
-                Odśwież
-              </a>
-            </div>
-          ) : (
-            <MonthGrid client:load month={month} weeks={weeks} summaries={summaries} />
-          )
-        }
+        </a>
       </div>
-    </main>
-  </div>
-</Layout>
+
+      {
+        /* The legend doubles as the month's summary: the month's working days
+           by state. Hidden when the read failed - the numbers would be a guess. */
+        !readFailed && (
+          <ul class="text-las flex flex-wrap gap-x-5 gap-y-2 text-[15px] font-bold">
+            <li class="flex items-center gap-2">
+              <span class="border-mech bg-szalwia-soft inline-block size-4 rounded-[5px] border-[1.5px]" />
+              {acceptedCountLabel(counts.accepted)}
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="border-obrys-przerywany bg-mleko inline-block size-4 rounded-[5px] border-[1.5px] border-dashed" />
+              {counts.draft} do przejrzenia
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="bg-puste inline-block size-4 rounded-[5px]" />
+              {counts.empty} bez planu
+            </li>
+          </ul>
+        )
+      }
+    </header>
+
+    {
+      !readFailed && plannedCount === 0 && (
+        <p class="text-las-szary mb-4">Ten miesiąc nie ma jeszcze żadnego planu. Wybierz tydzień, żeby zacząć.</p>
+      )
+    }
+
+    {
+      readFailed ? (
+        <div class="border-ostrzezenie-ramka bg-ostrzezenie-tlo text-ostrzezenie rounded-row border-[1.5px] p-5">
+          <p class="font-extrabold">Nie udało się wczytać tego miesiąca.</p>
+          <p class="mt-1 text-[15px]">
+            Nie wiemy, które dni mają już plan, więc nie pokazujemy siatki — pusta wyglądałaby jak miesiąc bez planów.
+            Odśwież stronę i spróbuj ponownie.
+          </p>
+          <a
+            href={`/plan/month?month=${month}`}
+            class="border-ostrzezenie text-ostrzezenie mt-3 inline-flex min-h-11 items-center rounded-full border-[1.5px] px-5 font-extrabold no-underline"
+          >
+            Odśwież
+          </a>
+        </div>
+      ) : (
+        <>
+          <MonthGrid client:load month={month} weeks={weeks} summaries={summaries} />
+          {/* The print reads its own data on click (`GET /api/day-plan/month`);
+              this page's read stays summaries only. Hidden when that read failed,
+              like the grid - a month we could not load is not one to print. */}
+          <div class="mt-6">
+            <MonthPdfControls client:idle month={month} />
+          </div>
+        </>
+      )
+    }
+  </main>
+</PlannerLayout>

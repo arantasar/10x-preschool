@@ -5,8 +5,7 @@
 
 :root {
   /* shadcn variables on the "Ogród" palette (context/foundation/design/src/styles/tokens.css).
-     Everything that reads them - `Button`, `rounded-*`, `border-border` - follows,
-     except inside `.theme-legacy` below, which pins the planner to the old set. */
+     Everything that reads them - `Button`, `rounded-*`, `border-border` - follows. */
   --radius: 1rem;
   --background: #f3efe4; /* Owies */
   --foreground: #1f3b2d; /* Las */
@@ -39,37 +38,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-}
-
-/* The planner (`/plan`, `/plan/week`, `/plan/month`) keeps its dark look until
-   `design-planner` repaints it. Its ~370 literal colour classes do not move with
-   the tokens, but `Button` and `rounded-*` do - `@theme inline` below resolves
-   `var(--primary)` / `var(--radius)` at the element - so without this block the
-   planner would get forest-green buttons and 16 px corners inside a cosmic page.
-   This is the pre-"Ogród" `:root` verbatim, plus the body type the planner was
-   laid out in (Tailwind sans, 1rem / 1.5).
-   OWNER: `design-planner` deletes this block and the three wrapper classes. */
-.theme-legacy {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  @apply text-foreground font-sans text-base;
 }
 
 .dark {
@@ -167,6 +135,14 @@
   --color-linia: #d5cdb8; /* section rules, footer */
   --color-obrys-przerywany: #6f8a69; /* "to review" dashed border */
   --color-cien-pola: #dcd5c2;
+  /* States the public pages never had; tones from the package's `Notice.astro`.
+     Text on its own fill: error 7.6:1, warning 9.9:1. */
+  --color-blad-tlo: #f8dad2;
+  --color-blad: #7a2410;
+  --color-blad-ramka: #d9a08f;
+  --color-ostrzezenie-tlo: #fbebc4;
+  --color-ostrzezenie: #4a3500;
+  --color-ostrzezenie-ramka: #d9b65c;
 
   --font-display: "Young Serif", Georgia, serif; /* weight 400 only */
   --font-body: "Nunito Sans Variable", "Nunito Sans", system-ui, -apple-system, sans-serif;
@@ -198,6 +174,7 @@
   --shadow-input: 0 1px 0 var(--color-cien-pola), 0 20px 40px -24px rgba(31, 59, 45, 0.35);
 
   --spacing-gutter: clamp(20px, 8vw, 120px); /* marketing pages */
+  --spacing-app-gutter: clamp(16px, 3.4vw, 48px); /* signed-in app */
   --container-content: 1200px;
 }
 
@@ -208,10 +185,6 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--color-mech);
-}
-
-@utility bg-cosmic {
-  background-image: linear-gradient(to bottom, #0a0e1a, #0f1529, #0a0e1a);
 }
 
 @layer base {
@@ -228,12 +201,9 @@
      2.2:1 on Mleko - under the 3:1 a focus indicator needs (WCAG 1.4.11). Las is
      10.6:1 on the light pages, and on a dark Las band, where the ring itself
      disappears, the Morela halo carries it (5.5:1). The pill buttons and form
-     fields repeat the same pair as utilities.
-     Scoped away from the planner rather than put on a bare `:focus-visible`,
-     which `.theme-legacy` would then have to undo. The selector is (0,1,0), not
-     zero - what lets a component's own focus utilities win is that this sits in
-     `@layer base`, below `@layer utilities`. */
-  :where(:not(.theme-legacy, .theme-legacy *)):focus-visible {
+     fields repeat the same pair as utilities. What lets a component's own focus
+     utilities win is that this sits in `@layer base`, below `@layer utilities`. */
+  :focus-visible {
     outline: 3px solid var(--color-las);
     outline-offset: 2px;
     box-shadow: 0 0 0 2px var(--color-morela);

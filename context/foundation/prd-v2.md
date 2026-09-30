@@ -256,6 +256,8 @@ Pozycja rozbita 2026-09-19 w rundzie Sokratejskiej na połowę bezpieczną i ryz
 
 ### Zachowania chronione
 
+> **Słownik interfejsu (od `design-planner`, 2026-09-30):** ten dokument mówi „zaakceptowany” i „roboczy”; w interfejsie, w nazwach dostępnych i na wydrukach te same stany nazywają się „zatwierdzony” i „do przejrzenia” („akceptacja” = „zatwierdzenie”). W kodzie i w bazie bez zmian: `accepted`, `accepted_at`.
+
 - [preserved] Izolacja kont — plan jednego nauczyciela nigdy nie jest widoczny dla drugiego; każda nowa ścieżka zapisu i odczytu egzekwuje granice dostępu tak samo jak istniejące.
 - [preserved] Spójność zapisanej partii aktywności — aktywności zapisane dla dnia zawsze odpowiadają ostatniemu generowaniu tego dnia (zobowiązanie z `S-02`).
 - [preserved] Bezpieczeństwo treści propozycji — żadna propozycja nieodpowiednia dla dzieci 3–6 lat nie trafia do nauczyciela (guardrail z PRD v1).

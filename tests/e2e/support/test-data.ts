@@ -56,6 +56,23 @@ export function uniqueWeekStart(): string {
 }
 
 /**
+ * Poniedzialek, ktorego caly tydzien roboczy lezy w jednym miesiacu — dla
+ * testow siatki miesiaca.
+ *
+ * Siatka pokazuje dzien spoza miesiaca jako pusta komorke, nie jako kafelek,
+ * wiec tydzien na granicy miesiecy (poniedzialek 30., wtorek 1.) nie ma na
+ * stronie miesiaca wszystkich swoich dni. Rezerwuje 21 dni: gdy piatek wypada
+ * juz w nastepnym miesiacu, bierze kolejny poniedzialek (najwyzej +13), a jego
+ * piatek (+17) nadal miesci sie w rezerwacji.
+ */
+export function uniqueWeekStartWithinMonth(): string {
+  const reserved = uniquePlanDate(21);
+  const daysUntilMonday = (8 - new Date(`${reserved}T00:00:00Z`).getUTCDay()) % 7;
+  const monday = plusDays(reserved, daysUntilMonday);
+  return plusDays(monday, 4).slice(0, 7) === monday.slice(0, 7) ? monday : plusDays(monday, 7);
+}
+
+/**
  * Znacznik wplatany w tytuly propozycji.
  *
  * Asercje celuja w niego, a nie w ogolne "jakis plan jest widoczny" — inaczej
