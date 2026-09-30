@@ -16,7 +16,15 @@ import type { DayPlanClient } from "@/lib/services/day-plan-store";
  * `from("activities").select().eq().order()`, `.in(…)` on both for
  * `readWeekPlans`, `from("activities").select().eq().maybeSingle()` and
  * `from("activities").update().eq().select().maybeSingle()` for
- * `updateActivityText`, and `rpc()`. Nothing more. A deeper imitation would
+ * `updateActivityText`, `from("day_plans").update().eq().eq().select().maybeSingle()`
+ * for `setAcceptance`, `from("day_plans").delete().eq().select().maybeSingle()`
+ * for `deleteDayPlan`, and `rpc()`. Nothing more.
+ *
+ * What it cannot do is prove ownership. The routes never filter on `user_id` -
+ * RLS does, behind the session in the client - so a stub "of another account"
+ * returns whatever it was told to. Route tests here pin how a route *answers*
+ * an empty result; that the empty result is what another account actually gets
+ * is the `*.db.test.ts` tier's claim (test plan §6.3). A deeper imitation would
  * start being a second implementation of PostgREST, and a test that passes
  * against it would stop meaning anything about the real one.
  *
@@ -67,6 +75,19 @@ export interface SupabaseStubOptions {
   activityBeforeEdit?: { plan_id: string; day_plans: { accepted_at: string | null } } | null;
   /** The row `update()` hands back. `null` means the update matched nothing. */
   updatedActivity?: { plan_id: string } | null;
+  /**
+   * The row `setAcceptance`'s conditional `day_plans` update hands back. `null`
+   * means it matched nothing - and then the store's follow-up read answers from
+   * `existingPlan`, because nothing was written: a plan there means "it moved on"
+   * (409), `null` means "not visible" (404).
+   */
+  updatedPlan?: { id: string } | null;
+  /** Makes that update fail instead. */
+  updatedPlanError?: StubPostgrestError;
+  /** The row `deleteDayPlan`'s `delete()` hands back. `null` means it matched nothing. */
+  deletedPlan?: { id: string } | null;
+  /** Makes that delete fail instead. */
+  deleteError?: StubPostgrestError;
 }
 
 export interface SupabaseStub {
@@ -82,6 +103,12 @@ export interface SupabaseStub {
   from: ReturnType<typeof vi.fn>;
   /** Every `from("day_plans").select().in(column, values)` call - which days a range read asked for. */
   dayPlansIn: ReturnType<typeof vi.fn>;
+  /** Every `from("day_plans").update(values)` call - what an acceptance change wrote. */
+  dayPlansUpdate: ReturnType<typeof vi.fn>;
+  /** Every `from("day_plans").delete()` call. "Not retried" is a claim about this count. */
+  delete: ReturnType<typeof vi.fn>;
+  /** Every `.eq(column, value)` hung off `delete()` - which day a delete addressed. */
+  deleteEq: ReturnType<typeof vi.fn>;
 }
 
 export function planRow(overrides: Partial<DayPlanRow> = {}): DayPlanRow {
@@ -123,6 +150,10 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
     weekPlansError,
     activityBeforeEdit = null,
     updatedActivity = null,
+    updatedPlan = null,
+    updatedPlanError,
+    deletedPlan = null,
+    deleteError,
   } = options;
 
   const rpc = vi.fn(() =>
@@ -144,7 +175,12 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
   // not tell a write that happened from one that did not. Counting `update`
   // alongside `rpc` is what extends that to the edit route; the generation tests
   // never call `update`, so their behaviour is unchanged.
-  const wrote = () => rpc.mock.calls.length + update.mock.calls.length > 0;
+  //
+  // An acceptance change counts only when its update landed on a row. An update
+  // that matched nothing wrote nothing, so the read `setAcceptance` follows it
+  // with must still see the day as it was - `existingPlan`.
+  let planUpdateLanded = false;
+  const wrote = () => rpc.mock.calls.length + update.mock.calls.length > 0 || planUpdateLanded;
   const dayPlanResult = () => ({
     data: wrote() ? savedPlan : existingPlan,
     error: null,
@@ -154,6 +190,27 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
     Promise.resolve(weekPlansError ? { data: null, error: weekPlansError } : { data: weekPlans, error: null }),
   );
 
+  const dayPlansUpdate = vi.fn((_values: Record<string, unknown>) => {
+    const answer = () => {
+      if (updatedPlanError) {
+        return Promise.resolve({ data: null, error: updatedPlanError });
+      }
+      planUpdateLanded = updatedPlan !== null;
+      return Promise.resolve({ data: updatedPlan, error: null });
+    };
+    return {
+      eq: () => ({ eq: () => ({ select: () => ({ maybeSingle: answer }) }) }),
+    };
+  });
+
+  const deleteEq = vi.fn((_column: string, _value: string) => ({
+    select: () => ({
+      maybeSingle: () =>
+        Promise.resolve(deleteError ? { data: null, error: deleteError } : { data: deletedPlan, error: null }),
+    }),
+  }));
+  const deleteSpy = vi.fn(() => ({ eq: deleteEq }));
+
   const from = vi.fn((table: string) =>
     table === "day_plans"
       ? {
@@ -161,6 +218,8 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
             eq: () => ({ maybeSingle: () => Promise.resolve(dayPlanResult()) }),
             in: dayPlansIn,
           }),
+          update: dayPlansUpdate,
+          delete: deleteSpy,
         }
       : {
           update,
@@ -179,5 +238,14 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
 
   const client = { rpc, from };
 
-  return { client: client as unknown as DayPlanClient, rpc, update, from, dayPlansIn };
+  return {
+    client: client as unknown as DayPlanClient,
+    rpc,
+    update,
+    from,
+    dayPlansIn,
+    dayPlansUpdate,
+    delete: deleteSpy,
+    deleteEq,
+  };
 }

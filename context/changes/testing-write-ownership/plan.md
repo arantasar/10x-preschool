@@ -478,9 +478,9 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Automated
 
-- [x] 1.1 `npm run test:db` zielony; łączna liczba asercji > 98, `plan(N)` zgodny w każdym pliku
-- [x] 1.2 `grep -c "'U0003'"` ≥ 3 w `day_plan_write.test.sql` i ≥ 5 w `week_plan_write.test.sql`
-- [x] 1.3 `git diff --name-only master..HEAD -- supabase/migrations` pusty
+- [x] 1.1 `npm run test:db` zielony; łączna liczba asercji > 98, `plan(N)` zgodny w każdym pliku — 662e565
+- [x] 1.2 `grep -c "'U0003'"` ≥ 3 w `day_plan_write.test.sql` i ≥ 5 w `week_plan_write.test.sql` — 662e565
+- [x] 1.3 `git diff --name-only master..HEAD -- supabase/migrations` pusty — 662e565
 
 #### Manual
 
@@ -491,9 +491,9 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Automated
 
-- [ ] 2.1 `npm test` zielony, w tym `index.test.ts` i `accept.test.ts`
-- [ ] 2.2 `npm run lint` zielony
-- [ ] 2.3 Typy bez błędów (`astro sync` + `tsc --noEmit` albo `lint`)
+- [x] 2.1 `npm test` zielony, w tym `index.test.ts` i `accept.test.ts`
+- [x] 2.2 `npm run lint` zielony
+- [x] 2.3 Typy bez błędów (`astro sync` + `tsc --noEmit` albo `lint`)
 
 #### Manual
 
