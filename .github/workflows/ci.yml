@@ -24,6 +24,39 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
+  # The database tiers (test-plan.md §5 "testy bazy", rollout phase 3): pgTAP
+  # (`npm run test:db`) and routes called against a real local stack with two
+  # signed-in teachers (`npm run test:db:api`, §6.3).
+  #
+  # Advisory, like `content-safety-gate` below - branch protection is not
+  # available on this plan, so a red `db` cannot stop a merge; a human reading
+  # the check is its only enforcement. A separate job rather than steps in `ci`:
+  # it needs Docker and the local stack but no repository secrets and no build,
+  # and a red database suite should carry its own badge instead of hiding
+  # behind a red lint.
+  #
+  # `-x` leaves Postgres, GoTrue, PostgREST and Kong - what the two tiers use.
+  # `supabase/seed.sql` does not exist; `db.seed` is enabled in config.toml and
+  # the CLI skips a missing seed file.
+  db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx astro sync
+      - name: Start the local Supabase stack
+        run: npx supabase start -x studio,imgproxy,realtime,storage-api,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta
+      # After `start`, before the tests. `-o env` prints KEY="value"; $GITHUB_ENV
+      # would keep the quotes as part of the value, so they are stripped here.
+      - name: Export the stack's URL and keys
+        run: npx supabase status -o env | grep -E '^[A-Z0-9_]+=' | sed -E 's/^([A-Z0-9_]+)="(.*)"$/\1=\2/' >> "$GITHUB_ENV"
+      - run: npm run test:db
+      - run: npm run test:db:api
+
   # Advisory, not blocking — branch protection needs GitHub Pro or a public repo
   # (`gh api …/branches/master/protection` → 403), so this cannot stop a merge.
   # Its only enforcement is a human reading the check before clicking merge

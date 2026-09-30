@@ -503,10 +503,10 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Automated
 
-- [x] 3.1 `npm run test:db:api` zielony, dwa przebiegi pod rząd
-- [x] 3.2 `npm test` nie uruchamia `*.db.test.ts` (grep == 0; > 0 bez wpisu w `exclude`)
-- [x] 3.3 Bez stosu `npm run test:db:api` kończy się kodem ≠ 0, nie „skipped”
-- [x] 3.4 `npm run lint` zielony
+- [x] 3.1 `npm run test:db:api` zielony, dwa przebiegi pod rząd — 0d71a1e
+- [x] 3.2 `npm test` nie uruchamia `*.db.test.ts` (grep == 0; > 0 bez wpisu w `exclude`) — 0d71a1e
+- [x] 3.3 Bez stosu `npm run test:db:api` kończy się kodem ≠ 0, nie „skipped” — 0d71a1e
+- [x] 3.4 `npm run lint` zielony — 0d71a1e
 
 #### Manual
 
@@ -518,7 +518,7 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Automated
 
-- [ ] 4.1 `actionlint` (albo `gh workflow view`) bez błędów
+- [x] 4.1 `actionlint` (albo `gh workflow view`) bez błędów
 - [ ] 4.2 `gh pr checks` pokazuje `db` jako `pass`
 
 #### Manual
