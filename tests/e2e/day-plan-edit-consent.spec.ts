@@ -60,25 +60,20 @@ test.describe("Ryzyko #8 — zgoda w dialogu przy edycji dnia zatwierdzonego", (
     // handlera — dialog by nie padł, a test przeszedłby nie sprawdziwszy niczego.
     await waitForIslands(page);
 
-    // Zgoda, nie odmowa. Zbieramy treści wszystkich dialogów, bo liczba wywołań
-    // jest tu asercją na równi z ich treścią.
-    const dialogs: string[] = [];
-    page.on("dialog", (dialog) => {
-      dialogs.push(dialog.message());
-      void dialog.accept();
-    });
-
     await page.getByRole("button", { name: `Edytuj propozycję: ${originalTitle}` }).click();
     const titleField = page.getByLabel("Tytuł", { exact: true });
     await expect(titleField).toBeVisible();
     await titleField.fill(editedTitle);
     await page.getByRole("button", { name: "Zapisz" }).click();
 
-    // 1. Dialog padł i nazwał skutek, a nie zapytał generycznie „czy na pewno".
+    // 1. Okno padło i nazwało skutek, a nie zapytało generycznie „czy na pewno".
     //    Bez tej asercji reszta testu przeszłaby też na implementacji, która o
-    //    nic nie pyta i po prostu zapisuje.
-    expect(dialogs).toHaveLength(1);
-    expect(dialogs[0]).toContain("cofnie zatwierdzenie");
+    //    nic nie pyta i po prostu zapisuje. Zgoda, nie odmowa — przyciskiem
+    //    nazwanym po skutku.
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText("cofnie zatwierdzenie");
+    await dialog.getByRole("button", { name: "Zapisz i cofnij zatwierdzenie", exact: true }).click();
 
     // 2. Zapis przeszedł.
     await expect(page.getByRole("heading", { name: editedTitle })).toBeVisible();
@@ -124,28 +119,29 @@ test.describe("Ryzyko #8 — zgoda w dialogu przy edycji dnia zatwierdzonego", (
     await expect(page.getByText(/Plan zatwierdzony/)).toBeVisible();
     await waitForIslands(page);
 
-    const dialogs: string[] = [];
-    page.on("dialog", (dialog) => {
-      dialogs.push(dialog.message());
-      void dialog.accept();
-    });
+    const dialog = page.getByRole("dialog");
 
     // Pierwsza edycja zdejmuje zatwierdzenie — po niej nie ma już czego odbierać.
+    // Tu okno ma paść: dokładnie raz, przy tej edycji.
     await page.getByRole("button", { name: `Edytuj propozycję: ${firstTitle}` }).click();
     await page.getByLabel("Tytuł", { exact: true }).fill(`${firstTitle} (raz)`);
     await page.getByRole("button", { name: "Zapisz" }).click();
-    expect(dialogs).toHaveLength(1);
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Zapisz i cofnij zatwierdzenie", exact: true }).click();
     await expect(page.getByText(/Zatwierdzenie zostało cofnięte/)).toBeVisible();
+    await expect(dialog).toHaveCount(0);
 
-    // Druga edycja na tym samym, już niezatwierdzonym dniu. Licznik dialogów jest tu
-    // jedyną asercją, która potrafi zawieść: gdyby bramka na stanie zatwierdzenia
-    // zniknęła, nauczyciel dostałby pytanie o skutek, który już nastąpił.
+    // Druga edycja na tym samym, już niezatwierdzonym dniu. Brak okna jest tu
+    // asercją, która potrafi zawieść: gdyby bramka na stanie zatwierdzenia
+    // zniknęła, nauczyciel dostałby pytanie o skutek, który już nastąpił — a
+    // zapis czekałby na odpowiedź, więc nagłówek z nowym tytułem by się nie
+    // pojawił. Sprawdzane po zakończeniu operacji, nie w jej trakcie.
     await page.getByRole("button", { name: `Edytuj propozycję: ${secondTitle}` }).click();
     await page.getByLabel("Tytuł", { exact: true }).fill(`${secondTitle} (dwa)`);
     await page.getByRole("button", { name: "Zapisz" }).click();
 
     await expect(page.getByRole("heading", { name: `${secondTitle} (dwa)` })).toBeVisible();
-    expect(dialogs).toHaveLength(1);
+    await expect(dialog).toHaveCount(0);
 
     // Banner przyczyny nie przeżył drugiej mutacji: ten zapis nic nie zdjął, więc
     // zostaje zwykły „Do przejrzenia". Zdanie o przyczynie stojące tutaj byłoby

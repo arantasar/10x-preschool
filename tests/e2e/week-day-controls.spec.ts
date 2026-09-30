@@ -13,7 +13,7 @@ import { waitForIslands } from "./support/hydration";
  *
  * **Dlaczego e2e.** Ryzyko #9 to celowanie: tydzień pokazuje pięć kart obok
  * siebie, a to, w który dzień trafi żądanie, wyznacza kod wyspy — nie położenie
- * karty. Ochroną przed kasowaniem jest dialog przeglądarki. Ani jedno, ani
+ * karty. Ochroną przed kasowaniem jest okno potwierdzenia. Ani jedno, ani
  * drugie nie istnieje poniżej przeglądarki.
  *
  * **Dlaczego zawsze dwa sąsiednie dni.** `test-plan.md` §Risk Response #9 nazywa
@@ -92,24 +92,19 @@ test.describe("Ryzyka #7 i #9 — operacje dnia z poziomu tygodnia", () => {
     await expect(page.getByText(`Powitanie ${secondStamp}`, { exact: true })).toBeVisible();
     await waitForIslands(page);
 
-    // Handler przed kliknięciem. Treść dialogu jest zapisywana i sprawdzana po
-    // fakcie: bez handlera Playwright dialog odrzuca, a test kasowania
-    // przeszedłby zielono nie kasując niczego.
-    let dialogMessage: string | null = null;
-    page.once("dialog", (dialog) => {
-      dialogMessage = dialog.message();
-      void dialog.accept();
-    });
-
     await page.getByRole("button", { name: `Usuń plan dnia: ${dayLabel(secondDate)}`, exact: true }).click();
+
+    // Okno nazwało dzień, który zaraz zniknie, i powiedziało, że jest
+    // zatwierdzony — sprawdzane, zanim padnie zgoda, bo po niej okna już nie ma.
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(dayLabel(secondDate));
+    await expect(dialog).toContainText("Ten dzień jest zatwierdzony.");
+    await dialog.getByRole("button", { name: "Usuń plan", exact: true }).click();
 
     // Komunikat pojawia się dopiero po udanym kasowaniu — punkt synchronizacji
     // przed przeładowaniem, nie ozdoba.
     await expect(page.getByRole("status").filter({ hasText: dayLabel(secondDate) })).toContainText("Usunięto");
-
-    // Dialog nazwał dzień, który zniknął, i powiedział, że był zatwierdzony.
-    expect(dialogMessage).toContain(dayLabel(secondDate));
-    expect(dialogMessage).toContain("Ten dzień jest zatwierdzony.");
 
     // Stan w bazie, nie w wyspie.
     await page.reload();
@@ -148,18 +143,17 @@ test.describe("Ryzyka #7 i #9 — operacje dnia z poziomu tygodnia", () => {
       }
     });
 
-    let confirmShown = false;
-    page.once("dialog", (dialog) => {
-      confirmShown = true;
-      void dialog.dismiss();
-    });
-
     await page.getByRole("button", { name: `Usuń plan dnia: ${dayLabel(planDate)}`, exact: true }).click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(dayLabel(planDate));
+    await dialog.getByRole("button", { name: "Zostaw", exact: true }).click();
+    await expect(dialog).toHaveCount(0);
 
     await page.reload();
     await expect(page.getByText(`Powitanie ${stamp}`, { exact: true })).toBeVisible();
 
-    expect(confirmShown).toBe(true);
     expect(deleteRequests).toEqual([]);
   });
 
@@ -195,21 +189,16 @@ test.describe("Ryzyka #7 i #9 — operacje dnia z poziomu tygodnia", () => {
     await expect(page.getByText(`Powitanie ${secondStamp}`, { exact: true })).toBeVisible();
     await waitForIslands(page);
 
-    // Cofnięcie jest odwracalne i nie pyta. Handler zapisuje, że dialog w ogóle
-    // padł; odrzuca go, żeby ewentualny dialog nie zawiesił kliknięcia.
-    let dialogShown = false;
-    page.on("dialog", (dialog) => {
-      dialogShown = true;
-      void dialog.dismiss();
-    });
-
     await page.getByRole("button", { name: `Cofnij zatwierdzenie: ${dayLabel(secondDate)}`, exact: true }).click();
 
     // Dzień nazwany po fakcie, w komunikacie jego karty.
     await expect(page.getByRole("status").filter({ hasText: dayLabel(secondDate) })).toContainText(
       "Cofnięto zatwierdzenie",
     );
-    expect(dialogShown).toBe(false);
+    // Cofnięcie jest odwracalne i nie pyta. Sprawdzane po zakończeniu operacji:
+    // komunikat powyżej pojawia się dopiero po odpowiedzi serwera, a gdyby
+    // okno padło, operacja czekałaby na nie i komunikatu by nie było.
+    await expect(page.getByRole("dialog")).toHaveCount(0);
 
     // Stan w bazie: wskazany dzień do przejrzenia, sąsiad nadal zatwierdzony.
     await page.reload();

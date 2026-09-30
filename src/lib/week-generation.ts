@@ -2,7 +2,7 @@
  * Who gets replaced when a week is regenerated, and what the teacher is told
  * before it happens.
  *
- * Lives in `src/lib/` and imports nothing at runtime — no zod, no React — for the reason
+ * Lives in `src/lib/` and imports nothing heavy at runtime — no zod, no React — for the reason
  * `day-plan-limits` and `day-plan-guards` do: the island needs all of this and
  * must not drag a validator into the client bundle. It is also why it is a
  * module rather than three functions inside `WeekPlanBoard.tsx`: the partition
@@ -22,6 +22,12 @@
  * acceptance it meets.
  */
 
+import {
+  IRREVERSIBLE_SENTENCE,
+  REGENERATE_CANCEL_LABEL,
+  REGENERATE_CONFIRM_LABEL,
+  type ConfirmationRequest,
+} from "@/lib/confirmations";
 import type { AcceptedDayConsent } from "@/types";
 
 export interface WeekDayAcceptance {
@@ -124,16 +130,18 @@ function consentedClause(count: number): string {
  * The scope question for a week that has both accepted days and days that are
  * not: are the accepted ones in this run too?
  *
- * A native `confirm` has only OK and Anuluj, and here Anuluj does not cancel —
- * it narrows the run to the drafts. That is not what the button's name says,
- * so the sentence names both outcomes in words, and says that a second dialog
- * follows either way. The caller must honour that: a run never starts from
- * this dialog alone, because it states no count of what is destroyed.
+ * Declining does not cancel - it narrows the run to the days that are not
+ * accepted. A native `confirm` could only offer OK and Anuluj for that, so the
+ * sentence used to explain both; the application's own window names the two
+ * buttons after what they do instead, and closing it (Escape) is the same
+ * answer as the narrowing button. The caller must honour the last sentence: a
+ * run never starts from this window alone, because it states no count of what
+ * is destroyed.
  *
  * Only for a mixed week. With nothing accepted there is nothing to ask, and
  * with everything accepted "only the drafts" is a run over no days.
  */
-export function scopeQuestion(acceptedCount: number): string {
+export function scopeQuestion(acceptedCount: number): ConfirmationRequest {
   const fact =
     acceptedCount === 1
       ? "1 dzień tego tygodnia jest zatwierdzony."
@@ -142,14 +150,21 @@ export function scopeQuestion(acceptedCount: number): string {
         : `${String(acceptedCount)} dni tego tygodnia jest zatwierdzonych.`;
   const include =
     acceptedCount === 1
-      ? "OK — zastąpię także ten dzień, a jego zatwierdzenie zostanie cofnięte."
-      : "OK — zastąpię także te dni, a ich zatwierdzenie zostanie cofnięte.";
-  return [
-    fact,
-    include,
-    "Anuluj — zastąpię tylko dni niezatwierdzone.",
-    "W obu przypadkach zapytam jeszcze o potwierdzenie.",
-  ].join(" ");
+      ? "Mogę zastąpić także ten dzień — jego zatwierdzenie zostanie wtedy cofnięte."
+      : "Mogę zastąpić także te dni — ich zatwierdzenie zostanie wtedy cofnięte.";
+  return {
+    title: "Zastąpić także zatwierdzone dni?",
+    body: [
+      fact,
+      `${include} Albo zastąpię tylko dni niezatwierdzone.`,
+      "W obu przypadkach zapytam jeszcze o potwierdzenie.",
+    ],
+    confirmLabel: "Zastąp także zatwierdzone",
+    cancelLabel: "Tylko do przejrzenia",
+    // Neither answer destroys anything yet - the count window that follows is
+    // the one that does, and it is the dangerous one.
+    tone: "default",
+  };
 }
 
 /**
@@ -175,18 +190,28 @@ export function scopeQuestion(acceptedCount: number): string {
  * The undo sentence is not decoration. This package adds confirmations, not
  * history (PRD §Non-Goals): once the write lands, the superseded batch is gone.
  */
-export function replacementConfirmation(partition: WeekPartition, weekIsEmpty: boolean): string | null {
+export function replacementConfirmation(partition: WeekPartition, weekIsEmpty: boolean): ConfirmationRequest | null {
   if (weekIsEmpty || partition.targets.length === 0) {
     return null;
   }
 
+  return {
+    title: "Wygenerować nowe propozycje?",
+    body: replacementSentences(partition),
+    confirmLabel: REGENERATE_CONFIRM_LABEL,
+    cancelLabel: REGENERATE_CANCEL_LABEL,
+    tone: "danger",
+  };
+}
+
+function replacementSentences(partition: WeekPartition): string[] {
   const consented = partition.consented.length;
   if (consented > 1 && consented === partition.targets.length) {
     return [
       "Wszystkie dni tego tygodnia są zatwierdzone.",
       `Zastąpię wszystkie ${String(consented)} dni nowymi propozycjami, a ich zatwierdzenie zostanie cofnięte.`,
-      "Tej operacji nie można cofnąć.",
-    ].join(" ");
+      IRREVERSIBLE_SENTENCE,
+    ];
   }
 
   const replaced = `Zastąpię ${dayCount(partition.targets.length)} nowymi propozycjami`;
@@ -196,6 +221,6 @@ export function replacementConfirmation(partition: WeekPartition, weekIsEmpty: b
   if (partition.untouched.length > 0) {
     sentences.push(untouchedSentence(partition.untouched.length));
   }
-  sentences.push("Tej operacji nie można cofnąć.");
-  return sentences.join(" ");
+  sentences.push(IRREVERSIBLE_SENTENCE);
+  return sentences;
 }

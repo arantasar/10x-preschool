@@ -86,10 +86,31 @@ tym helperze: `astro-island[ssr]` to kontrakt frameworka (Astro zdejmuje atrybut
 `ssr` po hydracji), a nie struktura naszego widoku. Nie replikuj tego wzorca w
 plikach testów.
 
-## Dialogi przeglądarki
+## Okna potwierdzeń
 
-`window.confirm` jest w tej aplikacji jedyną ochroną przed nieodwracalnym
-kasowaniem (ryzyko #7). Playwright **domyślnie odrzuca** każdy dialog, więc test
-kasowania, który go nie obsłuży, przejdzie nie kasując niczego — zielony i
-bezwartościowy. Rejestruj `page.on("dialog", …)` **przed** kliknięciem i
-asertuj też ścieżkę odmowy (`dismiss` → plan nadal jest).
+Od `design-planner` aplikacja nie używa `window.confirm`. Każde potwierdzenie to
+własne okno (`ConfirmDialog`, natywny `<dialog>`) — **element strony**, nie
+dialog przeglądarki. Dla kasowania nadal jest jedyną ochroną przed operacją
+nieodwracalną (ryzyko #7), a dla edycji dnia zatwierdzonego — jedynym pytaniem
+przed utratą zatwierdzenia (ryzyko #8).
+
+- Lokalizuj okno przez `page.getByRole("dialog")`, a przyciski w nim po nazwie
+  (`{ name: "Usuń plan", exact: true }`). Nazwy mówią o skutku — „Usuń plan” /
+  „Zostaw”, „Zapisz i cofnij zatwierdzenie” / „Wróć do edycji” — i są częścią
+  tego, co test sprawdza. Nie nasłuchuj zdarzenia `dialog` na stronie: takiego
+  zdarzenia już nie ma.
+- **Najpierw `await expect(dialog).toBeVisible()`, dopiero potem klik.** Brak
+  kliknięcia w oknie zostawia operację **w zawieszeniu**: nic nie zostaje ani
+  wysłane, ani odrzucone. Test, który nie potwierdził widoczności okna, nie wie,
+  czy „nic się nie zmieniło” znaczy „strażnik zadziałał”, czy „kliknięcie nie
+  doszło do przycisku”.
+- Sprawdzaj treść okna przez `toContainText` (nazwa dnia, „Ten dzień jest
+  zatwierdzony.”, „Tej operacji nie można cofnąć.”) — **przed** kliknięciem, bo
+  po odpowiedzi okno znika.
+- **Test odmowy i test zgody są nadal obowiązkowe** dla każdej operacji za
+  oknem: odmowa („Zostaw”, „Wróć do edycji”) → żadnego żądania i dane nietknięte
+  po przeładowaniu; zgoda → dane zmienione dokładnie w zakresie operacji.
+- Tam, gdzie okna ma **nie** być (cofnięcie zatwierdzenia z tygodnia, druga
+  edycja dnia już niezatwierdzonego):
+  `await expect(page.getByRole("dialog")).toHaveCount(0)` **po zakończeniu
+  operacji** — po asercji na jej widoczny skutek, nie zaraz po kliknięciu.

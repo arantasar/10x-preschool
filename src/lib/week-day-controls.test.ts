@@ -20,37 +20,57 @@ const IRREVERSIBLE_SENTENCE = "Tej operacji nie można cofnąć.";
 
 describe("deleteConfirmation", () => {
   it("reads as agreed at planning for an accepted day", () => {
-    expect(deleteConfirmation("2026-11-09", true)).toBe(
-      "Usunąć plan na poniedziałek, 9 listopada 2026? Ten dzień jest zatwierdzony. " +
-        "Usunięcie skasuje hasło i wszystkie propozycje tego dnia. Tej operacji nie można cofnąć.",
-    );
+    expect(deleteConfirmation("2026-11-09", true)).toEqual({
+      title: "Usunąć plan na poniedziałek, 9 listopada 2026?",
+      body: [
+        "Ten dzień jest zatwierdzony.",
+        "Usunięcie skasuje hasło i wszystkie propozycje tego dnia.",
+        "Tej operacji nie można cofnąć.",
+      ],
+      confirmLabel: "Usuń plan",
+      cancelLabel: "Zostaw",
+      tone: "danger",
+    });
   });
 
   it("reads the same without the acceptance sentence for a draft", () => {
-    expect(deleteConfirmation("2026-11-09", false)).toBe(
-      "Usunąć plan na poniedziałek, 9 listopada 2026? " +
-        "Usunięcie skasuje hasło i wszystkie propozycje tego dnia. Tej operacji nie można cofnąć.",
-    );
+    expect(deleteConfirmation("2026-11-09", false)).toEqual({
+      title: "Usunąć plan na poniedziałek, 9 listopada 2026?",
+      body: ["Usunięcie skasuje hasło i wszystkie propozycje tego dnia.", "Tej operacji nie można cofnąć."],
+      confirmLabel: "Usuń plan",
+      cancelLabel: "Zostaw",
+      tone: "danger",
+    });
   });
 
   it.each(DATES)("names %s in both variants", (planDate) => {
-    expect(deleteConfirmation(planDate, true)).toContain(formatPlanDate(planDate));
-    expect(deleteConfirmation(planDate, false)).toContain(formatPlanDate(planDate));
+    expect(deleteConfirmation(planDate, true).title).toContain(formatPlanDate(planDate));
+    expect(deleteConfirmation(planDate, false).title).toContain(formatPlanDate(planDate));
   });
 
   it("says the day is accepted when it is", () => {
-    expect(deleteConfirmation(DATES[0], true)).toContain(ACCEPTED_SENTENCE);
+    expect(deleteConfirmation(DATES[0], true).body).toContain(ACCEPTED_SENTENCE);
   });
 
   // Anchored on the whole sentence, not on "zatwierdz": the stem is not what
   // matters, the claim is. A draft must never be described as accepted.
   it("does not say the day is accepted when it is a draft", () => {
-    expect(deleteConfirmation(DATES[0], false)).not.toContain(ACCEPTED_SENTENCE);
+    expect(deleteConfirmation(DATES[0], false).body).not.toContain(ACCEPTED_SENTENCE);
   });
 
   it("always ends by saying the operation cannot be undone", () => {
-    expect(deleteConfirmation(DATES[0], true).endsWith(IRREVERSIBLE_SENTENCE)).toBe(true);
-    expect(deleteConfirmation(DATES[0], false).endsWith(IRREVERSIBLE_SENTENCE)).toBe(true);
+    expect(deleteConfirmation(DATES[0], true).body.at(-1)).toBe(IRREVERSIBLE_SENTENCE);
+    expect(deleteConfirmation(DATES[0], false).body.at(-1)).toBe(IRREVERSIBLE_SENTENCE);
+  });
+
+  // Nothing is handed back by a delete, so Enter out of habit must not confirm it.
+  it("is dangerous and names its buttons after the outcome, whatever the day's state", () => {
+    for (const accepted of [true, false]) {
+      const request = deleteConfirmation(DATES[0], accepted);
+      expect(request.tone).toBe("danger");
+      expect(request.confirmLabel).toBe("Usuń plan");
+      expect(request.cancelLabel).toBe("Zostaw");
+    }
   });
 });
 

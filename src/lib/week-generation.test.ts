@@ -110,18 +110,38 @@ describe("partitionWeek", () => {
 });
 
 describe("scopeQuestion", () => {
-  // Anuluj narrows rather than cancels here, which is not what the button's
-  // name says - so the sentence has to say what each button does.
-  it("names what OK does and what Anuluj does", () => {
+  // Declining narrows rather than cancels here, so the buttons - not the
+  // browser's OK and Anuluj - have to say what each one does.
+  it("names both buttons after what they do", () => {
     const question = scopeQuestion(2);
 
-    expect(question).toContain("OK — zastąpię także te dni, a ich zatwierdzenie zostanie cofnięte.");
-    expect(question).toContain("Anuluj — zastąpię tylko dni niezatwierdzone.");
+    expect(question.confirmLabel).toBe("Zastąp także zatwierdzone");
+    expect(question.cancelLabel).toBe("Tylko do przejrzenia");
+  });
+
+  it("says what including the accepted days costs, and what the other answer does", () => {
+    const text = scopeQuestion(2).body.join(" ");
+
+    expect(text).toContain("Mogę zastąpić także te dni — ich zatwierdzenie zostanie wtedy cofnięte.");
+    expect(text).toContain("Albo zastąpię tylko dni niezatwierdzone.");
+  });
+
+  // The window has real buttons now; the sentence no longer describes the browser's.
+  it("no longer explains OK and Anuluj", () => {
+    const text = scopeQuestion(2).body.join(" ");
+
+    expect(text).not.toContain("OK —");
+    expect(text).not.toContain("Anuluj —");
   });
 
   // It states no count of what is destroyed, so it must never be the last word.
   it("says a confirmation follows either way", () => {
-    expect(scopeQuestion(2)).toContain("W obu przypadkach zapytam jeszcze o potwierdzenie.");
+    expect(scopeQuestion(2).body.at(-1)).toBe("W obu przypadkach zapytam jeszcze o potwierdzenie.");
+  });
+
+  // Neither answer destroys anything by itself - the count window does.
+  it("is not the dangerous window", () => {
+    expect(scopeQuestion(2).tone).toBe("default");
   });
 
   it.each([
@@ -129,11 +149,13 @@ describe("scopeQuestion", () => {
     [2, "2 dni tego tygodnia są zatwierdzone."],
     [4, "4 dni tego tygodnia są zatwierdzone."],
   ])("agrees the accepted count at %i", (count, expected) => {
-    expect(scopeQuestion(count)).toMatch(new RegExp(`^${expected}`));
+    expect(scopeQuestion(count).body[0]).toBe(expected);
   });
 
   it("speaks of one day in the singular", () => {
-    expect(scopeQuestion(1)).toContain("OK — zastąpię także ten dzień, a jego zatwierdzenie zostanie cofnięte.");
+    expect(scopeQuestion(1).body.join(" ")).toContain(
+      "Mogę zastąpić także ten dzień — jego zatwierdzenie zostanie wtedy cofnięte.",
+    );
   });
 });
 
@@ -148,9 +170,29 @@ describe("isWeekEmpty", () => {
 });
 
 describe("replacementConfirmation", () => {
-  function confirm(days: readonly WeekDayAcceptance[], includeAccepted = false): string | null {
+  function request(days: readonly WeekDayAcceptance[], includeAccepted = false) {
     return replacementConfirmation(partitionWeek(days, includeAccepted), isWeekEmpty(days));
   }
+
+  /** The window's paragraphs as one text - what the teacher reads, in order. */
+  function confirm(days: readonly WeekDayAcceptance[], includeAccepted = false): string | null {
+    return request(days, includeAccepted)?.body.join(" ") ?? null;
+  }
+
+  // The run cannot be undone once written, so Enter out of habit must not start it.
+  it("is dangerous and names its buttons after the outcome", () => {
+    for (const confirmation of [
+      request(THREE_DRAFT_TWO_ACCEPTED),
+      request(THREE_DRAFT_TWO_ACCEPTED, true),
+      request(FIVE_ACCEPTED, true),
+      request(FIVE_DRAFT),
+    ]) {
+      expect(confirmation?.tone).toBe("danger");
+      expect(confirmation?.confirmLabel).toBe("Wygeneruj nowe");
+      expect(confirmation?.cancelLabel).toBe("Zostaw obecne");
+      expect(confirmation?.title.endsWith("?")).toBe(true);
+    }
+  });
 
   // Nothing to overwrite, so nothing to ask. A dialog here would be the one
   // that teaches the teacher to dismiss dialogs.
@@ -220,7 +262,7 @@ describe("replacementConfirmation", () => {
       count,
     );
 
-    expect(replacementConfirmation(partitionWeek(days, false), false)).toContain(expected);
+    expect(replacementConfirmation(partitionWeek(days, false), false)?.body.join(" ")).toContain(expected);
   });
 
   it.each([
@@ -230,7 +272,7 @@ describe("replacementConfirmation", () => {
   ])("agrees the untouched count at %i", (count, expected) => {
     const days = week(["draft", ...Array<"accepted">(count).fill("accepted")] as ("empty" | "draft" | "accepted")[]);
 
-    expect(replacementConfirmation(partitionWeek(days, false), false)).toContain(expected);
+    expect(replacementConfirmation(partitionWeek(days, false), false)?.body.join(" ")).toContain(expected);
   });
 
   it.each([
@@ -240,6 +282,6 @@ describe("replacementConfirmation", () => {
   ])("agrees the consented count at %i", (count, expected) => {
     const days = week(["draft", ...Array<"accepted">(count).fill("accepted")] as ("empty" | "draft" | "accepted")[]);
 
-    expect(replacementConfirmation(partitionWeek(days, true), false)).toContain(expected);
+    expect(replacementConfirmation(partitionWeek(days, true), false)?.body.join(" ")).toContain(expected);
   });
 });

@@ -1,3 +1,9 @@
+import {
+  DELETE_CANCEL_LABEL,
+  DELETE_CONFIRM_LABEL,
+  IRREVERSIBLE_SENTENCE,
+  type ConfirmationRequest,
+} from "@/lib/confirmations";
 import { formatPlanDate } from "@/lib/day-plan-dates";
 
 /**
@@ -13,7 +19,8 @@ import { formatPlanDate } from "@/lib/day-plan-dates";
  * reason `week-generation.ts` is one: the delete dialog is the only thing
  * standing in front of an irreversible operation, and a claim that can only be
  * checked by rendering a React tree is a claim nobody checks. Imports nothing
- * but the date formatter - no zod, no React - so the island can carry it.
+ * but the date formatter and the confirmation shape - no zod, no React - so the
+ * island can carry it.
  */
 
 /** The visible labels. Each accessible name below starts with one of these. */
@@ -33,13 +40,21 @@ export const DELETE_DAY_LABEL = "Usuń plan dnia";
  * Unconditional, unlike acceptance: there is no undo (PRD v2 §Non-Goals), so
  * the last sentence is not decoration.
  */
-export function deleteConfirmation(planDate: string, accepted: boolean): string {
-  const sentences = [`Usunąć plan na ${formatPlanDate(planDate)}?`];
+export function deleteConfirmation(planDate: string, accepted: boolean): ConfirmationRequest {
+  const body = [];
   if (accepted) {
-    sentences.push("Ten dzień jest zatwierdzony.");
+    body.push("Ten dzień jest zatwierdzony.");
   }
-  sentences.push("Usunięcie skasuje hasło i wszystkie propozycje tego dnia.", "Tej operacji nie można cofnąć.");
-  return sentences.join(" ");
+  body.push("Usunięcie skasuje hasło i wszystkie propozycje tego dnia.", IRREVERSIBLE_SENTENCE);
+  return {
+    // The day is in the title: it is the first thing read, and the one thing
+    // that tells this window apart from the neighbouring card's.
+    title: `Usunąć plan na ${formatPlanDate(planDate)}?`,
+    body,
+    confirmLabel: DELETE_CONFIRM_LABEL,
+    cancelLabel: DELETE_CANCEL_LABEL,
+    tone: "danger",
+  };
 }
 
 /**

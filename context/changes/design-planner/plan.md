@@ -860,12 +860,12 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [x] 5.1 Lint, build
-- [x] 5.2 Testy jednostkowe na nowym brzmieniu przechodzą
-- [x] 5.3 Stare słownictwo akceptacji zniknęło z kodu i testów
-- [x] 5.4 „Roboczy” jako stan planu zniknął, „dzień roboczy” został
-- [x] 5.5 Stałe niosą nowe brzmienie
-- [x] 5.6 Cały e2e zielony
+- [x] 5.1 Lint, build — bcdd839
+- [x] 5.2 Testy jednostkowe na nowym brzmieniu przechodzą — bcdd839
+- [x] 5.3 Stare słownictwo akceptacji zniknęło z kodu i testów — bcdd839
+- [x] 5.4 „Roboczy” jako stan planu zniknął, „dzień roboczy” został — bcdd839
+- [x] 5.5 Stałe niosą nowe brzmienie — bcdd839
+- [x] 5.6 Cały e2e zielony — bcdd839
 
 #### Manual
 
@@ -877,13 +877,13 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [ ] 6.1 Lint, build
-- [ ] 6.2 Testy treści potwierdzeń przechodzą
-- [ ] 6.3 W kodzie nie ma okna systemowego
-- [ ] 6.4 Testy nie nasłuchują okna systemowego
-- [ ] 6.5 Każde z sześciu miejsc pyta przez hook
-- [ ] 6.6 Testy odmowy są widziane na czerwono
-- [ ] 6.7 Cały e2e zielony
+- [x] 6.1 Lint, build
+- [x] 6.2 Testy treści potwierdzeń przechodzą
+- [x] 6.3 W kodzie nie ma okna systemowego
+- [x] 6.4 Testy nie nasłuchują okna systemowego
+- [x] 6.5 Każde z sześciu miejsc pyta przez hook
+- [x] 6.6 Testy odmowy są widziane na czerwono
+- [x] 6.7 Cały e2e zielony
 
 #### Manual
 

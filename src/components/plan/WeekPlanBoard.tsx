@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Check, CircleAlert, Sparkles } from "lucide-react";
+import { useConfirmDialog } from "@/components/hooks/useConfirmDialog";
 import { WeekDayCard, type DayState } from "@/components/plan/WeekDayCard";
 import { FIELD_BASE, FIELD_BORDER, FIELD_BORDER_ERROR, FIELD_ERROR, FIELD_LABEL } from "@/components/plan/field-styles";
 import { ScopeToggle } from "@/components/plan/ScopeToggle";
@@ -133,6 +134,27 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
   // captured at its call, and whichever write lands last decides `prompt` for
   // every day.
   const retriesInFlight = useRef(0);
+
+  // The application's own confirmation window. It does not freeze the page the
+  // way `window.confirm` did, so the two functions that ask - `generateWeek`
+  // and `deleteDay` - read their locks before the question and again after the
+  // answer, and take them only then.
+  const { confirm, dialog } = useConfirmDialog();
+
+  /**
+   * Whether a week-level operation may start *now*. A function rather than the
+   * refs read inline: it is asked on both sides of an `await`, and a bare
+   * property read is narrowed by the first check - the second would be taken
+   * for dead code, by the compiler and by the next reader.
+   */
+  function weekIsLocked(): boolean {
+    return weekInFlight.current;
+  }
+
+  /** A single-day retry generating right now - see `retriesInFlight`. */
+  function retryIsRunning(): boolean {
+    return retriesInFlight.current > 0;
+  }
 
   const isBusy = busy !== "idle";
   const dayList = week.days.map((date) => days[date]);
@@ -394,7 +416,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
     }
   }
 
-  function generateWeek(): void {
+  async function generateWeek(): Promise<void> {
     const trimmed = prompt.trim();
     if (!trimmed) {
       setPromptError("Wpisz hasło tygodnia, np. „Dinozaury”.");
@@ -405,11 +427,11 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
       return;
     }
     setPromptError(undefined);
-    if (weekInFlight.current) return;
+    if (weekIsLocked()) return;
     // A retry generating right now holds the *old* hasło, captured when it was
     // pressed. Letting a week run start alongside it means two hasła in flight
     // over one week, and the write that lands last sets `prompt` for every day.
-    if (retriesInFlight.current > 0) return;
+    if (retryIsRunning()) return;
 
     // Acceptance decides, not emptiness. See `@/lib/week-generation`.
     const acceptance = weekAcceptance(week.days, days);
@@ -419,25 +441,36 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
     // Whether the accepted days go too. Asked only on a mixed week: with none
     // accepted there is nothing to ask, and with all of them accepted "only the
     // drafts" would be a run over no days - that week is the case FR-013 exists
-    // for, so it goes straight to the count. Anuluj here narrows the run rather
-    // than cancelling it, which is why `scopeQuestion` spells out both outcomes
-    // and why the count dialog below always follows.
-    const includeAccepted =
-      acceptedCount > 0 && (draftsOnly.targets.length === 0 || window.confirm(scopeQuestion(acceptedCount)));
+    // for, so it goes straight to the count. Declining here - the secondary
+    // button or Escape - narrows the run rather than cancelling it, which is
+    // why the count window below always follows.
+    let includeAccepted = false;
+    if (acceptedCount > 0) {
+      includeAccepted = draftsOnly.targets.length === 0 || (await confirm(scopeQuestion(acceptedCount)));
+    }
+    // The partition is frozen here, at the second question: it is computed from
+    // the acceptance read above, not from whatever the board holds by the time
+    // the teacher answers.
     const partition = includeAccepted ? partitionWeek(acceptance, true) : draftsOnly;
 
-    // The go / stop dialog, stating how many days are replaced and how many of
+    // The go / stop window, stating how many days are replaced and how many of
     // them are accepted. It is an affordance, not the guard: the island's
     // `accepted_at` can be stale, so `save_week_plan_generation` refuses any
     // accepted day whose date is not in the consent list with U0001 - a day
-    // accepted in another tab after this dialog is refused, not replaced. Same
+    // accepted in another tab after this window is refused, not replaced. Same
     // division as `DayPlanEditor.generate()`.
     const confirmation = replacementConfirmation(partition, isWeekEmpty(acceptance));
-    if (confirmation !== null && !window.confirm(confirmation)) {
+    if (confirmation !== null && !(await confirm(confirmation))) {
       return;
     }
 
-    // Captured here, at dialog time, and carried unchanged to the write: the
+    // The locks again. The windows do not block the page, so between the first
+    // check and this line nothing the teacher could click was reachable - but
+    // that is the dialog's promise, not this function's, and consent for a run
+    // that can no longer start is dropped rather than acted on.
+    if (weekIsLocked() || retryIsRunning()) return;
+
+    // Captured at the time of the question and carried unchanged to the write: the
     // consent is what the teacher was shown, not what is accepted when the
     // write fires.
     const { targets, untouched, consented } = partition;
@@ -747,18 +780,21 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
    * holds whatever batch happens to be in it. The acceptance the dialog names
    * is this island's copy and can be stale; nothing checks it.
    *
-   * The lock is read *before* the dialog and taken right after it, before the
-   * first `await`. The other order collects the teacher's consent for an
+   * The lock is read *before* the window, so consent is not collected for an
    * operation that is then dropped without a word - the trap `saveDraft` in
-   * `DayPlanEditor` describes.
+   * `DayPlanEditor` describes. It is read again after the answer and taken
+   * only then: the window is asynchronous and does not freeze the page. The
+   * day and its acceptance are the ones captured when the question was asked,
+   * which is what the window named.
    */
-  function deleteDay(planDate: string): void {
-    if (weekInFlight.current) return;
+  async function deleteDay(planDate: string): Promise<void> {
+    if (weekIsLocked()) return;
     const plan = days[planDate].plan;
     if (plan === null) return;
-    if (!window.confirm(deleteConfirmation(planDate, plan.plan.accepted_at != null))) {
+    if (!(await confirm(deleteConfirmation(planDate, plan.plan.accepted_at != null)))) {
       return;
     }
+    if (weekIsLocked()) return;
 
     weekInFlight.current = true;
     setFailure(null);
@@ -862,7 +898,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          generateWeek();
+          void generateWeek();
         }}
       >
         <h2 className="font-display text-display-sm text-las">Nowe propozycje</h2>
@@ -995,7 +1031,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
                 toggleAcceptance(day.planDate);
               }}
               onDelete={() => {
-                deleteDay(day.planDate);
+                void deleteDay(day.planDate);
               }}
             />
           ))}
@@ -1059,6 +1095,8 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
           />
         </div>
       </div>
+
+      {dialog}
     </div>
   );
 }

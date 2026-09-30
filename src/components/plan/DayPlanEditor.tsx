@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, Check, CircleAlert, Pencil, RotateCcw, Sparkles, Trash2, Undo2, X } from "lucide-react";
 import { FIELD_BASE, FIELD_BORDER, FIELD_BORDER_ERROR, FIELD_ERROR, FIELD_LABEL } from "@/components/plan/field-styles";
+import { useConfirmDialog } from "@/components/hooks/useConfirmDialog";
 import { GenerationProgress } from "@/components/plan/GenerationProgress";
 import { ScopeToggle } from "@/components/plan/ScopeToggle";
 import { Button } from "@/components/ui/button";
+import {
+  deleteDayPlanConfirmation,
+  editApprovedDayConfirmation,
+  regenerateApprovedDayConfirmation,
+} from "@/lib/confirmations";
 import { DESCRIPTION_MAX, INSTRUCTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
 import { formatAcceptedAt, formatPlanDate } from "@/lib/day-plan-dates";
 import { cn } from "@/lib/utils";
@@ -131,6 +137,23 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
   // the button back to the teacher for the whole length of the SSR round trip -
   // enabled, relabelled, and still showing the plan that is already gone.
   const navigatingAway = useRef(false);
+
+  // The application's own confirmation window. Unlike `window.confirm` it does
+  // not freeze the page while it is open, so each of the three questions below
+  // checks `inFlight` before asking and again after the answer: an operation
+  // whose lock was taken in between is dropped without a request, the same way
+  // `mutate` drops a second submit.
+  const { confirm, dialog } = useConfirmDialog();
+
+  /**
+   * The lock as it is *now*. A function rather than `inFlight.current` inline:
+   * the questions check it on both sides of an `await`, and a bare property
+   * read is narrowed by the first check - the second would be taken for dead
+   * code, by the compiler and by the next reader.
+   */
+  function isLocked(): boolean {
+    return inFlight.current;
+  }
 
   const isBusy = busy !== "idle";
   const accepted = plan?.plan.accepted_at ?? null;
@@ -260,7 +283,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
     }
   }
 
-  function generate(): void {
+  async function generate(): Promise<void> {
     const trimmed = prompt.trim();
     if (!trimmed) {
       setPromptError("Wpisz hasło dnia, np. „Andrzejki”.");
@@ -276,20 +299,23 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
     // supersedes, but on a draft the teacher is still iterating and has invested
     // nothing in what is there - interrupting that is friction without a
     // decision behind it. An acceptance is the thing worth asking about, and the
-    // prompt names what it costs rather than asking a generic "are you sure?".
+    // window names what it costs rather than asking a generic "are you sure?".
     //
-    // This dialog is an affordance, not the guard. `accepted` is this island's
+    // The window is an affordance, not the guard. `accepted` is this island's
     // copy of the truth and can be stale - another tab, or a page rendered while
     // the plan could not be read. `save_day_plan_generation` refuses an
     // unconfirmed replacement itself and answers 409, which arrives here as an
     // ordinary non-retryable failure telling the teacher to refresh.
+    //
+    // The lock is read before the question and again after the answer: the
+    // window does not block the page, so consent collected for an operation
+    // that can no longer start must be dropped, not acted on.
     if (accepted) {
-      const consequence =
-        "Wygenerowanie nowych propozycji usunie obecne i cofnie zatwierdzenie tego planu. " +
-        "Tej operacji nie można cofnąć.";
-      if (!window.confirm(consequence)) {
+      if (isLocked()) return;
+      if (!(await confirm(regenerateApprovedDayConfirmation()))) {
         return;
       }
+      if (isLocked()) return;
     }
 
     void mutate(
@@ -323,12 +349,12 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
    * from the server rather than from this dialog - because the stale-copy case
    * is precisely the one where the dialog never appears.
    */
-  function saveDraft(current: Draft): void {
-    // Asked before the dialog, not after it. `mutate` opens with the same guard
-    // and returns silently, so prompting first would collect a consent for an
-    // operation that is then dropped without a request, a message or a reset -
+  async function saveDraft(current: Draft): Promise<void> {
+    // Asked before the window, not only after it. `mutate` opens with the same
+    // guard and returns silently, so prompting first would collect a consent for
+    // an operation that is then dropped without a request, a message or a reset -
     // the teacher answers a question about a save that never happens.
-    if (inFlight.current) return;
+    if (isLocked()) return;
     // `planRef`, not `accepted`: "Spróbuj ponownie" re-enters this function
     // through the closure built at the first attempt, and a failed save runs
     // `reconcile()`, which can bring back a day that is accepted now although it
@@ -336,12 +362,12 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
     // would skip the dialog in exactly that case and take the acceptance away
     // silently - the one outcome this change exists to prevent.
     if (planRef.current?.plan.accepted_at) {
-      const consequence =
-        "Ten dzień jest zatwierdzony. Zapisanie zmiany cofnie zatwierdzenie i plan będzie znów do przejrzenia. " +
-        "Zatwierdzenie można przywrócić jednym kliknięciem.";
-      if (!window.confirm(consequence)) {
+      if (!(await confirm(editApprovedDayConfirmation()))) {
         return;
       }
+      // And again after the answer: the window does not freeze the page, so
+      // the lock may have been taken while it was open.
+      if (isLocked()) return;
     }
 
     void mutate(
@@ -364,7 +390,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
       // continuation of consent already given.
       () => {
         const live = draftRef.current;
-        if (live) saveDraft(live);
+        if (live) void saveDraft(live);
       },
     );
   }
@@ -472,14 +498,16 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
    * a misclick. Hence text that names what is lost rather than a generic
    * "are you sure?".
    */
-  function deletePlan(): void {
+  async function deletePlan(): Promise<void> {
     if (!plan) return;
-    const consequence =
-      "Usunięcie planu dnia skasuje hasło i wszystkie propozycje tego dnia. " +
-      "Dzień wróci do stanu sprzed planowania. Tej operacji nie można cofnąć.";
-    if (!window.confirm(consequence)) {
+    // Before the question and after the answer - see `useConfirmDialog` above.
+    // A second click while the window is open gets `false` from `confirm`, so
+    // it neither opens a second window nor sends a second request.
+    if (isLocked()) return;
+    if (!(await confirm(deleteDayPlanConfirmation()))) {
       return;
     }
+    if (isLocked()) return;
     // No headers and no body: the route reads the day from the query string,
     // exactly as `GET` does.
     void mutate(() => fetch(`/api/day-plan?date=${planDate}`, { method: "DELETE" }), "deleting");
@@ -495,7 +523,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
-            generate();
+            void generate();
           }}
         >
           <h2 className="font-display text-display-sm text-las">Nowe propozycje</h2>
@@ -654,7 +682,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
                         setDraft(null);
                       }}
                       onSave={() => {
-                        saveDraft(draft);
+                        void saveDraft(draft);
                       }}
                     />
                   ) : (
@@ -718,7 +746,9 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
               variant="dangerPill"
               size="pillSm"
               disabled={isBusy || draft !== null}
-              onClick={deletePlan}
+              onClick={() => {
+                void deletePlan();
+              }}
               className="ml-auto cursor-pointer"
             >
               <Trash2 className="size-4" />
@@ -727,6 +757,8 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
           </div>
         )}
       </div>
+
+      {dialog}
     </div>
   );
 }
