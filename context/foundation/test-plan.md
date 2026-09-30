@@ -265,11 +265,7 @@ Dowodzi trasy i RLS naraz, bez HTTP, middleware i przeglądarki.
 - **Klucz serwisowy wyłącznie do zakładania kont, zasiewu i sprzątania — nigdy
   do asercji.** Omija RLS, więc sprawdzałby, że wiersz istnieje w bazie, a nie że
   drugie konto go nie widzi. „A nietknięte" czyta się **klientem A**. Sprzątanie
-  po `id`, nigdy po dacie (po dacie skasowałoby wiersz drugiego konta), w
-  `afterEach`. Wiersz, który tworzy sama trasa (np. `week/save`), odczytaj
-  klientem jego właściciela i dopisz jego `id` do sprzątania **przed**
-  asercjami — padnięta asercja nie może zostawić go w bazie
-  (`week/save.db.test.ts`).
+  po `id`, nigdy po dacie (po dacie skasowałoby wiersz drugiego konta).
 - **Kontrola pozytywna właściciela jest obowiązkowa**: po „B dostaje 404"
   ten sam request od A musi przejść. Bez niej każda asercja negatywna przechodzi
   przy trasie odmawiającej wszystkim.
