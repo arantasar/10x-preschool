@@ -1,6 +1,5 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import AppHeader from "@/components/AppHeader.astro";
+import PlannerLayout from "@/layouts/PlannerLayout.astro";
 import MonthGrid from "@/components/plan/MonthGrid";
 import MonthPdfControls from "@/components/plan/MonthPdfControls";
 import { addDays, addMonths, formatMonth, resolveMonth, weeksOfMonth } from "@/lib/day-plan-dates";
@@ -41,10 +40,9 @@ const nextMonth = addMonths(month, 1).slice(0, 7);
 const plannedCount = summaries.filter((summary) => summary.plan_date.slice(0, 7) === month).length;
 ---
 
-<Layout title={`Plan miesiąca — ${formatMonth(month)}`}>
+<PlannerLayout title={`Plan miesiąca — ${formatMonth(month)}`} active="plan">
   <div class="theme-legacy bg-cosmic min-h-screen p-4">
     <main class="mx-auto w-full max-w-6xl py-10">
-      <AppHeader />
       <header class="mb-8">
         <h1 class="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
           Plan miesiąca
@@ -110,4 +108,4 @@ const plannedCount = summaries.filter((summary) => summary.plan_date.slice(0, 7)
       </div>
     </main>
   </div>
-</Layout>
+</PlannerLayout>

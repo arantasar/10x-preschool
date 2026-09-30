@@ -1,6 +1,5 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import AppHeader from "@/components/AppHeader.astro";
+import PlannerLayout from "@/layouts/PlannerLayout.astro";
 import WeekPlanBoard from "@/components/plan/WeekPlanBoard";
 import { addDays, formatWeekRange, resolveWeekStart, workingDaysOf } from "@/lib/day-plan-dates";
 import { normalizePendingTopic, PENDING_TOPIC_COOKIE } from "@/lib/pending-topic";
@@ -49,10 +48,9 @@ const nextWeek = addDays(weekStart, 7);
 const month = weekStart.slice(0, 7);
 ---
 
-<Layout title={`Plan tygodnia — ${formatWeekRange(weekStart)}`}>
+<PlannerLayout title={`Plan tygodnia — ${formatWeekRange(weekStart)}`} active="generate">
   <div class="theme-legacy bg-cosmic min-h-screen p-4">
     <main class="mx-auto w-full max-w-3xl py-10">
-      <AppHeader />
       <header class="mb-8">
         <a href={`/plan/month?month=${month}`} class="text-sm text-purple-300 hover:underline"
           >&larr; Wróć do miesiąca</a
@@ -109,4 +107,4 @@ const month = weekStart.slice(0, 7);
       </div>
     </main>
   </div>
-</Layout>
+</PlannerLayout>

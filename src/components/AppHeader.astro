@@ -3,19 +3,68 @@
 // way out of it. Deliberately not an extension of `layout/MarketingHeader.astro`:
 // that one is the signed-out pages' header, and its fate is unrelated to the
 // fate of this shell.
+//
+// The avatar is decoration, not a link: there is no `/konto` page to lead to
+// (owner: M-03). "Wyloguj się" stays a visible submit button - it is the way
+// out, and the e2e setup waits for it.
+import Logo from "@/components/brand/Logo.astro";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  active: "plan" | "generate";
+}
+
+const { active } = Astro.props;
 const { user } = Astro.locals;
+
+const items = [
+  { key: "plan", label: "Plan miesiąca", href: "/plan/month" },
+  // No `?from=`: the week page resolves a missing parameter to the current week.
+  { key: "generate", label: "Nowe propozycje", href: "/plan/week" },
+] as const;
+
+const initial = user?.email?.charAt(0).toUpperCase() ?? "";
 ---
 
-<div
-  class="mb-6 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80"
+<header
+  class="border-linia bg-mleko px-app-gutter flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b-[1.5px] py-3"
 >
-  <a href="/plan/month" class="font-semibold text-white transition-colors hover:text-purple-200"> 10xPreschool </a>
-  <div class="flex items-center gap-4">
-    {user?.email && <span class="text-blue-100/70">{user.email}</span>}
+  <Logo href="/plan/month" label="10xPreschool — plan miesiąca" />
+  <nav aria-label="Główna" class="order-3 flex w-full gap-1.5 min-[721px]:order-none min-[721px]:w-auto">
+    {
+      items.map((item) => (
+        <a
+          href={item.href}
+          aria-current={active === item.key ? "page" : undefined}
+          class:list={cn(
+            "text-las hover:text-mech inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-3 py-2.5 text-[15px] font-bold no-underline min-[721px]:flex-none min-[721px]:px-[18px] min-[721px]:text-base",
+            active === item.key && "bg-szalwia-soft hover:text-las font-extrabold",
+          )}
+        >
+          {item.label}
+        </a>
+      ))
+    }
+  </nav>
+  <div class="flex items-center gap-3">
+    {
+      initial && (
+        <span
+          aria-hidden="true"
+          class="bg-morela-soft text-las flex size-11 shrink-0 items-center justify-center rounded-full text-base font-extrabold"
+        >
+          {initial}
+        </span>
+      )
+    }
+    {user?.email && <span class="text-las-szary hidden text-[15px] min-[721px]:inline">{user.email}</span>}
     <form method="POST" action="/api/auth/signout">
-      <button type="submit" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
+      <button
+        type="submit"
+        class="text-las hover:text-mech inline-flex min-h-11 cursor-pointer items-center rounded-full px-2 text-[15px] font-extrabold underline underline-offset-4"
+      >
         Wyloguj się
       </button>
     </form>
   </div>
-</div>
+</header>

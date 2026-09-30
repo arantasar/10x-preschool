@@ -1,6 +1,5 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import AppHeader from "@/components/AppHeader.astro";
+import PlannerLayout from "@/layouts/PlannerLayout.astro";
 import DayPlanEditor from "@/components/plan/DayPlanEditor";
 import { formatPlanDate, resolvePlanDate } from "@/lib/day-plan-dates";
 import { readDayPlan } from "@/lib/services/day-plan-store";
@@ -49,10 +48,9 @@ if (supabase) {
 }
 ---
 
-<Layout title={`Plan dnia — ${formatPlanDate(planDate)}`}>
+<PlannerLayout title={`Plan dnia — ${formatPlanDate(planDate)}`} active="generate">
   <div class="theme-legacy bg-cosmic min-h-screen p-4">
     <main class="mx-auto w-full max-w-2xl py-10">
-      <AppHeader />
       <header class="mb-8">
         <a href={`/plan/month?month=${planDate.slice(0, 7)}`} class="text-sm text-purple-300 hover:underline"
           >&larr; Wróć do miesiąca</a
@@ -96,4 +94,4 @@ if (supabase) {
       </div>
     </main>
   </div>
-</Layout>
+</PlannerLayout>

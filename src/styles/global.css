@@ -167,6 +167,14 @@
   --color-linia: #d5cdb8; /* section rules, footer */
   --color-obrys-przerywany: #6f8a69; /* "to review" dashed border */
   --color-cien-pola: #dcd5c2;
+  /* States the public pages never had; tones from the package's `Notice.astro`.
+     Text on its own fill: error 7.6:1, warning 9.9:1. */
+  --color-blad-tlo: #f8dad2;
+  --color-blad: #7a2410;
+  --color-blad-ramka: #d9a08f;
+  --color-ostrzezenie-tlo: #fbebc4;
+  --color-ostrzezenie: #4a3500;
+  --color-ostrzezenie-ramka: #d9b65c;
 
   --font-display: "Young Serif", Georgia, serif; /* weight 400 only */
   --font-body: "Nunito Sans Variable", "Nunito Sans", system-ui, -apple-system, sans-serif;
@@ -198,6 +206,7 @@
   --shadow-input: 0 1px 0 var(--color-cien-pola), 0 20px 40px -24px rgba(31, 59, 45, 0.35);
 
   --spacing-gutter: clamp(20px, 8vw, 120px); /* marketing pages */
+  --spacing-app-gutter: clamp(16px, 3.4vw, 48px); /* signed-in app */
   --container-content: 1200px;
 }
 

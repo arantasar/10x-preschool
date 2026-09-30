@@ -1,15 +1,17 @@
 ---
 // The "Ogród" wordmark: a leaf-shaped mark and the name in Young Serif.
-// Always a link home - on the public pages that is the landing, and a signed-in
-// teacher who follows it is redirected to the month by `index.astro`.
+// Always a link home - on the public pages that is the landing (the default);
+// the planner's app bar points it straight at the month.
 import { cn } from "@/lib/utils";
 
 interface Props {
   size?: "sm" | "md" | "lg";
+  href?: string;
+  label?: string;
   class?: string;
 }
 
-const { size = "md", class: className } = Astro.props;
+const { size = "md", href = "/", label = "10xPreschool — strona główna", class: className } = Astro.props;
 
 const markSize = {
   sm: "size-[26px] rounded-[50%_50%_50%_6px]",
@@ -20,9 +22,9 @@ const wordSize = { sm: "text-xl", md: "text-[22px]", lg: "text-[25px]" };
 ---
 
 <a
-  href="/"
+  href={href}
   class:list={cn("text-las inline-flex min-h-11 items-center gap-2.5 no-underline", className)}
-  aria-label="10xPreschool — strona główna"
+  aria-label={label}
 >
   <span class:list={cn("bg-las block", markSize[size])} aria-hidden="true"></span>
   <span class:list={cn("font-display leading-none", wordSize[size])} aria-hidden="true">10xPreschool</span>
