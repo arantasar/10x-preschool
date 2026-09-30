@@ -238,3 +238,88 @@ describe("POST /api/day-plan/generate — the model's answer never reaches the w
     expect(supabase.rpc).not.toHaveBeenCalled();
   });
 });
+
+// Risk #3 on the route (rollout phase 3). There are two refusals of an accepted
+// day and they protect different things: the route's pre-check protects the
+// teacher's money and 10-30s - it answers before the model is paid - and the
+// writer's U0001 protects the data. `save_day_plan_generation` is proven in
+// pgTAP; these pin the route's half and the race between the two.
+//
+// None of them asserts what the day's consent is bound to. It is a boolean,
+// unlike the week's `{plan_date, accepted_at}`, and that asymmetry is an open
+// item in next-actions.md - not a property to set in stone here.
+//
+// Checked by mutation: deleting the pre-check (`generate.ts`, the
+// `accepted_at && !confirm_replace` branch) turns the first case red - the
+// model is paid and `rpc` is reached; a pre-check refusing every accepted day
+// regardless of `confirm_replace` turns the second red.
+describe("POST /api/day-plan/generate — an accepted day", () => {
+  const ACCEPTED_AT = "2026-09-14T09:00:00.000Z";
+
+  it("refuses without confirm_replace with 409, before paying the model or calling rpc", async () => {
+    const supabase = supabaseStub({ existingPlan: planRow({ accepted_at: ACCEPTED_AT }) });
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({
+      request: request({ plan_date: PLAN_DATE, prompt: "jesień w lesie", confirm_replace: false }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+    const body = (await response.json()) as { error: string; retryable: boolean };
+
+    expect(response.status).toBe(409);
+    expect(body.retryable).toBe(false);
+    expect(fetchStub).not.toHaveBeenCalled();
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+
+  // The positive control on the same day: without it the case above passes
+  // against a route that refuses every accepted day outright.
+  it("with confirm_replace, writes once and passes the consent to the writer", async () => {
+    const saved = planRow({ current_generation: 2 });
+    const supabase = supabaseStub({
+      existingPlan: planRow({ accepted_at: ACCEPTED_AT }),
+      savedPlan: saved,
+      savedActivities: [1, 2, 3].map((ordinal) => activityRow(ordinal, saved)),
+    });
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({
+      request: request({ plan_date: PLAN_DATE, prompt: "jesień w lesie", confirm_replace: true }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+
+    expect(response.status).toBe(200);
+    expect(fetchStub).toHaveBeenCalledTimes(1);
+    expect(supabase.rpc).toHaveBeenCalledTimes(1);
+    expect((supabase.rpc.mock.calls[0][1] as { p_confirm_replace: boolean }).p_confirm_replace).toBe(true);
+  });
+
+  // The race: the day was a draft when the route looked and was accepted in
+  // another tab while the model ran. The writer refuses with U0001, and the
+  // refusal is final - `saveGeneration` re-issues every StoreError but
+  // `conflict`, so a second `rpc` here would mean a refusal had been treated as
+  // a blip. Checked by mutation: dropping the `conflict` exception in
+  // `saveGeneration` turns the call count red.
+  it("answers the writer's U0001 in the race with 409, without a second rpc", async () => {
+    const supabase = supabaseStub({
+      existingPlan: planRow({ accepted_at: null }),
+      rpcError: {
+        code: "U0001",
+        message: "plan for 2026-09-14 is accepted; regeneration must be confirmed",
+        details: "",
+        hint: "",
+      },
+    });
+    stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({
+      request: request({ plan_date: PLAN_DATE, prompt: "jesień w lesie", confirm_replace: false }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+    const body = (await response.json()) as { error: string; retryable: boolean };
+
+    expect(response.status).toBe(409);
+    expect(body.retryable).toBe(false);
+    expect(supabase.rpc).toHaveBeenCalledTimes(1);
+  });
+});

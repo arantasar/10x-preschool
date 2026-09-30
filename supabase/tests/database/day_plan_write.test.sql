@@ -15,7 +15,7 @@
 
 begin;
 
-select plan(50);
+select plan(61);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (seeded as the owner, so rls is out of the picture here by design)
@@ -717,6 +717,153 @@ select is(
   (select theme from public.day_plans where plan_date = date '2026-05-11'),
   null,
   'the week writer clears a theme on a changed hasło too'
+);
+
+-- ---------------------------------------------------------------------------
+-- an empty batch is refused (u0003), ahead of every other refusal
+-- ---------------------------------------------------------------------------
+--
+-- added by rollout phase 3, which closes the debt §6.4 of the test plan
+-- recorded: u0003 was raised here and asserted nowhere. the one call above
+-- that passes '[]' runs as anon and dies on the grant before the body runs.
+-- these run as teacher a, so the body is what answers.
+--
+-- own dates throughout (2026-07-01, 2026-07-02), so nothing here disturbs the
+-- plans above. checked by mutation, like the rest of this file:
+--   * u0003 block deleted -> the three shape assertions go red ('[]' and null
+--     write an empty generation and live; an object raises 22023 instead),
+--     and so do the counter and batch assertions after them;
+--   * u0003 block moved below the `for update` read -> the two ordering
+--     assertions go red, answering u0002 and u0001 respectively.
+
+insert into saved
+select 'planned', public.save_day_plan_generation(
+  date '2026-07-01', 'pelna', '[{"title":"f-one","description":"opis f1"}]'::jsonb
+);
+
+insert into saved
+select 'approved', public.save_day_plan_generation(
+  date '2026-07-02', 'zatwierdzona', '[{"title":"g-one","description":"opis g1"}]'::jsonb
+);
+
+-- created_at and accepted_at are both now(), one transaction-wide reading, so
+-- day_plans_accepted_after_created holds.
+update public.day_plans
+   set accepted_at = now()
+ where id = (select plan_id from saved where label = 'approved');
+
+-- on a day that already has a plan, so a refusal that came too late would have
+-- something to damage.
+select throws_ok(
+  $$select public.save_day_plan_generation(date '2026-07-01', 'pusta', '[]'::jsonb)$$,
+  'U0003',
+  null,
+  'an empty activity batch is refused'
+);
+
+select throws_ok(
+  $$select public.save_day_plan_generation(date '2026-07-01', 'pusta', null::jsonb)$$,
+  'U0003',
+  null,
+  'a null activity batch is refused'
+);
+
+select throws_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-07-01', 'pusta', '{"title":"x","description":"y"}'::jsonb
+    )$$,
+  'U0003',
+  null,
+  'an activity batch that is not an array is refused'
+);
+
+-- the refusals left no trace of an upsert, which would have bumped the counter
+-- and deleted the batch. statement atomicity only: a raise rolls back the whole
+-- call, so these two cannot go red while the throws_ok above stays green, and
+-- they cannot tell "raised before the upsert" from "raised after it". that the
+-- u0003 check comes first is proven by the order assertions below.
+select is(
+  (select current_generation::int from public.day_plans
+    where id = (select plan_id from saved where label = 'planned')),
+  1,
+  'a refused empty batch leaves the counter where it was'
+);
+
+select is(
+  (select array_agg(title order by ordinal) from public.activities
+    where plan_id = (select plan_id from saved where label = 'planned')),
+  array['f-one'],
+  'a refused empty batch leaves the existing batch untouched'
+);
+
+-- the order. each of these arms two guards at once, so only the order of the
+-- `if` blocks decides the answer. u0003 is "our bug" (500); u0002 and u0001 are
+-- refusals the teacher can act on - reporting an empty batch as one of those
+-- would send them to confirm or refresh for a write that can never succeed.
+select throws_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-07-01', 'pusta', '[]'::jsonb, p_require_absent => true
+    )$$,
+  'U0003',
+  null,
+  'an empty batch with p_require_absent over an existing day answers U0003, not U0002'
+);
+
+select throws_ok(
+  $$select public.save_day_plan_generation(date '2026-07-02', 'pusta', '[]'::jsonb)$$,
+  'U0003',
+  null,
+  'an empty batch without consent over an accepted day answers U0003, not U0001'
+);
+
+-- ---------------------------------------------------------------------------
+-- a consented regeneration replaces its own day and no other
+-- ---------------------------------------------------------------------------
+--
+-- risk #3: the consent names one date. the accepted day next to it must come
+-- out with its hasło, counter, acceptance and batch exactly as they were.
+-- checked by mutation: the upsert followed by
+-- `update public.day_plans set accepted_at = null where user_id = auth.uid()`
+-- (the plan_date filter dropped) turns the neighbour's hasło/counter/acceptance
+-- assertion red. the batch assertion holds a different line - a writer that
+-- deleted the neighbour's proposals - and that mutation leaves it green.
+
+update public.day_plans
+   set accepted_at = now()
+ where id = (select plan_id from saved where label = 'planned');
+
+select lives_ok(
+  $$select public.save_day_plan_generation(
+      date '2026-07-01', 'pelna ii',
+      '[{"title":"f-two","description":"opis f2"}]'::jsonb,
+      p_confirm_replace => true
+    )$$,
+  'a consented regeneration of an accepted day is written'
+);
+
+-- the positive control: without it the neighbour assertions below would read
+-- identically against a writer that refused the call.
+select results_eq(
+  $$select current_generation::int, accepted_at is null
+      from public.day_plans
+     where id = (select plan_id from saved where label = 'planned')$$,
+  $$values (2, true)$$,
+  'the consented day was replaced and lost its acceptance'
+);
+
+select results_eq(
+  $$select prompt, current_generation::int, accepted_at = now()
+      from public.day_plans
+     where id = (select plan_id from saved where label = 'approved')$$,
+  $$values ('zatwierdzona'::text, 1, true)$$,
+  'the accepted day after it keeps its hasło, counter and acceptance'
+);
+
+select is(
+  (select array_agg(title order by ordinal) from public.activities
+    where plan_id = (select plan_id from saved where label = 'approved')),
+  array['g-one'],
+  'the accepted day after it keeps its batch'
 );
 
 reset role;

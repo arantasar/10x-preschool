@@ -14,7 +14,7 @@
 
 begin;
 
-select plan(23);
+select plan(27);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (seeded as the owner, so rls is bypassed here by design)
@@ -322,6 +322,62 @@ select throws_ok(
   null,
   'composite fk rejects an activity whose owner differs from its plan''s owner'
 );
+
+-- ---------------------------------------------------------------------------
+-- deleting by date when both teachers have that date
+-- ---------------------------------------------------------------------------
+--
+-- added by rollout phase 3 (risk #7). the application does not delete by
+-- user_id the way the assertions above do: `deleteDayPlan` sends
+-- `delete ... where plan_date = d` and leaves the owner to rls. the fixture
+-- already gives a and b a plan each on 2026-03-02, which is the one shape
+-- day_plan_delete.test.sql does not have. last in the file, so no fixture
+-- above loses its subject.
+--
+-- checked by mutation: the same delete run under `set local role postgres`
+-- (rls out of the picture) counts 2, and the assertions on b's rows go red.
+
+set local role authenticated;
+set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+
+with del as (
+  delete from public.day_plans where plan_date = date '2026-03-02' returning 1
+)
+insert into affected_rows select 'day_plans_delete_by_date', count(*)::int from del;
+
+select is(
+  (select n from affected_rows where label = 'day_plans_delete_by_date'),
+  1,
+  'day_plans: teacher a deleting by a date both teachers use removes exactly one row'
+);
+
+-- the positive control: the one row was a's.
+select is(
+  (select count(*)::int from public.day_plans where plan_date = date '2026-03-02'),
+  0,
+  'day_plans: teacher a no longer sees a plan on that date'
+);
+
+reset role;
+
+-- read as teacher b, not as the owner: what b sees is the claim.
+set local role authenticated;
+set local "request.jwt.claims" to '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+
+select results_eq(
+  $$select id, prompt from public.day_plans where plan_date = date '2026-03-02'$$,
+  $$values ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'::uuid, 'zwierzeta'::text)$$,
+  'day_plans: teacher b''s plan on the same date survives teacher a''s delete'
+);
+
+select is(
+  (select array_agg(title order by ordinal) from public.activities
+    where plan_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),
+  array['b-one', 'b-two'],
+  'activities: teacher b''s proposals on that date survive teacher a''s delete'
+);
+
+reset role;
 
 select * from finish();
 

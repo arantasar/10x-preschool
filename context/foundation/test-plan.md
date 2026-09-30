@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-09-03
+> Last updated: 2026-09-30
 
 ## 1. Strategy
 
@@ -71,8 +71,8 @@ luka w tym planie.
 |---|---|---|---|---|---|
 | #1 | Zdefiniowany zestaw haseł produkuje wyjście, które powtarzalna kontrola oznacza jako niebezpieczne dla 3–6 lat — a kontrola obejmuje **każdy** dopuszczony model, nie tylko domyślny | „Poprawny JSON i wymagana liczba aktywności == treść bezpieczna". Wynik DeepSeeka przeszedł dokładnie te kontrole i zaproponował dzieciom roztopiony wosk | Gdzie wchodzi instrukcja systemowa; jak model jest wybierany i czy da się go podmienić bez deployu; co dziś sprawdza kontrola stojąca poza CI; jaki jest zbiór dopuszczonych modeli | contract + AI-native judge | Asercja przepisana z aktualnego wyjścia modelu (oracle problem) — test zielony na tym, co model akurat zwrócił, włącznie z tym, co zwrócił źle |
 | #2 | Odpowiedź spoza kontraktu daje widoczny błąd i **żadnego** zapisu; nauczyciel nigdy nie ogląda pustego planu bez wyjaśnienia | „Pusta tablica == nauczyciel nie ma jeszcze planu" | Kontrakt odpowiedzi modelu; protokół zapisu partii i jego transakcyjność; niezmiennik generacji przy wstawianiu; co zwraca ścieżka odczytu po zapisie częściowym | integration | Mockowanie modułów wewnętrznych zamiast granicy sieciowej — test przestaje widzieć realny kształt odpowiedzi dostawcy |
-| #3 | Zaakceptowany dzień przeżywa regenerację dnia sąsiedniego i generowanie całego tygodnia; rozróżnienie „roboczy vs zaakceptowany" nie gubi się po żadnej z tych operacji | „Zapis się udał, bo nie poleciał wyjątek" | Kolejność podbicia licznika generacji względem wstawienia partii; zachowanie ścieżki tygodniowej przy dniu, który już istnieje; granice transakcji | integration + rozszerzenie pgTAP | Test wyłącznie szczęśliwej ścieżki na pustym dniu — nigdy nie dotyka kolizji, więc nie może złapać zniszczenia |
-| #4 | Żądanie z konta B wobec zasobu konta A kończy się jawną odmową na warstwie API, a nie cichym pustym wynikiem przepuszczonym w górę | „RLS wystarczy, więc endpoint nie musi sprawdzać własności" | Kształt sesji i jak tożsamość dociera do zapytania; co warstwa dostępu do danych zwraca przy odmowie bazy; jak kody błędów Postgresa są tłumaczone na odpowiedzi HTTP | integration na warstwie API | Test z jednym użytkownikiem — IDOR jest strukturalnie niewidoczny, dopóki w teście nie ma drugiego konta |
+| #3 | Zatwierdzony dzień przeżywa każdą regenerację i generowanie tygodnia, na które nie padła zgoda nazywająca ten dzień (w tygodniu także jego `accepted_at`); zgoda zastępuje go i cofa zatwierdzenie | „Zapis się udał, bo nie poleciał wyjątek" | Kolejność podbicia licznika generacji względem wstawienia partii; zachowanie ścieżki tygodniowej przy dniu, który już istnieje; granice transakcji; zgoda dnia (boolean) vs zgoda tygodnia (data + `accepted_at`) | integration + rozszerzenie pgTAP | Test wyłącznie szczęśliwej ścieżki na pustym dniu — nigdy nie dotyka kolizji, więc nie może złapać zniszczenia |
+| #4 | Żądanie z konta B wobec zasobu konta A kończy się jawną odmową na warstwie API, a nie cichym pustym wynikiem przepuszczonym w górę. Jawna odmowa (404 `retryable: false`) dotyczy tras adresowanych id (`accept` — `plan_id`, `activity/[id]`); trasy adresowane datą nie potrafią nazwać cudzego wiersza, więc dla nich ochrona brzmi „operacja B na dacie D nie dotyka wiersza A na D" | „RLS wystarczy, więc endpoint nie musi sprawdzać własności" | Kształt sesji i jak tożsamość dociera do zapytania; co warstwa dostępu do danych zwraca przy odmowie bazy; jak kody błędów Postgresa są tłumaczone na odpowiedzi HTTP | integration na warstwie API | Test z jednym użytkownikiem — IDOR jest strukturalnie niewidoczny, dopóki w teście nie ma drugiego konta |
 | #5 | Każda klasa awarii dostawcy (timeout, 429, 5xx, odpowiedź ucięta w połowie) daje inny, uczciwy komunikat i nie zostawia zapisu | „Status 200 == sukces" oraz „retry się udał, bo końcowy status jest 200" | Granica HTTP do dostawcy i sposób wstrzyknięcia w nią awarii; mapowanie klas błędów na odpowiedzi; co widzi interfejs w trakcie 10–30 s | unit + integration | Mockowanie własnej funkcji mapującej błędy zamiast wstrzyknięcia awarii na granicy sieciowej — test sprawdza wtedy sam siebie |
 | #6 | Wejście przekraczające granice albo zawierające instrukcję dla modelu jest odrzucane po stronie serwera, nie tylko w formularzu; liczba zapisanych wierszy ma twardy sufit egzekwowany poniżej aplikacji | „Walidacja w kliencie == walidacja" oraz „schemat wejścia == to, co faktycznie trafia do promptu" | Gdzie wejście przechodzi walidację serwerową; jak jest wstrzykiwane do promptu; jakie ograniczenia egzekwuje schemat bazy, a jakie tylko aplikacja | unit + integration | Test wyłącznie na wejściu poprawnym; brak przypadku granicznego na długości wejścia i liczbie zapisanych wierszy |
 | #7 | Operacja kasująca zdejmuje dokładnie jeden dzień dokładnie jednego właściciela: dzień sąsiedni, dzień innego konta i wiersze spoza zakresu przeżywają ją nietknięte, a żądanie wobec cudzego dnia nie kasuje nic | „Dialog potwierdzenia w przeglądarce jest potwierdzeniem" — klient nie musi go wywołać, więc serwer nie może na nim polegać; oraz „skasowało się poprawnie, bo odpowiedź jest 2xx" | Jak trasa kasująca ustala własność; zakres kasowania wobec wierszy potomnych; co widzi ścieżka odczytu i generowanie tygodnia po skasowaniu dnia | integration na API + pgTAP | Test kasujący jedyny istniejący dzień jedynego konta — strukturalnie nie może wykryć, że operacja zabrała za dużo |
@@ -90,7 +90,7 @@ poniżej; orkiestrator aktualizuje Status, gdy artefakty pojawiają się na dysk
 |---|---|---|---|---|---|---|
 | 1 | Runner + granica model→kontrakt→zapis | Udowodnić, że odpowiedź spoza kontraktu i awaria dostawcy kończą się uczciwą porażką, a nie cichym pustym planem | #2, #5 | unit + integration | complete | context/archive/2026-08-29-testing-generation-contract-boundary/ |
 | 2 | Powtarzalna bramka bezpieczeństwa treści | Wyjąć jedyną kontrolę guardrailu z jednorazowego skryptu i objąć nią każdy dopuszczony model oraz każdą zmianę promptu | #1, #6 | contract + AI-native judge | complete | context/archive/2026-08-31-testing-content-safety-gate/ |
-| 3 | Ochrona zapisu i własności | Zaakceptowany dzień przeżywa regenerację i generowanie tygodnia; endpoint odmawia dostępu do cudzego zasobu; **odmowa pustej partii (`U0003`) dostaje asercję pgTAP** — dziś niezapięta, patrz §6.4 | #3, #4, #7 | integration + pgTAP | not started | — |
+| 3 | Ochrona zapisu i własności | Zatwierdzony dzień ginie tylko po zgodzie nazywającej ten dzień; trasa adresowana id odmawia cudzego zasobu 404, trasa adresowana datą nie dotyka wiersza drugiego konta; odmowa pustej partii (`U0003`) ma asercje pgTAP | #3, #4, #7 | integration + pgTAP | complete | context/changes/testing-write-ownership/ |
 | 4 | Bramki jakości w CI + e2e ścieżki krytycznej | Zamknąć podłogę przed merge'em do `master`, który deployuje wprost na produkcję | przekrojowe | gates + e2e | not started | — |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` →
@@ -114,6 +114,11 @@ kryterium ochrony Ryzyka #3 z „nigdy nie niszczy" na „nigdy bez jawnego
 potwierdzenia". #4 i #7 tej zmiany nie dotyczą, więc nic tu nie trzeba będzie
 przepisywać; #3 świadomie zostało pominięte.
 
+_Stan na 2026-09-30:_ #3 ma warstwę przeglądarkową od `S-10`
+(`tests/e2e/regenerate-confirmation.spec.ts` — odmowa w oknie dnia i w obu oknach
+tygodnia nie wysyła żądania). Faza 3 jest `complete`; pod przeglądarką dołożyła
+pgTAP i trasy wołane bez HTTP (§6.3), a e2e nie ruszała.
+
 ## 4. Stack
 
 Klasyczna baza testowa projektu. Narzędzia AI-native niosą datę `checked:`, żeby
@@ -123,7 +128,8 @@ przyszły czytelnik widział, które linie wymagają ponownej weryfikacji.
 |---|---|---|---|
 | unit + integration | Vitest | none yet — §3 Phase 1 | Konfiguracja przez `getViteConfig()` z `astro/config`. **Astro 6 nie renderuje komponentów Astro w środowiskach client — testy renderujące wymagają `environment: 'node'`.** Projekt przypina Vite `^7.3.2` w `overrides`; wersja Vitest musi do tego pasować. checked: 2026-08-29 |
 | API mocking | granica sieciowa (MSW lub podmiana `fetch`) | none yet — §3 Phase 1 | Wywołanie dostawcy LLM to zwykły `fetch`. Mockuj wyłącznie na granicy sieciowej — nigdy modułów wewnętrznych (patrz anty-wzorce #2 i #5) |
-| database | pgTAP przez `supabase test db` | wired | **Jedyna działająca warstwa dziś**: 3 pliki w `supabase/tests/database/` (izolacja RLS, kontrakt zapisu, kontrakt kasowania). Uruchamianie: `npm run test:db`. Wymaga Dockera i `npx supabase start` |
+| database | pgTAP przez `supabase test db` | wired, **w CI** (job `db`, doradczy) | 4 pliki w `supabase/tests/database/` (izolacja RLS, kontrakt zapisu dnia, kontrakt zapisu tygodnia, kontrakt kasowania), 129 asercji po Fazie 3. Uruchamianie: `npm run test:db`. Wymaga Dockera i `npx supabase start` |
+| integration (trasa + prawdziwy klient) | Vitest, `vitest.db.config.ts` | wired, **w CI** (job `db`, doradczy) | Od Fazy 3: trasy wołane jako funkcje z `locals.supabase` = prawdziwy `supabase-js` zalogowany jako konto A albo B na lokalnym stosie (§6.3). Pliki `src/**/*.db.test.ts`, poza `npm test`. Uruchamianie: `npm run test:db:api`. Wymaga `npx supabase start`; bez stosu kończy się błędem, nie pominięciem |
 | e2e | Playwright | `@playwright/test` ^1.62.1 — **wired lokalnie, poza CI** | Postawione 2026-09-03 poza rolloutem (§3, §6.6), nie przez Fazę 4. `playwright.config.ts`: projekt `setup` + `webServer`, `storageState` dla dwóch kont. Uruchamianie: `npm run test:e2e` (wymaga `npx supabase start` i `.env.e2e`). Dziś trzy testy ryzyk #4 i #7 — **nie** ścieżka krytyczna z generowaniem, którą zakłada §5. checked: 2026-09-03 |
 | accessibility | axe-core | none yet — nie zaplanowane | Poza zakresem tego rolloutu; §7 wyklucza testy wizualne UI, a a11y wymagałoby własnej fazy |
 | (optional) AI-native | LLM-jako-sędzia oceniający stosowność treści dla 3–6 lat, uruchamiany przez tego samego dostawcę co produkt — checked: 2026-08-29 | n/a | **Kiedy NIE używać:** nigdy jako zamiennik deterministycznych asercji kształtu (schemat, liczba aktywności, język) — te są tańsze i pewniejsze; nigdy w pętli edycji ani na każdym commicie (koszt i niedeterminizm); nigdy jako jedyny sędzia bez zapisanej rubryki, bo wtedy bramka zmienia zdanie między przebiegami |
@@ -159,7 +165,7 @@ jest **egzekwowane**. Re-evaluate, gdy repozytorium zmieni status albo plan.
 |---|---|---|---|
 | lint + typecheck (`npm run lint`, `astro sync`) | local (husky/lint-staged) + CI | required (wired, doradcza) | dryf składniowy i typowy |
 | build (`npm run build`) | CI on PR + push do `master` | required (wired, doradcza) | błędy SSR i konfiguracji adaptera |
-| testy bazy (`npm run test:db`) | local | required after §3 Phase 3 | regresje izolacji RLS i kontraktu zapisu; dziś uruchamiane ręcznie, faza 3 wprowadza je do CI |
+| testy bazy (`npm run test:db`, `npm run test:db:api`) | local + CI on PR i push do `master` (job `db`) | required (wired, doradcza) — od §3 Phase 3 | regresje izolacji RLS, kontraktu zapisu i kasowania (pgTAP) oraz własności na trasie — RLS i tłumaczenie na HTTP naraz (§6.3). Osobny job, żeby czerwień bazy miała własny znaczek; bez sekretów repozytorium |
 | unit + integration | local + CI on PR | required (wired, doradcza) | regresje kontraktu odpowiedzi, mapowania błędów, protokołu zapisu |
 | bramka bezpieczeństwa treści (każdy dopuszczony model) | CI on PR, wyzwalana zmianą promptu lub konfiguracji modelu | required after §3 Phase 2 | propozycje nieodpowiednie dla 3–6 lat; cofnięcie guardrailu przez podmianę modelu |
 | e2e na ścieżce krytycznej | CI on PR | required after §3 Phase 4 | zerwanie przepływu login → dzień → hasło → generowanie → edycja → akceptacja |
@@ -224,45 +230,102 @@ faza rolloutu wyląduje; wcześniej czyta się jako „TBD".
   `{ error, retryable }`, kolejność walidacja→zapis — tutaj. Niezmiennik, którego
   pilnuje sama baza (polityka, grant, CHECK, trigger), niżej — patrz §6.4.
   Przepływ przez kilka ekranów w przeglądarce — wyżej, e2e (§6.6).
+- **Własność tutaj się nie dowodzi.** Trasy nie filtrują po `user_id` — robi to
+  RLS za sesją w kliencie — więc atrapa „drugiego konta" zwraca to, co jej kazano.
+  Tutaj asertuje się, jak trasa **odpowiada** na pusty wynik; że pusty wynik jest
+  tym, co drugie konto naprawdę dostaje, należy do §6.3.
 
 ### 6.3 Dodanie testu dla nowego endpointu API
 
-TBD — see §3 Phase 3 (wzorzec dla odmowy dostępu do cudzego zasobu — test z
-dwoma kontami, asercja na odpowiedzi API, nie tylko na wyniku zapytania).
+Nowy endpoint dostaje **dwa** pliki testu: zachowanie trasy na atrapie (§6.2)
+oraz własność na prawdziwym kliencie — ten drugi opisuje ta sekcja. Wzorzec
+powstał w Fazie 3: trasa wołana jako funkcja, jak w §6.2, ale `locals.supabase`
+to **prawdziwy `supabase-js` zalogowany jako konto A albo B** na lokalnym stosie.
+Dowodzi trasy i RLS naraz, bez HTTP, middleware i przeglądarki.
 
-**Częściowo wyprzedzone od 2026-09-03, ale nie zastąpione.**
-`tests/e2e/day-plan-ownership.spec.ts` (§6.6) dowodzi odmowy z drugiego konta
-na żywej trasie — z prawdziwą sesją i prawdziwym RLS. Nie zwalnia to Fazy 3 z
-własnego wzorca: e2e podnosi całą aplikację i jest o dwa rzędy wielkości
-droższe, więc nie nadaje się do przemiatania każdego endpointu. Ta sekcja nadal
-czeka na tani wzorzec „trasa jako funkcja + atrapa `locals` dwóch kont",
-uruchamiany w `npm test`.
+- **Lokalizacja i nazewnictwo**: obok trasy, `<nazwa-trasy>.db.test.ts`
+  (np. `src/pages/api/day-plan/accept.db.test.ts`). Sufiks `.db.test.ts` jest
+  kontraktem: `vitest.config.ts` go wyklucza, `vitest.db.config.ts` bierze
+  wyłącznie jego.
+- **Test referencyjny**: `src/pages/api/day-plan/accept.db.test.ts` (trasa
+  adresowana id); dla trasy adresowanej datą `index.db.test.ts`.
+- **Uruchomienie**: `npx supabase start`, potem `npm run test:db:api`. W CI
+  job `db` (§5). Konfiguracja: `vitest.db.config.ts` — osobny plik z tego samego
+  powodu co `vitest.gate.config.ts` (§6.5), `fileParallelism: false`, bo pliki
+  dzielą dwa stałe konta.
+- **Helper**: `src/lib/services/__fixtures__/supabase-local.ts`.
+  `teacherClient("a" | "b")` → `{ client, userId }` (konto zakładane
+  idempotentnie, adresy `api-teacher-{a,b}@example.test`, odrębne od e2e);
+  `seedDay(userId, date, { prompt, activities, accepted? })` → `{ planId,
+  activityIds }`; `cleanup(planIds)`; `uniquePlanDate()`/`plusDays()`/
+  `uniqueStamp()`/`activitiesFor()` re-eksportowane z `tests/e2e/support/test-data.ts`.
+  Zmienne `API_URL`, `PUBLISHABLE_KEY`, `SECRET_KEY` — nazwane jak w
+  `supabase status -o env`; brakujące helper uzupełnia jednym wywołaniem tej
+  komendy. Odmawia pracy, gdy `API_URL` nie wskazuje `localhost`/`127.0.0.1`.
+- **Klucz serwisowy wyłącznie do zakładania kont, zasiewu i sprzątania — nigdy
+  do asercji.** Omija RLS, więc sprawdzałby, że wiersz istnieje w bazie, a nie że
+  drugie konto go nie widzi. „A nietknięte" czyta się **klientem A**. Sprzątanie
+  po `id`, nigdy po dacie (po dacie skasowałoby wiersz drugiego konta), w
+  `afterEach`. Wiersz, który tworzy sama trasa (np. `week/save`), odczytaj
+  klientem jego właściciela i dopisz jego `id` do sprzątania **przed**
+  asercjami — padnięta asercja nie może zostawić go w bazie
+  (`week/save.db.test.ts`).
+- **Kontrola pozytywna właściciela jest obowiązkowa**: po „B dostaje 404"
+  ten sam request od A musi przejść. Bez niej każda asercja negatywna przechodzi
+  przy trasie odmawiającej wszystkim.
+- **Co asertować — zależnie od adresowania trasy.** Trasa adresowana id
+  (`plan_id`, `activity id`): cudzy id → 404 `retryable: false`, a wiersz A
+  bez zmian. Trasa adresowana datą: nie da się nazwać cudzego wiersza, więc
+  asercja brzmi „B na dacie D widzi i zmienia wyłącznie swoje; wiersz A na D
+  nietknięty" — z wariantem, w którym **oba** konta mają D.
+- **Głośno, nie skip.** Brak stosu albo kluczy rzuca przy imporcie helpera i
+  kończy przebieg na czerwono z komunikatem „uruchom `npx supabase start`".
+  Pominięty test w CI to zielony znaczek nad niczym.
+- **Rytuał mutacji**: poluzuj politykę (`alter policy … using (true)` w `psql`),
+  zobacz test na czerwono, przywróć dokładne wyrażenie. Zmierzone wyniki stoją w
+  komentarzu nagłówka każdego pliku — w tym dwa, które nie zapaliły tego, czego
+  się spodziewano (§6.7).
+- **Kiedy tutaj, a kiedy gdzie indziej**: własność na trasie (RLS + tłumaczenie
+  na HTTP) — tutaj. Zachowanie trasy niezależne od własności (statusy, envelope,
+  liczba wywołań, brak ponowienia, 400/401 bez bazy) — atrapa, §6.2. Niezmiennik,
+  który baza egzekwuje sama — pgTAP, §6.4. Trasa, która woła model — atrapa,
+  bo jej test podmienia `globalThis.fetch`, a to ta sama granica, przez którą
+  rozmawia `supabase-js`. Przepływ przez przeglądarkę — e2e, §6.6
+  (`tests/e2e/day-plan-ownership.spec.ts` dowodzi tego samego na żywej aplikacji,
+  o dwa rzędy wielkości drożej).
 
 ### 6.4 Dodanie testu bazy danych (pgTAP)
 
 - **Lokalizacja**: `supabase/tests/database/`.
 - **Nazewnictwo**: `<obszar>.test.sql` (dziś: `rls_isolation.test.sql`,
-  `day_plan_write.test.sql`, `day_plan_delete.test.sql`).
+  `day_plan_write.test.sql`, `week_plan_write.test.sql`,
+  `day_plan_delete.test.sql` — 27 + 61 + 35 + 6 = 129 asercji po Fazie 3).
 - **Test referencyjny**: `supabase/tests/database/rls_isolation.test.sql`.
 - **Uruchomienie lokalnie**: `npm run test:db` (wymaga `npx supabase start`).
 - **Kiedy tutaj, a kiedy wyżej**: niezmiennik, który baza egzekwuje sama
   (polityka, grant, CHECK, trigger), testuj tutaj. Zachowanie, które zależy od
   tłumaczenia błędu bazy na odpowiedź HTTP, testuj na warstwie API — patrz §6.3.
-- **Dług otwarty, z właścicielem**: odmowa pustej partii (`U0003`,
-  `save_day_plan_generation`, migracja `20260830092600`) **nie ma dziś żadnej
-  asercji** — usunięcie całego bloku `if` z migracji zostawia 73 asercje pgTAP i
-  cały zestaw Vitest zielonymi. Zweryfikowano to raz ręcznie przez `psql`
-  (Faza 1 rolloutu, kryterium 4.5); automatyczną blokadę zakłada **Faza 3
-  rolloutu**, która jest właścicielem tego katalogu. Wymagany kształt to
-  `throws_ok(… '[]'::jsonb …, 'U0003')` plus asercje „licznik nie drgnął, stara
-  partia nietknięta" i jeden przypadek pustej partii na dniu już zaplanowanym,
-  żeby przypiąć kolejność `U0003` przed `U0002`.
+- **Dług `U0003` zamknięty w Fazie 3 (2026-09-30).** Odmowa pustej partii była
+  rzucana w czterech gałęziach i nie miała żadnej asercji. Teraz:
+  `day_plan_write.test.sql` — `'[]'`, `null` i nie-tablica jako `authenticated`
+  na dniu już zaplanowanym, „licznik nie drgnął, stara partia nietknięta", oraz
+  kolejność: `U0003`, nie `U0002` (z `p_require_absent`) i nie `U0001` (na dniu
+  zatwierdzonym); `week_plan_write.test.sql` — pusty zestaw dni (trzy kształty),
+  brakująca i zła `plan_date`, pusta partia dnia **po** dniu zapisanym wcześniej
+  w tej samej tablicy (ten dzień wycofany). Każda gałąź zobaczona na czerwono
+  przez usunięcie jej bloku; kolejność — przez przeniesienie bloku za
+  `for update`.
 - **Cudze asercje w tym katalogu, świadomie**: `activities_ordinal_bounds`
   (partia 21 pozycji wywraca cały zapis, nie ucina się do 20) oraz
   `day_plans_prompt_length` (hasło 2001 znaków) dostały asercje w **Fazie 2**, bo
   ryzyko #6 żąda dowodu sufitu **poniżej aplikacji** — obie przejechały rytuał
   mutacji przed commitem. Przekroczenie granicy kończy się na tych dwóch
-  ograniczeniach; `U0003` zostaje nietknięty u swojego właściciela, Fazy 3.
+  ograniczeniach; `U0003` został u swojego właściciela, Fazy 3.
+- **Rytuał mutacji bez `db reset`**: psucie funkcji robi się przez
+  `create or replace` z tekstem z `pg_get_functiondef`, a przywraca dokładnie
+  tym samym tekstem — lokalne dane deweloperskie zostają. Plik testu da się
+  uruchomić poza `supabase test db` przez `psql`, jeśli w jego transakcji
+  najpierw padnie `create extension if not exists pgtap`.
 
 ### 6.5 Dodanie przypadku do bramki bezpieczeństwa treści
 
@@ -505,6 +568,52 @@ hasło, propozycje i przyciski „Akceptuj"/„Usuń" konta A, czyli wyciek obej
 też zapis), zakres kasowania rozszerzony na `.gte` (#7 — zniknął dzień sąsiedni)
 i zignorowany wynik `window.confirm` (#7). Każde cofnięte przed commitem.
 
+**Faza 3 — ochrona zapisu i własności (2026-09-30).** Przesłanka była trafna co
+do luk, ale opisywała stan sprzed miesiąca w trzech miejscach: zgoda tygodnia
+to od przeglądu `S-10` data **i** `accepted_at`, nie sama data; `U0003` był
+niezapięty w czterech gałęziach, nie w jednej; a „tani wzorzec na atrapie dwóch
+kont" z §6.3 nie mógł niczego dowieść — trasy nie filtrują po `user_id`, więc
+atrapa zwraca to, co jej kazano. Stąd warstwa z prawdziwym klientem.
+
+Rytuał mutacji zmierzył trzy rzeczy, których nie dało się przewidzieć z kodu:
+
+(1) **`DELETE … .maybeSingle()` nie wycofuje zmiany.** Przy poluzowanych
+politykach select + delete kasowanie po dacie trafia w wiersze obu kont;
+PostgREST (CLI 2.98.2) odpowiada 406 `PGRST116` i oba wiersze **zostają
+skasowane**. Trasa odpowiada wtedy 404 „Ten dzień nie ma planu do usunięcia."
+Jedyną linią jest RLS — ogon z właścicielem w `next-actions.md`.
+
+(2) **Otwarta sama polityka update `activities` nie zapala testu edycji** —
+słusznie: odczyt przed zapisem idzie przez politykę select i odmawia pierwszy.
+Otwarte select + update dają za to **500 „Skontaktuj się z administratorem"**
+zamiast 404 (`with check` odrzuca zapis kodem `42501` → `config`) — dokładnie
+ta regresja 404→500, której atrapa nie ma czym pokazać.
+
+(3) **Psucie sąsiada zapala tylko asercję stanu, nie partii.** Mutacja
+„zeruj `accepted_at` sąsiadom" łapie asercja na haśle/liczniku/zatwierdzeniu;
+asercja na tytułach partii pilnuje innej linii (skasowane propozycje sąsiada).
+Komentarze w plikach mówią, co które psucie faktycznie zapaliło — nie to, co
+miało zapalić.
+
+Job `db` w CI: **2 min 22 s** przy pierwszym zielonym przebiegu (PR #39,
+2026-09-30), z czego większość to pobranie obrazów — cache Dockera nie ma, więc
+tyle kosztuje każdy przebieg. Stos startuje z `-x` dziesięciu kontenerów
+(zostają Postgres, GoTrue, PostgREST, Kong); brak `supabase/seed.sql` kończy się
+ostrzeżeniem, nie błędem. Trzy niespodzianki przy wpinaniu:
+
+- **CI testował inny Postgres niż produkcja.** CLI wybiera obraz z
+  `supabase/.temp/postgres-version`, który pisze `supabase link` i który jest
+  gitignorowany. Bez niego CLI 2.98.2 bierze swój domyślny `17.6.1.106` — i na
+  nim **serwer padł** przy wywołaniu anon w `day_plan_write.test.sql`, które
+  lokalnie (`17.6.1.127`, wersja produkcji) przechodzi. Job przypina wersję
+  produkcji przed `supabase start`; przy aktualizacji projektu trzeba ją podbić.
+- **`public.ecr.aws` limituje pobrania** (`toomanyrequests: Data limit exceeded`)
+  na współdzielonym IP runnera. To nie jest błąd kodu — ponowienie joba
+  przechodzi. Powtórzyło się jeszcze tego samego dnia (run 36768531052), więc
+  cache obrazów jest ogonem z właścicielem w `next-actions.md`.
+- `supabase status -o env` wypisuje `KEY="value"`, a `$GITHUB_ENV` zachowałby
+  cudzysłowy w wartości — krok eksportu je zdejmuje.
+
 ## 7. What We Deliberately Don't Test
 
 Wykluczenia uzgodnione podczas wywiadu (Faza 2, Q5). Przyszli kontrybutorzy
@@ -536,8 +645,9 @@ respektują je, dopóki nie zmieni się założenie leżące u podstaw.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-08-30
-- Stack versions last verified: 2026-08-29 (wiersz e2e w §4: 2026-09-03)
+- Strategy (§1–§5) last reviewed: 2026-09-30 (Faza 3: §2 #3/#4, §3, §4, §5)
+- Stack versions last verified: 2026-08-29 (wiersz e2e w §4: 2026-09-03; wiersze database i
+  integration (trasa + prawdziwy klient): 2026-09-30, Supabase CLI 2.98.2)
 - AI-native tool references last verified: 2026-08-29
 
 Refresh (`/10x-test-plan --refresh`), gdy:

@@ -21,7 +21,9 @@ export default getViteConfig(
       // `exclude` at all overrides Vitest's own default exclusions
       // (`node_modules`, `dist`, ...), and this array is meant to add to them,
       // not narrow them.
-      exclude: [...configDefaults.exclude, "src/**/*.gate.test.ts"],
+      // The route + real client tier (`vitest.db.config.ts`) needs Docker and
+      // the local stack's keys, so it stays out of this set for the same reason.
+      exclude: [...configDefaults.exclude, "src/**/*.gate.test.ts", "src/**/*.db.test.ts"],
       // Undoes `vi.stubGlobal("fetch", ...)` between tests automatically, so a
       // stubbed network boundary cannot leak into the next case.
       unstubGlobals: true,
