@@ -44,6 +44,10 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 - Home screen of the signed-in app: `src/pages/plan/month.astro` (protected via the `/plan` prefix in `PROTECTED_ROUTES`; `/` redirects a signed-in user there)
 
+### Planner shell
+
+- `src/layouts/PlannerLayout.astro` — the shell of every `/plan*` screen (`/plan`, `/plan/week`, `/plan/month`): it wraps `Layout.astro`, renders `src/components/AppHeader.astro` across the full width and takes `active: "plan" | "generate"` for the main nav (month → `plan`, week and day → `generate`). A new signed-in screen uses this layout rather than `Layout.astro` directly.
+
 ### Key conventions
 
 - **Path alias**: `@/*` maps to `./src/*` (tsconfig paths).
@@ -63,6 +67,10 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 - **Services/helpers** go in `src/lib/`. Move to `src/lib/services/` when a function touches more than one Supabase table, or when the same logic is called from more than one API route.
 
 - **Shared types** (entities, DTOs) go in `src/types.ts`.
+
+- **Confirmations go through `useConfirmDialog`** (`src/components/hooks/useConfirmDialog.tsx`), never `window.confirm`. What the window says — title, paragraphs, both button labels, tone — is a `ConfirmationRequest` built in `src/lib/` (`confirmations.ts`, `week-day-controls.ts`, `week-generation.ts`) and unit-tested there; buttons are named after the outcome ("Usuń plan" / "Zostaw"), and `tone: "danger"` marks an operation that cannot be undone. The window is asynchronous and does not freeze the page: check the operation's lock before `await confirm(…)` **and again after it** (`design-planner`, 2026-09-30).
+
+- **Plan state is „zatwierdzony” / „do przejrzenia” in the UI** — in visible text, accessible names, API error sentences and PDF prints alike; the verb is „Zatwierdź”, the noun „zatwierdzenie”. The code and the database keep `accepted` / `accepted_at`. „Zaakceptowany”, „roboczy” (as a plan state) and „Akceptuj” are the pre-`design-planner` wording and must not come back; „dzień roboczy” (a working day, Mon–Fri) is unrelated and stays.
 
 - **UI copy is Polish** — every string a user sees, on both sides of the login threshold (`pl-landing-copy`, 2026-08-30). `src/layouts/Layout.astro` declares `lang="pl"`. No i18n layer and no second language: strings live at their point of use. **Auth errors are the one indirect case**: `?error=` on `/auth/{signin,signup}` carries a short _code_ — Supabase's `error.code`, or `config_missing` / `connection_failed` which we mint ourselves — and never a sentence. The two pages translate it at render through `src/lib/auth-error-messages.ts`; to cover a new Supabase code, add an entry to the map in that file. Anything unmapped falls back to a generic Polish message. Free text in `?error=` is a bug, not a shortcut: it puts Supabase's English in front of a teacher, and it lets a hand-crafted link render an arbitrary sentence inside our own error box (`supabase-error-copy`, 2026-08-31).
 

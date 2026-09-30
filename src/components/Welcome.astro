@@ -38,8 +38,9 @@ const sampleDays = [
 // Illustration only: day themes in three states the month grid really has -
 // accepted, draft, and no plan.
 type Cell = { theme: string; accepted: boolean } | null;
-const illustrationWeeks: { label: string; days: Cell[] }[] = [
+const illustrationWeeks: { topic: string | null; label: string; days: Cell[] }[] = [
   {
+    topic: "Dinozaury",
     label: "5–9 października",
     days: [
       { theme: "Tropem dinozaurów", accepted: true },
@@ -50,6 +51,7 @@ const illustrationWeeks: { label: string; days: Cell[] }[] = [
     ],
   },
   {
+    topic: "Mój dom",
     label: "12–16 października",
     days: [
       { theme: "Kto mieszka w domu?", accepted: true },
@@ -59,7 +61,7 @@ const illustrationWeeks: { label: string; days: Cell[] }[] = [
       { theme: "Porządki na wesoło", accepted: true },
     ],
   },
-  { label: "19–23 października", days: [null, null, null, null, null] },
+  { topic: null, label: "19–23 października", days: [null, null, null, null, null] },
 ];
 ---
 
@@ -149,7 +151,8 @@ const illustrationWeeks: { label: string; days: Cell[] }[] = [
           Cały miesiąc na jednej siatce
         </h2>
         <p class="text-las-szary text-lg leading-relaxed">
-          Dni zatwierdzone, dni robocze i te, które jeszcze czekają na plan. Od razu widać, gdzie brakuje zajęć.
+          Każdy tydzień ze swoim tematem. Dni zatwierdzone, dni do przejrzenia i te, które jeszcze czekają na plan — od
+          razu widać, gdzie brakuje zajęć.
         </p>
       </div>
 
@@ -162,7 +165,15 @@ const illustrationWeeks: { label: string; days: Cell[] }[] = [
         {
           illustrationWeeks.map((week) => (
             <div class="flex flex-col gap-2">
-              <p class="text-mech text-[13px] font-extrabold">{week.label}</p>
+              {/* The row header of the real grid: the week's topic, then its dates. */}
+              <p class="flex flex-wrap items-baseline gap-x-2.5">
+                <span
+                  class:list={cn("font-display text-[17px] leading-tight", week.topic === null && "text-las-szary")}
+                >
+                  {week.topic ?? "Bez tematu"}
+                </span>
+                <span class="text-mech text-[13px] font-extrabold">{week.label}</span>
+              </p>
               <div class="grid grid-cols-5 gap-2">
                 {week.days.map((cell) =>
                   cell ? (
@@ -187,7 +198,7 @@ const illustrationWeeks: { label: string; days: Cell[] }[] = [
         <ul class="text-las-szary flex flex-wrap gap-x-5 gap-y-2 pt-1 text-[13px] font-bold">
           <li class="flex items-center gap-2"><span class="bg-szalwia-soft size-3.5 rounded"></span>zatwierdzony</li>
           <li class="flex items-center gap-2">
-            <span class="border-obrys-przerywany size-3.5 rounded border-[1.5px] border-dashed"></span>roboczy
+            <span class="border-obrys-przerywany size-3.5 rounded border-[1.5px] border-dashed"></span>do przejrzenia
           </li>
           <li class="flex items-center gap-2"><span class="bg-owies-ciemny size-3.5 rounded"></span>bez planu</li>
         </ul>

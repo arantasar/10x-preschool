@@ -877,13 +877,13 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [x] 6.1 Lint, build
-- [x] 6.2 Testy treści potwierdzeń przechodzą
-- [x] 6.3 W kodzie nie ma okna systemowego
-- [x] 6.4 Testy nie nasłuchują okna systemowego
-- [x] 6.5 Każde z sześciu miejsc pyta przez hook
-- [x] 6.6 Testy odmowy są widziane na czerwono
-- [x] 6.7 Cały e2e zielony
+- [x] 6.1 Lint, build — d173446
+- [x] 6.2 Testy treści potwierdzeń przechodzą — d173446
+- [x] 6.3 W kodzie nie ma okna systemowego — d173446
+- [x] 6.4 Testy nie nasłuchują okna systemowego — d173446
+- [x] 6.5 Każde z sześciu miejsc pyta przez hook — d173446
+- [x] 6.6 Testy odmowy są widziane na czerwono — d173446
+- [x] 6.7 Cały e2e zielony — d173446
 
 #### Manual
 
@@ -897,11 +897,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [ ] 7.1 Lint, build, testy
-- [ ] 7.2 Izolacja usunięta z kodu
-- [ ] 7.3 Tło kosmiczne usunięte
-- [ ] 7.4 Reguła o potwierdzeniach zapisana
-- [ ] 7.5 Cały e2e zielony
+- [x] 7.1 Lint, build, testy
+- [x] 7.2 Izolacja usunięta z kodu
+- [x] 7.3 Tło kosmiczne usunięte
+- [x] 7.4 Reguła o potwierdzeniach zapisana
+- [x] 7.5 Cały e2e zielony
 
 #### Manual
 
