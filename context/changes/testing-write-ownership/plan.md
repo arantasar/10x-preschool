@@ -531,10 +531,10 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Automated
 
-- [x] 5.1 Wiersz Fazy 3 w §3 ma status `complete`
-- [x] 5.2 „TBD — see §3 Phase 3” zniknęło z test-planu
-- [x] 5.3 „73 asercje” zniknęło z test-planu
-- [x] 5.4 Stare brzmienie „Zaakceptowany dzień przeżywa” zniknęło
+- [x] 5.1 Wiersz Fazy 3 w §3 ma status `complete` — 1606f7c
+- [x] 5.2 „TBD — see §3 Phase 3” zniknęło z test-planu — 1606f7c
+- [x] 5.3 „73 asercje” zniknęło z test-planu — 1606f7c
+- [x] 5.4 Stare brzmienie „Zaakceptowany dzień przeżywa” zniknęło — 1606f7c
 
 #### Manual
 
