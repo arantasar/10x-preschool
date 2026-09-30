@@ -1,0 +1,106 @@
+---
+/**
+ * Payment request shown when the teacher starts planning week 2.
+ * Native <dialog> (focus trap, Esc to close, ::backdrop) — open it with:
+ *   document.getElementById('paywall').showModal()
+ * Submit goes to `action` (your checkout endpoint) with field `plan=monthly|yearly`.
+ * "Nie teraz" and the × button close the dialog (method="dialog").
+ */
+import Notice from '../ui/Notice.astro';
+interface Price { amount: string; period: string; }
+interface Props {
+  id?: string;
+  weekLabel: string;          // "Tydzień 12–16 października"
+  savedWeekLabel?: string;    // "5–9 października"
+  monthly: Price;             // { amount: "29 zł", period: "/ miesiąc" }
+  yearly: Price;
+  action: string;             // checkout URL
+  providerName?: string;      // "Stripe"
+  termsHref?: string;
+  pricingHref?: string;
+}
+const {
+  id = 'paywall', weekLabel, savedWeekLabel, monthly, yearly, action,
+  providerName, termsHref = '/regulamin', pricingHref = '/cennik',
+} = Astro.props;
+---
+<dialog id={id} class="pw" aria-labelledby={`${id}-title`}>
+  <div class="pw__blob" aria-hidden="true"></div>
+  <div class="pw__dot" aria-hidden="true"></div>
+  <form method="dialog" class="pw__close-form">
+    <button class="pw__close" aria-label="Zamknij">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+  </form>
+
+  <div class="pw__intro">
+    <p class="eyebrow">{weekLabel}</p>
+    <h2 id={`${id}-title`} class="pw__title">Pierwszy tydzień za Tobą. <em>Planujemy dalej?</em></h2>
+    <p class="pw__lead">Pierwszy tydzień planowania był bezpłatny. Żeby wygenerować propozycje na kolejne tygodnie, wybierz plan.</p>
+  </div>
+
+  {savedWeekLabel && <Notice tone="success">Twój plan na {savedWeekLabel} zostaje zapisany.</Notice>}
+
+  <form method="post" action={action} class="pw__form">
+    <fieldset class="pw__plans">
+      <legend class="visually-hidden">Wybierz plan</legend>
+      <label class="pw__plan">
+        <span class="pw__plan-top"><input type="radio" name="plan" value="monthly" checked />Miesięcznie</span>
+        <span class="pw__amount">{monthly.amount} <small>{monthly.period}</small></span>
+      </label>
+      <label class="pw__plan">
+        <span class="pw__plan-top"><input type="radio" name="plan" value="yearly" />Rocznie</span>
+        <span class="pw__amount">{yearly.amount} <small>{yearly.period}</small></span>
+      </label>
+    </fieldset>
+    <button type="submit" class="pw__pay">Przejdź do płatności</button>
+    <button type="submit" formmethod="dialog" class="pw__later">Nie teraz</button>
+  </form>
+
+  <p class="pw__fine">
+    {providerName && <>Płatność obsługuje {providerName}. </>}Szczegóły w <a href={termsHref}>Regulaminie</a> i <a href={pricingHref}>Cenniku</a>.
+  </p>
+</dialog>
+
+<style>
+  .pw {
+    width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+    border: 0; padding: 48px; border-radius: 36px; overflow: hidden auto;
+    background: var(--color-surface); color: var(--color-text);
+    box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.5);
+  }
+  .pw[open] { display: flex; flex-direction: column; gap: 24px; }
+  .pw::backdrop { background: rgba(31, 59, 45, 0.55); }
+  .pw > *:not(.pw__blob):not(.pw__dot):not(.pw__close-form) { position: relative; }
+  .pw__blob { position: absolute; top: -110px; right: -90px; width: 280px; height: 250px; background: var(--color-sage); border-radius: var(--blob-a); }
+  .pw__dot { position: absolute; top: 70px; right: 150px; width: 36px; height: 36px; background: var(--color-apricot); border-radius: 50%; }
+  .pw__close-form { position: absolute; top: 20px; right: 20px; z-index: 1; }
+  .pw__close { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--color-surface); color: var(--color-text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+  .pw__intro { display: flex; flex-direction: column; gap: 12px; padding-right: 60px; }
+  .pw__title { font-size: clamp(30px, 4vw, 40px); line-height: 1.1; }
+  .pw__title em { color: var(--color-text-accent); }
+  .pw__lead { font-size: 17px; line-height: 1.55; color: var(--color-text-muted); }
+
+  .pw__form { display: flex; flex-direction: column; gap: 8px; }
+  .pw__plans { margin: 0 0 16px; padding: 0; border: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .pw__plan {
+    display: flex; flex-direction: column; gap: 6px; cursor: pointer;
+    background: #fff; border: 1.5px solid var(--color-border); border-radius: 20px; padding: 18px 20px;
+  }
+  .pw__plan:has(input:checked) { border: 2px solid var(--color-text); }
+  .pw__plan:has(input:focus-visible) { box-shadow: 0 0 0 3px var(--color-apricot); }
+  .pw__plan-top { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 800; }
+  .pw__plan-top input { width: 20px; height: 20px; margin: 0; accent-color: var(--color-primary); }
+  .pw__amount { font-family: var(--font-display); font-size: 28px; }
+  .pw__amount small { font-family: var(--font-body); font-size: 15px; font-weight: 700; color: var(--color-text-accent); }
+
+  .pw__pay { font: inherit; font-size: 18px; font-weight: 800; padding: 17px; border: 0; border-radius: var(--radius-pill); background: var(--color-primary); color: var(--color-on-primary); cursor: pointer; }
+  .pw__later { font: inherit; font-size: 16px; font-weight: 800; padding: 12px; border: 0; background: transparent; color: var(--color-text); text-decoration: underline; cursor: pointer; }
+  .pw__fine { font-size: 14px; line-height: 1.5; color: var(--color-text-muted); text-align: center; }
+
+  @media (max-width: 640px) {
+    .pw { padding: 28px 22px; border-radius: 28px; }
+    .pw__plans { grid-template-columns: 1fr; }
+  }
+</style>

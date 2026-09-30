@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Mail, Lock, UserPlus } from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
@@ -54,10 +53,12 @@ export default function SignUpForm({ serverError }: Props) {
     }
   }
 
+  // What the form actually enforces (`MIN_PASSWORD_LENGTH`), not the design
+  // package's placeholder - and while typing, how far off the minimum still is.
   const passwordHint =
-    !errors.password && password.length > 0 && password.length < MIN_PASSWORD_LENGTH ? (
-      <p className="mt-1 text-xs text-blue-100/50">Brakuje jeszcze znaków: {MIN_PASSWORD_LENGTH - password.length}</p>
-    ) : undefined;
+    password.length > 0 && password.length < MIN_PASSWORD_LENGTH
+      ? `Brakuje jeszcze znaków: ${MIN_PASSWORD_LENGTH - password.length}`
+      : `Co najmniej ${MIN_PASSWORD_LENGTH} znaków`;
 
   return (
     <form method="POST" action="/api/auth/signup" className="space-y-4" onSubmit={handleSubmit} noValidate>
@@ -70,9 +71,8 @@ export default function SignUpForm({ serverError }: Props) {
           setEmail(v);
           clearError("email");
         }}
-        placeholder="you@example.com"
+        placeholder="imie@przedszkole.pl"
         error={errors.email}
-        icon={<Mail className="size-4" />}
       />
 
       <FormField
@@ -87,7 +87,6 @@ export default function SignUpForm({ serverError }: Props) {
         placeholder={`Min. ${MIN_PASSWORD_LENGTH} znaków`}
         error={errors.password}
         hint={passwordHint}
-        icon={<Lock className="size-4" />}
         endContent={
           <PasswordToggle
             visible={showPassword}
@@ -110,7 +109,6 @@ export default function SignUpForm({ serverError }: Props) {
         }}
         placeholder="Wpisz hasło ponownie"
         error={errors.confirmPassword}
-        icon={<Lock className="size-4" />}
         endContent={
           <PasswordToggle
             visible={showConfirmPassword}
@@ -123,9 +121,7 @@ export default function SignUpForm({ serverError }: Props) {
 
       <ServerError message={serverError} />
 
-      <SubmitButton pendingText="Tworzenie konta..." icon={<UserPlus className="size-4" />}>
-        Załóż konto
-      </SubmitButton>
+      <SubmitButton pendingText="Tworzenie konta...">Załóż konto</SubmitButton>
     </form>
   );
 }

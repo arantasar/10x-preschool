@@ -86,6 +86,11 @@ export default tseslint.config(
   // only produce churn - and the pre-commit `eslint --fix` would rewrite it
   // behind the generator's back.
   { ignores: ["src/db/database.types.ts"] },
+  // the Claude Design package ("Ogród") is a reference, not application code:
+  // its `.astro` components use scoped CSS and `data-action` hooks the app
+  // does not have. The app re-implements them in Tailwind; linting the
+  // originals would only fail the run on code nobody ships.
+  { ignores: ["context/foundation/design/**"] },
   baseConfig,
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],

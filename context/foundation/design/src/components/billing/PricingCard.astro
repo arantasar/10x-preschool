@@ -1,0 +1,92 @@
+---
+/**
+ * Pricing plan card.
+ *  variant="default"  light card, outlined CTA  (plan „Na start”)
+ *  variant="featured" dark forest card, light CTA, optional badge (plan „Pełny dostęp”)
+ * price: a string, or { monthly, yearly } (+ period/note pairs) to react to <BillingToggle>.
+ */
+type Swap = string | { monthly: string; yearly: string };
+interface Props {
+  name: string;
+  subtitle?: string;
+  price: Swap;          // "0 zł" | { monthly: "29 zł", yearly: "290 zł" }
+  period: Swap;         // "pierwszy tydzień planu" | { monthly: "/ miesiąc", yearly: "/ rok" }
+  note?: Swap;
+  features: string[];
+  cta: { label: string; href: string };
+  variant?: 'default' | 'featured';
+  badge?: string;
+}
+const { name, subtitle, price, period, note, features, cta, variant = 'default', badge } = Astro.props;
+const attrs = (v?: Swap) =>
+  v === undefined || typeof v === 'string' ? {} : { 'data-price-monthly': v.monthly, 'data-price-yearly': v.yearly };
+const text = (v?: Swap) => (v === undefined ? '' : typeof v === 'string' ? v : v.monthly);
+---
+<article class:list={['plan', `plan--${variant}`]}>
+  {variant === 'featured' && <div class="plan__blob" aria-hidden="true"></div>}
+  <div class="plan__head">
+    <div>
+      <h2 class="plan__name">{name}</h2>
+      {subtitle && <p class="plan__sub">{subtitle}</p>}
+    </div>
+    {badge && <span class="plan__badge">{badge}</span>}
+  </div>
+  <div class="plan__price">
+    <div class="plan__row">
+      <span class="plan__amount" {...attrs(price)}>{text(price)}</span>
+      <span class="plan__period" {...attrs(period)}>{text(period)}</span>
+    </div>
+    {note && <p class="plan__note" {...attrs(note)}>{text(note)}</p>}
+  </div>
+  <hr class="plan__rule" />
+  <ul class="plan__features">
+    {features.map((f) => (
+      <li>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+        {f}
+      </li>
+    ))}
+  </ul>
+  <a class="plan__cta" href={cta.href}>{cta.label}</a>
+</article>
+
+<style>
+  .plan {
+    position: relative; overflow: hidden; border-radius: 32px; padding: 44px;
+    display: flex; flex-direction: column; gap: 22px;
+  }
+  .plan > *:not(.plan__blob) { position: relative; }
+  .plan--default { background: var(--color-surface); box-shadow: var(--shadow-panel); }
+  .plan--featured { background: var(--color-primary); color: var(--color-on-primary); }
+  .plan__blob { position: absolute; right: -80px; top: -90px; width: 260px; height: 230px; background: var(--color-primary-2); border-radius: var(--blob-a); }
+
+  .plan__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .plan__name { font-family: var(--font-body); font-size: 22px; font-weight: 800; }
+  .plan__sub { margin-top: 6px; font-size: 16px; color: var(--color-text-muted); }
+  .plan--featured .plan__sub { color: var(--color-sage); }
+  .plan__badge { background: var(--color-apricot); color: var(--color-text); font-weight: 800; font-size: 13px; padding: 6px 12px; border-radius: var(--radius-pill); white-space: nowrap; }
+
+  .plan__row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .plan__amount { font-family: var(--font-display); font-size: clamp(48px, 5vw, 64px); line-height: 1; }
+  .plan__period { font-size: 17px; font-weight: 700; color: var(--color-text-accent); }
+  .plan--featured .plan__period, .plan--featured .plan__note { color: var(--color-sage); }
+  .plan__note { margin-top: 6px; font-size: 15px; color: var(--color-text-muted); }
+
+  .plan__rule { border: 0; height: 1.5px; margin: 0; background: #E2DBC8; }
+  .plan--featured .plan__rule { background: var(--color-primary-2); }
+
+  .plan__features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .plan__features li { display: flex; gap: 12px; font-size: 17px; line-height: 1.45; }
+  .plan__features svg { flex-shrink: 0; color: var(--color-text-accent); }
+  .plan--featured .plan__features svg { color: var(--color-sage); }
+
+  .plan__cta {
+    margin-top: auto; min-height: 44px; padding: 16px; text-align: center; text-decoration: none;
+    font-size: 17px; font-weight: 800; border-radius: var(--radius-pill);
+  }
+  .plan--default .plan__cta { border: 1.5px solid var(--color-text); color: var(--color-text); }
+  .plan--featured .plan__cta { background: var(--color-on-primary); color: var(--color-primary); }
+  .plan--featured .plan__cta:hover { background: #fff; }
+
+  @media (max-width: 640px) { .plan { padding: 28px; border-radius: var(--radius-xl); } }
+</style>

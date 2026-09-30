@@ -1,0 +1,118 @@
+/* 10xPreschool — design tokens (kierunek „Ogród”)
+   Import once in the root layout: import '../styles/tokens.css';
+   Fonts: see README (Google Fonts <link> or @fontsource). */
+
+:root {
+  /* ---------- Color: surfaces ---------- */
+  --color-bg: #F3EFE4;            /* Owies — page background */
+  --color-surface: #FFFDF7;       /* Mleko — cards, inputs, app header */
+  --color-surface-muted: #EDE8DA; /* segmented control track, empty mini cells */
+  --color-empty: #E6E0D0;         /* empty week in month grid */
+
+  /* ---------- Color: text ---------- */
+  --color-text: #1F3B2D;          /* Las — headings, body, primary UI */
+  --color-text-muted: #3E5347;    /* secondary copy (5.9:1 on bg) */
+  --color-text-accent: #4F6E4B;   /* Mech — eyebrows, meta, labels (4.9:1 on bg) */
+
+  /* ---------- Color: brand ---------- */
+  --color-primary: #1F3B2D;       /* primary buttons, dark panels */
+  --color-on-primary: #F3EFE4;
+  --color-primary-2: #2E5541;     /* blob on dark panel */
+  --color-sage: #C9DAC2;          /* Szałwia — decorative blobs, text on dark */
+  --color-sage-soft: #DCE7D6;     /* selected nav item, approved fill */
+  --color-apricot: #EE9B6A;       /* Morela — warm accent, secondary CTA fill (dark text only!) */
+  --color-apricot-soft: #F4C3A1;  /* decorative blobs, avatar */
+  --color-butter-soft: #FBEBC4;   /* step 3 badge */
+
+  /* ---------- Color: lines ---------- */
+  --color-border: #B9C7B1;        /* inputs, secondary buttons */
+  --color-divider: #D5CDB8;       /* section rules, footer */
+  --color-border-dashed: #6F8A69; /* pending proposals */
+  --color-input-shadow: #DCD5C2;
+
+  /* ---------- Status ---------- */
+  --status-approved-bg: #DCE7D6;
+  --status-approved-fg: #2E4A2B;
+  --status-approved-border: #4F6E4B;
+  --status-pending-border: #6F8A69; /* dashed */
+  --status-empty-bg: #E6E0D0;
+
+  /* ---------- Activity categories (bg / fg pairs, all ≥ 4.5:1) ---------- */
+  --cat-ruch-bg: #DCE7D6;       --cat-ruch-fg: #2E4A2B;
+  --cat-plastyka-bg: #F6DCCB;   --cat-plastyka-fg: #8A3F17;
+  --cat-mowa-bg: #FBEBC4;       --cat-mowa-fg: #6E4A00;
+  --cat-odkrywanie-bg: #D9E6EE; --cat-odkrywanie-fg: #24506A;
+  --cat-muzyka-bg: #EADDF0;     --cat-muzyka-fg: #5B2D6E;
+  --cat-default-bg: #EDE8DA;    --cat-default-fg: #3E5347;
+
+  /* ---------- Typography ---------- */
+  --font-display: 'Young Serif', Georgia, serif;           /* headings, day names, numbers — weight 400 only */
+  --font-body: 'Nunito Sans Variable', 'Nunito Sans', system-ui, -apple-system, sans-serif; /* 400 / 600 / 700 / 800 */
+
+  --text-display-xl: clamp(46px, 6.2vw, 88px); /* hero h1; line-height 1.02; letter-spacing -1.5px */
+  --text-display-lg: clamp(32px, 3.8vw, 52px); /* section h2; line-height 1.1 */
+  --text-display-md: clamp(30px, 2.8vw, 40px); /* app page title */
+  --text-display-sm: 26px;                      /* panel title */
+  --text-title: 22px;      /* card title, weight 800 */
+  --text-lead: 21px;       /* hero paragraph; line-height 1.55 */
+  --text-body: 17px;       /* line-height 1.6 */
+  --text-small: 15px;      /* card description; line-height 1.55 */
+  --text-meta: 14px;       /* meta, labels; weight 700–800 */
+  --text-tag: 13px;        /* tags; weight 800 */
+  --text-eyebrow: 14px;    /* uppercase, letter-spacing 2px, weight 800 */
+
+  /* ---------- Radius ---------- */
+  --radius-sm: 12px;
+  --radius-md: 16px;  /* inputs */
+  --radius-lg: 24px;  /* list rows, mobile cards */
+  --radius-xl: 28px;  /* cards, panels */
+  --radius-2xl: 40px; /* dark CTA band, login panel */
+  --radius-pill: 999px; /* all buttons, tags */
+  --radius-logo: 50% 50% 50% 8px;  /* leaf-shaped logo mark / step badges */
+  --blob-a: 58% 42% 55% 45% / 48% 60% 40% 52%;
+  --blob-b: 45% 55% 40% 60% / 55% 45% 58% 42%;
+
+  /* ---------- Shadow ---------- */
+  --shadow-card: 0 16px 36px -26px rgba(31, 59, 45, 0.4);
+  --shadow-panel: 0 24px 48px -30px rgba(31, 59, 45, 0.45);
+  --shadow-input: 0 1px 0 var(--color-input-shadow), 0 20px 40px -24px rgba(31, 59, 45, 0.35);
+
+  /* ---------- Spacing (8-based, with a few larger section steps) ---------- */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --space-9: 96px; --space-10: 140px;
+
+  --page-gutter: clamp(20px, 8vw, 120px);  /* marketing pages */
+  --app-gutter: clamp(16px, 3.4vw, 48px);  /* logged-in app */
+  --content-max: 1200px;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.6;
+}
+h1, h2, h3, p { margin: 0; }
+h1, h2 { font-family: var(--font-display); font-weight: 400; }
+a { color: var(--color-text); }
+a:hover { color: var(--color-text-accent); }
+:focus-visible { outline: 3px solid var(--color-apricot); outline-offset: 2px; }
+p, h1, h2, h3 { text-wrap: pretty; }
+
+.eyebrow {
+  font-size: var(--text-eyebrow);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-text-accent);
+}
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}

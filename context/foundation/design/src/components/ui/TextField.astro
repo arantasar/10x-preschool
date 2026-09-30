@@ -1,0 +1,62 @@
+---
+/**
+ * Labelled form field: input (default), textarea or select (options).
+ * Hint text is linked via aria-describedby; `error` switches to the error style.
+ */
+interface Props {
+  id: string;
+  label: string;
+  name?: string;
+  type?: string;              // text | email | password | …
+  as?: 'input' | 'textarea' | 'select';
+  options?: string[];          // for select
+  rows?: number;               // for textarea
+  value?: string;
+  placeholder?: string;
+  hint?: string;
+  error?: string;
+  required?: boolean;
+  autocomplete?: string;
+  labelAside?: { label: string; href: string }; // e.g. "Nie pamiętasz hasła?"
+}
+const {
+  id, label, name = id, type = 'text', as = 'input', options = [], rows = 6,
+  value, placeholder, hint, error, required, autocomplete, labelAside,
+} = Astro.props;
+const describedBy = [hint && `${id}-hint`, error && `${id}-err`].filter(Boolean).join(' ') || undefined;
+---
+<div class:list={['field', error && 'has-error']}>
+  <div class="field__top">
+    <label for={id} class="field__label">{label}</label>
+    {labelAside && <a class="field__aside" href={labelAside.href}>{labelAside.label}</a>}
+  </div>
+  {as === 'textarea' ? (
+    <textarea id={id} name={name} rows={rows} placeholder={placeholder} required={required} aria-describedby={describedBy} aria-invalid={error ? 'true' : undefined} class="field__control">{value}</textarea>
+  ) : as === 'select' ? (
+    <select id={id} name={name} required={required} aria-describedby={describedBy} class="field__control">
+      {options.map((o) => <option selected={o === value}>{o}</option>)}
+    </select>
+  ) : (
+    <input id={id} name={name} type={type} value={value} placeholder={placeholder} required={required} autocomplete={autocomplete} aria-describedby={describedBy} aria-invalid={error ? 'true' : undefined} class="field__control" />
+  )}
+  {hint && <p id={`${id}-hint`} class="field__hint">{hint}</p>}
+  {error && <p id={`${id}-err`} class="field__error">{error}</p>}
+</div>
+
+<style>
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field__top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .field__label { font-weight: 800; font-size: 15px; }
+  .field__aside { font-weight: 700; font-size: 15px; color: var(--color-text-accent); padding: 4px 0; }
+  .field__control {
+    font: inherit; font-size: 18px; font-weight: 600; line-height: 1.4; color: var(--color-text);
+    background: #FFFFFF; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+    padding: 14px 18px; width: 100%;
+  }
+  textarea.field__control { font-weight: 500; font-size: 17px; line-height: 1.5; resize: vertical; }
+  .field__control::placeholder { color: #6B7A70; font-weight: 500; }
+  .field__control:focus { outline: none; border-color: var(--color-text); box-shadow: 0 0 0 3px var(--color-apricot); }
+  .field__hint { font-size: 14px; color: var(--color-text-muted); }
+  .field__error { font-size: 14px; font-weight: 700; color: #9A2B12; }
+  .has-error .field__control { border-color: #9A2B12; }
+</style>

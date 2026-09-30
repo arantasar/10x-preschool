@@ -1,0 +1,117 @@
+---
+/**
+ * One LLM-generated activity proposal.
+ *
+ * layout="card" — vertical card (landing preview, mobile)
+ * layout="row"  — horizontal row (generator list, desktop); collapses to card < 900px
+ *
+ * status:
+ *  - pending   → actions: Zatwierdź / Zmień / Usuń
+ *  - approved  → 2px sage border + "Zatwierdzone" badge + "Cofnij"
+ *  - removed   → render <RemovedProposal> instead of this component
+ *
+ * Buttons carry data-action + data-id so they can be wired to a client script,
+ * htmx, or wrapped in <form method="post"> — whatever the app already uses.
+ */
+import CategoryTag from '../ui/CategoryTag.astro';
+import StatusBadge from '../ui/StatusBadge.astro';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+
+export interface Proposal {
+  id: string;
+  dayLabel: string;        // "Poniedziałek"
+  dateLabel?: string;      // "5 października"
+  category: string;        // "Ruch"
+  title: string;
+  description: string;
+  duration?: string;       // "20 min · sala lub ogród"
+}
+interface Props {
+  proposal: Proposal;
+  status?: 'pending' | 'approved';
+  layout?: 'card' | 'row';
+  showActions?: boolean;
+}
+const { proposal: p, status = 'pending', layout = 'card', showActions = true } = Astro.props;
+---
+<article class:list={['proposal', `proposal--${layout}`, status === 'approved' && 'is-approved']} data-id={p.id}>
+  <header class="proposal__day">
+    <span class="proposal__dayname">{p.dayLabel}</span>
+    {p.dateLabel && <span class="proposal__date">{p.dateLabel}</span>}
+    {layout === 'card' && <CategoryTag category={p.category} />}
+  </header>
+
+  <div class="proposal__body">
+    {layout === 'row' && (
+      <div class="proposal__meta">
+        <CategoryTag category={p.category} />
+        {p.duration && <span class="proposal__duration">{p.duration}</span>}
+      </div>
+    )}
+    <h3 class="proposal__title">{p.title}</h3>
+    <p class="proposal__desc">{p.description}</p>
+    {layout === 'card' && p.duration && <span class="proposal__duration">{p.duration}</span>}
+  </div>
+
+  {showActions && (
+    <div class="proposal__actions">
+      {status === 'pending' ? (
+        <>
+          <Button size="sm" data-action="approve" data-id={p.id} class="proposal__approve">Zatwierdź</Button>
+          <Button size="sm" variant="secondary" data-action="edit" data-id={p.id}>Zmień</Button>
+          <Button size="sm" variant="secondary" iconOnly data-action="remove" data-id={p.id} aria-label={`Usuń: ${p.title}`}>
+            <Icon name="trash" />
+          </Button>
+        </>
+      ) : (
+        <>
+          <StatusBadge status="approved" />
+          <Button size="sm" variant="ghost" data-action="unapprove" data-id={p.id}>Cofnij</Button>
+        </>
+      )}
+    </div>
+  )}
+</article>
+
+<style>
+  .proposal {
+    background: var(--color-surface); border: 2px solid transparent;
+    border-radius: var(--radius-xl); padding: 26px;
+    box-shadow: var(--shadow-card);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .proposal.is-approved { border-color: var(--status-approved-border); }
+
+  .proposal__day { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .proposal__dayname { font-family: var(--font-display); font-size: 18px; line-height: 1.2; }
+  .proposal__date { font-size: var(--text-meta); font-weight: 700; color: var(--color-text-accent); }
+  .proposal--card .proposal__date { margin-right: auto; }
+
+  .proposal__body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .proposal__meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .proposal__title { font-size: var(--text-title); font-weight: 800; line-height: 1.25; }
+  .proposal__desc { font-size: var(--text-small); line-height: 1.55; color: var(--color-text-muted); }
+  .proposal__duration { font-size: var(--text-meta); font-weight: 700; color: var(--color-text-accent); }
+
+  .proposal__actions { display: flex; align-items: center; gap: 8px; padding-top: 4px; }
+  .proposal--card .proposal__actions :global(.proposal__approve) { flex: 1; }
+
+  /* Row layout (desktop generator) */
+  .proposal--row {
+    flex-direction: row; align-items: center; gap: 24px;
+    border-radius: var(--radius-lg); padding: 20px 24px; box-shadow: none;
+  }
+  .proposal--row .proposal__day { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; width: 136px; flex-shrink: 0; }
+  .proposal--row .proposal__dayname { font-size: 20px; }
+  .proposal--row .proposal__body { flex: 1; gap: 6px; }
+  .proposal--row .proposal__title { font-size: 20px; }
+  .proposal--row .proposal__actions { width: 260px; flex-shrink: 0; justify-content: flex-end; padding-top: 0; }
+
+  @media (max-width: 900px) {
+    .proposal--row { flex-direction: column; align-items: stretch; border-radius: var(--radius-lg); }
+    .proposal--row .proposal__day { flex-direction: row; align-items: baseline; gap: 10px; width: auto; }
+    .proposal--row .proposal__actions { width: auto; justify-content: flex-start; }
+    .proposal--row .proposal__actions :global(.proposal__approve) { flex: 1; }
+  }
+</style>

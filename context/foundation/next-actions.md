@@ -9,9 +9,11 @@
 - **`M-02` zamknięty 2026-09-29 w pełnym zakresie** — osiem pozycji `done` (`S-07`, `S-09`…`S-15`),
   łącznie z nice-to-have `S-10` (`accepted-day-replacement`, PR #35) i dopisanym w trakcie
   `S-15` (`follow-up-questions`). Wszystko jest na produkcji. Wpis: `roadmap.md` §Milestone History.
-- **Kroki 1–5 zamknięte.** **Krok 6 (faza 3 test-planu) jest następny i nic go nie blokuje** —
-  jego warunek wejścia (Pułapka 2: najpierw regeneracja tygodnia) jest spełniony, a `S-10`
-  ustalił ostateczną semantykę ochrony dnia zaakceptowanego: „nigdy bez jawnej zgody".
+- **Kroki 1–5 zamknięte.** **Kolejność dalszych prac przestawiona 2026-09-29** — patrz
+  §Kolejka po `M-02`. Następny jest **Krok 10 (design z Claude Design)**, a Krok 6 (faza 3
+  test-planu) idzie zaraz po nim; jego warunek wejścia (Pułapka 2) jest spełniony.
+- **Monetyzacja ma decyzje** (2026-09-29): Free + Basic 19,99 zł teraz, Pro 39,99 zł później
+  zaczynając od materiałów, B2C, JDG. Pełny zapis: `monetization.md` §Decyzje.
 - **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie. Żaden kamień nie
   jest otwarty (`milestone_status: done`).
 - `test-plan.md` §3: fazy 1–2 `complete`, fazy 3–4 `not started`. Warstwa e2e (Playwright,
@@ -41,10 +43,42 @@
 Do paczki `M-02` doszła pozycja, której nie było na liście: **regeneracja tygodnia z
 zastępowaniem istniejących dni** — wyszła z doprecyzowania #2 i jest najcięższa z całej paczki.
 
+## Kolejka po `M-02` (ustalona 2026-09-29)
+
+Wejście: `monetization.md` (research i decyzje) oraz `new-ideas.md` (lista zgłoszeń Janusza).
+Numeracja kroków jest stała, więc nowe kroki dostają numery od 10, a **o kolejności decyduje ta
+tabela, nie numer**.
+
+| Kolejność | Krok | Co | Rodzaj |
+| --- | --- | --- | --- |
+| 1 | **Krok 10** | Design z Claude Design na istniejących ekranach | zmiana (bez PRD) |
+| równolegle | **Krok 11** | Walidacja i sprawy formalne (rozmowy, dane z produkcji, JDG, Stripe, księgowa) | poza kodem |
+| 2 | Krok 6 | Faza 3 test-planu (ochrona zapisu i własności) | test-plan |
+| 3 | **Krok 12** | PRD v3 i roadmapa kamienia `M-03` „Gotowi do sprzedaży" | shape → prd → roadmap |
+| 4 | **Krok 13** | Slice'y `M-03` bez pieniędzy: reset hasła, strony prawne i FAQ, kontakt, limity | slice'y |
+| 5 | Krok 9 | Faza 4 test-planu: e2e w CI **przed** pierwszym slice'em płatności | test-plan |
+| 6 | **Krok 14** | Slice'y `M-03` z pieniędzmi: Stripe, cennik i paywall; odwieszenie bramki; start sprzedaży | slice'y + wydanie |
+| 7 | **Krok 15** | Kamień `M-04` „Lepsza treść": kalendarz świąt, rodzaje aktywności, materiały → start Pro | shape → prd → roadmap |
+
+Dlaczego tak:
+
+- **Design pierwszy.** Każda powierzchnia `M-03` to nowy ekran: cennik, paywall, FAQ, regulamin,
+  kontakt, reset hasła. Zbudowane na starym wyglądzie trzeba by przerabiać drugi raz.
+- **Krok 9 przesunięty przed płatności.** Merge do `master` to wydanie, a błąd w webhooku albo
+  w uprawnieniach kosztuje pieniądze klientów, nie tylko wygląd. Płatności nie wchodzą bez e2e w CI.
+- **Krok 7 (rodzaje aktywności) wchłonięty przez Krok 15.** Rodzaje aktywności, kalendarz świąt
+  i materiały zmieniają wytyczne generowania. Każda taka zmiana wymaga przebiegu bramki dla każdego
+  modelu (`lessons.md` §3), więc robimy je jedną sesją `/10x-shape` z researchem dziedzinowym,
+  a nie trzema.
+- **Limity przed płatnościami.** Licznik, darmowy tydzień i reverse trial działają bez Stripe'a
+  (każdy dostaje plan wynikający z reguły). Slice płatności tylko przestawia datę dostępu, więc jest
+  mniejszy, a limity można obejrzeć na produkcji, zanim ktoś zapłaci.
+
 ## Kolejność — krok po kroku
 
 Jeden folder zmiany w locie naraz. Między handoffami `/clear`.
 Numeracja kroków jest stała — kroki domknięte zostają na liście, nie są usuwane.
+Kolejność kroków od 6 wzwyż: §Kolejka po `M-02`.
 
 ### ✅ Krok 1 — `pl-landing-copy` (zgłoszenie #7) — ZROBIONE 2026-08-30
 
@@ -201,7 +235,7 @@ Decyzje zamknięte 2026-08-30 — nic tu nie zostało do rozstrzygnięcia poza t
 Każdy slice standardowym łańcuchem, kolejność ustali `/10x-roadmap`.
 Zacznij od **regeneracji tygodnia z zastępowaniem** — reszta paczki się o nią opiera.
 
-### Krok 6 — faza 3 test-planu (ochrona zapisu i własności) — NASTĘPNY
+### Krok 6 — faza 3 test-planu (ochrona zapisu i własności) — po Kroku 10
 
 ```
 /10x-test-plan
@@ -223,18 +257,16 @@ zwalnia jej to z niczego, co ma w opisie:
 - **tani wzorzec z §6.3** („trasa jako funkcja + atrapa `locals` dwóch kont") wciąż
   jest TBD; e2e podnosi całą aplikację i nie nadaje się do przemiatania endpointów.
 
-### Krok 7 — rodzaje aktywności (zgłoszenie #8)
+### Krok 7 — rodzaje aktywności (zgłoszenie #8) — wchłonięty przez Krok 15
 
-```
-/10x-shape           # osobna sesja; wymaga researchu DZIEDZINOWEGO, nie kodowego
-/10x-prd
-/10x-roadmap
-```
+Robiony razem z kalendarzem świąt i materiałami w kamieniu `M-04` — patrz §Kolejka po `M-02`.
 
-### Krok 8 — monetyzacja (zgłoszenie #10)
+### Krok 8 — monetyzacja (zgłoszenie #10) — rozpisana na Kroki 11–14
 
-Własny kamień milowy, po #8 i #9 — to one są kandydatami na „za subskrypcją".
-Wymaga powrotu do `infrastructure.md`.
+Research i decyzje: `monetization.md`. Pierwotny zapis „po #8 i #9" nie obowiązuje: rodzaje
+aktywności trafiły do Basic, a jedyną funkcją za płotem Pro na start są materiały, więc `M-03`
+(Free + Basic) nie czeka na `M-04`. Powrót do `infrastructure.md` dotyczy kosztów stałych
+(Supabase Pro dla backupów) — do rozstrzygnięcia w Kroku 12.
 
 ### Krok 9 — faza 4 test-planu (bramki CI + e2e)
 
@@ -256,7 +288,168 @@ nie ma:
   → akceptacja) — istniejące testy jej nie pokrywają i celowo omijają wywołanie LLM;
   w CI trzeba będzie zdecydować, czym je zastąpić, bo `page.route()` nie przechwyci
   wywołania idącego z serwera;
-- **pozostałe bramki** przed merge'em do `master`, który deployuje wprost na produkcję.
+- **pozostałe bramki** przed merge'em do `master`, który deployuje wprost na produkcję;
+- **stabilny pierwszy przebieg e2e** — dziś pierwszy pełny przebieg po zmianie zależności pada
+  (Vite re-optymalizuje zależności w trakcie i przeładowuje stronę), drugi przechodzi. W CI
+  każdy przebieg jest pierwszy. Poprawka i dowody: `context/archive/2026-09-29-design-foundation/follow-ups/review-fixes.md` F9.
+
+**Przesunięty przed Krok 14 (2026-09-29).** Warunek wejścia pierwszego slice'a płatności.
+Rozszerz przy okazji mapę ryzyk o płatności: webhook przyznający dostęp cudzemu kontu, limit
+omijany równoległymi wywołaniami `week/day.ts`, dostęp, który nie wygasa.
+
+### Krok 10 — design z Claude Design (zgłoszenie „design z Claude Design") — W TOKU
+
+```
+# 0. ✅ Projekt w Claude Design gotowy (2026-09-29) — pakiet w context/foundation/design/
+git checkout -b feat/design-foundation
+/10x-new design-foundation
+# 1. ✅ Eksport w repo: context/foundation/design/ (przeżyje archiwizację zmiany)
+/10x-research        # mapa ekranów i komponentów do przemalowania, patrz niżej
+/10x-plan
+/10x-plan-review
+/10x-implement design-foundation phase <N>
+/10x-impl-review
+/10x-archive design-foundation
+# Drugi przebieg tym samym łańcuchem: feat/design-planner (ekrany planowania)
+```
+
+**Bez PRD.** Design nie zmienia żadnego FR: wszystko z `prd-v2.md` §Zachowania chronione obowiązuje
+bez zmian, łącznie z adresami ekranów. To zmiana wyglądu, więc idzie standardowym łańcuchem
+zmiany, nie przez `/10x-shape`.
+
+**Dwie zmiany, nie jedna** — powierzchnia jest za duża na jeden PR, a merge to wydanie:
+
+1. `design-foundation` — tokeny (kolory, typografia, promienie, odstępy) w motywie Tailwind 4 i
+   zmiennych shadcn/ui („new-york"), fonty, `Layout.astro`, `Topbar`, strona główna (`Welcome`),
+   ekrany auth. Po tej zmianie reszta aplikacji dziedziczy nowy wygląd przez tokeny, nawet
+   nieprzerobiona.
+2. `design-planner` — siatka miesiąca, tydzień, dzień, podgląd dnia, potwierdzenia.
+
+**Zakres projektu w Claude Design — zaprojektuj od razu także ekrany `M-03`**, których jeszcze
+nie ma w kodzie: cennik (rok szkolny jako domyślny, cena założycielska), okno paywalla przy drugim
+tygodniu, FAQ, regulamin i polityka prywatności (układ długiego tekstu), formularz kontaktowy,
+reset hasła, stan „pierwszy miesiąc pełny" i licznik darmowego tygodnia. Slice'y z Kroków 13–14
+wezmą je gotowe, zamiast projektować w trakcie implementacji.
+
+**Stan projektu (2026-09-29): wystarczający, dalszego projektowania nie planujemy.** Pakiet ma
+ekrany 01–14: landing, logowanie, rejestracja, konto założone, nowe propozycje, plan miesiąca,
+cennik, paywall, FAQ, regulamin, kontakt, reset hasła, nowe hasło. Makiet nie mają stany „pierwszy
+miesiąc pełny" i licznik darmowego tygodnia, a treść paywalla i cennika rozjeżdża się z
+`monetization.md` §Decyzje (`context/archive/2026-09-29-design-foundation/research.md` §6). Slice'y Kroków
+13–14 składają je z istniejących komponentów pakietu, zamiast wracać do Claude Design.
+
+**Na co uważać w `/10x-research` i `/10x-plan`:**
+
+- **Testy e2e jadą po rolach i etykietach** (`CLAUDE.md` §E2E, `tests/e2e/E2E-RULES.md`). Zmiana
+  wyglądu nie może zmienić nazw dostępnych przycisków i pól — inaczej czerwone testy będą wyglądały
+  jak regresja zachowania. Jeśli projekt zmienia teksty przycisków, plan wymienia je wprost.
+- **Wydruki PDF mają własny silnik** (`src/lib/week-pdf/`) i nie dziedziczą CSS aplikacji.
+  Przeniesienie designu na wydruki to decyzja planu, nie domyślny zakres.
+- **Copy zostaje polskie**, a klasy łączone przez `cn()` (`CLAUDE.md` §Key conventions).
+- **Podgląd dnia i siatka mają warunki jakościowe z `prd-v2.md`**: pełny miesiąc bez przewijania
+  na tej samej szerokości co dziś, podgląd osiągalny z klawiatury. Nowy wygląd ich nie łamie.
+- **Weryfikacja wzrokowa jest tu naturalna** — pozycja 1.11 z §Otwarte ogony po Kroku 1
+  (układ mobilny i desktopowy strony `/`) domyka się przy okazji.
+
+**Stan po `design-foundation` (2026-09-29) — co dziedziczy `design-planner`:**
+
+- **Pakiet Claude Design** leży w `context/foundation/design/` (README, `tokens.css`, komponenty
+  `.astro` jako specyfikacja, PNG i HTML ekranów). Wykluczony z ESLint i tsconfig — to referencja,
+  nie kod. Tokeny są już w `src/styles/global.css` (`@theme`: `las`, `owies`, `mleko`, `mech`,
+  `szalwia`, `morela`…; zmienne shadcn na „Ogród”); `--cat-*` czekają na `M-04`.
+- **`.theme-legacy` — dług z właścicielem `design-planner`:** usunąć blok `.theme-legacy` z
+  `src/styles/global.css` i klasę `theme-legacy` z wrapperów w `src/pages/plan.astro`,
+  `src/pages/plan/week.astro`, `src/pages/plan/month.astro`. Do tego czasu planer celowo zostaje
+  ciemny.
+- **`AppHeader`** (N12, N8): nawigacja „Plan miesiąca” / „Nowe propozycje”, awatar + e-mail i
+  **widoczny** „Wyloguj się” (wiąże go `tests/e2e/auth.setup.ts`).
+- **Siatka miesiąca** N4–N7: temat tygodnia w wierszu, legenda z licznikami, pusty tydzień jako
+  jedna komórka z CTA, pn–pt (z sygnałem o planach weekendowych); **N11** „Zatwierdź wszystkie” jako
+  restyle „Akceptuj tydzień (N)”.
+- **Landing:** po N4 dopisać etykiety tematu tygodnia w ilustracji miesiąca w
+  `src/components/Welcome.astro`.
+- **N1 wdrożone:** hasło z landingu jedzie ciasteczkiem `pending_topic` (`src/lib/pending-topic.ts`)
+  przez rejestrację i logowanie do `/plan/week`. Przerabiając tydzień, zachowaj
+  `initialPrompt` w `WeekPlanBoard` i etykietę „Hasło tygodnia” (`landing-topic-carry.spec.ts`).
+- Pozycja 1.11 z §Otwarte ogony po Kroku 1 — domknięta nowym landingiem (weryfikacja wzrokowa:
+  pozycje 2.7 i 2.11 planu `design-foundation`).
+
+### Krok 11 — walidacja i sprawy formalne (poza kodem, równolegle z Krokiem 10)
+
+Nie otwiera folderu zmiany, więc nie łamie reguły „jeden folder w locie".
+
+- **Rozmowy:** 8–10 osób, `/10x-mom-test` na `monetization.md` jako wejściu. Pytania
+  o przeszłe wydatki, nie o opinie — `monetization.md` §7 Faza 0.
+- **Dane z produkcji:** ile generowań na miesiąc robią realni użytkownicy i ilu planuje więcej niż
+  tydzień. Kalibruje limity fair use z `monetization.md` §4.3, zanim wejdą do PRD v3.
+- **Formalności:** JDG (PKD dla sprzedaży oprogramowania w modelu subskrypcji), konto Stripe
+  z włączonym BLIK i Przelewy24, narzędzie do faktur ze łącznikiem do Stripe'a. **Konsultacja
+  z księgowym** — lista pytań w `monetization.md` §Decyzje, ad 5.
+
+Wynik rozmów i danych zapisz przed Krokiem 12 — to wejście do `/10x-shape`, obok `monetization.md`.
+
+### Krok 12 — PRD v3 i otwarcie `M-03` „Gotowi do sprzedaży"
+
+```
+/10x-shape           # "Restart from scratch" — jak w Kroku 3; wejście: monetization.md,
+                     # new-ideas.md, wynik Kroku 11
+/10x-prd             # na kolizji "Save as prd-v3.md"
+/10x-roadmap context/foundation/prd-v3.md    # ŚCIEŻKA JAWNIE; "Archive and replace";
+                                             # potem ręczne odtworzenie warstwy kamieni
+```
+
+**Wszystkie trzy pułapki z Kroku 3 obowiązują bez zmian** — reset sesji shape, zapis
+wersjonowany PRD, jawna ścieżka dla roadmapy i ręczne odtworzenie `milestone_*`,
+`## Milestone`, `## Milestone History` i `## Done` z archiwum (Pułapka 5). `M-02` trafia do
+§Milestone History jako zamknięty 2026-09-29.
+
+**Zakres `M-03` do przejścia w shape** (propozycja; kolejność ustala `/10x-roadmap`):
+
+| Kandydat | Skąd | Uwagi |
+| --- | --- | --- |
+| Reset hasła | Open Roadmap Questions #4 | warunek sprzedaży (`monetization.md` §6) |
+| Regulamin, polityka prywatności, FAQ | `new-ideas.md` | statyczne strony Astro; treść regulaminu z księgowym/prawnikiem |
+| Formularz kontaktowy chroniony przed spamem | `new-ideas.md` | skille `turnstile-spin` (Turnstile) i `cloudflare-email-service` (wysyłka) |
+| Limity: licznik dni-generacji, fair use, darmowy tydzień, reverse trial | `monetization.md` §4.2–4.3 | zamyka Open Roadmap Questions #5; atomowy licznik w czterech trasach LLM |
+| Płatności: Stripe Checkout, webhook, Customer Portal | `monetization.md` §4.5 | uprawnienie = „plan + dostęp do daty"; subskrypcja kartą + dostęp jednorazowy BLIK-iem |
+| Cennik, paywall, cena założycielska, stopka na darmowym wydruku | `monetization.md` §4.1–4.4 | prezent dla kont sprzed paywalla |
+| Odwieszenie bramki bezpieczeństwa treści | `next-actions.md` §Stan | warunek sprzedaży; rozważ przy okazji ogon po Kroku 2 (węższa macierz = tańszy przebieg) |
+
+**Non-Goals do zapisania w PRD v3:** Pro i jego funkcje (to `M-04`), plan „Placówka" i faktura na
+przedszkole (decyzja B2C), role i współdzielenie planów.
+
+### Krok 13 — slice'y `M-03` bez pieniędzy
+
+Każdy standardowym łańcuchem (`git checkout -b feat/<id>` → `/10x-new` → `/10x-research` →
+`/10x-plan` → `/10x-plan-review` → `/10x-implement` → `/10x-impl-review` → `/10x-archive`).
+Kolejność z roadmapy; naturalna to reset hasła → strony prawne i FAQ → kontakt → limity.
+
+Każdy z nich może wejść na produkcję sam: nic tu nie pobiera pieniędzy, a limity działają dla
+wszystkich według reguły z §4.2.
+
+### Krok 14 — slice'y `M-03` z pieniędzmi i start sprzedaży
+
+**Warunki wejścia:** Krok 9 zrobiony (e2e w CI), Krok 11 zamknięty (JDG, Stripe, księgowy),
+bramka bezpieczeństwa odwieszona i przepuszczona na żywo.
+
+Kolejność: płatności (Stripe w trybie testowym, webhook, uprawnienia) → cennik i paywall.
+**Klucze produkcyjne Stripe'a dopiero po** przejściu całej ścieżki zakupu i rezygnacji w trybie
+testowym na produkcji. Po starcie: metryki z `monetization.md` §8.
+
+### Krok 15 — kamień `M-04` „Lepsza treść" i start Pro
+
+```
+/10x-shape           # osobna sesja; research DZIEDZINOWY (Pułapka 4)
+/10x-prd             # "Save as prd-v4.md"
+/10x-roadmap context/foundation/prd-v4.md
+```
+
+Zakres do shape: **kalendarz świąt i dni tematycznych** (Basic; `new-ideas.md`, np. Dzień Kropki —
+spełnia obietnicę z `idea.md`), **rodzaje aktywności** (Basic; dawny Krok 7), **materiały: teksty
+piosenek, wierszyków i zagadek** (Pro; Open Roadmap Questions #9). Każda zmiana wytycznych wymaga
+przebiegu bramki dla każdego dozwolonego modelu. Shape rozstrzyga też próg startu Pro
+(`monetization.md` §Decyzje, ad 6). Po `M-04`, w kolejności z danych o zapisach „Pro — wkrótce":
+dokumentacja (podstawa programowa + wpisy do dziennika), kilka grup, eksport DOCX.
 
 
 ## Otwarte ogony po Kroku 1
@@ -267,7 +460,7 @@ wskazane wejście — żaden ogon nie wisi „kiedyś".
 | Co                                                                | Właściciel / bramka wejścia                                                                                        |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | ~~**Angielskie komunikaty błędów z Supabase** na ekranach auth~~ | ✅ **Wdrożone 2026-08-31 jako Krok 1a** (`supabase-error-copy`, 3 fazy). `?error=` niesie kod, tłumaczenie w `src/lib/auth-error-messages.ts`; zamknęło przy okazji lukę phishingową w tym parametrze. Plan: `context/archive/2026-08-31-supabase-error-copy/plan.md`. Pierwotny opis: `context/archive/2026-08-30-pl-landing-copy/follow-ups/supabase-error-copy.md` |
-| **Pozycja 1.11 planu nieodhaczona** — układ na szerokości mobilnej i desktopowej | Weryfikacja wzrokowa strony `/`. Naturalnie domyka się w Kroku 4 (`S-07` i tak przebudowuje siatkę), ale strona jest już na produkcji — warto rzucić okiem wcześniej |
+| ~~**Pozycja 1.11 planu nieodhaczona** — układ na szerokości mobilnej i desktopowej~~ | ✅ **Domknięta w Kroku 10** (`design-foundation`, 2026-09-29): landing przebudowany według makiet „Ogród” przy 390 / 768 / 1440 px; weryfikacja wzrokowa w pozycjach 2.7 i 2.11 planu tej zmiany |
 | **F6 (zawężone)**: bramka oparta na **ręcznej liście wzorców** musi być wyprowadzona z kodu albo mieć test na własną kompletność | Połowa grepowa **domknięta 2026-08-31** — `lessons.md` §„Bramka grepowa musi celować w konstrukcję i przejechać oba stany" (powód: `supabase-error-copy`, findingi F1 i F4 z przeglądu implementacji). Otwarta zostaje wyłącznie połowa o ręcznych listach wzorców; świeży przykład to `ENGLISH_STOP_WORDS` w `src/lib/auth-error-messages.test.ts` — sześć słów utrzymywanych ręcznie, bez asercji na własną kompletność. Bramka wejścia: **faza 2 test-planu** (Krok 2), która będzie takich list produkować więcej — wtedy `/10x-lesson` na tę połowę |
 | **F4, F5 — `PENDING`, świadomie bez decyzji**                     | F4: niespójna odmiana po `MIN_PASSWORD_LENGTH` (skutek nieosiągalny, stała = 6, Supabase wymusza 6). F5: produkcyjna gałąź `confirm-email` zweryfikowana tylko przez odczyt kodu (`isAutoConfirmed = import.meta.env.DEV`). Oba w `context/archive/2026-08-30-pl-landing-copy/reviews/impl-review.md` |
 
@@ -361,3 +554,6 @@ Nie blokują żadnego kroku. Oba wyszły z przeglądu implementacyjnego
 | Findingi i decyzje z przeglądu `supabase-error-copy` | `context/archive/2026-08-31-supabase-error-copy/reviews/impl-review.md` |
 | Czego `/10x-roadmap` **nie** zrobi sam przy regeneracji | ten plik → Krok 3 + Pułapka 5                                          |
 | Kolejność prac i komendy                              | ten plik                                                                  |
+| Kolejność po `M-02` (design, `M-03`, `M-04`)          | ten plik → §Kolejka po `M-02`                                             |
+| Research cen, konkurencja, decyzje o monetyzacji      | `monetization.md` (§Decyzje wiąże)                                        |
+| Surowa lista zgłoszeń Janusza i gdzie trafiły         | `new-ideas.md`                                                            |

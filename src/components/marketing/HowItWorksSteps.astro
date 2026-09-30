@@ -1,0 +1,61 @@
+---
+// The three "Jak to działa" steps, shared by the landing (light, `grid`) and the
+// sign-up panel (dark, `panel`) so the two cannot drift apart.
+//
+// Step 2 does not say "nothing reaches the plan without your approval", as the
+// design mock-up does: a generated day is saved as a draft straight away, so the
+// promise would be false (`pl-landing-copy` rule - the landing does not promise
+// what the app does not do).
+import { cn } from "@/lib/utils";
+
+interface Props {
+  variant?: "grid" | "panel";
+}
+
+const { variant = "grid" } = Astro.props;
+
+const steps = [
+  {
+    badge: "bg-szalwia",
+    title: "Wpisz hasło na dzień albo tydzień",
+    text: "Jedno słowo wystarczy. Przy całym tygodniu każdy dzień dostaje własny wariant tematu — bez powtórek.",
+  },
+  {
+    badge: "bg-morela-soft",
+    title: "Ty decydujesz",
+    text: "Każdą propozycję możesz zmienić, zatwierdzić albo usunąć. Ty decydujesz, co zatwierdzasz.",
+  },
+  {
+    badge: "bg-maslo-soft",
+    title: "Zobacz cały miesiąc",
+    text: "Siatka miesiąca pokazuje, które dni są już zaplanowane i czym się różnią.",
+  },
+];
+
+const isPanel = variant === "panel";
+---
+
+<ol class:list={cn("grid gap-7", !isPanel && "md:grid-cols-3 md:gap-12")}>
+  {
+    steps.map((step, index) => (
+      <li class:list={cn("flex gap-5", !isPanel && "md:flex-col md:gap-4")}>
+        <span
+          class:list={cn(
+            "font-display text-las flex size-12 shrink-0 items-center justify-center rounded-[50%_50%_50%_12px] text-2xl",
+            !isPanel && "md:size-16 md:text-[28px]",
+            step.badge,
+          )}
+          aria-hidden="true"
+        >
+          {index + 1}
+        </span>
+        <div class="flex flex-col gap-1.5 md:gap-3">
+          <h3 class:list={cn("text-xl font-extrabold md:text-2xl", isPanel ? "text-owies md:text-lg" : "text-las")}>
+            {step.title}
+          </h3>
+          <p class:list={cn("leading-relaxed", isPanel ? "text-szalwia text-[15px]" : "text-las-szary")}>{step.text}</p>
+        </div>
+      </li>
+    ))
+  }
+</ol>

@@ -4,6 +4,52 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* shadcn variables on the "Ogród" palette (context/foundation/design/src/styles/tokens.css).
+     Everything that reads them - `Button`, `rounded-*`, `border-border` - follows,
+     except inside `.theme-legacy` below, which pins the planner to the old set. */
+  --radius: 1rem;
+  --background: #f3efe4; /* Owies */
+  --foreground: #1f3b2d; /* Las */
+  --card: #fffdf7; /* Mleko */
+  --card-foreground: #1f3b2d;
+  --popover: #fffdf7;
+  --popover-foreground: #1f3b2d;
+  --primary: #1f3b2d;
+  --primary-foreground: #f3efe4;
+  --secondary: #ede8da;
+  --secondary-foreground: #1f3b2d;
+  --muted: #ede8da;
+  --muted-foreground: #3e5347;
+  --accent: #ee9b6a; /* Morela - dark text only */
+  --accent-foreground: #1f3b2d;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #b9c7b1;
+  --input: #b9c7b1;
+  --ring: #ee9b6a;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* The planner (`/plan`, `/plan/week`, `/plan/month`) keeps its dark look until
+   `design-planner` repaints it. Its ~370 literal colour classes do not move with
+   the tokens, but `Button` and `rounded-*` do - `@theme inline` below resolves
+   `var(--primary)` / `var(--radius)` at the element - so without this block the
+   planner would get forest-green buttons and 16 px corners inside a cosmic page.
+   This is the pre-"Ogród" `:root` verbatim, plus the body type the planner was
+   laid out in (Tailwind sans, 1rem / 1.5).
+   OWNER: `design-planner` deletes this block and the three wrapper classes. */
+.theme-legacy {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -23,19 +69,7 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  @apply text-foreground font-sans text-base;
 }
 
 .dark {
@@ -110,6 +144,72 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* "Ogród" palette and scales under their own names, so they never collide with
+   the shadcn keys above. Values: context/foundation/design/src/styles/tokens.css.
+   The `--cat-*` category colours are deliberately absent (M-04). */
+@theme {
+  --color-owies: #f3efe4; /* page background */
+  --color-owies-ciemny: #ede8da; /* segmented track, empty mini cells */
+  --color-puste: #e6e0d0; /* empty week in the month grid */
+  --color-mleko: #fffdf7; /* cards, inputs */
+  --color-las: #1f3b2d; /* text, primary buttons, dark panels */
+  --color-las-2: #2e5541; /* blob on a dark panel, primary hover */
+  --color-las-szary: #3e5347; /* secondary copy (5.9:1 on Owies) */
+  --color-mech: #4f6e4b; /* eyebrows, meta, labels (4.9:1 on Owies) */
+  --color-mech-ciemny: #2e4a2b; /* text on the "approved" fill */
+  --color-szalwia: #c9dac2; /* blobs, text on dark */
+  --color-szalwia-soft: #dce7d6; /* active nav, approved fill */
+  --color-morela: #ee9b6a; /* warm accent, focus ring - dark text only */
+  --color-morela-hover: #f2ac80;
+  --color-morela-soft: #f4c3a1;
+  --color-maslo-soft: #fbebc4;
+  --color-obrys: #b9c7b1; /* inputs, secondary buttons */
+  --color-linia: #d5cdb8; /* section rules, footer */
+  --color-obrys-przerywany: #6f8a69; /* "to review" dashed border */
+  --color-cien-pola: #dcd5c2;
+
+  --font-display: "Young Serif", Georgia, serif; /* weight 400 only */
+  --font-body: "Nunito Sans Variable", "Nunito Sans", system-ui, -apple-system, sans-serif;
+
+  --text-display-xl: clamp(46px, 6.2vw, 88px);
+  --text-display-xl--line-height: 1.02;
+  --text-display-xl--letter-spacing: -1.5px;
+  --text-display-lg: clamp(32px, 3.8vw, 52px);
+  --text-display-lg--line-height: 1.1;
+  --text-display-md: clamp(30px, 2.8vw, 40px);
+  --text-display-md--line-height: 1.1;
+  --text-display-sm: 26px;
+  --text-display-sm--line-height: 1.15;
+  --text-title: 22px;
+  --text-title--line-height: 1.25;
+  --text-lead: 21px;
+  --text-lead--line-height: 1.55;
+
+  --radius-input: 16px;
+  --radius-row: 24px;
+  --radius-card: 28px;
+  --radius-panel: 40px;
+  --radius-logo: 50% 50% 50% 8px;
+  --radius-blob-a: 58% 42% 55% 45% / 48% 60% 40% 52%;
+  --radius-blob-b: 45% 55% 40% 60% / 55% 45% 58% 42%;
+
+  --shadow-card: 0 16px 36px -26px rgba(31, 59, 45, 0.4);
+  --shadow-panel: 0 24px 48px -30px rgba(31, 59, 45, 0.45);
+  --shadow-input: 0 1px 0 var(--color-cien-pola), 0 20px 40px -24px rgba(31, 59, 45, 0.35);
+
+  --spacing-gutter: clamp(20px, 8vw, 120px); /* marketing pages */
+  --container-content: 1200px;
+}
+
+/* Uppercase overline above headings. */
+@utility eyebrow {
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-mech);
+}
+
 @utility bg-cosmic {
   background-image: linear-gradient(to bottom, #0a0e1a, #0f1529, #0a0e1a);
 }
@@ -119,6 +219,23 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-body text-foreground;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  /* "Ogród" focus: a 3 px Las ring with Morela filling the 2 px gap. The design
+     package asks for a plain Morela outline, but Morela is 1.9:1 on Owies and
+     2.2:1 on Mleko - under the 3:1 a focus indicator needs (WCAG 1.4.11). Las is
+     10.6:1 on the light pages, and on a dark Las band, where the ring itself
+     disappears, the Morela halo carries it (5.5:1). The pill buttons and form
+     fields repeat the same pair as utilities.
+     Scoped away from the planner rather than put on a bare `:focus-visible`,
+     which `.theme-legacy` would then have to undo. The selector is (0,1,0), not
+     zero - what lets a component's own focus utilities win is that this sits in
+     `@layer base`, below `@layer utilities`. */
+  :where(:not(.theme-legacy, .theme-legacy *)):focus-visible {
+    outline: 3px solid var(--color-las);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-morela);
   }
 }

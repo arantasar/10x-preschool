@@ -1,0 +1,27 @@
+---
+// Header of the signed-out pages. No ☰ menu: the design package hides Cennik /
+// FAQ / Kontakt behind it, and none of those pages exists yet - they arrive with
+// their M-03 slices, and so does the menu. On a phone only "Zaloguj się" stays;
+// the landing's own form and CTA band lead to sign-up.
+import Logo from "@/components/brand/Logo.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+---
+
+<header class="sm:px-gutter relative z-10 flex items-center justify-between px-5 py-[18px] sm:py-[30px]">
+  <Logo size="lg" />
+  <nav class="flex items-center gap-2 sm:gap-5" aria-label="Konto">
+    <a
+      href="/auth/signin"
+      class="text-las hover:text-mech inline-flex min-h-11 items-center rounded-full px-1 text-base font-extrabold no-underline sm:font-bold"
+    >
+      Zaloguj się
+    </a>
+    <a
+      href="/auth/signup"
+      class:list={cn(buttonVariants({ variant: "primary", size: "pill" }), "hidden sm:inline-flex")}
+    >
+      Załóż konto
+    </a>
+  </nav>
+</header>

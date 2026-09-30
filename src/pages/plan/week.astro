@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import AppHeader from "@/components/AppHeader.astro";
 import WeekPlanBoard from "@/components/plan/WeekPlanBoard";
 import { addDays, formatWeekRange, resolveWeekStart, workingDaysOf } from "@/lib/day-plan-dates";
+import { normalizePendingTopic, PENDING_TOPIC_COOKIE } from "@/lib/pending-topic";
 import { readWeekPlans } from "@/lib/services/day-plan-store";
 import type { DayPlanView, WeekPlanView } from "@/types";
 
@@ -31,13 +32,25 @@ if (supabase) {
 }
 
 const week: WeekPlanView = { weekStart, days, plans };
+
+// A hasło the teacher typed on the landing before signing up. Read and deleted
+// here in the frontmatter - response headers are still open - so it fills the
+// field exactly once: a refresh shows the week as usual. It wins over the
+// week's saved hasło because it is what the teacher asked for last. It only
+// fills the field; nothing is generated. A failed read renders no form, so the
+// cookie is kept for the reload that page offers - consuming it there would
+// lose the hasło without ever showing it.
+const pendingTopic = readFailed ? null : normalizePendingTopic(Astro.cookies.get(PENDING_TOPIC_COOKIE)?.value);
+if (!readFailed && Astro.cookies.has(PENDING_TOPIC_COOKIE)) {
+  Astro.cookies.delete(PENDING_TOPIC_COOKIE, { path: "/" });
+}
 const previousWeek = addDays(weekStart, -7);
 const nextWeek = addDays(weekStart, 7);
 const month = weekStart.slice(0, 7);
 ---
 
 <Layout title={`Plan tygodnia — ${formatWeekRange(weekStart)}`}>
-  <div class="bg-cosmic min-h-screen p-4">
+  <div class="theme-legacy bg-cosmic min-h-screen p-4">
     <main class="mx-auto w-full max-w-3xl py-10">
       <AppHeader />
       <header class="mb-8">
@@ -90,7 +103,7 @@ const month = weekStart.slice(0, 7);
               </a>
             </div>
           ) : (
-            <WeekPlanBoard client:load week={week} />
+            <WeekPlanBoard client:load week={week} initialPrompt={pendingTopic ?? undefined} />
           )
         }
       </div>

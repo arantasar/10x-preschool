@@ -1,0 +1,19 @@
+---
+/** Inline stroke icons. Decorative by default (aria-hidden). */
+export type IconName = 'check' | 'trash' | 'chevron-left' | 'chevron-right' | 'user' | 'arrow-right';
+interface Props { name: IconName; size?: number; strokeWidth?: number; }
+const { name, size = 18, strokeWidth = 2 } = Astro.props;
+const paths: Record<IconName, string> = {
+  'check': 'M5 12.5l4.5 4.5L19 7.5',
+  'trash': 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',
+  'chevron-left': 'M15 6l-6 6 6 6',
+  'chevron-right': 'M9 6l6 6-6 6',
+  'arrow-right': 'M5 12h14M13 6l6 6-6 6',
+  'user': 'M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6',
+};
+---
+<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width={strokeWidth} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {name === 'user' && <circle cx="12" cy="8" r="4" />}
+  <path d={paths[name]} />
+</svg>

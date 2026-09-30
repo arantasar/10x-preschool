@@ -1,134 +1,222 @@
 ---
-import Topbar from "@/components/Topbar.astro";
+// The signed-out landing ("Ogród", mock-ups 01 and 05). What it deliberately
+// does not show from the mock-ups, and why:
+// - no promise that nothing enters the plan unapproved: a generated day is saved
+//   as a draft at once, so the sentence would be false (`pl-landing-copy`);
+// - no generation for a guest: the topic field only carries the hasło into
+//   sign-up (`?haslo=`), and the planner is still behind the login;
+// - example cards show three activities and no category / duration / place
+//   (the contract is 3 per day; categories are M-04);
+// - the month illustration has no week-theme labels and no "Zobacz przykładowy
+//   plan" - the grid cannot show week themes yet (`design-planner`, N4).
+import Blob from "@/components/brand/Blob.astro";
+import MarketingHeader from "@/components/layout/MarketingHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import HowItWorksSteps from "@/components/marketing/HowItWorksSteps.astro";
+import SampleDayCard from "@/components/marketing/SampleDayCard.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const sampleDays = [
+  {
+    day: "Poniedziałek",
+    theme: "Tropem dinozaurów",
+    activities: ["Wielkie kroki brontozaura", "Ślady na papierowej ścieżce", "Kto tu przeszedł?"],
+  },
+  {
+    day: "Wtorek",
+    theme: "Jajo dinozaura",
+    activities: ["Jajo z masy solnej", "Wielkie wykluwanie", "Dinozaurza kołysanka"],
+  },
+  {
+    day: "Środa",
+    theme: "Mali paleontolodzy",
+    activities: ["Kości w piaskownicy", "Zagadki pacynki-paleontologa", "Taniec dinozaurów"],
+  },
+];
+
+// Illustration only: day themes in three states the month grid really has -
+// accepted, draft, and no plan.
+type Cell = { theme: string; accepted: boolean } | null;
+const illustrationWeeks: { label: string; days: Cell[] }[] = [
+  {
+    label: "5–9 października",
+    days: [
+      { theme: "Tropem dinozaurów", accepted: true },
+      { theme: "Jajo dinozaura", accepted: true },
+      { theme: "Mali paleontolodzy", accepted: false },
+      { theme: "Wykopaliska", accepted: false },
+      { theme: "Dinozaurowy taniec", accepted: false },
+    ],
+  },
+  {
+    label: "12–16 października",
+    days: [
+      { theme: "Kto mieszka w domu?", accepted: true },
+      { theme: "Budujemy z pudełek", accepted: true },
+      { theme: "Domowe dźwięki", accepted: true },
+      { theme: "Zwierzęta w domu", accepted: true },
+      { theme: "Porządki na wesoło", accepted: true },
+    ],
+  },
+  { label: "19–23 października", days: [null, null, null, null, null] },
+];
 ---
 
-<div class="bg-cosmic relative min-h-screen w-full overflow-hidden">
-  <!-- Cosmic orbs -->
-  <div
-    class="pointer-events-none absolute top-1/4 -left-24 h-[350px] w-[350px] rounded-full bg-purple-500/20 blur-[120px]"
-  >
-  </div>
-  <div
-    class="pointer-events-none absolute top-2/3 -right-16 h-[250px] w-[250px] rounded-full bg-blue-500/15 blur-[100px]"
-  >
-  </div>
-  <div
-    class="pointer-events-none absolute top-0 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-indigo-400/10 blur-[140px]"
-  >
-  </div>
+<div class="relative flex min-h-screen flex-col overflow-hidden">
+  <Blob shape="a" color="sage" class="-top-40 -right-30 h-[340px] w-[380px] sm:h-[520px] sm:w-[600px]" />
+  <Blob
+    shape="b"
+    color="apricot-soft"
+    class="top-[430px] -left-40 h-[240px] w-[260px] sm:top-[300px] sm:-left-32 sm:h-[300px] sm:w-[320px]"
+  />
+  <Blob shape="circle" color="apricot" class="top-[140px] right-[250px] hidden size-[60px] lg:block" />
 
-  <!-- Star field -->
-  <div
-    class="pointer-events-none absolute inset-0"
-    style="background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px), radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px); background-size: 200px 200px, 150px 150px, 100px 100px; background-position: 0 0, 40px 60px, 80px 30px;"
-  >
-  </div>
+  <MarketingHeader />
 
-  <div class="relative z-10 p-4 sm:p-8">
-    <Topbar />
-
-    <!-- Hero section -->
-    <div class="mx-auto flex max-w-4xl flex-col items-center justify-center px-4 py-24 text-center sm:py-32 lg:py-40">
-      <h1
-        class="mb-6 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-5xl leading-tight font-bold text-transparent sm:text-6xl lg:text-7xl"
-      >
-        10xPreschool
-      </h1>
-      <p class="mb-10 max-w-2xl text-lg text-blue-100/70 sm:text-xl">
-        Wpisz hasło — na przykład „Dinozaury” — a dostaniesz gotowe propozycje aktywności na każdy dzień. Zaplanuj cały
-        miesiąc zajęć w jednym miejscu, zamiast wymyślać 22 dni od zera.
+  <main class="relative z-10 flex flex-col">
+    <section
+      class="sm:px-gutter flex flex-col items-start gap-6 px-5 pt-8 text-left sm:items-center sm:gap-[26px] sm:pt-16 sm:text-center"
+      aria-labelledby="hero-heading"
+    >
+      <p class="eyebrow">
+        Dla nauczycieli przedszkolnych<span class="hidden sm:inline"> · dzieci 3–6 lat</span>
       </p>
-      <div class="flex flex-col gap-4 sm:flex-row">
-        <a
-          href="/auth/signin"
-          class="inline-flex items-center justify-center rounded-lg bg-purple-600 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-purple-500"
-        >
-          Zaloguj się
-        </a>
-        <a
-          href="/auth/signup"
-          class="inline-flex items-center justify-center rounded-lg border border-white/20 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-white/10"
-        >
-          Załóż konto
-        </a>
-      </div>
-    </div>
+      <h1 id="hero-heading" class="font-display text-display-xl text-las font-normal">
+        Jedno hasło.<br />Cały miesiąc <em class="text-mech">zajęć.</em>
+      </h1>
+      <p class="text-las-szary sm:text-lead max-w-[660px] text-lg leading-relaxed">
+        Wpisz temat, np. „Dinozaury”, a dostaniesz gotowe propozycje aktywności na każdy dzień. Zamiast układać 22 dni
+        od zera — przeglądasz, poprawiasz, zatwierdzasz.
+      </p>
 
-    <!-- Feature cards -->
-    <div class="mx-auto grid max-w-4xl grid-cols-1 gap-6 px-4 pb-24 sm:grid-cols-3">
-      <div class="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mb-4 text-purple-300"
+      {
+        /* GET, not POST: the hasło rides to sign-up as `?haslo=`, where the page
+          keeps it for after the first login. Nothing is generated for a guest. */
+      }
+      <form method="GET" action="/auth/signup" class="flex w-full max-w-[760px] flex-col gap-3.5 pt-2 sm:items-center">
+        <div
+          class="sm:bg-mleko sm:shadow-input sm:has-[input:focus-visible]:outline-las flex w-full flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:py-2 sm:pr-2 sm:pl-7 sm:has-[input:focus-visible]:shadow-[0_0_0_2px_var(--color-morela)] sm:has-[input:focus-visible]:outline-3 sm:has-[input:focus-visible]:outline-offset-2 sm:has-[input:focus-visible]:outline-solid"
         >
-          <path d="M8 2v4"></path>
-          <path d="M16 2v4"></path>
-          <rect width="18" height="18" x="3" y="4" rx="2"></rect>
-          <path d="M3 10h18"></path>
-          <path d="M8 14h.01"></path>
-          <path d="M12 14h.01"></path>
-          <path d="M16 14h.01"></path>
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-white">Propozycje na dzień i na tydzień</h3>
-        <p class="text-sm leading-relaxed text-blue-100/60">
-          Wpisz hasło dla wybranego dnia albo od razu dla całego tygodnia roboczego. Każdy dzień dostaje własne ujęcie
-          tematu.
+          <label for="haslo" class="text-mech text-sm font-extrabold sm:text-[15px] sm:font-bold">Temat</label>
+          <input
+            id="haslo"
+            name="haslo"
+            type="text"
+            maxlength="200"
+            autocomplete="off"
+            placeholder="np. Dinozaury"
+            class="bg-mleko text-las shadow-input placeholder:text-las-szary/70 min-w-0 flex-1 rounded-[18px] px-[18px] py-4 text-xl font-bold placeholder:font-semibold sm:rounded-none sm:bg-transparent sm:p-3 sm:text-[22px] sm:shadow-none sm:focus-visible:outline-none"
+          />
+          <button
+            type="submit"
+            class:list={cn(
+              buttonVariants({ variant: "primary", size: "pillLg" }),
+              "w-full sm:w-auto sm:px-[26px] sm:py-4",
+            )}
+          >
+            Wygeneruj propozycje
+          </button>
+        </div>
+        <p class="text-las-szary text-center text-[15px]">Najpierw załóż darmowe konto — hasło na Ciebie poczeka.</p>
+      </form>
+    </section>
+
+    <section
+      class="sm:px-gutter grid gap-5 px-5 pt-14 sm:pt-16 md:grid-cols-3 md:gap-6"
+      aria-labelledby="samples-heading"
+    >
+      <h2 id="samples-heading" class="sr-only">Przykładowe dni</h2>
+      {
+        sampleDays.map((sample) => (
+          <SampleDayCard day={sample.day} theme={sample.theme} activities={sample.activities} />
+        ))
+      }
+    </section>
+
+    <section class="sm:px-gutter flex flex-col gap-8 px-5 pt-20 md:gap-10 md:pt-[140px]" aria-labelledby="how-heading">
+      <h2 id="how-heading" class="font-display text-display-lg text-las font-normal">Jak to działa</h2>
+      <HowItWorksSteps />
+    </section>
+
+    <section
+      class="sm:px-gutter grid items-center gap-10 px-5 pt-20 md:pt-[140px] lg:grid-cols-12 lg:gap-12"
+      aria-labelledby="month-heading"
+    >
+      <div class="flex flex-col gap-5 lg:col-span-5">
+        <p class="eyebrow">Przegląd miesiąca</p>
+        <h2 id="month-heading" class="font-display text-display-lg text-las font-normal">
+          Cały miesiąc na jednej siatce
+        </h2>
+        <p class="text-las-szary text-lg leading-relaxed">
+          Dni zatwierdzone, dni robocze i te, które jeszcze czekają na plan. Od razu widać, gdzie brakuje zajęć.
         </p>
       </div>
 
-      <div class="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mb-4 text-purple-300"
-        >
-          <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-          <path d="M18.4 2.6a2 2 0 0 1 3 3L12 15l-4 1 1-4z"></path>
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-white">Ty decydujesz, co zostaje</h3>
-        <p class="text-sm leading-relaxed text-blue-100/60">
-          Każdą propozycję możesz zmienić, zatwierdzić albo usunąć. Nic nie trafia do planu bez Twojej akceptacji.
-        </p>
+      {/* Decorative: the paragraph beside it says everything this shows. */}
+      <div
+        class="bg-mleko shadow-panel flex flex-col gap-[18px] rounded-[32px] p-5 sm:p-8 lg:col-span-7"
+        aria-hidden="true"
+      >
+        <p class="font-display text-2xl">Październik</p>
+        {
+          illustrationWeeks.map((week) => (
+            <div class="flex flex-col gap-2">
+              <p class="text-mech text-[13px] font-extrabold">{week.label}</p>
+              <div class="grid grid-cols-5 gap-2">
+                {week.days.map((cell) =>
+                  cell ? (
+                    <div
+                      class:list={cn(
+                        "min-h-16 rounded-xl p-2 text-[13px] leading-snug font-bold sm:p-3",
+                        cell.accepted
+                          ? "bg-szalwia-soft text-mech-ciemny"
+                          : "border-obrys-przerywany text-las-szary border-[1.5px] border-dashed",
+                      )}
+                    >
+                      <span class="hidden sm:inline">{cell.theme}</span>
+                    </div>
+                  ) : (
+                    <div class="bg-owies-ciemny min-h-16 rounded-xl" />
+                  ),
+                )}
+              </div>
+            </div>
+          ))
+        }
+        <ul class="text-las-szary flex flex-wrap gap-x-5 gap-y-2 pt-1 text-[13px] font-bold">
+          <li class="flex items-center gap-2"><span class="bg-szalwia-soft size-3.5 rounded"></span>zatwierdzony</li>
+          <li class="flex items-center gap-2">
+            <span class="border-obrys-przerywany size-3.5 rounded border-[1.5px] border-dashed"></span>roboczy
+          </li>
+          <li class="flex items-center gap-2"><span class="bg-owies-ciemny size-3.5 rounded"></span>bez planu</li>
+        </ul>
       </div>
+    </section>
 
-      <div class="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mb-4 text-purple-300"
-        >
-          <rect width="7" height="7" x="3" y="3" rx="1"></rect>
-          <rect width="7" height="7" x="14" y="3" rx="1"></rect>
-          <rect width="7" height="7" x="14" y="14" rx="1"></rect>
-          <rect width="7" height="7" x="3" y="14" rx="1"></rect>
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-white">Cały miesiąc na jednym ekranie</h3>
-        <p class="text-sm leading-relaxed text-blue-100/60">
-          Siatka miesiąca pokazuje, które dni są już zaplanowane i czym się różnią.
-        </p>
+    <section class="sm:px-gutter px-5 pt-20 pb-20 md:pt-[140px] md:pb-[100px]" aria-labelledby="cta-heading">
+      <div
+        class="rounded-card bg-las text-owies md:rounded-panel relative flex flex-col gap-8 overflow-hidden px-7 py-12 md:flex-row md:items-center md:justify-between md:px-14 md:py-16"
+      >
+        <Blob shape="circle" color="forest" class="-right-16 -bottom-24 size-[260px]" />
+        <div class="relative z-10 flex max-w-[560px] flex-col gap-4">
+          <h2 id="cta-heading" class="font-display text-display-lg text-owies font-normal">
+            Zacznij od jednego hasła.
+          </h2>
+          <p class="text-szalwia text-lg">Załóż konto i wygeneruj pierwsze propozycje na najbliższy tydzień.</p>
+        </div>
+        <div class="relative z-10 flex flex-col items-start gap-3 md:items-center">
+          <a href="/auth/signup" class:list={cn(buttonVariants({ variant: "inverse", size: "pillLg" }))}>Załóż konto</a>
+          <a
+            href="/auth/signin"
+            class="text-owies hover:text-szalwia inline-flex min-h-11 items-center font-bold underline underline-offset-4"
+          >
+            Mam już konto — zaloguj się
+          </a>
+        </div>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
+
+  <SiteFooter />
 </div>

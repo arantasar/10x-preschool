@@ -1,0 +1,20 @@
+---
+// Decorative organic shape - background only, never behind content that has to
+// be read. The parent needs `relative` + `overflow-hidden`; position and size
+// come in through `class` (e.g. "-top-40 -right-30 h-[520px] w-[600px]").
+import { cn } from "@/lib/utils";
+
+interface Props {
+  shape?: "a" | "b" | "circle";
+  color?: "sage" | "apricot" | "apricot-soft" | "forest";
+  class?: string;
+}
+
+const { shape = "a", color = "sage", class: className } = Astro.props;
+
+const shapes = { a: "rounded-blob-a", b: "rounded-blob-b", circle: "rounded-full" };
+const colors = { sage: "bg-szalwia", apricot: "bg-morela", "apricot-soft": "bg-morela-soft", forest: "bg-las-2" };
+---
+
+<div class:list={cn("pointer-events-none absolute z-0", shapes[shape], colors[color], className)} aria-hidden="true">
+</div>

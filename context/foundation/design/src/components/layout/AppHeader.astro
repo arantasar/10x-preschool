@@ -1,0 +1,40 @@
+---
+/** Logged-in app bar: logo · main nav (active item = sage pill) · account button. */
+import Logo from '../ui/Logo.astro';
+import Icon from '../ui/Icon.astro';
+interface Props { active: 'plan' | 'generate'; planHref?: string; generateHref?: string; accountHref?: string; }
+const { active, planHref = '/plan', generateHref = '/generuj', accountHref = '/konto' } = Astro.props;
+const items = [
+  { key: 'plan', label: 'Plan miesiąca', href: planHref },
+  { key: 'generate', label: 'Nowe propozycje', href: generateHref },
+];
+---
+<header class="ah">
+  <Logo href={planHref} />
+  <nav class="ah__nav" aria-label="Główna">
+    {items.map((i) => (
+      <a href={i.href} class:list={['ah__item', active === i.key && 'is-active']} aria-current={active === i.key ? 'page' : undefined}>{i.label}</a>
+    ))}
+  </nav>
+  <a href={accountHref} class="ah__account" aria-label="Twoje konto"><Icon name="user" size={20} /></a>
+</header>
+
+<style>
+  .ah {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding: 16px var(--app-gutter);
+    background: var(--color-surface); border-bottom: 1.5px solid #E2DBC8;
+  }
+  .ah__nav { display: flex; gap: 6px; }
+  .ah__item { font-weight: 700; font-size: 16px; text-decoration: none; padding: 12px 18px; border-radius: var(--radius-pill); }
+  .ah__item.is-active { font-weight: 800; background: var(--color-sage-soft); }
+  .ah__account {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--color-apricot-soft);
+    color: var(--color-text); display: flex; align-items: center; justify-content: center;
+  }
+  @media (max-width: 720px) {
+    .ah { flex-wrap: wrap; }
+    .ah__nav { order: 3; width: 100%; }
+    .ah__item { flex: 1; text-align: center; padding: 10px 12px; font-size: 15px; }
+  }
+</style>

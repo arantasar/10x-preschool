@@ -1,0 +1,44 @@
+---
+/**
+ * Centered card on the oat background with decorative blobs — for small, focused
+ * account flows: reset hasła, nowe hasło, potwierdzenia.
+ * Put the form (or confirmation) in the default slot.
+ */
+import Logo from '../ui/Logo.astro';
+import Blob from '../ui/Blob.astro';
+interface Props { mirror?: boolean; }
+const { mirror = false } = Astro.props;
+---
+<div class="ac">
+  {mirror ? (
+    <>
+      <Blob shape="b" style="top:-140px; left:-100px; width:520px; height:460px" />
+      <Blob shape="a" color="apricot-soft" style="bottom:-120px; right:-100px; width:380px; height:340px" />
+    </>
+  ) : (
+    <>
+      <Blob shape="a" style="top:-140px; right:-100px; width:520px; height:460px" />
+      <Blob shape="b" color="apricot-soft" style="bottom:-120px; left:-100px; width:380px; height:340px" />
+    </>
+  )}
+  <header class="ac__head"><Logo size="lg" /></header>
+  <main class="ac__main">
+    <div class="ac__card"><slot /></div>
+  </main>
+</div>
+
+<style>
+  .ac { position: relative; overflow: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+  .ac__head { position: relative; z-index: 1; padding: 30px var(--page-gutter); }
+  .ac__main { position: relative; z-index: 1; flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 16px 80px; }
+  .ac__card {
+    width: 100%; max-width: 540px; background: var(--color-surface); border-radius: 36px; padding: 52px;
+    box-shadow: 0 30px 60px -34px rgba(31, 59, 45, 0.5);
+    display: flex; flex-direction: column; gap: 22px;
+  }
+  .ac__card :global(h1) { font-size: clamp(32px, 4vw, 42px); line-height: 1.1; }
+  @media (max-width: 640px) {
+    .ac__head { padding: 18px 20px; }
+    .ac__card { padding: 32px 24px; border-radius: 28px; }
+  }
+</style>

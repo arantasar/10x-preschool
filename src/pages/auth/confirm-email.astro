@@ -1,17 +1,24 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import AuthCard from "@/components/layout/AuthCard.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
+// Where sign-up lands. Locally Supabase confirms the account at once (mock-up 14,
+// "Konto założone"); in production the teacher first has to click the link in
+// the e-mail. The mock-up only draws the first state - the second reuses its
+// card with an envelope instead of the check.
 const isAutoConfirmed = import.meta.env.DEV;
 
 const content = isAutoConfirmed
   ? {
-      emoji: "✅",
+      icon: "check",
       heading: "Konto założone",
       description: "Twoje konto zostało utworzone. Możesz się teraz zalogować.",
-      linkText: "Przejdź do logowania",
+      linkText: "Zaloguj się",
     }
   : {
-      emoji: "📧",
+      icon: "mail",
       heading: "Sprawdź skrzynkę",
       description: "Wysłaliśmy link potwierdzający na Twój adres e-mail. Kliknij go, żeby aktywować konto.",
       linkText: "Wróć do logowania",
@@ -19,18 +26,48 @@ const content = isAutoConfirmed
 ---
 
 <Layout title={content.heading}>
-  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
+  <AuthCard>
     <div
-      class="w-full max-w-sm rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl"
+      class="bg-szalwia-soft text-mech-ciemny flex size-[76px] items-center justify-center rounded-[50%_50%_50%_14px]"
+      aria-hidden="true"
     >
-      <div class="mb-4 text-5xl">{content.emoji}</div>
-      <h1 class="mb-3 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-2xl font-bold text-transparent">
-        {content.heading}
-      </h1>
-      <p class="mb-6 text-blue-100/80">{content.description}</p>
-      <a href="/auth/signin" class="text-sm text-purple-300 hover:underline">
-        {content.linkText}
-      </a>
+      {
+        content.icon === "check" ? (
+          <svg
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+          </svg>
+        ) : (
+          <svg
+            width="34"
+            height="34"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="5" width="18" height="14" rx="2.5" />
+            <path d="M4 7l8 6 8-6" />
+          </svg>
+        )
+      }
     </div>
-  </div>
+    <div class="flex flex-col gap-3">
+      <h1 class="font-display text-las text-[clamp(32px,4vw,42px)] leading-[1.1] font-normal">{content.heading}</h1>
+      <p class="text-las-szary text-lg leading-normal" role="status">{content.description}</p>
+    </div>
+    <a href="/auth/signin" class:list={cn(buttonVariants({ variant: "primary", size: "pillLg" }), "w-full")}>
+      {content.linkText}
+    </a>
+  </AuthCard>
 </Layout>

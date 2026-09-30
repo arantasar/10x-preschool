@@ -1,8 +1,8 @@
 ---
 // The only place in the signed-in app that carries the session identity and the
-// way out of it. Deliberately not an extension of `Topbar.astro`: that one is
-// the starter's English bar for the signed-out marketing page, and its fate is
-// unrelated to the fate of this shell.
+// way out of it. Deliberately not an extension of `layout/MarketingHeader.astro`:
+// that one is the signed-out pages' header, and its fate is unrelated to the
+// fate of this shell.
 const { user } = Astro.locals;
 ---
 
