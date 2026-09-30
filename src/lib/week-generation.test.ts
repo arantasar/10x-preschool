@@ -115,8 +115,8 @@ describe("scopeQuestion", () => {
   it("names what OK does and what Anuluj does", () => {
     const question = scopeQuestion(2);
 
-    expect(question).toContain("OK — zastąpię także te dni, a ich akceptacja zostanie cofnięta.");
-    expect(question).toContain("Anuluj — zastąpię tylko dni niezaakceptowane.");
+    expect(question).toContain("OK — zastąpię także te dni, a ich zatwierdzenie zostanie cofnięte.");
+    expect(question).toContain("Anuluj — zastąpię tylko dni niezatwierdzone.");
   });
 
   // It states no count of what is destroyed, so it must never be the last word.
@@ -125,15 +125,15 @@ describe("scopeQuestion", () => {
   });
 
   it.each([
-    [1, "1 dzień tego tygodnia jest zaakceptowany."],
-    [2, "2 dni tego tygodnia są zaakceptowane."],
-    [4, "4 dni tego tygodnia są zaakceptowane."],
+    [1, "1 dzień tego tygodnia jest zatwierdzony."],
+    [2, "2 dni tego tygodnia są zatwierdzone."],
+    [4, "4 dni tego tygodnia są zatwierdzone."],
   ])("agrees the accepted count at %i", (count, expected) => {
     expect(scopeQuestion(count)).toMatch(new RegExp(`^${expected}`));
   });
 
   it("speaks of one day in the singular", () => {
-    expect(scopeQuestion(1)).toContain("OK — zastąpię także ten dzień, a jego akceptacja zostanie cofnięta.");
+    expect(scopeQuestion(1)).toContain("OK — zastąpię także ten dzień, a jego zatwierdzenie zostanie cofnięte.");
   });
 });
 
@@ -162,16 +162,16 @@ describe("replacementConfirmation", () => {
     const message = confirm(THREE_DRAFT_TWO_ACCEPTED);
 
     expect(message).toBe(
-      "Zastąpię 3 dni nowymi propozycjami. 2 zaakceptowane dni zostaną nietknięte. Tej operacji nie można cofnąć.",
+      "Zastąpię 3 dni nowymi propozycjami. 2 zatwierdzone dni zostaną nietknięte. Tej operacji nie można cofnąć.",
     );
   });
 
-  // FR-014's "ile z nich jest zaakceptowanych", non-zero for the first time.
+  // FR-014's "ile z nich jest zatwierdzonych", non-zero for the first time.
   it("states the total and the accepted count on a mixed week with accepted days in scope", () => {
     const message = confirm(THREE_DRAFT_TWO_ACCEPTED, true);
 
     expect(message).toBe(
-      "Zastąpię 5 dni nowymi propozycjami, w tym 2 zaakceptowane — ich akceptacja zostanie cofnięta. " +
+      "Zastąpię 5 dni nowymi propozycjami, w tym 2 zatwierdzone — ich zatwierdzenie zostanie cofnięte. " +
         "Tej operacji nie można cofnąć.",
     );
     // Nothing is spared, so nothing may claim to be.
@@ -182,19 +182,19 @@ describe("replacementConfirmation", () => {
     const message = confirm(FIVE_ACCEPTED, true);
 
     expect(message).toBe(
-      "Wszystkie dni tego tygodnia są zaakceptowane. " +
-        "Zastąpię wszystkie 5 dni nowymi propozycjami, a ich akceptacja zostanie cofnięta. " +
+      "Wszystkie dni tego tygodnia są zatwierdzone. " +
+        "Zastąpię wszystkie 5 dni nowymi propozycjami, a ich zatwierdzenie zostanie cofnięte. " +
         "Tej operacji nie można cofnąć.",
     );
   });
 
-  // "0 zaakceptowanych dni" would be a reassurance about a thing the teacher
+  // "0 zatwierdzonych dni" would be a reassurance about a thing the teacher
   // never asked about.
   it("omits the untouched sentence when nothing is accepted", () => {
     const message = confirm(FIVE_DRAFT);
 
     expect(message).toBe("Zastąpię 5 dni nowymi propozycjami. Tej operacji nie można cofnąć.");
-    expect(message).not.toContain("zaakceptowan");
+    expect(message).not.toContain("zatwierdzon");
   });
 
   it("always warns that the operation cannot be undone", () => {
@@ -224,9 +224,9 @@ describe("replacementConfirmation", () => {
   });
 
   it.each([
-    [1, "1 zaakceptowany dzień zostanie nietknięty."],
-    [2, "2 zaakceptowane dni zostaną nietknięte."],
-    [4, "4 zaakceptowane dni zostaną nietknięte."],
+    [1, "1 zatwierdzony dzień zostanie nietknięty."],
+    [2, "2 zatwierdzone dni zostaną nietknięte."],
+    [4, "4 zatwierdzone dni zostaną nietknięte."],
   ])("agrees the untouched count at %i", (count, expected) => {
     const days = week(["draft", ...Array<"accepted">(count).fill("accepted")] as ("empty" | "draft" | "accepted")[]);
 
@@ -234,9 +234,9 @@ describe("replacementConfirmation", () => {
   });
 
   it.each([
-    [1, "Zastąpię 2 dni nowymi propozycjami, w tym 1 zaakceptowany — jego akceptacja zostanie cofnięta."],
-    [2, "Zastąpię 3 dni nowymi propozycjami, w tym 2 zaakceptowane — ich akceptacja zostanie cofnięta."],
-    [4, "Zastąpię 5 dni nowymi propozycjami, w tym 4 zaakceptowane — ich akceptacja zostanie cofnięta."],
+    [1, "Zastąpię 2 dni nowymi propozycjami, w tym 1 zatwierdzony — jego zatwierdzenie zostanie cofnięte."],
+    [2, "Zastąpię 3 dni nowymi propozycjami, w tym 2 zatwierdzone — ich zatwierdzenie zostanie cofnięte."],
+    [4, "Zastąpię 5 dni nowymi propozycjami, w tym 4 zatwierdzone — ich zatwierdzenie zostanie cofnięte."],
   ])("agrees the consented count at %i", (count, expected) => {
     const days = week(["draft", ...Array<"accepted">(count).fill("accepted")] as ("empty" | "draft" | "accepted")[]);
 

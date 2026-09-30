@@ -39,7 +39,7 @@ test.describe("Ryzyko #7 — odmowa w dialogu potwierdzenia", () => {
     const stamp = uniqueStamp();
     const title = `Powitanie ${stamp}`;
 
-    // Plan zaakceptowany — czyli ten, którego przypadkowa utrata boli najbardziej.
+    // Plan zatwierdzony — czyli ten, którego przypadkowa utrata boli najbardziej.
     const teacherAId = await ensureTeacher(TEACHER_A);
     seededPlanIds.push(
       await seedDayPlan({

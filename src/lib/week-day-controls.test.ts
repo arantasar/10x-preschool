@@ -15,13 +15,13 @@ import {
 // week, would pass on one date and fail on the other.
 const DATES = ["2026-11-09", "2026-11-10"];
 
-const ACCEPTED_SENTENCE = "Ten dzień jest zaakceptowany.";
+const ACCEPTED_SENTENCE = "Ten dzień jest zatwierdzony.";
 const IRREVERSIBLE_SENTENCE = "Tej operacji nie można cofnąć.";
 
 describe("deleteConfirmation", () => {
   it("reads as agreed at planning for an accepted day", () => {
     expect(deleteConfirmation("2026-11-09", true)).toBe(
-      "Usunąć plan na poniedziałek, 9 listopada 2026? Ten dzień jest zaakceptowany. " +
+      "Usunąć plan na poniedziałek, 9 listopada 2026? Ten dzień jest zatwierdzony. " +
         "Usunięcie skasuje hasło i wszystkie propozycje tego dnia. Tej operacji nie można cofnąć.",
     );
   });
@@ -42,7 +42,7 @@ describe("deleteConfirmation", () => {
     expect(deleteConfirmation(DATES[0], true)).toContain(ACCEPTED_SENTENCE);
   });
 
-  // Anchored on the whole sentence, not on "zaakceptow": the stem is not what
+  // Anchored on the whole sentence, not on "zatwierdz": the stem is not what
   // matters, the claim is. A draft must never be described as accepted.
   it("does not say the day is accepted when it is a draft", () => {
     expect(deleteConfirmation(DATES[0], false)).not.toContain(ACCEPTED_SENTENCE);
@@ -63,15 +63,15 @@ describe("acceptanceNotice", () => {
   it("says what taking the acceptance away did, and where the way back is", () => {
     const notice = acceptanceNotice(DATES[0], false);
 
-    expect(notice).toContain("Cofnięto akceptację");
-    expect(notice).toContain("Plan wrócił do roboczego");
+    expect(notice).toContain("Cofnięto zatwierdzenie");
+    expect(notice).toContain("Plan jest znów do przejrzenia");
     expect(notice).toContain("ten sam przycisk");
   });
 
   it("says the day was accepted, and nothing about taking it back", () => {
     const notice = acceptanceNotice(DATES[0], true);
 
-    expect(notice).toBe("Zaakceptowano plan na poniedziałek, 9 listopada 2026.");
+    expect(notice).toBe("Zatwierdzono plan na poniedziałek, 9 listopada 2026.");
     expect(notice).not.toContain("Cofnięto");
   });
 });
@@ -89,14 +89,14 @@ describe("accessible names", () => {
   it.each(DATES)("the toggle on accepted %s starts with its label and names the day", (planDate) => {
     const name = acceptanceControlName(planDate, true);
 
-    expect(name.startsWith("Cofnij akceptację")).toBe(true);
+    expect(name.startsWith("Cofnij zatwierdzenie")).toBe(true);
     expect(name).toContain(formatPlanDate(planDate));
   });
 
   it.each(DATES)("the toggle on draft %s starts with its label and names the day", (planDate) => {
     const name = acceptanceControlName(planDate, false);
 
-    expect(name.startsWith("Akceptuj dzień")).toBe(true);
+    expect(name.startsWith("Zatwierdź dzień")).toBe(true);
     expect(name).toContain(formatPlanDate(planDate));
   });
 

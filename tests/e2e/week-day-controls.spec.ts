@@ -5,7 +5,7 @@ import { waitForIslands } from "./support/hydration";
 
 /**
  * Ryzyka #7 i #9 z `context/foundation/test-plan.md`, na powierzchni tygodnia:
- * cofnięcie akceptacji i usunięcie planu dnia z `/plan/week` (S-11).
+ * cofnięcie zatwierdzenia i usunięcie planu dnia z `/plan/week` (S-11).
  *
  * Wzorzec: `seed.spec.ts`. Reguły: `E2E-RULES.md`. Siostrzane testy tego samego
  * kasowania w widoku dnia: `day-plan-delete-scope.spec.ts` (zakres) i
@@ -68,7 +68,7 @@ test.describe("Ryzyka #7 i #9 — operacje dnia z poziomu tygodnia", () => {
     const firstStamp = `${stamp}-a`;
     const secondStamp = `${stamp}-b`;
 
-    // Oba zaakceptowane: kasowany dzień to ten, którego strata boli najbardziej,
+    // Oba zatwierdzone: kasowany dzień to ten, którego strata boli najbardziej,
     // a dialog musi o tym powiedzieć.
     const teacherAId = await ensureTeacher(TEACHER_A);
     seededPlanIds.push(
@@ -107,9 +107,9 @@ test.describe("Ryzyka #7 i #9 — operacje dnia z poziomu tygodnia", () => {
     // przed przeładowaniem, nie ozdoba.
     await expect(page.getByRole("status").filter({ hasText: dayLabel(secondDate) })).toContainText("Usunięto");
 
-    // Dialog nazwał dzień, który zniknął, i powiedział, że był zaakceptowany.
+    // Dialog nazwał dzień, który zniknął, i powiedział, że był zatwierdzony.
     expect(dialogMessage).toContain(dayLabel(secondDate));
-    expect(dialogMessage).toContain("Ten dzień jest zaakceptowany.");
+    expect(dialogMessage).toContain("Ten dzień jest zatwierdzony.");
 
     // Stan w bazie, nie w wyspie.
     await page.reload();
@@ -163,7 +163,9 @@ test.describe("Ryzyka #7 i #9 — operacje dnia z poziomu tygodnia", () => {
     expect(deleteRequests).toEqual([]);
   });
 
-  test("ryzyko #9: cofnięcie akceptacji z tygodnia zdejmuje akceptację wyłącznie wskazanego dnia", async ({ page }) => {
+  test("ryzyko #9: cofnięcie zatwierdzenia z tygodnia zdejmuje zatwierdzenie wyłącznie wskazanego dnia", async ({
+    page,
+  }) => {
     const weekStart = uniqueWeekStart();
     const firstDate = weekStart;
     const secondDate = plusDays(weekStart, 1);
@@ -201,23 +203,23 @@ test.describe("Ryzyka #7 i #9 — operacje dnia z poziomu tygodnia", () => {
       void dialog.dismiss();
     });
 
-    await page.getByRole("button", { name: `Cofnij akceptację: ${dayLabel(secondDate)}`, exact: true }).click();
+    await page.getByRole("button", { name: `Cofnij zatwierdzenie: ${dayLabel(secondDate)}`, exact: true }).click();
 
     // Dzień nazwany po fakcie, w komunikacie jego karty.
     await expect(page.getByRole("status").filter({ hasText: dayLabel(secondDate) })).toContainText(
-      "Cofnięto akceptację",
+      "Cofnięto zatwierdzenie",
     );
     expect(dialogShown).toBe(false);
 
-    // Stan w bazie: wskazany dzień roboczy, sąsiad nadal zaakceptowany.
+    // Stan w bazie: wskazany dzień do przejrzenia, sąsiad nadal zatwierdzony.
     await page.reload();
-    await expect(dayCard(page, secondDate).getByText("Plan roboczy")).toBeVisible();
+    await expect(dayCard(page, secondDate).getByText("Do przejrzenia", { exact: true })).toBeVisible();
     await expect(
-      page.getByRole("button", { name: `Akceptuj dzień: ${dayLabel(secondDate)}`, exact: true }),
+      page.getByRole("button", { name: `Zatwierdź dzień: ${dayLabel(secondDate)}`, exact: true }),
     ).toBeVisible();
-    await expect(dayCard(page, firstDate).getByText(/^Zaakceptowany /)).toBeVisible();
+    await expect(dayCard(page, firstDate).getByText(/^Zatwierdzony /)).toBeVisible();
     await expect(
-      page.getByRole("button", { name: `Cofnij akceptację: ${dayLabel(firstDate)}`, exact: true }),
+      page.getByRole("button", { name: `Cofnij zatwierdzenie: ${dayLabel(firstDate)}`, exact: true }),
     ).toBeVisible();
   });
 });

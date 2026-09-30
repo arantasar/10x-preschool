@@ -53,7 +53,7 @@ test.describe("Ryzyko #7 — zakres operacji kasującej plan dnia", () => {
     const teacherAId = await ensureTeacher(TEACHER_A);
     const teacherBId = await ensureTeacher(TEACHER_B);
 
-    // --- Setup: dzień do skasowania (zaakceptowany — czyli ten, którego strata
+    // --- Setup: dzień do skasowania (zatwierdzony — czyli ten, którego strata
     // boli najbardziej), dzień sąsiedni tego samego konta, i ten sam dzień
     // należący do konta B ------------------------------------------------------
     seededPlanIds.push(

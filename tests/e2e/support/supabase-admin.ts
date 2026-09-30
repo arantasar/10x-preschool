@@ -92,7 +92,7 @@ export interface SeedDayPlanOptions {
   readonly planDate: string;
   readonly prompt: string;
   readonly activities: readonly SeedActivity[];
-  /** `true` zapisuje `accepted_at`, czyli plan zaakceptowany zamiast roboczego. */
+  /** `true` zapisuje `accepted_at`, czyli plan zatwierdzony zamiast planu do przejrzenia. */
   readonly accepted?: boolean;
   /** Temat dnia — wycinek zarysu tygodnia. Pominiety zostawia `null`, jak dzien planowany osobno. */
   readonly theme?: string;
@@ -113,7 +113,7 @@ export async function seedDayPlan(options: SeedDayPlanOptions): Promise<string> 
   // Oba znaczniki z jednego odczytu zegara. `day_plans_accepted_after_created`
   // wymaga `accepted_at >= created_at`, a `created_at` domyslnie bierze `now()`
   // *bazy* — przy zasiewie z klienta te dwa zegary potrafia sie rozjechac o
-  // ulamek sekundy w zla strone i wstawienie zaakceptowanego planu odpada.
+  // ulamek sekundy w zla strone i wstawienie zatwierdzonego planu odpada.
   const now = new Date().toISOString();
 
   const { data: plan, error: planError } = await admin()

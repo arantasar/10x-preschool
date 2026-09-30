@@ -60,7 +60,7 @@ export default function DayPreview({ state, placement }: DayPreviewProps) {
         {state.status === "ready" && (
           <>
             <p className="text-mech mt-0.5 text-[13px] font-bold">
-              {state.view.plan.accepted_at === null ? "roboczy" : "zaakceptowany"}
+              {state.view.plan.accepted_at === null ? "do przejrzenia" : "zatwierdzony"}
             </p>
             <p className="text-las-szary mt-2 text-sm">{clipForLabel(state.view.plan.prompt)}</p>
             {state.view.plan.theme && <p className="text-sm font-bold">{state.view.plan.theme}</p>}

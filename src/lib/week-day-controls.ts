@@ -17,8 +17,8 @@ import { formatPlanDate } from "@/lib/day-plan-dates";
  */
 
 /** The visible labels. Each accessible name below starts with one of these. */
-export const ACCEPT_DAY_LABEL = "Akceptuj dzień";
-export const UNACCEPT_DAY_LABEL = "Cofnij akceptację";
+export const ACCEPT_DAY_LABEL = "Zatwierdź dzień";
+export const UNACCEPT_DAY_LABEL = "Cofnij zatwierdzenie";
 export const DELETE_DAY_LABEL = "Usuń plan dnia";
 
 /**
@@ -36,7 +36,7 @@ export const DELETE_DAY_LABEL = "Usuń plan dnia";
 export function deleteConfirmation(planDate: string, accepted: boolean): string {
   const sentences = [`Usunąć plan na ${formatPlanDate(planDate)}?`];
   if (accepted) {
-    sentences.push("Ten dzień jest zaakceptowany.");
+    sentences.push("Ten dzień jest zatwierdzony.");
   }
   sentences.push("Usunięcie skasuje hasło i wszystkie propozycje tego dnia.", "Tej operacji nie można cofnąć.");
   return sentences.join(" ");
@@ -53,9 +53,9 @@ export function deleteConfirmation(planDate: string, accepted: boolean): string 
 export function acceptanceNotice(planDate: string, accepted: boolean): string {
   const day = formatPlanDate(planDate);
   if (accepted) {
-    return `Zaakceptowano plan na ${day}.`;
+    return `Zatwierdzono plan na ${day}.`;
   }
-  return `Cofnięto akceptację planu na ${day}. Plan wrócił do roboczego — akceptację przywraca ten sam przycisk.`;
+  return `Cofnięto zatwierdzenie planu na ${day}. Plan jest znów do przejrzenia — zatwierdzenie przywraca ten sam przycisk.`;
 }
 
 /** What the card says once its day has been deleted. */
@@ -88,5 +88,5 @@ export function deleteControlName(planDate: string): string {
  * refusal, so what is on screen is already the current state.
  */
 export const CONFLICT_MESSAGE =
-  "Ten dzień zmienił się w innym miejscu, więc akceptacja nie została zmieniona. " +
+  "Ten dzień zmienił się w innym miejscu, więc zatwierdzenie nie zostało zmienione. " +
   "Karta pokazuje teraz jego aktualny stan.";

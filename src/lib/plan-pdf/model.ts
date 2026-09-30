@@ -34,7 +34,7 @@ export type PdfLayoutKind = "day-per-page" | "week-per-page" | "month-grid";
 export type PrintDayStatus = "accepted" | "draft" | "empty";
 
 /** The label beside a day that has a plan but no acceptance. Text, not colour - it has to survive a b/w printer. */
-export const DRAFT_LABEL = "SZKIC ROBOCZY — niezaakceptowany";
+export const DRAFT_LABEL = "SZKIC — niezatwierdzony";
 
 /** What an empty day says instead of activities. */
 export const EMPTY_DAY_NOTE = "Brak planu na ten dzień";
@@ -73,10 +73,10 @@ const MONTH_FILE_SUFFIXES: Readonly<Record<MonthPdfLayoutKind, string>> = {
 };
 
 /** A grid cell's draft label - {@link DRAFT_LABEL} does not fit a fifth of a page. The legend explains it. */
-export const DRAFT_SHORT_LABEL = "SZKIC ROBOCZY";
+export const DRAFT_SHORT_LABEL = "SZKIC";
 
 /** The one line under the month grid that says what a dashed frame means. */
-export const GRID_LEGEND = "Przerywana ramka i „SZKIC ROBOCZY” — plan niezaakceptowany";
+export const GRID_LEGEND = "Przerywana ramka i „SZKIC” — plan niezatwierdzony";
 
 /** Ends the last visible line of a grid cell whose text did not fit. */
 export const TRUNCATION_MARK = "…";
@@ -94,7 +94,7 @@ export interface PrintDay {
   /** `formatPlanDate(date)`. */
   readonly heading: string;
   readonly status: PrintDayStatus;
-  /** {@link DRAFT_LABEL}, `Zaakceptowano …`, or `null` for an empty day. */
+  /** {@link DRAFT_LABEL}, `Zatwierdzono …`, or `null` for an empty day. */
   readonly statusLabel: string | null;
   /** The hasło. */
   readonly prompt: string | null;
@@ -119,9 +119,9 @@ export interface PrintDocument {
   readonly rows: readonly PrintWeekRow[];
 }
 
-/** `Zaakceptowano 23 września, 11:31`. */
+/** `Zatwierdzono 23 września, 11:31`. */
 export function acceptedLabel(acceptedAt: string): string {
-  return `Zaakceptowano ${formatAcceptedAt(acceptedAt)}`;
+  return `Zatwierdzono ${formatAcceptedAt(acceptedAt)}`;
 }
 
 function printDay(date: string, view: DayPlanView | undefined): PrintDay {

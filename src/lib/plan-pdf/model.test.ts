@@ -67,7 +67,7 @@ describe("buildPrintWeek", () => {
     const day = printDays(doc)[0];
 
     expect(day.status).toBe("accepted");
-    expect(day.statusLabel).toBe(`Zaakceptowano ${formatAcceptedAt(ACCEPTED_AT)}`);
+    expect(day.statusLabel).toBe(`Zatwierdzono ${formatAcceptedAt(ACCEPTED_AT)}`);
     expect(day.statusLabel).not.toContain("SZKIC");
   });
 

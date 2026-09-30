@@ -55,7 +55,7 @@ export interface DayState {
    *
    * Deliberately separate from `plan`, and deliberately not a `DayPlanView`:
    * there is no row, no id and no `current_generation` behind these, so putting
-   * them in `plan` would let every counter and every "Akceptuj" path treat an
+   * them in `plan` would let every counter and every "Zatwierdź" path treat an
    * unwritten batch as a saved day.
    */
   readonly batch: readonly ActivityDraft[] | null;
@@ -281,7 +281,7 @@ const BADGE_OUTLINE = "border-obrys text-las-szary border-[1.5px]";
 
 function StatusBadge({ status, acceptedAt }: { status: DayStatus; acceptedAt: string | null }) {
   // An unwritten batch outranks everything else this badge could say. The day
-  // may also be a draft with an older saved plan behind it, and "Plan roboczy"
+  // may also be a draft with an older saved plan behind it, and "Do przejrzenia"
   // there would describe the row while the teacher is looking at the proposals
   // that have not replaced it yet.
   if (status === "held" || status === "saving") {
@@ -296,7 +296,7 @@ function StatusBadge({ status, acceptedAt }: { status: DayStatus; acceptedAt: st
       <>
         <span className={cn(BADGE, "bg-szalwia-soft text-mech-ciemny")}>
           <Check className="size-4" strokeWidth={3} />
-          Zaakceptowany {formatAcceptedAt(acceptedAt)}
+          Zatwierdzony {formatAcceptedAt(acceptedAt)}
         </span>
         {/* Two badges rather than one sentence, because they answer two
             different questions and the plan requires they not say the same
@@ -310,12 +310,12 @@ function StatusBadge({ status, acceptedAt }: { status: DayStatus; acceptedAt: st
     // Defensive: `skipped` is only ever set on an accepted day, so this renders
     // when the island's `accepted_at` is stale. Naming the reason is still
     // right — it is why the day was passed over.
-    return <span className={cn(BADGE, BADGE_UNSAVED)}>Pominięty — dzień zaakceptowany</span>;
+    return <span className={cn(BADGE, BADGE_UNSAVED)}>Pominięty — dzień zatwierdzony</span>;
   }
   if (status === "done") {
     return (
       <span className={cn(BADGE, "border-obrys-przerywany text-las-szary border-[1.5px] border-dashed")}>
-        Plan roboczy
+        Do przejrzenia
       </span>
     );
   }

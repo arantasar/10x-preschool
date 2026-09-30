@@ -92,32 +92,32 @@ function dayCount(count: number): string {
 }
 
 /**
- * The untouched clause, fully agreed: „1 zaakceptowany dzień zostanie
- * nietknięty." / „2 zaakceptowane dni zostaną nietknięte." /
- * „5 zaakceptowanych dni zostanie nietkniętych."
+ * The untouched clause, fully agreed: „1 zatwierdzony dzień zostanie
+ * nietknięty." / „2 zatwierdzone dni zostaną nietknięte." /
+ * „5 zatwierdzonych dni zostanie nietkniętych."
  */
 function untouchedSentence(count: number): string {
   if (count === 1) {
-    return "1 zaakceptowany dzień zostanie nietknięty.";
+    return "1 zatwierdzony dzień zostanie nietknięty.";
   }
   if (count < 5) {
-    return `${String(count)} zaakceptowane dni zostaną nietknięte.`;
+    return `${String(count)} zatwierdzone dni zostaną nietknięte.`;
   }
-  return `${String(count)} zaakceptowanych dni zostanie nietkniętych.`;
+  return `${String(count)} zatwierdzonych dni zostanie nietkniętych.`;
 }
 
 /**
- * The consented clause: „w tym 1 zaakceptowany — jego akceptacja zostanie
- * cofnięta." / „w tym 2 zaakceptowane — ich …" / „w tym 5 zaakceptowanych — ich …"
+ * The consented clause: „w tym 1 zatwierdzony — jego zatwierdzenie zostanie
+ * cofnięte." / „w tym 2 zatwierdzone — ich …" / „w tym 5 zatwierdzonych — ich …"
  */
 function consentedClause(count: number): string {
   if (count === 1) {
-    return "w tym 1 zaakceptowany — jego akceptacja zostanie cofnięta.";
+    return "w tym 1 zatwierdzony — jego zatwierdzenie zostanie cofnięte.";
   }
   if (count < 5) {
-    return `w tym ${String(count)} zaakceptowane — ich akceptacja zostanie cofnięta.`;
+    return `w tym ${String(count)} zatwierdzone — ich zatwierdzenie zostanie cofnięte.`;
   }
-  return `w tym ${String(count)} zaakceptowanych — ich akceptacja zostanie cofnięta.`;
+  return `w tym ${String(count)} zatwierdzonych — ich zatwierdzenie zostanie cofnięte.`;
 }
 
 /**
@@ -136,18 +136,18 @@ function consentedClause(count: number): string {
 export function scopeQuestion(acceptedCount: number): string {
   const fact =
     acceptedCount === 1
-      ? "1 dzień tego tygodnia jest zaakceptowany."
+      ? "1 dzień tego tygodnia jest zatwierdzony."
       : acceptedCount < 5
-        ? `${String(acceptedCount)} dni tego tygodnia są zaakceptowane.`
-        : `${String(acceptedCount)} dni tego tygodnia jest zaakceptowanych.`;
+        ? `${String(acceptedCount)} dni tego tygodnia są zatwierdzone.`
+        : `${String(acceptedCount)} dni tego tygodnia jest zatwierdzonych.`;
   const include =
     acceptedCount === 1
-      ? "OK — zastąpię także ten dzień, a jego akceptacja zostanie cofnięta."
-      : "OK — zastąpię także te dni, a ich akceptacja zostanie cofnięta.";
+      ? "OK — zastąpię także ten dzień, a jego zatwierdzenie zostanie cofnięte."
+      : "OK — zastąpię także te dni, a ich zatwierdzenie zostanie cofnięte.";
   return [
     fact,
     include,
-    "Anuluj — zastąpię tylko dni niezaakceptowane.",
+    "Anuluj — zastąpię tylko dni niezatwierdzone.",
     "W obu przypadkach zapytam jeszcze o potwierdzenie.",
   ].join(" ");
 }
@@ -162,14 +162,14 @@ export function scopeQuestion(acceptedCount: number): string {
  *
  * Both numbers, always, when there is something to replace. FR-014's literal
  * wording asks for "ile dni zostanie zastąpionych i ile z nich jest
- * zaakceptowanych". When accepted days are in scope (`S-10`) that second
+ * zatwierdzonych". When accepted days are in scope (`S-10`) that second
  * number is the one stated, together with what it costs — the acceptance is
  * withdrawn. When they are out of scope it is zero by construction, so the
  * second number is the days being *spared* instead, as `S-09` recorded. Both
  * are the honest reading of guardrail #2's "uczciwe co do liczby i stanu dni".
  *
  * A fully accepted week gets its own opening sentence: "w tym 5
- * zaakceptowanych" out of 5 buries the one fact that matters, that nothing in
+ * zatwierdzonych" out of 5 buries the one fact that matters, that nothing in
  * the week survives as the teacher signed it off.
  *
  * The undo sentence is not decoration. This package adds confirmations, not
@@ -183,15 +183,15 @@ export function replacementConfirmation(partition: WeekPartition, weekIsEmpty: b
   const consented = partition.consented.length;
   if (consented > 1 && consented === partition.targets.length) {
     return [
-      "Wszystkie dni tego tygodnia są zaakceptowane.",
-      `Zastąpię wszystkie ${String(consented)} dni nowymi propozycjami, a ich akceptacja zostanie cofnięta.`,
+      "Wszystkie dni tego tygodnia są zatwierdzone.",
+      `Zastąpię wszystkie ${String(consented)} dni nowymi propozycjami, a ich zatwierdzenie zostanie cofnięte.`,
       "Tej operacji nie można cofnąć.",
     ].join(" ");
   }
 
   const replaced = `Zastąpię ${dayCount(partition.targets.length)} nowymi propozycjami`;
   const sentences = [consented > 0 ? `${replaced}, ${consentedClause(consented)}` : `${replaced}.`];
-  // Omitted rather than printed as "0 zaakceptowanych dni", which reads as a
+  // Omitted rather than printed as "0 zatwierdzonych dni", which reads as a
   // reassurance about something the teacher never asked about.
   if (partition.untouched.length > 0) {
     sentences.push(untouchedSentence(partition.untouched.length));

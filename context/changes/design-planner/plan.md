@@ -842,11 +842,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [x] 4.1 Lint, build, testy
-- [x] 4.2 Żadna strona planera nie jest przypięta
-- [x] 4.3 Brak kosmicznych klas w całym planerze
-- [x] 4.4 Tytuł propozycji nadal jest nagłówkiem
-- [x] 4.5 Cały e2e zielony
+- [x] 4.1 Lint, build, testy — 652f4e7
+- [x] 4.2 Żadna strona planera nie jest przypięta — 652f4e7
+- [x] 4.3 Brak kosmicznych klas w całym planerze — 652f4e7
+- [x] 4.4 Tytuł propozycji nadal jest nagłówkiem — 652f4e7
+- [x] 4.5 Cały e2e zielony — 652f4e7
 
 #### Manual
 
@@ -860,12 +860,12 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [ ] 5.1 Lint, build
-- [ ] 5.2 Testy jednostkowe na nowym brzmieniu przechodzą
-- [ ] 5.3 Stare słownictwo akceptacji zniknęło z kodu i testów
-- [ ] 5.4 „Roboczy” jako stan planu zniknął, „dzień roboczy” został
-- [ ] 5.5 Stałe niosą nowe brzmienie
-- [ ] 5.6 Cały e2e zielony
+- [x] 5.1 Lint, build
+- [x] 5.2 Testy jednostkowe na nowym brzmieniu przechodzą
+- [x] 5.3 Stare słownictwo akceptacji zniknęło z kodu i testów
+- [x] 5.4 „Roboczy” jako stan planu zniknął, „dzień roboczy” został
+- [x] 5.5 Stałe niosą nowe brzmienie
+- [x] 5.6 Cały e2e zielony
 
 #### Manual
 

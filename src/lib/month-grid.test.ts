@@ -27,12 +27,12 @@ describe("tileLabel", () => {
   it("puts the content before the state, with the theme when there is one", () => {
     expect(
       tileLabel("2026-11-09", { plan_date: "2026-11-09", prompt: "Dinozaury", accepted: true, theme: "Tropy" }),
-    ).toBe("Plan na 2026-11-09 — Dinozaury — Tropy — zaakceptowany");
+    ).toBe("Plan na 2026-11-09 — Dinozaury — Tropy — zatwierdzony");
   });
 
   it("keeps a single member for a day without a theme", () => {
     expect(tileLabel("2026-11-09", { plan_date: "2026-11-09", prompt: "Jesień", accepted: false, theme: null })).toBe(
-      "Plan na 2026-11-09 — Jesień — roboczy",
+      "Plan na 2026-11-09 — Jesień — do przejrzenia",
     );
   });
 
@@ -43,7 +43,7 @@ describe("tileLabel", () => {
       accepted: false,
       theme: null,
     });
-    expect(label).toBe(`Plan na 2026-11-09 — ${"a".repeat(LABEL_PART_MAX - 1)}… — roboczy`);
+    expect(label).toBe(`Plan na 2026-11-09 — ${"a".repeat(LABEL_PART_MAX - 1)}… — do przejrzenia`);
   });
 });
 

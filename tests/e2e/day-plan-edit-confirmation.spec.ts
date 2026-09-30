@@ -8,7 +8,7 @@ import { waitForIslands } from "./support/hydration";
  *
  * Wzorzec: `seed.spec.ts`. Reguły: `E2E-RULES.md`.
  * Siostrzany test: `day-plan-delete-confirmation.spec.ts` — ta sama konstrukcja
- * dla kasowania. Ten sprawdza **edycję propozycji w dniu zaakceptowanym**.
+ * dla kasowania. Ten sprawdza **edycję propozycji w dniu zatwierdzonym**.
  *
  * **Dlaczego przeglądarka.** `window.confirm` nie ma innego domu, a ścieżki
  * odmowy nie widzi żaden test jednostkowy: test trasy z Fazy 1 zaczyna się w
@@ -23,18 +23,18 @@ import { waitForIslands } from "./support/hydration";
  *   1. dialog faktycznie się pokazał (kliknięcie dotarło do strażnika),
  *   2. żadne żądanie PATCH nie poleciało (strażnik naprawdę zatrzymał zapis),
  *   3. po przeładowaniu widoczny jest **stary** tytuł propozycji,
- *   4. po przeładowaniu plakietka „Plan zaakceptowany" nadal stoi.
+ *   4. po przeładowaniu plakietka „Plan zatwierdzony" nadal stoi.
  *
  * Asercja 4 jest tą, która odróżnia ten test od siostrzanego: bez niej zielona
  * byłaby też implementacja, która mimo „Anuluj" wysyła PATCH, ale przywraca
- * tekst — a to jest dokładnie ciche cofnięcie akceptacji, któremu FR-017 ma
+ * tekst — a to jest dokładnie ciche cofnięcie zatwierdzenia, któremu FR-017 ma
  * zapobiec.
  *
  * **Świadomie poza zakresem**: ścieżka zgody. Pokrywa ją przypadek (a) z testu
  * trasy oraz weryfikacja ręczna Fazy 2; drugi przebieg przeglądarki za sygnał,
  * który stoi taniej, to `test-plan.md` §1 zasada 1.
  */
-test.describe("Ryzyko #8 — odmowa w dialogu przy edycji dnia zaakceptowanego", () => {
+test.describe("Ryzyko #8 — odmowa w dialogu przy edycji dnia zatwierdzonego", () => {
   const seededPlanIds: string[] = [];
 
   test.afterEach(async () => {
@@ -42,13 +42,13 @@ test.describe("Ryzyko #8 — odmowa w dialogu przy edycji dnia zaakceptowanego",
     seededPlanIds.length = 0;
   });
 
-  test("ryzyko #8: anulowanie dialogu nie zapisuje edycji i nie zdejmuje akceptacji", async ({ page }) => {
+  test("ryzyko #8: anulowanie dialogu nie zapisuje edycji i nie zdejmuje zatwierdzenia", async ({ page }) => {
     const planDate = uniquePlanDate();
     const stamp = uniqueStamp();
     const originalTitle = `Powitanie ${stamp}`;
     const editedTitle = `Zmienione powitanie ${stamp}`;
 
-    // Dzień zaakceptowany — jedyny, w którym ten dialog ma się w ogóle pokazać.
+    // Dzień zatwierdzony — jedyny, w którym ten dialog ma się w ogóle pokazać.
     const teacherAId = await ensureTeacher(TEACHER_A);
     seededPlanIds.push(
       await seedDayPlan({
@@ -110,6 +110,6 @@ test.describe("Ryzyko #8 — odmowa w dialogu przy edycji dnia zaakceptowanego",
 
     await expect(page.getByRole("heading", { name: originalTitle })).toBeVisible();
     await expect(page.getByRole("heading", { name: editedTitle })).toHaveCount(0);
-    await expect(page.getByText(/Plan zaakceptowany/)).toBeVisible();
+    await expect(page.getByText(/Plan zatwierdzony/)).toBeVisible();
   });
 });

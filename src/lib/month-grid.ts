@@ -57,7 +57,7 @@ export function joinText(prompt: string, theme: string | null): string {
  * The tile's accessible name: which day, what is on it, and what state it is in.
  *
  * The content sits before the state on purpose - a teacher tabbing across a
- * planned week wants to hear which day is which, and "zaakceptowany" is the
+ * planned week wants to hear which day is which, and "zatwierdzony" is the
  * qualifier on that, not the headline. Each member is clipped: the name is read
  * aloud in full, so an unbounded hasło would bury the state at the end of a
  * paragraph. The day preview keeps the untruncated theme.
@@ -67,7 +67,7 @@ export function tileLabel(isoDate: string, summary: DayPlanSummary | undefined):
     return `Plan na ${isoDate} — brak planu`;
   }
   const content = joinText(clipForLabel(summary.prompt), summary.theme === null ? null : clipForLabel(summary.theme));
-  return `Plan na ${isoDate} — ${content} — ${summary.accepted ? "zaakceptowany" : "roboczy"}`;
+  return `Plan na ${isoDate} — ${content} — ${summary.accepted ? "zatwierdzony" : "do przejrzenia"}`;
 }
 
 /** One cell of a row: a working day, in the month or not, planned or not. */

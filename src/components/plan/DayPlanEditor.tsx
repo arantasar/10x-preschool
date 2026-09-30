@@ -183,9 +183,9 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
     setBusy(busyKind);
     setFailure(null);
     // Cleared at the *start* of every mutation, not only when one succeeds.
-    // "Ten plan wrócił do roboczego, bo zmieniłeś treść" must not outlive the
+    // "Ten plan jest znów do przejrzenia, bo zmieniłeś treść" must not outlive the
     // operation it describes: an acceptance made right afterwards would leave
-    // that sentence standing directly under a green "Plan zaakceptowany" badge,
+    // that sentence standing directly under a green "Plan zatwierdzony" badge,
     // contradicting it.
     setClearedByEdit(false);
 
@@ -285,7 +285,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
     // ordinary non-retryable failure telling the teacher to refresh.
     if (accepted) {
       const consequence =
-        "Wygenerowanie nowych propozycji usunie obecne i cofnie akceptację tego planu. " +
+        "Wygenerowanie nowych propozycji usunie obecne i cofnie zatwierdzenie tego planu. " +
         "Tej operacji nie można cofnąć.";
       if (!window.confirm(consequence)) {
         return;
@@ -337,8 +337,8 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
     // silently - the one outcome this change exists to prevent.
     if (planRef.current?.plan.accepted_at) {
       const consequence =
-        "Ten dzień jest zaakceptowany. Zapisanie zmiany cofnie akceptację i plan wróci do roboczego. " +
-        "Akceptację można przywrócić jednym kliknięciem.";
+        "Ten dzień jest zatwierdzony. Zapisanie zmiany cofnie zatwierdzenie i plan będzie znów do przejrzenia. " +
+        "Zatwierdzenie można przywrócić jednym kliknięciem.";
       if (!window.confirm(consequence)) {
         return;
       }
@@ -569,7 +569,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
 
         <p className="text-las-szary text-sm">
           Wpisz hasło — na przykład „Andrzejki”, „Jesień” albo „Dzień Pluszowego Misia” — i wygeneruj trzy propozycje
-          zajęć dla dzieci w wieku 3–6 lat. Możesz je poprawić i zaakceptować; wszystko zostaje zapisane.
+          zajęć dla dzieci w wieku 3–6 lat. Możesz je poprawić i zatwierdzić; wszystko zostaje zapisane.
         </p>
       </div>
 
@@ -710,7 +710,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
                 className="cursor-pointer"
               >
                 {accepted ? <Undo2 className="size-4" /> : <Check className="size-4" />}
-                {accepted ? "Cofnij akceptację" : "Akceptuj plan"}
+                {accepted ? "Cofnij zatwierdzenie" : "Zatwierdź plan"}
               </Button>
             )}
             <Button
@@ -735,7 +735,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
  * Draft or accepted, said in words and in colour rather than only in colour.
  *
  * Three states, not two. The third is the second half of FR-017: after a save
- * that cost an acceptance, "Plan roboczy" is true and useless - it describes the
+ * that cost an acceptance, "Do przejrzenia" is true and useless - it describes the
  * day without mentioning that this screen is what changed it, so the green badge
  * simply disappears and the teacher is left to work out why. `clearedByEdit`
  * replaces it with the reason and the way back.
@@ -761,7 +761,7 @@ function AcceptanceBanner({
           <CircleAlert className="mt-0.5 size-4 shrink-0" />
           {/* Bezosobowo, jak reszta kopii w tej wyspie — komunikat nie zgaduje
               rodzaju czytającej osoby. */}
-          Akceptacja została cofnięta, bo zmieniła się treść propozycji. Plan wrócił do roboczego.
+          Zatwierdzenie zostało cofnięte, bo zmieniła się treść propozycji. Plan jest znów do przejrzenia.
         </p>
         <Button
           type="button"
@@ -772,7 +772,7 @@ function AcceptanceBanner({
           className="cursor-pointer"
         >
           <Check className="size-4" />
-          Akceptuj ponownie
+          Zatwierdź ponownie
         </Button>
       </div>
     );
@@ -780,14 +780,14 @@ function AcceptanceBanner({
   if (!acceptedAt) {
     return (
       <p className="border-obrys-przerywany text-las-szary rounded-input border-[1.5px] border-dashed px-4 py-3 text-[15px]">
-        Plan roboczy — zmiany zapisują się od razu, ale plan nie jest jeszcze zaakceptowany.
+        Do przejrzenia — zmiany zapisują się od razu, ale plan nie jest jeszcze zatwierdzony.
       </p>
     );
   }
   return (
     <p className="border-mech bg-szalwia-soft text-mech-ciemny rounded-input flex items-center gap-2 border-2 px-4 py-3 text-[15px] font-extrabold">
       <Check className="size-4 shrink-0" />
-      Plan zaakceptowany {formatAcceptedAt(acceptedAt)}.
+      Plan zatwierdzony {formatAcceptedAt(acceptedAt)}.
     </p>
   );
 }

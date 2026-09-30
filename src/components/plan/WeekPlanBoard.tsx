@@ -137,7 +137,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
   const isBusy = busy !== "idle";
   const dayList = week.days.map((date) => days[date]);
   // `plan !== null` throughout: a held batch has no row, so it is not a ready
-  // day and is not acceptable. Counting it would offer "Akceptuj tydzień" for
+  // day and is not acceptable. Counting it would offer "Zatwierdź wszystkie" for
   // proposals the database has never seen.
   const readyCount = dayList.filter((day) => day.plan !== null).length;
   const acceptableCount = dayList.filter((day) => day.plan !== null && !day.plan.plan.accepted_at).length;
@@ -200,7 +200,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
 
       if (response.ok && isGeneratedDayBody(body)) {
         // Into `batch`, never into `plan`: there is no row behind these yet,
-        // and the distinction is what keeps `readyCount` and "Akceptuj
+        // and the distinction is what keeps `readyCount` and "Zatwierdź
         // tydzień" from counting a day nothing has written.
         patchDay(planDate, {
           status: "held",
@@ -618,7 +618,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
       try {
         await Promise.allSettled(
           pending.map(async (day) => {
-            // "Cofnięto akceptację: …" left standing under the green badge this
+            // "Cofnięto zatwierdzenie: …" left standing under the green badge this
             // is about to put up would contradict it. Same rule as
             // `clearedByEdit` in `DayPlanEditor`: cleared when an operation on
             // the day starts, not only when one succeeds.
@@ -643,7 +643,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
               }
               patchDay(day.planDate, {
                 status: "failed",
-                error: isErrorBody(body) ? body.error : "Nie udało się zaakceptować tego dnia.",
+                error: isErrorBody(body) ? body.error : "Nie udało się zatwierdzić tego dnia.",
                 retryable: false,
               });
             } catch {
@@ -703,8 +703,8 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
         if (response.ok && isDayPlanBody(body)) {
           // `status: "done"` (inside `planFields`) is not cosmetic. A day
           // accepted before a week run comes back from it `skipped`, and a day
-          // that failed "Akceptuj tydzień" is `failed`. Left as they were, the
-          // first would read "Pominięty — dzień zaakceptowany" on a day that is
+          // that failed "Zatwierdź wszystkie" is `failed`. Left as they were, the
+          // first would read "Pominięty — dzień zatwierdzony" on a day that is
           // now neither, and the second would keep a red border over a plan
           // that just saved. The notice reads acceptance off the response, not
           // off what was sent.
@@ -725,7 +725,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
             ? CONFLICT_MESSAGE
             : isErrorBody(body)
               ? body.error
-              : "Nie udało się zmienić akceptacji tego dnia.",
+              : "Nie udało się zmienić zatwierdzenia tego dnia.",
         );
       } catch {
         patchDay(planDate, { actionError: "Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie." });
@@ -927,7 +927,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
             answer these slices give to the open question about a generation
             limit, and that is deliberate. */}
         <p className="text-las-szary text-sm">
-          Generowanie tygodnia to jedno wywołanie na plan tygodnia i po jednym na każdy zastępowany dzień. Zaakceptowane
+          Generowanie tygodnia to jedno wywołanie na plan tygodnia i po jednym na każdy zastępowany dzień. Zatwierdzone
           dni zastąpię tylko wtedy, gdy zgodzisz się na to w oknie potwierdzenia.
         </p>
       </form>
@@ -967,7 +967,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
                   : `${String(heldCount)} dni czeka na zapis i istnieje tylko na tej stronie.`}
               </strong>{" "}
               Zamknięcie karty albo odświeżenie strony je odrzuci — w planie nic się wtedy nie zmieni. Dopóki tydzień
-              nie zostanie zapisany albo propozycje odrzucone, pojedynczych dni nie można akceptować ani usuwać.
+              nie zostanie zapisany albo propozycje odrzucone, pojedynczych dni nie można zatwierdzać ani usuwać.
             </span>
           </div>
         )}
@@ -1013,7 +1013,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
                 className="cursor-pointer"
               >
                 <Check className="size-4" />
-                {busy === "accepting" ? "Akceptuję…" : `Akceptuj tydzień (${String(acceptableCount)})`}
+                {busy === "accepting" ? "Zatwierdzam…" : `Zatwierdź wszystkie (${String(acceptableCount)})`}
               </Button>
             )}
             {heldSetIsComplete && (
@@ -1037,7 +1037,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
         {busy === "idle" && readyCount > 0 && acceptableCount === 0 && (
           <p className="bg-szalwia-soft text-mech-ciemny rounded-input flex items-center gap-2 px-4 py-3 text-[15px] font-bold">
             <Check className="size-4 shrink-0" />
-            Wszystkie gotowe dni tego tygodnia są zaakceptowane.
+            Wszystkie gotowe dni tego tygodnia są zatwierdzone.
           </p>
         )}
 

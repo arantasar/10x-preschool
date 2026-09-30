@@ -294,7 +294,7 @@ function weekConflictMessage(error: PostgrestError): string | undefined {
   if (isoDate === undefined) {
     return undefined;
   }
-  return `${formatPlanDate(isoDate)} — ten dzień został zaakceptowany w międzyczasie, więc nic nie zostało zapisane. Odśwież stronę i wygeneruj tydzień ponownie.`;
+  return `${formatPlanDate(isoDate)} — ten dzień został zatwierdzony w międzyczasie, więc nic nie zostało zapisane. Odśwież stronę i wygeneruj tydzień ponownie.`;
 }
 
 async function callSaveWeekGeneration(supabase: DayPlanClient, command: GenerateWeekPlanCommand): Promise<void> {
