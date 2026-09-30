@@ -12,12 +12,12 @@
 - **Kroki 1–5 zamknięte.** **Kolejność dalszych prac przestawiona 2026-09-29** — patrz
   §Kolejka po `M-02`. **Krok 10 (design z Claude Design) zamknięty 2026-09-30** — obie zmiany
   (`design-foundation` PR #37, `design-planner` PR #38) są na produkcji, przejście po produkcji
-  zrobione, obie zarchiwizowane. **Krok 6 (faza 3 test-planu) zaimplementowany 2026-09-30** —
-  PR #39 (`testing-write-ownership`), czeka na przegląd i merge. **Następny jest Krok 12.**
+  zrobione, obie zarchiwizowane. **Krok 6 (faza 3 test-planu) zamknięty 2026-09-30** —
+  PR #39 (`testing-write-ownership`) na produkcji, zarchiwizowany. **Następny jest Krok 12.**
 - **Monetyzacja ma decyzje** (2026-09-29): Free + Basic 19,99 zł teraz, Pro 39,99 zł później
   zaczynając od materiałów, B2C, JDG. Pełny zapis: `monetization.md` §Decyzje.
-- **`context/changes/testing-write-ownership/`** jest w locie (Krok 6, `implemented`) do czasu
-  merge'a PR #39 i `/10x-archive`. Żaden kamień nie jest otwarty (`milestone_status: done`).
+- Żadna zmiana nie jest w locie (`context/changes/` pusty). Żaden kamień nie jest otwarty
+  (`milestone_status: done`).
 - `test-plan.md` §3: fazy 1–3 `complete`, faza 4 `not started`. Testy bazy (pgTAP i trasa +
   prawdziwy klient) stoją w CI jako doradczy job `db`. Warstwa e2e (Playwright, ryzyka #3, #4
   i #7) stoi na `master` poza rolloutem i poza CI.
@@ -527,7 +527,7 @@ Nie blokują żadnego kroku. Wyszły z researchu, z rytuału mutacji fazy 3 test
 
 | Co | Właściciel / bramka wejścia |
 | --- | --- |
-| **Zgoda dnia (`confirm_replace`, boolean) nie jest związana z wersją zatwierdzenia, w przeciwieństwie do tygodnia** (`p_confirm_accepted` = data + `accepted_at`). Karta dnia otwarta, dzień zatwierdzony na nowo w drugiej karcie po zgodzie w pierwszej — zgoda z pierwszej karty zastąpi nową wersję. `S-10` zostawił to świadomie (`context/archive/2026-09-28-accepted-day-replacement/plan-brief.md:42`); faza 3 **celowo** nie przypięła tej asymetrii testem jako zamierzonej. Szczegóły: `context/changes/testing-write-ownership/research.md` §Ryzyko #3 | **Przyszły slice ścieżki dnia** — kandydat do PRD v3 w **Kroku 12** (`/10x-shape` ma go zobaczyć na liście). Zmiana dotyka `save_day_plan_generation` (parametr zgody), `generate.ts` i `DayPlanEditor` |
+| **Zgoda dnia (`confirm_replace`, boolean) nie jest związana z wersją zatwierdzenia, w przeciwieństwie do tygodnia** (`p_confirm_accepted` = data + `accepted_at`). Karta dnia otwarta, dzień zatwierdzony na nowo w drugiej karcie po zgodzie w pierwszej — zgoda z pierwszej karty zastąpi nową wersję. `S-10` zostawił to świadomie (`context/archive/2026-09-28-accepted-day-replacement/plan-brief.md:42`); faza 3 **celowo** nie przypięła tej asymetrii testem jako zamierzonej. Szczegóły: `context/archive/2026-09-30-testing-write-ownership/research.md` §Ryzyko #3 | **Przyszły slice ścieżki dnia** — kandydat do PRD v3 w **Kroku 12** (`/10x-shape` ma go zobaczyć na liście). Zmiana dotyka `save_day_plan_generation` (parametr zgody), `generate.ts` i `DayPlanEditor` |
 | **`DELETE … .maybeSingle()` nie jest obroną w głąb za RLS.** Zmierzone 2026-09-30 z poluzowanymi politykami select + delete: kasowanie po dacie trafia w wiersze **obu** kont, PostgREST odpowiada 406 `PGRST116` — i **nic nie wycofuje**, oba wiersze znikają. Magazyn mapuje `PGRST116` na `not_found`, więc nauczyciel czyta „Ten dzień nie ma planu do usunięcia." po skasowaniu cudzego dnia. Dziś bezpieczne, bo RLS stoi i `index.db.test.ts` go pilnuje; jedyną linią jest jednak RLS. Pomiar: komentarz w `src/pages/api/day-plan/index.db.test.ts` | **Krok 9** (faza 4 test-planu) albo pierwsza zmiana dotykająca `deleteDayPlan`, cokolwiek wcześniej. Kandydaci: RPC kasujący `where user_id = auth.uid() and plan_date = …` z `get diagnostics` i `raise` przy ≠ 1 wierszu, albo kasowanie po `id` odczytanym wcześniej przez RLS. Nie filtr `user_id` w kodzie aplikacji — `day-plan-store.ts` zabrania go świadomie |
 | **Job `db` pada na limicie pobrań `public.ecr.aws`** (`toomanyrequests: Data limit exceeded` w `supabase start`). Pierwszy raz przy wpinaniu, drugi na PR #39 (run 36768531052, 2026-09-30) — próg „jeśli zacznie się powtarzać” z `test-plan.md` §6.7 przekroczony. Job jest doradczy, więc czerwień nie blokuje, ale uczy ignorować znaczek | **Krok 9** (faza 4 test-planu — dotyka CI) albo trzeci taki przebieg, cokolwiek wcześniej. Kandydaci: cache obrazów Dockera w Actions, ponowienie `supabase start` z odstępem |
 | **Przypięta wersja Postgresa w jobie `db` (`17.6.1.127`) podbija się ręcznie.** Krok w `.github/workflows/ci.yml` pisze `supabase/.temp/postgres-version` (wewnętrzny plik CLI), bo bez niego CI dostaje domyślny obraz CLI, na którym serwer padał. Po aktualizacji projektu na produkcji CI po cichu testuje starszy Postgres | **Ten, kto podbija Postgresa projektu w dashboardzie Supabase** — w tej samej zmianie podbija wartość w `ci.yml` (porównać z `supabase/.temp/postgres-version` po `npx supabase link`). Przegląd przy każdej aktualizacji `supabase` CLI w `package.json` |
