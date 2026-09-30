@@ -12,14 +12,15 @@
 - **Kroki 1–5 zamknięte.** **Kolejność dalszych prac przestawiona 2026-09-29** — patrz
   §Kolejka po `M-02`. **Krok 10 (design z Claude Design) zamknięty 2026-09-30** — obie zmiany
   (`design-foundation` PR #37, `design-planner` PR #38) są na produkcji, przejście po produkcji
-  zrobione, obie zarchiwizowane. **Następny jest Krok 6** (faza 3 test-planu); jego warunek
-  wejścia (Pułapka 2) jest spełniony.
+  zrobione, obie zarchiwizowane. **Krok 6 (faza 3 test-planu) zaimplementowany 2026-09-30** —
+  PR #39 (`testing-write-ownership`), czeka na przegląd i merge. **Następny jest Krok 12.**
 - **Monetyzacja ma decyzje** (2026-09-29): Free + Basic 19,99 zł teraz, Pro 39,99 zł później
   zaczynając od materiałów, B2C, JDG. Pełny zapis: `monetization.md` §Decyzje.
-- **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie. Żaden kamień nie
-  jest otwarty (`milestone_status: done`).
-- `test-plan.md` §3: fazy 1–2 `complete`, fazy 3–4 `not started`. Warstwa e2e (Playwright,
-  ryzyka #4 i #7) stoi na `master` od 2026-09-05 poza rolloutem.
+- **`context/changes/testing-write-ownership/`** jest w locie (Krok 6, `implemented`) do czasu
+  merge'a PR #39 i `/10x-archive`. Żaden kamień nie jest otwarty (`milestone_status: done`).
+- `test-plan.md` §3: fazy 1–3 `complete`, faza 4 `not started`. Testy bazy (pgTAP i trasa +
+  prawdziwy klient) stoją w CI jako doradczy job `db`. Warstwa e2e (Playwright, ryzyka #3, #4
+  i #7) stoi na `master` poza rolloutem i poza CI.
 - **Bramka bezpieczeństwa treści zawieszona od 2026-09-19** (koszt OpenRouter,
   `src/lib/services/gate-suspension.ts`). `refine-activity.pl.md` z `S-15` wszedł na produkcję
   oceniony tylko ręcznie — po odwieszeniu pierwszy do uruchomienia jest tryb `activity`.
@@ -55,7 +56,7 @@ tabela, nie numer**.
 | --- | --- | --- | --- |
 | 1 | ✅ **Krok 10** | Design z Claude Design na istniejących ekranach — zamknięty 2026-09-30 | zmiana (bez PRD) |
 | równolegle | **Krok 11** | Walidacja i sprawy formalne (rozmowy, dane z produkcji, JDG, Stripe, księgowa) | poza kodem |
-| 2 | Krok 6 | Faza 3 test-planu (ochrona zapisu i własności) | test-plan |
+| 2 | ✅ Krok 6 | Faza 3 test-planu (ochrona zapisu i własności) — zaimplementowana 2026-09-30, PR #39 | test-plan |
 | 3 | **Krok 12** | PRD v3 i roadmapa kamienia `M-03` „Gotowi do sprzedaży" | shape → prd → roadmap |
 | 4 | **Krok 13** | Slice'y `M-03` bez pieniędzy: reset hasła, strony prawne i FAQ, kontakt, limity | slice'y |
 | 5 | Krok 9 | Faza 4 test-planu: e2e w CI **przed** pierwszym slice'em płatności | test-plan |
@@ -237,15 +238,21 @@ Decyzje zamknięte 2026-08-30 — nic tu nie zostało do rozstrzygnięcia poza t
 Każdy slice standardowym łańcuchem, kolejność ustali `/10x-roadmap`.
 Zacznij od **regeneracji tygodnia z zastępowaniem** — reszta paczki się o nią opiera.
 
-### Krok 6 — faza 3 test-planu (ochrona zapisu i własności) — NASTĘPNY (od 2026-09-30)
+### ✅ Krok 6 — faza 3 test-planu (ochrona zapisu i własności) — ZROBIONE 2026-09-30
 
-```
-/10x-test-plan
-```
+`testing-write-ownership`, PR #39. Ryzyka #3, #4 i #7 są przypięte w trzech warstwach:
+pgTAP (98 → 129 asercji, w tym cztery gałęzie `U0003` — dług z §6.4 zamknięty), atrapa w
+`npm test` (409 przed płatnym modelem, brak ponowienia, nowe testy `index` i `accept`) oraz
+nowa warstwa §6.3 — trasy wołane z prawdziwym klientem zalogowanym jako konto A albo B
+(`npm run test:db:api`). Obie warstwy bazy stoją w CI jako doradczy job `db`. Pomiar przy
+rytuale mutacji wyciągnął dwa ogony — patrz §Otwarte ogony po Kroku 6.
 
 **Dopiero po** slice'ie regeneracji tygodnia — patrz Pułapka 2. Spełnione: `S-09` i `S-10`
 są wydane, więc Ryzyko #3 ma już docelową semantykę — „dzień zaakceptowany ginie tylko po
-jawnej zgodzie na ten konkretny dzień” (zgoda per data w `S-10`).
+jawnej zgodzie na ten konkretny dzień” (zgoda per data i `accepted_at` w `S-10`).
+
+_Zakres na wejściu do fazy (stan sprzed 2026-09-30, zostawiony dla historii — wszystkie trzy
+punkty niżej są zamknięte):_
 
 **Zakres zmniejszył się, ale nie zniknął.** Ryzyka #4 i #7 mają od 2026-09-03 warstwę
 przeglądarkową, a od 2026-09-05 (PR #22) stoi ona na `master`, więc faza wchodzi w nie
@@ -513,6 +520,15 @@ Nie blokują żadnego kroku. Oba wyszły z przeglądu implementacyjnego
 | **`prd-v2.md` §Business Logic Changes reguła 2 opisuje nieprawdę** — mówi, że „edycja treści nie rusza tej etykiety [akceptacji]", co przestało być prawdą **2026-08-23** wraz z S-02: trigger `activities_edit_clears_acceptance` zeruje `accepted_at` przy każdej zmianie `title` albo `description`. `edit-unaccepts-day` świadomie tego nie poprawił (PRD v2 jest zamrożonym artefaktem M-02, a `CLAUDE.md` traktuje edycje `context/foundation/*` jako osobny tor) i zapisał to w §Migration Notes planu. Konsekwencja, jeśli zostanie: `S-10` ma `S-12` w prerekwizytach i będzie czytać ten akapit jako opis stanu wyjściowego | Brak formalnej bramki — edycja `context/foundation/*` idzie wprost na `master`. ✅ **Poprawione 2026-09-29** (po wydaniu `S-10`, więc z opóźnieniem): reguła 2 opisuje teraz trigger z `S-02`, reguła 1 opisuje stan po `S-10`, a akapit „Semantyka zastanych danych” ma dopisek, że obawa była bezpodstawna. Przy okazji sprawdzić §Constraints „Semantyka zastanych danych" (`prd-v2.md:281-285`), który ostrzega przed dniami zaakceptowanymi i edytowanymi po akceptacji — żadna ścieżka aplikacji nie mogła takiego wiersza wyprodukować od S-02 |
 | **`npm run build` tuż przed `npm run test:e2e` wywraca reużywany serwer dev** — `playwright.config.ts` ma `reuseExistingServer: !process.env.CI`, a build regeneruje `node_modules/.vite`. Serwer, który już stoi, miesza wtedy dwie generacje zoptymalizowanych zależności (`chunk-*.js?v=ecd2270b` obok `react-dom_server.js?v=e0d79318`), React dostaje pusty dispatcher i SSR wyspy pada na `TypeError: Cannot read properties of null (reading 'useState')` w pierwszym `useState` `DayPlanEditor`. Strona dnia renderuje się bez planu, więc **padają testy, które akurat weszły w to okno — najczęściej ryzyko #4 (`seed.spec`, `day-plan-ownership`), których żadna świeża zmiana nie dotyka**. Wyizolowane: mój kod + 6 starych testów przechodzi, 9 testów przy `--workers=2` przechodzi, 9 przy 5 workerach pada. To wyścig, więc większy zestaw trafia w nie częściej — `edit-unaccepts-day` podniósł zestaw z 6 do 9 testów i dlatego zaczęło być widać. **Dotyczy wyłącznie serwera dev; produkcja jedzie z artefaktu buildu, bez optymalizacji zależności w runtime.** Pułapka jest w diagnozie, nie w produkcie: następna osoba zobaczy czerwone ryzyko #4 i wyciągnie wniosek o regresji, której nie ma | Brak bramki — e2e nie stoi w CI (to treść **Kroku 9**), więc nic tego dziś nie łapie. Kandydaci na obejście, do rozstrzygnięcia razem z wpinaniem e2e do CI: `reuseExistingServer: false` (koszt: pełny start serwera na każdy przebieg lokalnie), czyszczenie `node_modules/.vite` w skrypcie `test:e2e`, albo rozgrzanie serwera jednym żądaniem przed wpuszczeniem workerów. **Nie zmieniaj `fullyParallel` ani liczby workerów jako lekarstwa** — równoległość jest tu celowo testem niezależności testów (`playwright.config.ts:22-23`), a jej obniżenie schowałoby objaw i zabrało sygnał |
 | **Wyścig odczyt–zapis w trasie edycji raportuje stan sprzed zapisu, nie skutek** — `acceptance_cleared` to dosłownie `wasAccepted`, a trigger jest warunkowy (`when old.title is distinct from new.title or …`), więc zapis bez zmiany treści zwraca `true`, choć nic nie zdjął. Wyspę ratuje dopiero złożony warunek w `AcceptanceBanner` (`!acceptedAt && clearedByEdit`), czyli obrona w głąb, nie kontrakt. Finding F2 przeglądu, świadomie pominięty przy triage'u | Brak bramki. Jeśli pole zacznie czytać ktokolwiek poza `DayPlanEditor` — np. powierzchnie akceptacji w tygodniu z `S-11` — **najpierw** policzyć je z faktu po zapisie: `wasAccepted && saved.plan.accepted_at === null`, i dołożyć piąty przypadek do `activity/[id].test.ts` (dziś `savedDay()` zawsze buduje `accepted_at: null`, więc wszystkie cztery dzielą jeden kształt po zapisie) |
+
+## Otwarte ogony po Kroku 6 (`testing-write-ownership`, 2026-09-30)
+
+Nie blokują żadnego kroku. Oba wyszły z researchu i z rytuału mutacji fazy 3 test-planu.
+
+| Co | Właściciel / bramka wejścia |
+| --- | --- |
+| **Zgoda dnia (`confirm_replace`, boolean) nie jest związana z wersją zatwierdzenia, w przeciwieństwie do tygodnia** (`p_confirm_accepted` = data + `accepted_at`). Karta dnia otwarta, dzień zatwierdzony na nowo w drugiej karcie po zgodzie w pierwszej — zgoda z pierwszej karty zastąpi nową wersję. `S-10` zostawił to świadomie (`context/archive/2026-09-28-accepted-day-replacement/plan-brief.md:42`); faza 3 **celowo** nie przypięła tej asymetrii testem jako zamierzonej. Szczegóły: `context/changes/testing-write-ownership/research.md` §Ryzyko #3 | **Przyszły slice ścieżki dnia** — kandydat do PRD v3 w **Kroku 12** (`/10x-shape` ma go zobaczyć na liście). Zmiana dotyka `save_day_plan_generation` (parametr zgody), `generate.ts` i `DayPlanEditor` |
+| **`DELETE … .maybeSingle()` nie jest obroną w głąb za RLS.** Zmierzone 2026-09-30 z poluzowanymi politykami select + delete: kasowanie po dacie trafia w wiersze **obu** kont, PostgREST odpowiada 406 `PGRST116` — i **nic nie wycofuje**, oba wiersze znikają. Magazyn mapuje `PGRST116` na `not_found`, więc nauczyciel czyta „Ten dzień nie ma planu do usunięcia." po skasowaniu cudzego dnia. Dziś bezpieczne, bo RLS stoi i `index.db.test.ts` go pilnuje; jedyną linią jest jednak RLS. Pomiar: komentarz w `src/pages/api/day-plan/index.db.test.ts` | **Krok 9** (faza 4 test-planu) albo pierwsza zmiana dotykająca `deleteDayPlan`, cokolwiek wcześniej. Kandydaci: RPC kasujący `where user_id = auth.uid() and plan_date = …` z `get diagnostics` i `raise` przy ≠ 1 wierszu, albo kasowanie po `id` odczytanym wcześniej przez RLS. Nie filtr `user_id` w kodzie aplikacji — `day-plan-store.ts` zabrania go świadomie |
 
 ## Pułapki — pięć rzeczy, o które łatwo się potknąć
 

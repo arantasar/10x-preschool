@@ -518,8 +518,8 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Automated
 
-- [x] 4.1 `actionlint` (albo `gh workflow view`) bez błędów
-- [ ] 4.2 `gh pr checks` pokazuje `db` jako `pass`
+- [x] 4.1 `actionlint` (albo `gh workflow view`) bez błędów — 82321c3
+- [x] 4.2 `gh pr checks` pokazuje `db` jako `pass` — 82321c3
 
 #### Manual
 
@@ -531,10 +531,10 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Automated
 
-- [ ] 5.1 Wiersz Fazy 3 w §3 ma status `complete`
-- [ ] 5.2 „TBD — see §3 Phase 3” zniknęło z test-planu
-- [ ] 5.3 „73 asercje” zniknęło z test-planu
-- [ ] 5.4 Stare brzmienie „Zaakceptowany dzień przeżywa” zniknęło
+- [x] 5.1 Wiersz Fazy 3 w §3 ma status `complete`
+- [x] 5.2 „TBD — see §3 Phase 3” zniknęło z test-planu
+- [x] 5.3 „73 asercje” zniknęło z test-planu
+- [x] 5.4 Stare brzmienie „Zaakceptowany dzień przeżywa” zniknęło
 
 #### Manual
 
