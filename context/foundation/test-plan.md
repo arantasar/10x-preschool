@@ -605,8 +605,8 @@ ostrzeżeniem, nie błędem. Trzy niespodzianki przy wpinaniu:
   produkcji przed `supabase start`; przy aktualizacji projektu trzeba ją podbić.
 - **`public.ecr.aws` limituje pobrania** (`toomanyrequests: Data limit exceeded`)
   na współdzielonym IP runnera. To nie jest błąd kodu — ponowienie joba
-  przechodzi. Jeśli zacznie się powtarzać, cache obrazów idzie do
-  `next-actions.md`.
+  przechodzi. Powtórzyło się jeszcze tego samego dnia (run 36768531052), więc
+  cache obrazów jest ogonem z właścicielem w `next-actions.md`.
 - `supabase status -o env` wypisuje `KEY="value"`, a `$GITHUB_ENV` zachowałby
   cudzysłowy w wartości — krok eksportu je zdejmuje.
 

@@ -6,7 +6,9 @@ import type { DayPlanClient } from "@/lib/services/day-plan-store";
 
 // Dates and stamps come from the e2e tier rather than a copy of it: the same
 // far-future window, so neither tier's days can land on a day someone looked at
-// by hand in the app.
+// by hand in the app. This leans on `test-data.ts` importing `supabase-admin`
+// type-only: a value import there would pull in e2e's `env.ts` and make this
+// tier demand the e2e environment variables.
 export { activitiesFor, plusDays, uniquePlanDate, uniqueStamp } from "../../../../tests/e2e/support/test-data";
 
 /**
@@ -57,15 +59,21 @@ function readLocalStack(): LocalStack {
     STACK_VARIABLES.map((name) => [name, process.env[name]]),
   );
 
+  let statusFailure = "";
   if (STACK_VARIABLES.some((name) => !values[name])) {
     try {
       const output = execFileSync("npx", ["supabase", "status", "-o", "env"], {
         encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
+        stdio: ["ignore", "pipe", "pipe"],
+        // A hung Docker daemon would otherwise hang the run at import.
+        timeout: 30_000,
       });
       values = { ...parseEnvOutput(output), ...Object.fromEntries(Object.entries(values).filter(([, v]) => v)) };
-    } catch {
-      // Falls through to the missing-variable error below, which says what to do.
+    } catch (error) {
+      // Falls through to the missing-variable error below, which says what to
+      // do; the CLI's own reason (e.g. no Docker daemon) rides along.
+      const stderr = (error as { stderr?: unknown }).stderr;
+      statusFailure = typeof stderr === "string" && stderr.trim() ? stderr.trim() : String(error);
     }
   }
 
@@ -73,7 +81,8 @@ function readLocalStack(): LocalStack {
   if (missing.length > 0) {
     throw new Error(
       `Lokalny stos Supabase jest niedostępny (brak ${missing.join(", ")}). ` +
-        "Uruchom `npx supabase start` i spróbuj ponownie - ta warstwa nie pomija testów bez stosu.",
+        "Uruchom `npx supabase start` i spróbuj ponownie - ta warstwa nie pomija testów bez stosu." +
+        (statusFailure ? `\n\`supabase status\`: ${statusFailure}` : ""),
     );
   }
 
@@ -137,6 +146,9 @@ async function ensureUser(email: string): Promise<string> {
 
   const { data, error } = await service.auth.admin.createUser({ email, password: PASSWORD, email_confirm: true });
   if (error) {
+    // Another run against the same stack created it first.
+    const raced = await findUserId(email);
+    if (raced) return raced;
     throw new Error(`Nie udało się założyć konta ${email}: ${error.message}`);
   }
   return data.user.id;
@@ -207,6 +219,8 @@ export async function seedDay(userId: string, planDate: string, options: SeedDay
     .select("id, ordinal")
     .order("ordinal");
   if (activitiesError) {
+    // The caller never gets this plan's id to clean up, so take it back here.
+    await cleanup([plan.id]);
     throw new Error(`Nie udało się zasiać propozycji na ${planDate}: ${activitiesError.message}`);
   }
 

@@ -484,8 +484,8 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Manual
 
-- [ ] 1.4 Każde psucie z listy zapaliło nową asercję; cofnięte, zestaw znów zielony
-- [ ] 1.5 Komentarze mutacji przy nowych asercjach
+- [x] 1.4 Każde psucie z listy zapaliło nową asercję; cofnięte, zestaw znów zielony — 662e565 (dowód: komentarze mutacji w trzech plikach pgTAP; zestaw zielony w review 2026-09-30)
+- [x] 1.5 Komentarze mutacji przy nowych asercjach — 662e565
 
 ### Phase 2: Trasy na atrapie — zachowanie bez własności (`npm test`)
 
@@ -497,7 +497,7 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Manual
 
-- [ ] 2.4 Psucia (pre-check, pre-check zawsze odmawiający, ponowienie DELETE, `not_found`→`conflict`) zobaczone na czerwono i cofnięte
+- [x] 2.4 Psucia (pre-check, pre-check zawsze odmawiający, ponowienie DELETE, `not_found`→`conflict`) zobaczone na czerwono i cofnięte — 5047f42 (dowód: komentarze „Checked by mutation” w `generate`/`index`/`accept.test.ts`)
 
 ### Phase 3: Trasa + prawdziwy klient A/B — wzorzec §6.3 (`npm run test:db:api`)
 
@@ -510,9 +510,9 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Manual
 
-- [ ] 3.5 Każde psucie RLS zapaliło odpowiadający test; cofnięte
-- [ ] 3.6 Wynik `.maybeSingle()` na wielowierszowym DELETE zanotowany
-- [ ] 3.7 Brak pozostałych wierszy kont `api-teacher-*` po przebiegu
+- [x] 3.5 Każde psucie RLS zapaliło odpowiadający test; cofnięte — 0d71a1e (dowód: komentarze w `*.db.test.ts`, test-plan §6.7 pkt 1–2; `activity/[id]` zapala się dopiero przy select + update — zanotowane)
+- [x] 3.6 Wynik `.maybeSingle()` na wielowierszowym DELETE zanotowany — 0d71a1e (`index.db.test.ts`, §6.7 pkt 1)
+- [x] 3.7 Brak pozostałych wierszy kont `api-teacher-*` po przebiegu — sprawdzone w review 2026-09-30 (0 wierszy po dwóch przebiegach)
 
 ### Phase 4: Job `db` w CI
 
@@ -523,9 +523,9 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Manual
 
-- [ ] 4.3 Log joba: oba zestawy wykonane, brak `seed.sql` nie przerwał startu
-- [ ] 4.4 Czas joba zmierzony i zanotowany
-- [ ] 4.5 Kontrola negatywna w CI dała czerwony `db`; cofnięta
+- [x] 4.3 Log joba: oba zestawy wykonane, brak `seed.sql` nie przerwał startu — run 36766052693 (pgTAP PASS, 4 pliki / 8 testów Vitest)
+- [x] 4.4 Czas joba zmierzony i zanotowany — 1606f7c (§6.7: 2 min 22 s)
+- [ ] 4.5 Kontrola negatywna w CI dała czerwony `db`; cofnięta — NIE WYKONANE (review 2026-09-30: brak celowo czerwonego przebiegu w historii gałęzi; czerwone przebiegi to crash Postgresa i limit ECR, nie asercja)
 
 ### Phase 5: Backport dokumentacji
 

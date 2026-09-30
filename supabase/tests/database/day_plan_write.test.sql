@@ -777,8 +777,11 @@ select throws_ok(
   'an activity batch that is not an array is refused'
 );
 
--- the refusals aborted before the upsert, which would have bumped the counter
--- and deleted the batch.
+-- the refusals left no trace of an upsert, which would have bumped the counter
+-- and deleted the batch. statement atomicity only: a raise rolls back the whole
+-- call, so these two cannot go red while the throws_ok above stays green, and
+-- they cannot tell "raised before the upsert" from "raised after it". that the
+-- u0003 check comes first is proven by the order assertions below.
 select is(
   (select current_generation::int from public.day_plans
     where id = (select plan_id from saved where label = 'planned')),

@@ -94,5 +94,12 @@ describe("POST /api/day-plan/accept — another teacher's plan_id", () => {
     expect(((await response.json()) as { retryable: boolean }).retryable).toBe(false);
     expect(before).not.toBeNull();
     expect(await acceptedAtAsOwner(a, seeded.planId)).toBe(before);
+
+    // The positive control: the owner's withdrawal lands, so the 404 above is
+    // about whose plan it is, not about `accepted: false`.
+    const own = await accept(a, { plan_id: seeded.planId, accepted: false, expected_generation: 1 });
+
+    expect(own.status).toBe(200);
+    expect(await acceptedAtAsOwner(a, seeded.planId)).toBeNull();
   });
 });

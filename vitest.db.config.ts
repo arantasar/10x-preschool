@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 // The route + real client tier (test plan §6.3): routes called as functions,
 // with `locals.supabase` a real `supabase-js` client signed in as teacher a or
 // b against the local stack. It proves the route and RLS at once, which the

@@ -40,6 +40,8 @@ jobs:
   # the CLI skips a missing seed file.
   db:
     runs-on: ubuntu-latest
+    # A green run takes under 3 min; this caps a hung image pull or `start`.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -62,8 +64,11 @@ jobs:
         run: npx supabase start -x studio,imgproxy,realtime,storage-api,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta
       # After `start`, before the tests. `-o env` prints KEY="value"; $GITHUB_ENV
       # would keep the quotes as part of the value, so they are stripped here.
+      # Only the three variables `supabase-local.ts` reads: every exported value
+      # is printed in later step headers, and the rest (JWT_SECRET, DB_URL, …)
+      # has no reader.
       - name: Export the stack's URL and keys
-        run: npx supabase status -o env | grep -E '^[A-Z0-9_]+=' | sed -E 's/^([A-Z0-9_]+)="(.*)"$/\1=\2/' >> "$GITHUB_ENV"
+        run: npx supabase status -o env | grep -E '^(API_URL|PUBLISHABLE_KEY|SECRET_KEY)=' | sed -E 's/^([A-Z0-9_]+)="(.*)"$/\1=\2/' >> "$GITHUB_ENV"
       - run: npm run test:db
       - run: npm run test:db:api
 

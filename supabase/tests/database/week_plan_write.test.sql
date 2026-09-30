@@ -340,7 +340,8 @@ select throws_ok(
 -- the empty batch comes second on purpose: by the time the loop reaches it,
 -- 2026-07-06 has been rewritten, and the two assertions after this one say that
 -- rewrite did not survive - the property the u0001 block above proves for an
--- unconsented day.
+-- unconsented day. statement atomicity: they go red only together with this
+-- throws_ok, never on their own.
 select throws_ok(
   $$select public.save_week_plan_generation(
       'nowe',
