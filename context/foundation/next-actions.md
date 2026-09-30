@@ -1,18 +1,19 @@
-# Next Actions — ustalenia z 2026-08-30, stan na 2026-09-29
+# Next Actions — ustalenia z 2026-08-30, stan na 2026-09-30
 
 > Runbook kolejności prac i komend 10x. Dokument roboczy, edytowany w miejscu:
 > odhaczaj kroki i dopisuj nowe zgłoszenia. Decyzje produktowe mieszkają w
 > `roadmap.md` — tutaj jest **kolejność i to, co uruchomić**, nie druga kopia tamtych decyzji.
 
-## Stan (2026-09-29)
+## Stan (2026-09-30)
 
 - **`M-02` zamknięty 2026-09-29 w pełnym zakresie** — osiem pozycji `done` (`S-07`, `S-09`…`S-15`),
   łącznie z nice-to-have `S-10` (`accepted-day-replacement`, PR #35) i dopisanym w trakcie
   `S-15` (`follow-up-questions`). Wszystko jest na produkcji. Wpis: `roadmap.md` §Milestone History.
 - **Kroki 1–5 zamknięte.** **Kolejność dalszych prac przestawiona 2026-09-29** — patrz
-  §Kolejka po `M-02`. **Krok 10 (design z Claude Design) zrobiony 2026-09-30** — `design-planner`
-  czeka jeszcze na przegląd, PR i archiwizację. Następny jest Krok 6 (faza 3 test-planu); jego
-  warunek wejścia (Pułapka 2) jest spełniony.
+  §Kolejka po `M-02`. **Krok 10 (design z Claude Design) zamknięty 2026-09-30** — obie zmiany
+  (`design-foundation` PR #37, `design-planner` PR #38) są na produkcji, przejście po produkcji
+  zrobione, obie zarchiwizowane. **Następny jest Krok 6** (faza 3 test-planu); jego warunek
+  wejścia (Pułapka 2) jest spełniony.
 - **Monetyzacja ma decyzje** (2026-09-29): Free + Basic 19,99 zł teraz, Pro 39,99 zł później
   zaczynając od materiałów, B2C, JDG. Pełny zapis: `monetization.md` §Decyzje.
 - **`context/changes/` jest puste** — żaden folder zmiany nie jest w locie. Żaden kamień nie
@@ -52,7 +53,7 @@ tabela, nie numer**.
 
 | Kolejność | Krok | Co | Rodzaj |
 | --- | --- | --- | --- |
-| 1 | **Krok 10** | Design z Claude Design na istniejących ekranach | zmiana (bez PRD) |
+| 1 | ✅ **Krok 10** | Design z Claude Design na istniejących ekranach — zamknięty 2026-09-30 | zmiana (bez PRD) |
 | równolegle | **Krok 11** | Walidacja i sprawy formalne (rozmowy, dane z produkcji, JDG, Stripe, księgowa) | poza kodem |
 | 2 | Krok 6 | Faza 3 test-planu (ochrona zapisu i własności) | test-plan |
 | 3 | **Krok 12** | PRD v3 i roadmapa kamienia `M-03` „Gotowi do sprzedaży" | shape → prd → roadmap |
@@ -236,7 +237,7 @@ Decyzje zamknięte 2026-08-30 — nic tu nie zostało do rozstrzygnięcia poza t
 Każdy slice standardowym łańcuchem, kolejność ustali `/10x-roadmap`.
 Zacznij od **regeneracji tygodnia z zastępowaniem** — reszta paczki się o nią opiera.
 
-### Krok 6 — faza 3 test-planu (ochrona zapisu i własności) — po Kroku 10
+### Krok 6 — faza 3 test-planu (ochrona zapisu i własności) — NASTĘPNY (od 2026-09-30)
 
 ```
 /10x-test-plan
@@ -312,7 +313,8 @@ git checkout -b feat/design-foundation
 /10x-impl-review
 /10x-archive design-foundation
 # Drugi przebieg tym samym łańcuchem: feat/design-planner (ekrany planowania)
-# 2. ✅ design-planner zaimplementowany 2026-09-30 (7 faz) — do /10x-impl-review, PR i /10x-archive
+# 2. ✅ design-planner zaimplementowany 2026-09-30 (7 faz), przegląd, PR #38 (cf044dd),
+#    przejście po produkcji i /10x-archive (18a58c8) — zrobione 2026-09-30
 ```
 
 **Stan końcowy po `design-planner` (2026-09-30).** Cała aplikacja jest w „Ogrodzie”: `.theme-legacy`
@@ -460,7 +462,7 @@ dokumentacja (podstawa programowa + wpisy do dziennika), kilka grup, eksport DOC
 
 ## Otwarte ogony po Kroku 1
 
-Pierwszy ogon jest **wdrożony jako Krok 1a** (czeka na przegląd i archiwizację); reszta nie blokuje Kroku 2. Wszystko ma
+Pierwszy ogon jest **wdrożony jako Krok 1a** (zarchiwizowany 2026-08-31); reszta nie blokuje Kroku 2. Wszystko ma
 wskazane wejście — żaden ogon nie wisi „kiedyś".
 
 | Co                                                                | Właściciel / bramka wejścia                                                                                        |

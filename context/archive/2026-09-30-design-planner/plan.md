@@ -926,4 +926,4 @@ w jakim były wykonywane; to, co niżej, ma nad nimi pierwszeństwo.
 
 - [x] 7.6 Przegląd wszystkich ekranów przy 390 / 768 / 1440 px
 - [x] 7.7 Ilustracja na landingu z tematami tygodni
-- [ ] 7.8 Przejście na produkcji po merge'u
+- [x] 7.8 Przejście na produkcji po merge'u
