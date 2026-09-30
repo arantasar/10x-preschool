@@ -525,7 +525,7 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 - [x] 4.3 Log joba: oba zestawy wykonane, brak `seed.sql` nie przerwał startu — run 36766052693 (pgTAP PASS, 4 pliki / 8 testów Vitest)
 - [x] 4.4 Czas joba zmierzony i zanotowany — 1606f7c (§6.7: 2 min 22 s)
-- [ ] 4.5 Kontrola negatywna w CI dała czerwony `db`; cofnięta — NIE WYKONANE (review 2026-09-30: brak celowo czerwonego przebiegu w historii gałęzi; czerwone przebiegi to crash Postgresa i limit ECR, nie asercja)
+- [x] 4.5 Kontrola negatywna w CI dała czerwony `db`; cofnięta — c46c4ba → run 36771651825 czerwony (`index.db.test.ts`: expected 404 to be 200), cofnięte b0f6a56
 
 ### Phase 5: Backport dokumentacji
 
@@ -538,5 +538,5 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Manual
 
-- [ ] 5.5 §6.3 czytelny jako samodzielny przepis
-- [ ] 5.6 `git diff -w` test-planu dotyka wyłącznie wymienionych sekcji
+- [x] 5.5 §6.3 czytelny jako samodzielny przepis — review 2026-09-30; dopisane sprzątanie wierszy tworzonych przez trasę
+- [x] 5.6 `git diff -w` test-planu dotyka wyłącznie wymienionych sekcji — review 2026-09-30 (§2, §3, §4, §5, §6.2–6.4, §6.7, §8 + data w nagłówku)
