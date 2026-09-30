@@ -223,7 +223,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
       if (response.ok && isGeneratedDayBody(body)) {
         // Into `batch`, never into `plan`: there is no row behind these yet,
         // and the distinction is what keeps `readyCount` and "Zatwierdź
-        // tydzień" from counting a day nothing has written.
+        // wszystkie" from counting a day nothing has written.
         patchDay(planDate, {
           status: "held",
           batch: body.activities,
@@ -448,9 +448,9 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
     if (acceptedCount > 0) {
       includeAccepted = draftsOnly.targets.length === 0 || (await confirm(scopeQuestion(acceptedCount)));
     }
-    // The partition is frozen here, at the second question: it is computed from
+    // The partition is frozen before the first question: it is computed from
     // the acceptance read above, not from whatever the board holds by the time
-    // the teacher answers.
+    // the teacher answers either window.
     const partition = includeAccepted ? partitionWeek(acceptance, true) : draftsOnly;
 
     // The go / stop window, stating how many days are replaced and how many of

@@ -157,6 +157,23 @@ export function weekLinkLabel(row: MonthGridRow): string {
   return `Tydzień ${row.rangeLabel} — ${row.heading ?? "bez tematu"}`;
 }
 
+/**
+ * What an empty row says about itself.
+ *
+ * "Ten tydzień" only when the row shows the whole week. A week on the month's
+ * boundary shows one to four of its days, and its other days - in the
+ * neighbouring month, rendered as blanks - may well be planned: `isEmpty` is
+ * about the days in this month only. Saying "this week waits for a topic" over
+ * a week that has one would be wrong, so a partial row speaks for its own days.
+ */
+export function emptyRowText(row: MonthGridRow): string {
+  const ours = row.days.filter((day) => day.inMonth).length;
+  if (ours === row.days.length) {
+    return "Ten tydzień czeka na temat.";
+  }
+  return ours === 1 ? "Ten dzień czeka na temat." : "Te dni czekają na temat.";
+}
+
 export interface MonthCounts {
   readonly accepted: number;
   readonly draft: number;

@@ -92,7 +92,9 @@ Od `design-planner` aplikacja nie używa `window.confirm`. Każde potwierdzenie 
 własne okno (`ConfirmDialog`, natywny `<dialog>`) — **element strony**, nie
 dialog przeglądarki. Dla kasowania nadal jest jedyną ochroną przed operacją
 nieodwracalną (ryzyko #7), a dla edycji dnia zatwierdzonego — jedynym pytaniem
-przed utratą zatwierdzenia (ryzyko #8).
+przed utratą zatwierdzenia (ryzyko #8). Przed regeneracją dnia zatwierdzonego
+(ryzyko #3) okno jest udogodnieniem — zapis bez zgody odrzuca baza — ale to ono
+decyduje, czy płatny przebieg w ogóle rusza.
 
 - Lokalizuj okno przez `page.getByRole("dialog")`, a przyciski w nim po nazwie
   (`{ name: "Usuń plan", exact: true }`). Nazwy mówią o skutku — „Usuń plan” /
@@ -107,8 +109,12 @@ przed utratą zatwierdzenia (ryzyko #8).
 - Sprawdzaj treść okna przez `toContainText` (nazwa dnia, „Ten dzień jest
   zatwierdzony.”, „Tej operacji nie można cofnąć.”) — **przed** kliknięciem, bo
   po odpowiedzi okno znika.
+- **Generowanie za oknem: tylko test odmowy**, z żądaniami generowania uciętymi
+  w `page.route` (`regenerate-confirmation.spec.ts`). Zgoda kończy się
+  wywołaniem modelu, które ten zestaw omija; ucięcie sprawia, że czerwony
+  przebieg nie kosztuje i nie niszczy zasianych danych.
 - **Test odmowy i test zgody są nadal obowiązkowe** dla każdej operacji za
-  oknem: odmowa („Zostaw”, „Wróć do edycji”) → żadnego żądania i dane nietknięte
+  oknem, poza generowaniem (wyżej): odmowa („Zostaw”, „Wróć do edycji”) → żadnego żądania i dane nietknięte
   po przeładowaniu; zgoda → dane zmienione dokładnie w zakresie operacji.
 - Tam, gdzie okna ma **nie** być (cofnięcie zatwierdzenia z tygodnia, druga
   edycja dnia już niezatwierdzonego):

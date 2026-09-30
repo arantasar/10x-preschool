@@ -27,20 +27,23 @@ const buttonVariants = cva(
         primary: "bg-las text-owies hover:bg-las-2",
         accent: "bg-morela text-las hover:bg-morela-hover",
         inverse: "bg-owies text-las hover:bg-white",
-        outlinePill: "border-[1.5px] border-obrys bg-transparent text-las hover:border-las",
+        // The two outlined pills keep their own border under focus: the base
+        // `focus-visible:border-ring` would repaint it, and the focus is already
+        // carried by the outline pair.
+        outlinePill: "border-[1.5px] border-obrys bg-transparent text-las hover:border-las focus-visible:border-obrys",
         // An operation that cannot be undone: outlined, in the error colour.
-        dangerPill: "border-[1.5px] border-blad-ramka bg-transparent text-blad hover:border-blad hover:bg-blad-tlo",
+        dangerPill:
+          "border-[1.5px] border-blad-ramka bg-transparent text-blad hover:border-blad hover:bg-blad-tlo focus-visible:border-blad-ramka",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
-        pill: `min-h-11 rounded-full px-[22px] py-[13px] font-body text-base font-extrabold ${pillFocus}`,
-        pillLg: `min-h-11 rounded-full px-[30px] py-[17px] font-body text-lg font-extrabold ${pillFocus}`,
-        // The planner's card-level actions and its icon-only button (the bin).
-        pillSm: `min-h-11 rounded-full px-4 py-2.5 font-body text-[15px] font-extrabold ${pillFocus}`,
-        pillIcon: `size-11 rounded-full p-0 font-body ${pillFocus}`,
+        pill: ["min-h-11 rounded-full px-[22px] py-[13px] font-body text-base font-extrabold", pillFocus],
+        pillLg: ["min-h-11 rounded-full px-[30px] py-[17px] font-body text-lg font-extrabold", pillFocus],
+        // The planner's card-level actions.
+        pillSm: ["min-h-11 rounded-full px-4 py-2.5 font-body text-[15px] font-extrabold", pillFocus],
       },
     },
     defaultVariants: {

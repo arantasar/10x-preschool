@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { weekdayLabel } from "@/lib/day-plan-dates";
 import {
   dayNumber,
+  emptyRowText,
   monthRows,
   tileLabel,
   weekendLinkText,
@@ -184,7 +185,7 @@ export default function MonthGrid({ month, weeks, summaries }: MonthGridProps) {
 
             {row.isEmpty ? (
               <div className="bg-puste text-las-szary flex flex-col items-center justify-center gap-3 rounded-[18px] p-6 text-center text-base font-bold min-[900px]:col-span-5 min-[900px]:h-24 min-[900px]:flex-row min-[900px]:gap-[18px] min-[900px]:p-3">
-                <span>Ten tydzień czeka na temat.</span>
+                <span>{emptyRowText(row)}</span>
                 <a
                   href={`/plan/week?from=${row.monday}`}
                   className={cn(buttonVariants({ variant: "primary", size: "pill" }), "whitespace-normal")}

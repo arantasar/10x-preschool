@@ -779,6 +779,25 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 - Reguły e2e: `tests/e2e/E2E-RULES.md`
 - Lekcje o bramkach: `context/foundation/lessons.md` („Kryterium weryfikacji musi móc nie przejść”, „Bramka grepowa…”)
 
+## Addendum — po przeglądzie implementacji (2026-09-30)
+
+Odstępstwa od treści faz i poprawki przyjęte w `reviews/impl-review.md`. Fazy powyżej zostają w brzmieniu,
+w jakim były wykonywane; to, co niżej, ma nad nimi pierwszeństwo.
+
+- **Faza 3 §3 — „Zatwierdź wszystkie (N)” stoi w panelu formularza**, pod „Generuj tydzień”, a nie w prawej
+  kolumnie pod listą (commit `4824fcc`, po zamknięciu planu). Powód: akcja zostaje w zasięgu, gdy lista się
+  przewija. `type="button"` jest tam nośny — w formularzu goły przycisk uruchomiłby `generateWeek()`.
+  „Zapisz tydzień” i PDF zostają po prawej. Poniżej 900 px przycisk stoi nad listą. (F3)
+- **Faza 1 §3 — rozmiar `pillIcon` usunięty.** Nic go nie używa: kosz na karcie dnia to `pillSm` z tekstem. (F7)
+- **Faza 2 §2 — pusty wiersz na granicy miesięcy mówi o swoich dniach, nie o tygodniu**
+  („Te dni czekają na temat.” / „Ten dzień czeka na temat.”), bo `isEmpty` patrzy tylko na dni miesiąca,
+  a pozostałe dni tego tygodnia mogą mieć plany (`emptyRowText` w `month-grid.ts`). (F6)
+- **Faza 6 — trzy okna przed generowaniem mają testy odmowy** (`tests/e2e/regenerate-confirmation.spec.ts`,
+  ryzyko #3), widziane na czerwono przy `resolve(true)` w `useConfirmDialog`. (F1)
+- **Faza 6 — „Spróbuj ponownie” po nieudanym usunięciu albo regeneracji pyta od nowa**, zamiast powtarzać
+  zamrożone żądanie; stan zatwierdzenia jest czytany z `planRef`. (F2)
+- **Faza 6 §2 — okno odpowiada też na `close`** i ignoruje powtarzany Enter. (F4, F5)
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
@@ -795,9 +814,9 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Manual
 
-- [ ] 1.6 Pasek przy 390 / 768 / 1440 px zgodny z makietami, aktywna pigułka właściwa
-- [ ] 1.7 „Wyloguj się” widoczny i działa, nawigacja klawiaturą
-- [ ] 1.8 Zawartość trzech ekranów bez zmian względem produkcji
+- [x] 1.6 Pasek przy 390 / 768 / 1440 px zgodny z makietami, aktywna pigułka właściwa
+- [x] 1.7 „Wyloguj się” widoczny i działa, nawigacja klawiaturą
+- [x] 1.8 Zawartość trzech ekranów bez zmian względem produkcji
 
 ### Phase 2: Siatka miesiąca
 
@@ -813,12 +832,12 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Manual
 
-- [ ] 2.8 `/plan/month` przy 1440 px zgodne z makietą poza świadomymi odstępstwami
-- [ ] 2.9 Przy 390 i 768 px siatka jest listą tygodni
-- [ ] 2.10 Miesiąc zaczynający się w weekend i tydzień na granicy miesięcy
-- [ ] 2.11 Tydzień z dwoma hasłami i pusty tydzień z CTA
-- [ ] 2.12 Plan weekendowy w dopisku otwiera właściwy dzień
-- [ ] 2.13 Podgląd dnia: hover, Tab, Esc, mieści się w ekranie
+- [x] 2.8 `/plan/month` przy 1440 px zgodne z makietą poza świadomymi odstępstwami
+- [x] 2.9 Przy 390 i 768 px siatka jest listą tygodni
+- [x] 2.10 Miesiąc zaczynający się w weekend i tydzień na granicy miesięcy
+- [x] 2.11 Tydzień z dwoma hasłami i pusty tydzień z CTA
+- [x] 2.12 Plan weekendowy w dopisku otwiera właściwy dzień
+- [x] 2.13 Podgląd dnia: hover, Tab, Esc, mieści się w ekranie
 
 ### Phase 3: Ekran tygodnia
 
@@ -832,11 +851,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Manual
 
-- [ ] 3.6 `/plan/week` przy 390 / 768 / 1440 px, panel przyklejony od 900 px
-- [ ] 3.7 Pełny przebieg generowania, zapisu, akceptacji i usunięcia lokalnie
-- [ ] 3.8 Błąd generowania dnia i ponowienie czytelne
-- [ ] 3.9 Przełącznik zakresu i przyciski PDF
-- [ ] 3.10 Fokus widoczny, cele ≥ 44 px
+- [x] 3.6 `/plan/week` przy 390 / 768 / 1440 px, panel przyklejony od 900 px
+- [x] 3.7 Pełny przebieg generowania, zapisu, akceptacji i usunięcia lokalnie
+- [x] 3.8 Błąd generowania dnia i ponowienie czytelne
+- [x] 3.9 Przełącznik zakresu i przyciski PDF
+- [x] 3.10 Fokus widoczny, cele ≥ 44 px
 
 ### Phase 4: Ekran dnia
 
@@ -850,11 +869,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Manual
 
-- [ ] 4.6 `/plan?date=` przy 390 / 768 / 1440 px: pusty, roboczy, zaakceptowany
-- [ ] 4.7 Generowanie, edycja, „Zapytaj model”, akceptacja, cofnięcie, usunięcie
-- [ ] 4.8 Usuwanie odsunięte od akceptacji
-- [ ] 4.9 Dzień i tydzień spójne, przełącznik działa w obie strony
-- [ ] 4.10 Fokus widoczny, cele ≥ 44 px, pole daty czytelne
+- [x] 4.6 `/plan?date=` przy 390 / 768 / 1440 px: pusty, roboczy, zaakceptowany
+- [x] 4.7 Generowanie, edycja, „Zapytaj model”, akceptacja, cofnięcie, usunięcie
+- [x] 4.8 Usuwanie odsunięte od akceptacji
+- [x] 4.9 Dzień i tydzień spójne, przełącznik działa w obie strony
+- [x] 4.10 Fokus widoczny, cele ≥ 44 px, pole daty czytelne
 
 ### Phase 5: Słownictwo z makiet
 
@@ -869,9 +888,9 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Manual
 
-- [ ] 5.7 Trzy ekrany bez starego słownictwa
-- [ ] 5.8 Wydruki PDF z dniem niezatwierdzonym czytelne
-- [ ] 5.9 Nazwy dostępne kafelków i przycisków w nowym brzmieniu
+- [x] 5.7 Trzy ekrany bez starego słownictwa
+- [x] 5.8 Wydruki PDF z dniem niezatwierdzonym czytelne
+- [x] 5.9 Nazwy dostępne kafelków i przycisków w nowym brzmieniu
 
 ### Phase 6: Własne okno potwierdzeń
 
@@ -887,11 +906,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Manual
 
-- [ ] 6.8 Sześć okien: wygląd, Esc, pułapka fokusu, powrót fokusu
-- [ ] 6.9 Usuwanie i regeneracja: fokus na przycisku bezpiecznym
-- [ ] 6.10 Tydzień mieszany: zawężenie i okno z liczbą dni
-- [ ] 6.11 Podwójne kliknięcie nie otwiera dwóch okien
-- [ ] 6.12 Okno przy 390 px
+- [x] 6.8 Sześć okien: wygląd, Esc, pułapka fokusu, powrót fokusu
+- [x] 6.9 Usuwanie i regeneracja: fokus na przycisku bezpiecznym
+- [x] 6.10 Tydzień mieszany: zawężenie i okno z liczbą dni
+- [x] 6.11 Podwójne kliknięcie nie otwiera dwóch okien
+- [x] 6.12 Okno przy 390 px
 
 ### Phase 7: Sprzątanie i przekazanie
 
@@ -905,6 +924,6 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Manual
 
-- [ ] 7.6 Przegląd wszystkich ekranów przy 390 / 768 / 1440 px
-- [ ] 7.7 Ilustracja na landingu z tematami tygodni
+- [x] 7.6 Przegląd wszystkich ekranów przy 390 / 768 / 1440 px
+- [x] 7.7 Ilustracja na landingu z tematami tygodni
 - [ ] 7.8 Przejście na produkcji po merge'u

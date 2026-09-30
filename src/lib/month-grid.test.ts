@@ -4,6 +4,7 @@ import { weeksOfMonth } from "./day-plan-dates";
 import {
   acceptedCountLabel,
   clipText,
+  emptyRowText,
   LABEL_PART_MAX,
   monthCounts,
   monthRows,
@@ -157,6 +158,27 @@ describe("monthRows", () => {
     const [row] = monthRows("2026-10", ["2026-09-28"], [plan("2026-09-30", "Wrzesień")]);
     expect(row.heading).toBeNull();
     expect(row.isEmpty).toBe(true);
+  });
+});
+
+describe("emptyRowText", () => {
+  it("speaks of the week when the row shows all five days", () => {
+    const [row] = monthRows("2026-10", ["2026-10-05"], []);
+    expect(emptyRowText(row)).toBe("Ten tydzień czeka na temat.");
+  });
+
+  it("speaks only of its own days on the month's boundary", () => {
+    // 28-30 September are planned, 1-2 October are not: October's first row is
+    // empty, the week is not.
+    const [row] = monthRows("2026-10", ["2026-09-28"], [plan("2026-09-30", "Wrzesień")]);
+    expect(row.isEmpty).toBe(true);
+    expect(emptyRowText(row)).toBe("Te dni czekają na temat.");
+  });
+
+  it("speaks of one day when only one lies in the month", () => {
+    // August 2026 ends on a Monday.
+    const rows = monthRows("2026-08", weeksOfMonth("2026-08"), []);
+    expect(emptyRowText(rows[rows.length - 1])).toBe("Ten dzień czeka na temat.");
   });
 });
 

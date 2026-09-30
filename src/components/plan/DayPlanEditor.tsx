@@ -310,7 +310,13 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
     // The lock is read before the question and again after the answer: the
     // window does not block the page, so consent collected for an operation
     // that can no longer start must be dropped, not acted on.
-    if (accepted) {
+    //
+    // `planRef`, not `accepted`, for the reason `saveDraft` gives: "Spróbuj
+    // ponownie" re-enters this function through the closure built at the first
+    // attempt, and the `reconcile()` after a failure can bring back a day that
+    // is approved now although it was not when the teacher first clicked.
+    const approved = planRef.current?.plan.accepted_at ?? null;
+    if (approved) {
       if (isLocked()) return;
       if (!(await confirm(regenerateApprovedDayConfirmation()))) {
         return;
@@ -323,9 +329,15 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
         fetch("/api/day-plan/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan_date: planDate, prompt, confirm_replace: accepted !== null }),
+          body: JSON.stringify({ plan_date: planDate, prompt, confirm_replace: approved !== null }),
         }),
       "generating",
+      // Re-enters `generate` rather than replaying the request: the consent
+      // frozen in `confirm_replace` was given for the plan that was on screen
+      // then, and a retry is asked again against the one that is there now.
+      () => {
+        void generate();
+      },
     );
   }
 
@@ -499,7 +511,9 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
    * "are you sure?".
    */
   async function deletePlan(): Promise<void> {
-    if (!plan) return;
+    // `planRef`, not `plan`: the retry below re-enters this closure, and the
+    // failed attempt's `reconcile()` may have found the day already gone.
+    if (!planRef.current) return;
     // Before the question and after the answer - see `useConfirmDialog` above.
     // A second click while the window is open gets `false` from `confirm`, so
     // it neither opens a second window nor sends a second request.
@@ -510,7 +524,15 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
     if (isLocked()) return;
     // No headers and no body: the route reads the day from the query string,
     // exactly as `GET` does.
-    void mutate(() => fetch(`/api/day-plan?date=${planDate}`, { method: "DELETE" }), "deleting");
+    void mutate(
+      () => fetch(`/api/day-plan?date=${planDate}`, { method: "DELETE" }),
+      "deleting",
+      // Asked again on "Spróbuj ponownie": after a failure the screen shows
+      // whatever the server holds now, and the first answer was not about that.
+      () => {
+        void deletePlan();
+      },
+    );
   }
 
   const remaining = PROMPT_MAX - prompt.length;

@@ -35,6 +35,18 @@ export function ConfirmDialog({ request, onAnswer }: ConfirmDialogProps) {
   const bodyId = useId();
   const danger = request.tone === "danger";
 
+  // One answer per window. The hook resolves whichever question is open, so a
+  // late event from this window - its own `close`, fired after the next
+  // question has already opened - must not be able to answer that one.
+  const answered = useRef(false);
+  function reply(confirmed: boolean): void {
+    if (answered.current) {
+      return;
+    }
+    answered.current = true;
+    onAnswer(confirmed);
+  }
+
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) {
@@ -67,7 +79,24 @@ export function ConfirmDialog({ request, onAnswer }: ConfirmDialogProps) {
         // Escape. Answered through the hook, which unmounts this component; the
         // effect's cleanup then closes the dialog - one path for every exit.
         event.preventDefault();
-        onAnswer(false);
+        reply(false);
+      }}
+      onClose={(event) => {
+        // The safety net: a window closed by anything other than Escape or its
+        // two buttons still answers, so the hook's resolver is never left set -
+        // that would make every later `confirm()` resolve `false` until reload.
+        // `open` is checked because a `close` can arrive for a window that has
+        // since been reopened (the effect above re-running).
+        if (!event.currentTarget.open) {
+          reply(false);
+        }
+      }}
+      onKeyDown={(event) => {
+        // Enter held down on the button that opened the window keeps repeating
+        // into it, and the focused button would answer a question nobody read.
+        if (event.key === "Enter" && event.repeat) {
+          event.preventDefault();
+        }
       }}
       className="bg-mleko text-las rounded-panel m-auto max-h-[calc(100vh-32px)] w-[min(520px,calc(100vw-32px))] overflow-y-auto border-0 p-7 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.5)] backdrop:bg-[rgba(31,59,45,0.55)] sm:p-10"
     >
@@ -87,7 +116,7 @@ export function ConfirmDialog({ request, onAnswer }: ConfirmDialogProps) {
           variant="outlinePill"
           size="pill"
           onClick={() => {
-            onAnswer(false);
+            reply(false);
           }}
           className="cursor-pointer whitespace-normal"
         >
@@ -99,7 +128,7 @@ export function ConfirmDialog({ request, onAnswer }: ConfirmDialogProps) {
           variant={danger ? "dangerPill" : "primary"}
           size="pill"
           onClick={() => {
-            onAnswer(true);
+            reply(true);
           }}
           className="cursor-pointer whitespace-normal"
         >
