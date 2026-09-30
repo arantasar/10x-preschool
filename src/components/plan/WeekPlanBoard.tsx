@@ -952,6 +952,23 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
                 ? "Zapisuję tydzień…"
                 : "Generuj tydzień"}
         </Button>
+        {/* In the panel, next to the other week-level action, so it stays in
+            reach while the list scrolls. `type="button"` is load-bearing: inside
+            this form a bare button submits, and approving would then run
+            `generateWeek()` - the operation that replaces what is being approved. */}
+        {acceptableCount > 0 && (
+          <Button
+            type="button"
+            variant="outlinePill"
+            size="pill"
+            disabled={isBusy}
+            onClick={acceptWeek}
+            className="w-full cursor-pointer"
+          >
+            <Check className="size-4" />
+            {busy === "accepting" ? "Zatwierdzam…" : `Zatwierdź wszystkie (${String(acceptableCount)})`}
+          </Button>
+        )}
         <p className="text-las-szary text-sm">
           Wpisz jedno hasło na cały tydzień. Ułożymy z niego pięć różnych tematów — po jednym na dzień roboczy — i
           wygenerujemy propozycje zajęć dla każdego dnia osobno.
@@ -1037,36 +1054,21 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
           ))}
         </ol>
 
-        {(heldSetIsComplete || acceptableCount > 0) && (
+        {heldSetIsComplete && (
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
-            {acceptableCount > 0 && (
-              <Button
-                type="button"
-                variant="outlinePill"
-                size="pill"
-                disabled={isBusy}
-                onClick={acceptWeek}
-                className="cursor-pointer"
-              >
-                <Check className="size-4" />
-                {busy === "accepting" ? "Zatwierdzam…" : `Zatwierdź wszystkie (${String(acceptableCount)})`}
-              </Button>
-            )}
-            {heldSetIsComplete && (
-              <Button
-                type="button"
-                variant="accent"
-                size="pill"
-                disabled={isBusy}
-                onClick={() => {
-                  retryWrite();
-                }}
-                className="cursor-pointer"
-              >
-                <Sparkles className="size-4" />
-                {busy === "saving" ? "Zapisuję tydzień…" : "Zapisz tydzień"}
-              </Button>
-            )}
+            <Button
+              type="button"
+              variant="accent"
+              size="pill"
+              disabled={isBusy}
+              onClick={() => {
+                retryWrite();
+              }}
+              className="cursor-pointer"
+            >
+              <Sparkles className="size-4" />
+              {busy === "saving" ? "Zapisuję tydzień…" : "Zapisz tydzień"}
+            </Button>
           </div>
         )}
 
