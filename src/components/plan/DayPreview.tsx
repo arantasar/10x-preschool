@@ -35,39 +35,42 @@ export default function DayPreview({ state, placement }: DayPreviewProps) {
       id={DAY_PREVIEW_ID}
       role="tooltip"
       className={cn(
-        "absolute z-20 w-72 max-w-[calc(100vw-2rem)]",
-        placement.vertical === "below" ? "top-full pt-1" : "bottom-full pb-1",
-        placement.horizontal === "start" ? "left-0" : "right-0",
+        // Below 900 px the grid is a list and the card always opens under the
+        // tile, aligned left; the placement applies from 900 px up.
+        "absolute top-full left-0 z-20 w-72 max-w-[calc(100vw-2rem)] pt-1",
+        placement.vertical === "above" &&
+          "min-[900px]:top-auto min-[900px]:bottom-full min-[900px]:pt-0 min-[900px]:pb-1",
+        placement.horizontal === "end" && "min-[900px]:right-0 min-[900px]:left-auto",
       )}
     >
-      <div className="rounded-xl border border-white/15 bg-slate-900/95 p-3 text-left shadow-xl backdrop-blur-xl">
-        <p className="text-xs font-medium text-white first-letter:uppercase">{formatPlanDate(state.date)}</p>
-        {state.status === "loading" && <p className="mt-2 text-xs text-blue-100/70">Wczytuję aktywności…</p>}
+      <div className="border-linia bg-mleko text-las shadow-card rounded-2xl border p-4 text-left">
+        <p className="text-sm font-extrabold first-letter:uppercase">{formatPlanDate(state.date)}</p>
+        {state.status === "loading" && <p className="text-las-szary mt-2 text-sm">Wczytuję aktywności…</p>}
         {state.status === "empty" && (
-          <p className="mt-2 text-xs text-blue-100/80">
+          <p className="text-las-szary mt-2 text-sm">
             Ten dzień nie ma już planu. Odśwież stronę, żeby zobaczyć aktualny miesiąc.
           </p>
         )}
         {state.status === "error" && (
-          <div className="mt-2 text-xs text-amber-100">
-            <p>{state.message}</p>
-            <p className="mt-1 text-amber-100/80">Kliknij dzień, żeby otworzyć pełny widok.</p>
+          <div className="text-blad mt-2 text-sm">
+            <p className="font-bold">{state.message}</p>
+            <p className="mt-1">Kliknij dzień, żeby otworzyć pełny widok.</p>
           </div>
         )}
         {state.status === "ready" && (
           <>
-            <p className="mt-0.5 text-[11px] text-blue-100/60">
+            <p className="text-mech mt-0.5 text-[13px] font-bold">
               {state.view.plan.accepted_at === null ? "roboczy" : "zaakceptowany"}
             </p>
-            <p className="mt-2 text-xs text-blue-100/70">{clipForLabel(state.view.plan.prompt)}</p>
-            {state.view.plan.theme && <p className="text-xs text-purple-200">{state.view.plan.theme}</p>}
+            <p className="text-las-szary mt-2 text-sm">{clipForLabel(state.view.plan.prompt)}</p>
+            {state.view.plan.theme && <p className="text-sm font-bold">{state.view.plan.theme}</p>}
             <ol className="mt-2 space-y-2">
               {state.view.activities.map((activity, index) => (
-                <li key={activity.id} className="text-xs">
-                  <p className="font-medium text-white">
+                <li key={activity.id} className="text-sm">
+                  <p className="font-extrabold">
                     {index + 1}. {activity.title}
                   </p>
-                  <p className="mt-0.5 line-clamp-3 text-blue-100/70">
+                  <p className="text-las-szary mt-0.5 line-clamp-3">
                     {clipText(activity.description, PREVIEW_DESCRIPTION_MAX)}
                   </p>
                 </li>

@@ -94,6 +94,8 @@ export interface SeedDayPlanOptions {
   readonly activities: readonly SeedActivity[];
   /** `true` zapisuje `accepted_at`, czyli plan zaakceptowany zamiast roboczego. */
   readonly accepted?: boolean;
+  /** Temat dnia — wycinek zarysu tygodnia. Pominiety zostawia `null`, jak dzien planowany osobno. */
+  readonly theme?: string;
 }
 
 /**
@@ -120,6 +122,7 @@ export async function seedDayPlan(options: SeedDayPlanOptions): Promise<string> 
       user_id: options.userId,
       plan_date: options.planDate,
       prompt: options.prompt,
+      theme: options.theme ?? null,
       created_at: now,
       accepted_at: options.accepted ? now : null,
     })

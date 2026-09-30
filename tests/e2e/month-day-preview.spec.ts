@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { deleteSeededPlans, ensureTeacher, seedDayPlan, TEACHER_A } from "./support/supabase-admin";
-import { activitiesFor, plusDays, uniqueStamp, uniqueWeekStart } from "./support/test-data";
+import { activitiesFor, plusDays, uniqueStamp, uniqueWeekStartWithinMonth } from "./support/test-data";
 import { waitForIslands } from "./support/hydration";
 
 /**
@@ -25,6 +25,10 @@ import { waitForIslands } from "./support/hydration";
  * pobrane" jest robiona dopiero wtedy, gdy popover dnia *ostatniego* jest
  * widoczny. Jego opóźnienie wystartowało jako ostatnie, więc gdyby timery dni
  * wcześniejszych nie zostały anulowane, ich żądania już by poleciały.
+ *
+ * **Tydzień w obrębie jednego miesiąca.** Siatka renderuje dzień spoza miesiąca
+ * jako pustą komórkę, nie kafelek, więc zasiany tydzień nie może leżeć na
+ * granicy miesięcy (`uniqueWeekStartWithinMonth`).
  *
  * **Tekst sprawdzany wyłącznie w popoverze.** Pod `astro dev` pasek narzędzi
  * Astro trzyma propsy wysp w shadow DOM, który `getByText` przebija
@@ -69,7 +73,7 @@ test.describe("Ryzyko #10 — podgląd dnia w siatce miesiąca", () => {
   }
 
   test("ryzyko #10: podgląd z klawiatury pokazuje aktywności dnia z fokusem", async ({ page }) => {
-    const monday = uniqueWeekStart();
+    const monday = uniqueWeekStartWithinMonth();
     const tuesday = plusDays(monday, 1);
     const [mondayTitle, tuesdayTitle] = await seedDays([monday, tuesday]);
 
@@ -91,7 +95,7 @@ test.describe("Ryzyko #10 — podgląd dnia w siatce miesiąca", () => {
   test("ryzyko #10: przeciągnięcie kursora przez rząd pobiera wyłącznie dzień, na którym kursor stanął", async ({
     page,
   }) => {
-    const monday = uniqueWeekStart();
+    const monday = uniqueWeekStartWithinMonth();
     const week = [0, 1, 2, 3, 4].map((offset) => plusDays(monday, offset));
     const titles = await seedDays(week);
 
@@ -128,7 +132,7 @@ test.describe("Ryzyko #10 — podgląd dnia w siatce miesiąca", () => {
   });
 
   test("ryzyko #10: dzień obejrzany drugi raz nie jest pobierany ponownie", async ({ page }) => {
-    const monday = uniqueWeekStart();
+    const monday = uniqueWeekStartWithinMonth();
     const tuesday = plusDays(monday, 1);
     const [, tuesdayTitle] = await seedDays([monday, tuesday]);
 

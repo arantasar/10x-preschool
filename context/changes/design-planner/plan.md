@@ -787,11 +787,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [x] 1.1 Lint, build, testy jednostkowe
-- [x] 1.2 Pasek ma aktywną pozycję nawigacji
-- [x] 1.3 Pasek bez kosmicznych klas
-- [x] 1.4 Trzy strony używają wspólnego szkieletu
-- [x] 1.5 Cały e2e zielony
+- [x] 1.1 Lint, build, testy jednostkowe — 9167b80
+- [x] 1.2 Pasek ma aktywną pozycję nawigacji — 9167b80
+- [x] 1.3 Pasek bez kosmicznych klas — 9167b80
+- [x] 1.4 Trzy strony używają wspólnego szkieletu — 9167b80
+- [x] 1.5 Cały e2e zielony — 9167b80
 
 #### Manual
 
@@ -803,13 +803,13 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [ ] 2.1 Lint, build
-- [ ] 2.2 Testy modelu siatki przechodzą
-- [ ] 2.3 Strona miesiąca bez przypięcia
-- [ ] 2.4 Brak kosmicznych klas w siatce
-- [ ] 2.5 Siatka nie renderuje weekendu jako kolumny
-- [ ] 2.6 Nowy test wysokości przechodzi i był widziany na czerwono
-- [ ] 2.7 Cały e2e zielony
+- [x] 2.1 Lint, build
+- [x] 2.2 Testy modelu siatki przechodzą
+- [x] 2.3 Strona miesiąca bez przypięcia
+- [x] 2.4 Brak kosmicznych klas w siatce
+- [x] 2.5 Siatka nie renderuje weekendu jako kolumny
+- [x] 2.6 Nowy test wysokości przechodzi i był widziany na czerwono
+- [x] 2.7 Cały e2e zielony
 
 #### Manual
 
