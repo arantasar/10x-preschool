@@ -491,9 +491,9 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Automated
 
-- [x] 2.1 `npm test` zielony, w tym `index.test.ts` i `accept.test.ts`
-- [x] 2.2 `npm run lint` zielony
-- [x] 2.3 Typy bez błędów (`astro sync` + `tsc --noEmit` albo `lint`)
+- [x] 2.1 `npm test` zielony, w tym `index.test.ts` i `accept.test.ts` — 5047f42
+- [x] 2.2 `npm run lint` zielony — 5047f42
+- [x] 2.3 Typy bez błędów (`astro sync` + `tsc --noEmit` albo `lint`) — 5047f42
 
 #### Manual
 
@@ -503,10 +503,10 @@ Brak migracji. Psucia w rytuale mutacji są wyłącznie lokalne i cofane `supaba
 
 #### Automated
 
-- [ ] 3.1 `npm run test:db:api` zielony, dwa przebiegi pod rząd
-- [ ] 3.2 `npm test` nie uruchamia `*.db.test.ts` (grep == 0; > 0 bez wpisu w `exclude`)
-- [ ] 3.3 Bez stosu `npm run test:db:api` kończy się kodem ≠ 0, nie „skipped”
-- [ ] 3.4 `npm run lint` zielony
+- [x] 3.1 `npm run test:db:api` zielony, dwa przebiegi pod rząd
+- [x] 3.2 `npm test` nie uruchamia `*.db.test.ts` (grep == 0; > 0 bez wpisu w `exclude`)
+- [x] 3.3 Bez stosu `npm run test:db:api` kończy się kodem ≠ 0, nie „skipped”
+- [x] 3.4 `npm run lint` zielony
 
 #### Manual
 
