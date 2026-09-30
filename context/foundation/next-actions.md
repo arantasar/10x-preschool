@@ -291,7 +291,7 @@ nie ma:
 - **pozostałe bramki** przed merge'em do `master`, który deployuje wprost na produkcję;
 - **stabilny pierwszy przebieg e2e** — dziś pierwszy pełny przebieg po zmianie zależności pada
   (Vite re-optymalizuje zależności w trakcie i przeładowuje stronę), drugi przechodzi. W CI
-  każdy przebieg jest pierwszy. Poprawka i dowody: `context/changes/design-foundation/follow-ups/review-fixes.md` F9.
+  każdy przebieg jest pierwszy. Poprawka i dowody: `context/archive/2026-09-29-design-foundation/follow-ups/review-fixes.md` F9.
 
 **Przesunięty przed Krok 14 (2026-09-29).** Warunek wejścia pierwszego slice'a płatności.
 Rozszerz przy okazji mapę ryzyk o płatności: webhook przyznający dostęp cudzemu kontu, limit
@@ -335,7 +335,7 @@ wezmą je gotowe, zamiast projektować w trakcie implementacji.
 ekrany 01–14: landing, logowanie, rejestracja, konto założone, nowe propozycje, plan miesiąca,
 cennik, paywall, FAQ, regulamin, kontakt, reset hasła, nowe hasło. Makiet nie mają stany „pierwszy
 miesiąc pełny" i licznik darmowego tygodnia, a treść paywalla i cennika rozjeżdża się z
-`monetization.md` §Decyzje (`context/changes/design-foundation/research.md` §6). Slice'y Kroków
+`monetization.md` §Decyzje (`context/archive/2026-09-29-design-foundation/research.md` §6). Slice'y Kroków
 13–14 składają je z istniejących komponentów pakietu, zamiast wracać do Claude Design.
 
 **Na co uważać w `/10x-research` i `/10x-plan`:**
