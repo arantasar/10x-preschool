@@ -48,6 +48,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx astro sync
+      # The CLI picks the Postgres image from supabase/.temp/postgres-version,
+      # which `supabase link` writes locally with production's version and
+      # .gitignore keeps out of the repo. Without it CI gets the CLI's own
+      # default (17.6.1.106 on CLI 2.98.2), and that image crashed the server
+      # ("server closed the connection unexpectedly") on day_plan_write's anon
+      # call in this job's first run, while production's 17.6.1.127 passes.
+      # Pinned to production's version so CI tests the Postgres that ships;
+      # bump it when the linked project is upgraded.
+      - name: Pin Postgres to the production version
+        run: mkdir -p supabase/.temp && echo "17.6.1.127" > supabase/.temp/postgres-version
       - name: Start the local Supabase stack
         run: npx supabase start -x studio,imgproxy,realtime,storage-api,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta
       # After `start`, before the tests. `-o env` prints KEY="value"; $GITHUB_ENV
