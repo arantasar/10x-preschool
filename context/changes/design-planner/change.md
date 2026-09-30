@@ -1,7 +1,7 @@
 ---
 change_id: design-planner
 title: Design planner
-status: implementing
+status: implemented
 created: 2026-09-30
 updated: 2026-09-30
 archived_at: null

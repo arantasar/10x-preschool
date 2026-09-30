@@ -897,11 +897,11 @@ czerwony pierwszy przebieg z błędami „chunk does not exist” powtórzyć, z
 
 #### Automated
 
-- [x] 7.1 Lint, build, testy
-- [x] 7.2 Izolacja usunięta z kodu
-- [x] 7.3 Tło kosmiczne usunięte
-- [x] 7.4 Reguła o potwierdzeniach zapisana
-- [x] 7.5 Cały e2e zielony
+- [x] 7.1 Lint, build, testy — b60f753
+- [x] 7.2 Izolacja usunięta z kodu — b60f753
+- [x] 7.3 Tło kosmiczne usunięte — b60f753
+- [x] 7.4 Reguła o potwierdzeniach zapisana — b60f753
+- [x] 7.5 Cały e2e zielony — b60f753
 
 #### Manual
 
