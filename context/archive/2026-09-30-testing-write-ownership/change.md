@@ -1,10 +1,10 @@
 ---
 change_id: testing-write-ownership
 title: Test rollout phase 3 — protecting writes and ownership (integration + pgTAP)
-status: impl_reviewed
+status: archived
 created: 2026-09-30
 updated: 2026-09-30
-archived_at: null
+archived_at: 2026-09-30T20:57:19Z
 ---
 
 ## Notes
