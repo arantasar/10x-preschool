@@ -216,6 +216,25 @@ Właściwe odwieszenie: pełna macierz na skalibrowanym sędzim aż do zieleni.
 - Ostatni wpis jest zielony.
 - Odnotuj granicę: outline na podzbiorze dni nie jest osobnym trybem.
 
+#### 4. Poprawka planu z 2026-10-01: sędzia na wejściu `week` (decyzja właściciela)
+
+**Powód**: dwa czerwone przebiegi (`gate-runs.md`). Po poprawce promptów z przebiegu 1 wszystkie naruszenia są w trybie `week` i żadne nie wskazuje treści wyjścia: Haiku cytuje hasło z własnej wiadomości (`Hasło: …`) jako naruszenie. Kalibracja tego nie łapie, bo nie ma fixture'u `kind: "week"`. Poprawka promptu nie sięga tej przyczyny. Właściciel wybrał a + b w ustalonej kolejności, z Sonnetem jako planem awaryjnym.
+
+Ten punkt świadomie odchodzi od dwóch zapisów planu:
+- „Na oblaną kalibrację odpowiada wyłącznie wyższa klasa sędziego”. Tu kalibracja przechodziła, ale była ślepa na tryb `week`.
+- Wejście sędziego było poza zakresem. Zmieniamy wyłącznie wiadomość do sędziego (`buildJudgeUserMessage`) i zadanie w `SYSTEM_MESSAGE`. Rubryka (`content-safety-rubric.pl.md`) i sygnatura `judgeContentSafety` zostają bez zmian.
+
+Kolejność, każdy krok przed następnym:
+
+1. **Fixture'y tygodniowe na starym formacie.** Do `CONTENT_SAFETY_FIXTURES` dochodzą dwa fixture'y `kind: "week"`:
+   - bezpieczny: prawdziwe wyjście outline'u dla „Halloween — duchy i krew” po poprawce promptu;
+   - niebezpieczny: skonstruowany, z oczekiwanym cytatem na słowie spoza hasła, żeby cytat samego hasła nie mógł go zaliczyć.
+
+   Kalibracja na **starym** formacie musi wyjść czerwono na fixture'ze bezpiecznym. To dowód, że fixture łapie wadę (`lessons.md` §4). Wynik idzie do `gate-runs.md`.
+2. **Wiadomość do sędziego.** Hasło lub polecenie nauczyciela trafia do wyraźnie oznaczonej sekcji kontekstu. Zadanie mówi wprost, że kontekstu się nie ocenia i nie cytuje. Kalibracja z 7 fixture'ami przechodzi w całości.
+3. **Pełna macierz, dwa zielone przebiegi z rzędu.** Generowanie idzie z temperaturą 0.8, a naruszenia zmieniały się między przebiegami. Każda zmiana promptu lub sędzia zeruje licznik.
+4. **Plan awaryjny.** Jeśli po kroku 2 zostają wyłącznie błędy osądu (zła klauzula, bezpieczne hasło kontrolne oznaczone), sędzia idzie szczebel wyżej: aktualny Sonnet z listy modeli OpenRouter. Wracamy wtedy do kroku 2: kalibracja, potem dwa zielone przebiegi.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -359,10 +378,10 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Automated
 
-- [x] 2.1 `npm test` przechodzi, w tym `content-safety-report.test.ts`
-- [x] 2.2 `npm run lint` przechodzi
-- [x] 2.3 Grep na `generateDayActivities(keyword, undefined` w pliku macierzy pusty (na `master` jedna linia)
-- [x] 2.4 Grep na `GATE_MODES` z `"day"` pusty (na `master` trafia w linię 35)
+- [x] 2.1 `npm test` przechodzi, w tym `content-safety-report.test.ts` — 9f98fd2
+- [x] 2.2 `npm run lint` przechodzi — 9f98fd2
+- [x] 2.3 Grep na `generateDayActivities(keyword, undefined` w pliku macierzy pusty (na `master` jedna linia) — 9f98fd2
+- [x] 2.4 Grep na `GATE_MODES` z `"day"` pusty (na `master` trafia w linię 35) — 9f98fd2
 
 #### Manual
 
@@ -372,9 +391,12 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Automated
 
-- [ ] 3.1 Ostatni przebieg `npm run test:gate` kończy się kodem 0, raport „0 naruszeń” z oboma modelami i czterema trybami
-- [ ] 3.2 Obie warstwy passed, nie skipped
-- [ ] 3.3 Po poprawce promptu `npm test` i `npm run lint` przechodzą
+- [x] 3.1 Ostatni przebieg `npm run test:gate` kończy się kodem 0, raport „0 naruszeń” z oboma modelami i czterema trybami
+- [x] 3.2 Obie warstwy passed, nie skipped
+- [x] 3.3 Po poprawce promptu `npm test` i `npm run lint` przechodzą
+- [x] 3.7 Fixture `week` bezpieczny wychodzi czerwono na starym formacie wiadomości sędziego
+- [x] 3.8 Kalibracja po zmianie wiadomości sędziego — 7 testów passed
+- [x] 3.9 Dwa zielone przebiegi pełnej macierzy z rzędu na tym samym sędzim i promptach
 
 #### Manual
 
