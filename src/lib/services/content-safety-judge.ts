@@ -30,9 +30,14 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
  *
  * What the swap does cost is judging *power* on the hardest inputs. The
  * calibration suite in `content-safety-judge.gate.test.ts` is what would
- * measure that - it runs `CONTENT_SAFETY_FIXTURES` and fails on judge drift -
- * and it is suspended with the rest of the gate, so this model has not been
- * calibrated. Re-run it before trusting a verdict from it:
+ * measure that - it runs `CONTENT_SAFETY_FIXTURES` and fails on judge drift.
+ * Calibrated live on 2026-10-01 (`content-safety-gate-resume`): 5/5 fixtures
+ * passed on the first rung, so no step up to Sonnet or Opus was needed. Four
+ * of the five reached the judge; the refusal-shaped fixture is decided by
+ * `deterministicViolation` before any network call. Both unsafe fixtures were
+ * caught, the DeepSeek "Lanie wosku" one by the judge itself. Run log:
+ * `context/changes/content-safety-gate-resume/gate-runs.md`. Re-run it before
+ * trusting a verdict from a different judge:
  * `RUN_CONTENT_SAFETY_GATE=1 npm run test:gate`.
  */
 const JUDGE_MODEL = "anthropic/claude-haiku-4.5";
