@@ -142,10 +142,9 @@ nie wprowadza nowej roli — placówka i dyrektor zostają poza zakresem.
 
 ## Access Control Changes
 
-**Dziś:** jedna rola (nauczyciel/ka), model płaski, rejestracja i logowanie e-mail + hasło, sesja
-w ciasteczkach, dane każdego konta prywatne i odseparowane politykami RLS per operacja i rola.
-Trasy pod prefiksem chronionym są niedostępne bez sesji. Nie ma resetu ani zmiany hasła, nie ma
-usunięcia konta.
+**Dziś:** jedna rola (nauczyciel/ka), model płaski, rejestracja i logowanie e-mail + hasło, dane
+każdego konta prywatne i odseparowane od pozostałych kont. Ekrany planowania są niedostępne bez
+zalogowania. Nie ma resetu ani zmiany hasła, nie ma usunięcia konta.
 
 **Role: bez zmian.** Nie powstaje rola operatora ani administratora. (Ustalenie 2026-10-01.)
 
@@ -170,8 +169,8 @@ prywatności musi obejmować przechowywanie e-maili osób, które nie mają kont
 działają, osoba jest zapisana na cenę założycielską i dostanie wiadomość e-mail. Zapis jest zgodą
 na ten kontakt. Żadna płatność nie jest symulowana.
 
-**Bez zmian:** wszystko pod prefiksem chronionym pozostaje niedostępne bez sesji; izolacja kont
-obowiązuje każdą nową trasę zapisu i odczytu tak samo jak istniejące.
+**Bez zmian:** ekrany planowania pozostają niedostępne bez zalogowania; izolacja kont obowiązuje
+każdą nową ścieżkę zapisu i odczytu tak samo jak istniejące.
 
 ## Success Criteria
 
@@ -214,7 +213,7 @@ Ten kamień dokłada trzy (ustalenie użytkownika 2026-10-01):
    bezpieczną dla klienta (zarządzanie subskrypcją, zwrot, obsługa wygaśnięcia). Połowa integracji
    jest gorsza niż jej brak, bo dotyczy cudzych pieniędzy.
 
-**Blast radius wskazany przez użytkownika:** licznik w czterech trasach modelu (błąd zatrzymuje
+**Blast radius wskazany przez użytkownika:** licznik wspólny dla wszystkich trybów generowania (błąd zatrzymuje
 generowanie naraz wszędzie) i odwieszenie bramki (zielony przebieg, który nie pilnuje wszystkiego) —
 oba podniesione do guardraili 1 i 2.
 
@@ -223,7 +222,7 @@ oba podniesione do guardraili 1 i 2.
 **Brak bramki czasowej — decyzja świadoma, podjęta 2026-10-01 po przedstawieniu kosztu.**
 
 Koszt postawiony wprost: rdzeń (kroki 1–6) to reset i zmiana hasła, usunięcie konta, cztery strony,
-formularz z ochroną przed spamem, licznik w czterech trasach modelu, odwieszenie bramki i fake door
+formularz z ochroną przed spamem, licznik we wszystkich trybach generowania, odwieszenie bramki i fake door
 — wyraźnie więcej niż trzy tygodnie pracy po godzinach; płatności (krok 7) to zmiana osobnej
 wielkości. Nazwana pułapka: system zostawiony w połowie przerobiony, a w wypadku płatności —
 integracja wpięta w połowie.
@@ -284,7 +283,7 @@ przejściu bramy: ≥ 10 zapisów kont aktywnych na cenę założycielską w ci�
   > gdy będzie miał własne funkcje (`M-04`).
 - FR-029: Odwiedzający może zapisać się na cenę założycielską i dostaje potwierdzenie, że płatności jeszcze nie działają. Priority: must-have. Change: new
   > Socrates: Kontrargument uznany za trafny: „zapis jest tani, zapłata droga — 10 zapisów nie dowodzi
-  > 10 płacących”. Rozstrzygnięcie: FR utrzymany, ale **zmienia się brama Stripe** — liczą się
+  > 10 płacących”. Rozstrzygnięcie: FR utrzymany, ale **zmienia się brama płatności** — liczą się
   > wyłącznie zapisy kont, które faktycznie planowały w aplikacji. Zapis anonimowy zostaje dostępny
   > (faza 2), ale do progu się nie wlicza. Definicja „konta aktywnego” — §Open Questions.
 
@@ -335,7 +334,7 @@ przejściu bramy: ≥ 10 zapisów kont aktywnych na cenę założycielską w ci�
 **Bilans rundy Sokratejskiej (2026-10-01):** 17 FR-ów, każdy z kontrargumentem. Przepisane albo
 zawężone: FR-023, FR-027, FR-028, FR-031, FR-035, FR-037 (6). Utrzymane z warunkiem: FR-022, FR-024,
 FR-032, FR-033, FR-034, FR-036 (6). Utrzymane z kontrargumentem przeniesionym do NFR: FR-026.
-Ryzyko przyjęte: FR-030. Bez uznanego kontrargumentu: FR-025, FR-038. Zmiana poza FR: brama Stripe
+Ryzyko przyjęte: FR-030. Bez uznanego kontrargumentu: FR-025, FR-038. Zmiana poza FR: brama płatności
 liczy wyłącznie zapisy kont aktywnych (FR-029).
 
 ## User Stories
@@ -382,7 +381,7 @@ odbierane.** (Ustalenie użytkownika 2026-10-01.)
 - **Wyjście:** generowanie dochodzi do skutku albo nauczycielka dostaje komunikat, kiedy będzie
   znów możliwe (FR-027) — a po wejściu płatności, na planie darmowym, cennik (FR-031).
 - **Pula przed płatnościami:** wszyscy mają niewidoczny limit fair use, który zatrzymuje wyłącznie
-  nadużycie. **Po bramie Stripe:** okres próbny i Basic — fair use; Darmowy — pięć dni roboczych
+  nadużycie. **Po bramie płatności:** okres próbny i Basic — fair use; Darmowy — pięć dni roboczych
   w miesiącu.
 - **Czego reguła nie robi:** nie odbiera ani nie ukrywa zaplanowanych dni, nie blokuje ręcznej
   edycji, zatwierdzania, usuwania ani druku tygodnia (FR-037, FR-038).
@@ -404,7 +403,7 @@ odporność puli na równoczesne wywołania (Guardrail 1) i zakres bramki (Guard
 ## Constraints & Compatibility
 
 **Zachowanie wsteczne.** Istniejące ekrany planowania zachowują adresy i punkty wejścia; logowanie
-i rejestracja działają jak dziś. Wszystko pod prefiksem chronionym pozostaje za logowaniem (FR-038).
+i rejestracja działają jak dziś. Ekrany planowania pozostają za logowaniem (FR-038).
 
 **Cztery niezmienniki `M-02` wiążą każdy slice** (izolacja kont, zatwierdzony dzień nie ginie bez
 zgody, protokół licznika generacji przy zapisie partii, bezpieczeństwo treści) — plus Guardraile 1–3
@@ -414,7 +413,7 @@ tego kamienia.
 od zera w miesiącu wejścia, nie liczy się wstecz, żaden plan nie jest dotykany. (Ustalenie
 2026-10-01.) Stan planu i licznik to nowe dane per konto; podlegają izolacji kont, a stan planu
 zapisuje wyłącznie system albo właściciel produktu (§Access Control Changes). Przypomnienie
-z `M-02`: dodanie kolumny do tabeli planów wymaga świadomego rozstrzygnięcia jej uprawnień zapisu.
+z `M-02`: dodanie nowego pola do zapisywanych planów wymaga świadomego rozstrzygnięcia jego uprawnień zapisu.
 
 **Dane osób bez konta.** Formularz kontaktowy i zapis anonimowy przechowują e-maile osób, które nie
 mają konta — polityka prywatności musi to obejmować (§Access Control Changes).
@@ -422,7 +421,7 @@ mają konta — polityka prywatności musi to obejmować (§Access Control Chang
 **Zależności zewnętrzne** (ustalenie 2026-10-01):
 
 - **Treść regulaminu i polityki prywatności** — od księgowego/prawnika; blokuje FR-025.
-- **Konto operatora płatności z BLIK i Przelewy24** — przed krokiem 7 (FR-032, FR-033).
+- **Konto operatora płatności z BLIK-iem i przelewem online** — przed krokiem 7 (FR-032, FR-033).
 
 **Odwieszenie bramki bezpieczeństwa treści** obejmuje każdy dopuszczony model i każdy tryb
 generowania (Guardrail 2; reguła z `lessons.md`). Bramka zawieszona z powodu kosztu wraca do pracy
@@ -430,8 +429,8 @@ w tym kamieniu.
 
 **Ramy (ustalenie 2026-10-01):** produkt pozostaje aplikacją webową; skala mała, bez zmian;
 brak twardego terminu; praca po godzinach. Ograniczenia istniejącego systemu obowiązują dalej:
-merge do gałęzi głównej jest wydaniem na produkcję bez kroku zatwierdzenia, a bramki CI są doradcze
-(ochrona gałęzi niedostępna).
+każde scalenie zmian jest od razu wydaniem na produkcję, bez kroku zatwierdzenia, a automatyczne
+kontrole jakości są doradcze — nie mogą zatrzymać wydania.
 
 **Sokrates przy skali ×100:** reguła zużycia zmienia się w jednym miejscu — **fair use staje się
 kosztem**. Przy tysiącach kont nadużycie przez zakładanie nowych kont co miesiąc (ryzyko przyjęte
@@ -458,7 +457,7 @@ Wybrane przez użytkownika 2026-10-01:
 1. **Brak wyniku walidacji (Krok 11).** Chęć płacenia i rzeczywista intensywność użycia są
    niezweryfikowane — decyzja użytkownika 2026-10-01, żeby iść bez nich. Kamień niesie walidację
    sam (fake door z bramą). Właściciel: Janusz. Blokuje: nie.
-2. **Definicja „konta aktywnego” dla bramy Stripe** (FR-029) — co znaczy „faktycznie planowało”:
+2. **Definicja „konta aktywnego” dla bramy płatności** (FR-029) — co znaczy „faktycznie planowało”:
    jeden wygenerowany dzień, tydzień, aktywność w ostatnim miesiącu? Właściciel: Janusz. Blokuje:
    slice fake door (musi wiedzieć, co liczy).
 3. **Próg fair use** — liczby z `monetization.md` §4.3 (~150 dni-generacji) są szacunkiem bez danych
