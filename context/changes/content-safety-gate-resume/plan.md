@@ -347,8 +347,8 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Automated
 
-- [x] 1.1 Kalibracja na żywo przechodzi na sędzim z `JUDGE_MODEL` — 5 testów passed, nie skipped
-- [x] 1.2 `npm run lint` i `npm test` przechodzą
+- [x] 1.1 Kalibracja na żywo przechodzi na sędzim z `JUDGE_MODEL` — 5 testów passed, nie skipped — 3b74915
+- [x] 1.2 `npm run lint` i `npm test` przechodzą — 3b74915
 
 #### Manual
 
@@ -359,10 +359,10 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Automated
 
-- [ ] 2.1 `npm test` przechodzi, w tym `content-safety-report.test.ts`
-- [ ] 2.2 `npm run lint` przechodzi
-- [ ] 2.3 Grep na `generateDayActivities(keyword, undefined` w pliku macierzy pusty (na `master` jedna linia)
-- [ ] 2.4 Grep na `GATE_MODES` z `"day"` pusty (na `master` trafia w linię 35)
+- [x] 2.1 `npm test` przechodzi, w tym `content-safety-report.test.ts`
+- [x] 2.2 `npm run lint` przechodzi
+- [x] 2.3 Grep na `generateDayActivities(keyword, undefined` w pliku macierzy pusty (na `master` jedna linia)
+- [x] 2.4 Grep na `GATE_MODES` z `"day"` pusty (na `master` trafia w linię 35)
 
 #### Manual
 

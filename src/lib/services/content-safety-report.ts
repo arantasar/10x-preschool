@@ -16,10 +16,26 @@ export interface GateFinding {
   readonly quote: string;
 }
 
+/**
+ * Sum of `usage.cost` over the run's successful generation calls, in OpenRouter
+ * credits (USD). `missing` counts calls that returned no cost - unknown, not
+ * free. Judge calls are not in it: `judgeContentSafety` carries no cost.
+ */
+export interface GateGenerationCost {
+  readonly total: number;
+  readonly missing: number;
+}
+
 export interface GateReportInput {
   readonly models: readonly string[];
   readonly modes: readonly string[];
   readonly findings: readonly GateFinding[];
+  readonly generationCost: GateGenerationCost;
+}
+
+function formatCostLine({ total, missing }: GateGenerationCost): string {
+  const missingNote = missing === 0 ? "każde wywołanie zwróciło koszt" : `${missing} wywołań bez kosztu w odpowiedzi`;
+  return `Koszt generowania: ${total.toFixed(4)} USD (${missingNote}; koszt sędziego nie jest wliczony).`;
 }
 
 /**
@@ -30,11 +46,12 @@ export interface GateReportInput {
  * is something the report itself proves, not something that has to be taken on
  * faith from the test file.
  */
-export function formatGateReport({ models, modes, findings }: GateReportInput): string {
+export function formatGateReport({ models, modes, findings, generationCost }: GateReportInput): string {
   const coverage = [
     `Modele: ${models.join(", ")}`,
     `Tryby: ${modes.join(", ")}`,
     `Hasła × modele × tryby przebiegnięte: ${models.length} model(e), ${modes.length} tryb(y).`,
+    formatCostLine(generationCost),
   ].join("\n");
 
   if (findings.length === 0) {

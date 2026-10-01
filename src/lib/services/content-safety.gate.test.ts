@@ -23,16 +23,19 @@ import { GATE_SUSPENDED, warnIfSuspended } from "./gate-suspension";
 const WEEK_DATES = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18"] as const;
 
 /**
- * The three reachable day configurations plus the week outline -
- * `activity-generator.ts:100-111` and the S-03 implementation review: coverage
- * counts per configuration, not per prompt.
+ * Four modes, one per production route: `day-weekday` (`generate.ts`, which
+ * always passes `planDate`), `day-themed` (`week/day.ts`), `week`
+ * (`week/outline.ts`) and `activity` (`refine.ts`). Coverage counts per
+ * configuration, not per prompt (S-03 implementation review). The context-free
+ * `day` baseline was dropped on 2026-10-01 (`content-safety-gate-resume`): no
+ * route sends it, so grading it paid for a configuration no teacher can reach.
  *
  * `activity` is the refine path (`refine-activity.pl.md`, `follow-up-questions`),
  * driven by `REFINE_GATE_CASES` rather than `GATE_KEYWORDS`: its input is an
  * activity and an instruction, not a hasło. It merged without a run of this
  * gate (see `gate-suspension.ts`) and is the first mode to run once it is back.
  */
-const GATE_MODES = ["day", "day-weekday", "day-themed", "week", "activity"] as const;
+const GATE_MODES = ["day-weekday", "day-themed", "week", "activity"] as const;
 type GateMode = (typeof GATE_MODES)[number];
 
 /**
@@ -137,6 +140,18 @@ gateDescribe("content safety gate — live matrix", () => {
     async () => {
       const findings: GateFinding[] = [];
 
+      // Summed over every successful generation call; a `null` cost is missing
+      // data, counted separately rather than as zero. Judge calls are not in it -
+      // `judgeContentSafety` does not return a cost.
+      const generationCost = { total: 0, missing: 0 };
+      function addCost(cost: number | null): void {
+        if (cost === null) {
+          generationCost.missing += 1;
+        } else {
+          generationCost.total += cost;
+        }
+      }
+
       function record(mode: GateMode, model: string, keyword: string, clause: string, quote: string): void {
         findings.push({ model, keyword, mode, clause, quote });
       }
@@ -153,25 +168,20 @@ gateDescribe("content safety gate — live matrix", () => {
       const combos: Combo[] = ALLOWED_MODELS.flatMap((model) => GATE_KEYWORDS.map((keyword) => ({ model, keyword })));
 
       await mapWithConcurrency(combos, GATE_CONCURRENCY, async ({ model, keyword }) => {
-        const [outline, day, dayWeekday] = await Promise.allSettled([
+        const [outline, dayWeekday] = await Promise.allSettled([
           generateWeekOutline(keyword, WEEK_DATES, { model }),
-          generateDayActivities(keyword, undefined, { model }),
           generateDayActivities(keyword, { planDate: WEEK_DATES[0] }, { model }),
         ]);
 
         if (outline.status === "fulfilled") {
+          addCost(outline.value.cost);
           await judge("week", model, keyword, weekInput(keyword, outline.value.themes));
         } else {
           record("week", model, keyword, "Awaria wywołania", String(outline.reason));
         }
 
-        if (day.status === "fulfilled") {
-          await judge("day", model, keyword, dayInput(keyword, day.value.activities));
-        } else {
-          record("day", model, keyword, "Awaria wywołania", String(day.reason));
-        }
-
         if (dayWeekday.status === "fulfilled") {
+          addCost(dayWeekday.value.cost);
           await judge("day-weekday", model, keyword, dayInput(keyword, dayWeekday.value.activities));
         } else {
           record("day-weekday", model, keyword, "Awaria wywołania", String(dayWeekday.reason));
@@ -191,6 +201,7 @@ gateDescribe("content safety gate — live matrix", () => {
               (reason: unknown) => ({ status: "rejected" as const, reason }),
             );
             if (themed.status === "fulfilled") {
+              addCost(themed.value.cost);
               await judge("day-themed", model, keyword, dayInput(keyword, themed.value.activities));
             } else {
               record("day-themed", model, keyword, "Awaria wywołania", String(themed.reason));
@@ -208,13 +219,14 @@ gateDescribe("content safety gate — live matrix", () => {
       await mapWithConcurrency(refineCombos, GATE_CONCURRENCY, async ({ model, refineCase }) => {
         try {
           const refined = await refineActivity(refineCase.activity, refineCase.instruction, { model });
+          addCost(refined.cost);
           await judge("activity", model, refineCase.name, activityInput(refineCase.instruction, refined.activity));
         } catch (error) {
           record("activity", model, refineCase.name, "Awaria wywołania", describeError(error));
         }
       });
 
-      const report = formatGateReport({ models: ALLOWED_MODELS, modes: GATE_MODES, findings });
+      const report = formatGateReport({ models: ALLOWED_MODELS, modes: GATE_MODES, findings, generationCost });
       // eslint-disable-next-line no-console -- the report is the gate's actual product; it must reach stdout.
       console.log(report);
       writeGitHubStepSummary(report);

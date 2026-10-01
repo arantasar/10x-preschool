@@ -331,7 +331,10 @@ Dowodzi trasy i RLS naraz, bez HTTP, middleware i przeglądarki.
 
 - **Lokalizacja bramki**: `src/lib/services/content-safety.gate.test.ts` — macierz
   żywych wywołań (każdy dopuszczony model × każde hasło z fixture'u × każdy
-  osiągalny tryb: `day`, `day-weekday`, `day-themed`, `week`). Kalibracja
+  tryb produkcyjny: `day-weekday` z `generate.ts`, `day-themed` z
+  `week/day.ts`, `week` z `week/outline.ts` i `activity` z `refine.ts`, ten
+  ostatni na przypadkach `REFINE_GATE_CASES` zamiast haseł). Baseline `day` bez
+  kontekstu odpadł 2026-10-01, bo żadna trasa go nie wysyła. Kalibracja
   sędziego mieszka osobno: `src/lib/services/content-safety-judge.gate.test.ts`.
   Oba to warstwa bramki (`*.gate.test.ts`), poza `npm test`, uruchamiana przez
   `npm run test:gate` (wymaga `OPENROUTER_API_KEY`).
