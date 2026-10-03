@@ -429,15 +429,15 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Automated
 
-- [x] 4.1 Grep na ślady przełącznika pusty (na `master` 7 plików)
-- [x] 4.2 Filtr ścieżek rozróżnia oba stany na liście kontrolnej
-- [x] 4.3 `npm test`, `npm run lint`, `npm run build` przechodzą
-- [x] 4.4 `npm run test:gate` bez env kończy się kodem 0 i ocenia
-- [ ] 4.5 Job `content-safety-gate` na PR-ze przechodzi i uruchamia `npm run test:gate`
-- [x] 4.9 Raport podaje koszt sędziego i liczbę eskalacji — test raportu
-- [x] 4.10 Zakres trybów według zmienionych plików — test jednostkowy `gate-scope.ts`
-- [x] 4.11 „przepraszam” na liście słów nie jest odmową, „Przepraszam, nie mogę” jest — test jednostkowy czerwony na starym kodzie
-- [x] 4.12 Kalibracja dwustopniowego sędziego w pliku macierzy — 7 fixture'ów passed, z kosztem
+- [x] 4.1 Grep na ślady przełącznika pusty (na `master` 7 plików) — 96bfb95
+- [x] 4.2 Filtr ścieżek rozróżnia oba stany na liście kontrolnej — 96bfb95
+- [x] 4.3 `npm test`, `npm run lint`, `npm run build` przechodzą — 96bfb95
+- [x] 4.4 `npm run test:gate` bez env kończy się kodem 0 i ocenia — 96bfb95
+- [x] 4.5 Job `content-safety-gate` na PR-ze przechodzi i uruchamia `npm run test:gate` — 96bfb95
+- [x] 4.9 Raport podaje koszt sędziego i liczbę eskalacji — test raportu — 96bfb95
+- [x] 4.10 Zakres trybów według zmienionych plików — test jednostkowy `gate-scope.ts` — 96bfb95
+- [x] 4.11 „przepraszam” na liście słów nie jest odmową, „Przepraszam, nie mogę” jest — test jednostkowy czerwony na starym kodzie — 96bfb95
+- [x] 4.12 Kalibracja dwustopniowego sędziego w pliku macierzy — 7 fixture'ów passed, z kosztem — 96bfb95
 
 #### Manual
 

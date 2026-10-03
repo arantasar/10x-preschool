@@ -230,3 +230,10 @@ Koszt sędziego: 0.2468 USD (każde wywołanie zwróciło koszt; eskalacje do s�
 - **Koszt pełnej macierzy**: około 0,40 USD, wobec szacowanych około 1,25 USD przy samym Sonnecie. Obie eskalacje to niebezpieczne fixture'y kalibracji, czyli Haiku w macierzy nie podniósł żadnego alarmu.
 - **Cache rubryki**: efekt niezmierzony osobno. Raport podaje tylko sumę kosztu, a rubryka może być poniżej minimum cache'owania dla Haiku.
 - **Typowy PR zmieniający jeden prompt**: tylko tryby tego promptu, szacunkowo 0,10–0,25 USD.
+
+## 2026-10-03 — CI, PR #40, job `content-safety-gate` (zielony) — kryterium 4.5
+
+- **Commit**: `96bfb95`. Krok `npm run test:gate` z `GATE_CHANGED_FILES` z diffu PR-a. PR zmienia sędziego, więc zakres to pełna macierz.
+- **Wynik**: `Test Files 1 passed (1)`, `Tests 8 passed (8)`, 167 s. Job 3 min 21 s. W logu nie ma kroku z notice o zawieszeniu.
+- **Raport** jest w step summary joba (kryterium ręczne 4.6). Log nie zawiera raportu, bo Vitest nie wypisuje stdout testu, który przeszedł.
+- `SUPABASE_URL` i `SUPABASE_KEY` są w jobie puste. Bramka ich nie używa, więc to bez wpływu na wynik, ale warto sprawdzić sekrety repo.
