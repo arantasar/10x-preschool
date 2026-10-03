@@ -1,9 +1,10 @@
 ---
 change_id: content-safety-gate-resume
 title: F-02 — Odwieszenie bramki bezpieczeństwa treści na pełnej macierzy
-status: impl_reviewed
+status: archived
 created: 2026-10-01
 updated: 2026-10-03
+archived_at: 2026-10-03T19:29:47Z
 ---
 
 ## Notes
