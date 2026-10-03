@@ -79,16 +79,23 @@ jobs:
   # `OPENROUTER_API_KEY` secret and must never run on every push - only when a
   # prompt, the model allow-list, or the safety machinery itself changes.
   #
-  # SUSPENDED on 2026-09-19, on cost — see `src/lib/services/gate-suspension.ts`.
-  # The change detection below is deliberately KEPT: a PR that touches a prompt
-  # still gets a loud warning annotation saying the gate did not grade it. That
-  # is the difference between a gate that is off and a gate that is gone, and it
-  # is the whole reason this job was not simply deleted. Turning it back on is
-  # two edits: set `RUN_CONTENT_SAFETY_GATE: "1"` in the env below and swap the
-  # notice step back for `npm run test:gate`.
+  #
+  # Path filter: everything that changes what the gate grades or how - prompts
+  # and schemas, the model allow-list, the judge and report
+  # (`content-safety*`), the calibration fixtures and refine cases, the retry
+  # policy (`gate-*`) and the gate config. Resumed on 2026-10-01
+  # (`content-safety-gate-resume`); every run of a change goes to that
+  # change's `gate-runs.md` (test-plan.md §6.5).
+  #
+  # Cost, cut on 2026-10-03: a two-stage judge (Haiku screens, Sonnet decides
+  # only what Haiku flags), one calibration per run, and the mode scope below.
+  # The step summary prints generation and judge cost separately.
   content-safety-gate:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    # A green local run takes ~3 min (calibration + matrix); the matrix test
+    # alone has a 10 min ceiling, plus calibration and install.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -97,26 +104,29 @@ jobs:
         id: changes
         run: |
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -qE \
-            '^src/lib/services/prompts/.*\.(pl\.md|schema\.json)$|^src/lib/services/allowed-models\.ts$|^src/lib/services/content-safety|^vitest\.gate\.config\.ts$'; then
+            '^src/lib/services/prompts/.*\.(pl\.md|schema\.json)$|^src/lib/services/allowed-models\.ts$|^src/lib/services/content-safety|^src/lib/services/__fixtures__/content-safety\.ts$|^src/lib/services/gate-|^vitest\.gate\.config\.ts$'; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
-      # No npm install, no model calls, no spend. Just the notice — which is the
-      # point: this PR changed something the gate exists to grade, and nothing
-      # graded it.
-      - name: Report that the gate is suspended
+      - uses: actions/setup-node@v4
+        if: steps.changes.outputs.run == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+        if: steps.changes.outputs.run == 'true'
+      - run: npx astro sync
+        if: steps.changes.outputs.run == 'true'
+      # The PR's changed files narrow the matrix to the modes a changed prompt
+      # feeds; anything else the filter above matches means the full matrix
+      # (`src/lib/services/gate-scope.ts`). Every allowed model, always.
+      - name: npm run test:gate
         if: steps.changes.outputs.run == 'true'
         run: |
-          NOTICE="Bramka bezpieczenstwa tresci jest ZAWIESZONA (decyzja 2026-09-19, koszt). Ten PR zmienia prompt, liste modeli albo sama bramke, i NIC tego nie ocenilo. Uruchom lokalnie: RUN_CONTENT_SAFETY_GATE=1 npm run test:gate"
-          echo "::warning title=Content-safety gate suspended::$NOTICE"
-          {
-            echo "### ⚠️ Content-safety gate suspended"
-            echo
-            echo "$NOTICE"
-            echo
-            echo "Zmienione pliki objete bramka:"
-            git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -E \
-              '^src/lib/services/prompts/.*\.(pl\.md|schema\.json)$|^src/lib/services/allowed-models\.ts$|^src/lib/services/content-safety|^vitest\.gate\.config\.ts$' \
-              | sed 's/^/- /'
-          } >> "$GITHUB_STEP_SUMMARY"
+          export GATE_CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          npm run test:gate
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}

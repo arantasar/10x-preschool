@@ -37,13 +37,19 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
  * `kind: "week"` fixtures now address. With the format fixed, the errors that
  * remained were judgment errors, so the judge stepped up one rung to Sonnet
  * 5.5 ($2/$10 per Mtok, 2x Haiku, still under half of Opus 5). It is outside
- * the product's model families, so the argument above holds. Calibrated live
- * on the seven fixtures, run log:
- * `context/changes/content-safety-gate-resume/gate-runs.md`. Re-run the
- * calibration before trusting a verdict from a different judge:
- * `npm run test:gate`.
+ * the product's model families, so the argument above holds.
+ *
+ * Two stages since 2026-10-03, on cost: the full Sonnet matrix plus iteration
+ * drained the account (gate-runs.md, run 6). Haiku screens every output that
+ * reaches the judge; only a Haiku "unsafe" goes to Sonnet, whose verdict is
+ * final. Haiku's measured errors were false alarms, which this stage removes.
+ * Its weak spot is a miss: an unsafe output Haiku calls safe never reaches
+ * Sonnet. The unsafe calibration fixtures are what guard that. Calibrate the
+ * pair before trusting a verdict from a different one:
+ * `npm run test:gate -- -t calibration`.
  */
-const JUDGE_MODEL = "anthropic/claude-sonnet-5.5";
+const SCREEN_JUDGE_MODEL = "anthropic/claude-haiku-4.5";
+const FINAL_JUDGE_MODEL = "anthropic/claude-sonnet-5.5";
 
 const JUDGE_TIMEOUT_MS = 30_000;
 
@@ -56,11 +62,12 @@ const JUDGE_TIMEOUT_MS = 30_000;
  * in-flight requests"` the moment more than a couple of judge calls overlap -
  * even though the judge's actual verdicts cost a fraction of a cent each. A
  * single sequential call (Phase 3's calibration) never showed this, because it
- * never had a second in-flight request to collide with. Sized well above what
- * a three-field JSON verdict plus reasoning needs, so this bounds the
- * reservation without truncating a genuine deliberation.
+ * never had a second in-flight request to collide with. Cut from 4000 to 1000
+ * on 2026-10-03: the request enables no reasoning, so a verdict is a
+ * three-field JSON with one quote, and the reservation scales with this number
+ * on a balance that is now kept low on purpose.
  */
-const JUDGE_MAX_TOKENS = 4000;
+const JUDGE_MAX_TOKENS = 1000;
 
 export interface DayPlanJudgeInput {
   readonly kind: "day";
@@ -98,6 +105,14 @@ export interface SafetyVerdict {
   readonly quote: string | null;
 }
 
+/** A verdict plus what reaching it cost - the gate's report sums both. */
+export interface JudgedVerdict extends SafetyVerdict {
+  /** `usage.cost` over every judge call made, in USD. `0` when the deterministic layer decided; `null` when a call returned no cost. */
+  readonly cost: number | null;
+  /** Whether the screening verdict went to the final judge. */
+  readonly escalated: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Deterministic pre-layer - cheaper and more reliable than the judge, and run
 // first so the judge is never asked about anything these can decide on their
@@ -113,8 +128,19 @@ export interface SafetyVerdict {
  * "Hasło nieodpowiednie dla wieku" section explicitly forbids. Anchored on word
  * boundaries for the same reason `auth-error-messages.test.ts` anchors its
  * English-word check.
+ *
+ * "przepraszam" counts only where a sentence opens with it, the shape of a
+ * model apologizing for itself ("Przepraszam, nie mogę…"). Mid-sentence it is
+ * a polite word a redirect teaches - found live in `content-safety-gate-resume`
+ * (gate-runs.md, runs 2 and 6): "Magiczne słowa: proszę, dziękuję, przepraszam".
  */
-const REFUSAL_MARKERS = ["przepraszam", "niestety", "nie mog(?:ę|e)", "nie jestem w stanie", "jako (?:model|asystent)"];
+const REFUSAL_MARKERS = [
+  "(?<=^\\s*|[.!?…]\\s*)przepraszam",
+  "niestety",
+  "nie mog(?:ę|e)",
+  "nie jestem w stanie",
+  "jako (?:model|asystent)",
+];
 
 /** A model answering in English despite the prompt's "wyłącznie po polsku" is a distinct, cheaper-to-catch failure. */
 const ENGLISH_MARKERS = ["the", "and", "with", "please", "sorry", "activity", "children", "teacher"];
@@ -311,7 +337,7 @@ function extractContent(data: unknown): string | null {
  * call): a safety verdict is worth the extra latency the product's short
  * creative task is not.
  */
-async function callJudge(userMessage: string): Promise<SafetyVerdict> {
+async function callJudge(model: string, userMessage: string): Promise<{ verdict: SafetyVerdict; cost: number | null }> {
   let response: Response;
   try {
     response = await fetch(OPENROUTER_URL, {
@@ -323,7 +349,7 @@ async function callJudge(userMessage: string): Promise<SafetyVerdict> {
         "X-OpenRouter-Title": "10xPreschool-content-safety-gate",
       },
       body: JSON.stringify({
-        model: JUDGE_MODEL,
+        model,
         messages: [
           { role: "system", content: SYSTEM_MESSAGE },
           { role: "user", content: userMessage },
@@ -335,6 +361,11 @@ async function callJudge(userMessage: string): Promise<SafetyVerdict> {
         provider: { data_collection: "deny" },
         temperature: 0,
         max_tokens: JUDGE_MAX_TOKENS,
+        // The rubric is the same in every call, and it is most of the input.
+        // OpenRouter's automatic caching for Anthropic caches up to the last
+        // cacheable block; a prefix below the provider's minimum just goes
+        // uncached.
+        cache_control: { type: "ephemeral" },
       }),
     });
   } catch (cause) {
@@ -381,7 +412,13 @@ async function callJudge(userMessage: string): Promise<SafetyVerdict> {
     throw new GenerationError("invalid", "Werdykt sędziego nie spełnia kontraktu.", { cause: result.error });
   }
 
-  return { safe: result.data.bezpieczne, clause: result.data.klauzula, quote: result.data.cytat };
+  const usage = isRecord(data) ? data.usage : undefined;
+  const cost = isRecord(usage) && typeof usage.cost === "number" ? usage.cost : null;
+  return { verdict: { safe: result.data.bezpieczne, clause: result.data.klauzula, quote: result.data.cytat }, cost };
+}
+
+function addCosts(a: number | null, b: number | null): number | null {
+  return a === null || b === null ? null : a + b;
 }
 
 /**
@@ -389,12 +426,20 @@ async function callJudge(userMessage: string): Promise<SafetyVerdict> {
  *
  * Runs the deterministic layer first; only reaches the network when shape,
  * count, language and redirect all pass, so a response the deterministic layer
- * already knows is wrong never pays for a judge call.
+ * already knows is wrong never pays for a judge call. Then the two stages
+ * described at `SCREEN_JUDGE_MODEL`: at most one call to each, never a second
+ * ask of the same judge.
  */
-export async function judgeContentSafety(input: JudgeInput): Promise<SafetyVerdict> {
+export async function judgeContentSafety(input: JudgeInput): Promise<JudgedVerdict> {
   const violation = deterministicViolation(input);
   if (violation) {
-    return violation;
+    return { ...violation, cost: 0, escalated: false };
   }
-  return callJudge(buildJudgeUserMessage(input));
+  const message = buildJudgeUserMessage(input);
+  const screen = await callJudge(SCREEN_JUDGE_MODEL, message);
+  if (screen.verdict.safe) {
+    return { ...screen.verdict, cost: screen.cost, escalated: false };
+  }
+  const final = await callJudge(FINAL_JUDGE_MODEL, message);
+  return { ...final.verdict, cost: addCosts(screen.cost, final.cost), escalated: true };
 }

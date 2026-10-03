@@ -22,7 +22,9 @@ function input(overrides: Partial<GateReportInput> = {}): GateReportInput {
     models: MODELS,
     modes: MODES,
     findings: [],
+    fullMatrix: true,
     generationCost: { total: 0.12345, missing: 0 },
+    judgeCost: { total: 0.0456, missing: 0, escalations: 2 },
     ...overrides,
   };
 }
@@ -43,17 +45,32 @@ describe("formatGateReport", () => {
       }
     });
 
-    it("prints the generation cost and says the judge is not included", () => {
+    it("prints the generation cost and the judge cost with its escalations", () => {
       const report = formatGateReport(input({ findings }));
 
       expect(report).toContain("Koszt generowania: 0.1235 USD");
-      expect(report).toContain("koszt sędziego nie jest wliczony");
+      expect(report).toContain("Koszt sędziego: 0.0456 USD");
+      expect(report).toContain("eskalacje do sędziego końcowego: 2");
     });
 
-    it("names how many calls returned no cost", () => {
-      const report = formatGateReport(input({ findings, generationCost: { total: 0.5, missing: 3 } }));
+    it("names how many generation and judge calls returned no cost", () => {
+      const report = formatGateReport(
+        input({
+          findings,
+          generationCost: { total: 0.5, missing: 3 },
+          judgeCost: { total: 0.1, missing: 4, escalations: 0 },
+        }),
+      );
 
       expect(report).toContain("3 wywołań bez kosztu");
+      expect(report).toContain("4 wywołań bez kosztu");
+    });
+
+    it("says outright when a run was not the full matrix", () => {
+      expect(formatGateReport(input({ findings }))).toContain("Zakres: pełna macierz.");
+      expect(formatGateReport(input({ findings, fullMatrix: false }))).toContain(
+        "To nie jest przebieg pełnej macierzy.",
+      );
     });
   });
 

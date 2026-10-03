@@ -59,7 +59,7 @@ nowy fundament to `F-02`, a pierwszy nowy slice `S-16`. Pozycje `S-23`…`S-27` 
 
 | ID   | Change ID                  | Outcome (user can …)                                                                                     | Prerequisites                                    | PRD refs                       | Status   |
 | ---- | -------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------ | -------- |
-| F-02 | content-safety-gate-resume | (foundation) bramka bezpieczeństwa treści znów pracuje na każdym dopuszczonym modelu i w każdym trybie   | —                                                | Guardrail 2, Success Primary #5 | ready    |
+| F-02 | content-safety-gate-resume | (foundation) bramka bezpieczeństwa treści znów pracuje na każdym dopuszczonym modelu i w każdym trybie   | —                                                | Guardrail 2, Success Primary #5 | done     |
 | S-16 | password-reset             | wrócić do konta przez e-mail po zapomnieniu hasła i zastać swoje plany                                   | —                                                | FR-022, US-04                  | ready    |
 | S-17 | password-change            | zmienić hasło po zalogowaniu, wylogowując pozostałe sesje konta                                          | —                                                | FR-023                         | ready    |
 | S-18 | account-deletion           | usunąć swoje konto razem ze wszystkimi planami                                                           | —                                                | FR-024                         | ready    |
@@ -93,9 +93,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Backend / API:** present — `src/pages/api/day-plan/*`, warstwa serwisowa w `src/lib/services/`. **Cztery trasy wołają model:** `generate.ts`, `week/outline.ts`, `week/day.ts`, `refine.ts`. Licznika zużycia brak.
 - **Data:** present — 13 migracji w `supabase/migrations/`, `day_plans` + `activities` z RLS per operacja i rola, pisarze partii dnia i tygodnia. Brak danych stanu planu konta, licznika i listy zapisów.
 - **Auth:** partial — klient SSR Supabase, middleware z `PROTECTED_ROUTES = ["/plan"]`, signin/signup/signout. **Brak** resetu hasła, zmiany hasła i usuwania konta; aplikacja nie ma klucza serwisowego.
-- **Deploy / infra:** present — Cloudflare Workers Builds deployuje `master` (merge = wydanie); `ci.yml`: joby `ci`, `db` (doradczy), `content-safety-gate`. E2E poza CI (Krok 9 `next-actions.md`).
+- **Deploy / infra:** present — Cloudflare Workers Builds deployuje `master` (merge = wydanie); `ci.yml`: joby `ci`, `db` (doradczy), `content-safety-gate` (doradczy, na PR-ach z dopasowaną ścieżką uruchamia `npm run test:gate`). E2E poza CI (Krok 9 `next-actions.md`).
 - **Observability:** absent — świadomie nieawansowana: żadne FR v3 jej nie implikuje.
-- **Poza sześcioma warstwami:** brak wysyłki e-maili z aplikacji (e-maile auth wysyła Supabase), brak ochrony formularzy przed automatami, brak integracji płatności. Bramka bezpieczeństwa treści **zawieszona** od 2026-09-19 (`src/lib/services/gate-suspension.ts`; `npm run test:gate` wychodzi kodem `2`).
+- **Poza sześcioma warstwami:** brak wysyłki e-maili z aplikacji (e-maile auth wysyła Supabase), brak ochrony formularzy przed automatami, brak integracji płatności. Bramka bezpieczeństwa treści pracuje od 2026-10-01 (`F-02`): `npm run test:gate` ocenia bez flag, sędzia dwustopniowy (Haiku 4.5, a jego alarmy rozstrzyga Sonnet 5.5), około 0,40 USD za pełną macierz, przebiegi w `context/changes/content-safety-gate-resume/gate-runs.md`.
 
 ## Foundations
 
@@ -109,9 +109,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-16, S-17, S-18, S-19, S-20, S-21
 - **Blockers:** —
 - **Unknowns:**
-  - Koszt przebiegu — czy pełna macierz (każdy model × słowo kluczowe × tryb) jest do utrzymania, czy węższa macierz z ogona po Kroku 2 wystarcza do Guardrail 2? Owner: Janusz. Block: nie — rozstrzyga `/10x-plan`, ale węższa macierz nie może pominąć żadnego modelu ani trybu.
+  - Koszt przebiegu — czy pełna macierz (każdy model × słowo kluczowe × tryb) jest do utrzymania, czy węższa macierz z ogona po Kroku 2 wystarcza do Guardrail 2? Owner: Janusz. Block: nie — rozstrzyga `/10x-plan`, ale węższa macierz nie może pominąć żadnego modelu ani trybu. **Rozstrzygnięte 2026-10-01:** macierz bez nieprodukcyjnego `day` (4 tryby = 4 trasy), około 0,40 USD za pełną macierz (generowanie 0,15 + sędzia 0,25), a na PR-ze zmieniającym jeden prompt tylko tryby tego promptu (`gate-runs.md`).
 - **Risk:** Pierwszy, bo cel `quality` nie odkłada pozycji ochronnej za wygodne, a dług `S-15` rośnie z każdym dniem na produkcji. Pułapka nazwana w Guardrail 2: przebieg zielony na części macierzy wygląda jak odwieszenie, a nim nie jest — kryterium musi umieć nie przejść (`lessons.md` §4). Pierwszy przebieg może być czerwony na `activity`; wtedy fundament niesie poprawkę promptu, nie tylko przestawienie flagi.
-- **Status:** ready
+- **Status:** done
 
 ## Slices
 

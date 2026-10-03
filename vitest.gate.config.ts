@@ -7,17 +7,6 @@
 // from its own file, exactly like `vitest.config.ts` does, is the only path
 // that works.
 import { getViteConfig } from "astro/config";
-import { GATE_SUSPENDED, GATE_SUSPENSION_NOTICE } from "./src/lib/services/gate-suspension";
-
-// Printed from the config rather than only from the suites, because Vitest's
-// default reporter collapses the stderr of a file whose tests all skip - so the
-// per-suite warning is invisible in exactly the run that needs it most
-// (`npm run test:gate` with no flags). The config is evaluated in the main
-// process, before any reporter, so this line always lands.
-if (GATE_SUSPENDED) {
-  // eslint-disable-next-line no-console
-  console.warn(`\n⚠️  ${GATE_SUSPENSION_NOTICE}\n`);
-}
 
 export default getViteConfig(
   {
@@ -42,6 +31,8 @@ export default getViteConfig(
       // reservation, even with a positive balance. `fileParallelism: false`
       // serializes gate files against each other; each file's own test-level
       // concurrency (see `GATE_CONCURRENCY` in the matrix file) is unaffected.
+      // Since 2026-10-03 calibration lives in the matrix file and there is one
+      // gate file; this stays so a second one cannot reintroduce the race.
       fileParallelism: false,
     },
   },

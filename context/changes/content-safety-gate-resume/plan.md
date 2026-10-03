@@ -296,6 +296,27 @@ Bramka staje się stanem domyślnym repo. CI ocenia każdy PR, który zmienia to
 
 **Contract**: proza. Status w tabeli At a glance zmieniaj z odpornością na przerównanie (`lessons.md` §5).
 
+#### 4. Poprawka planu z 2026-10-03: tańsza bramka (decyzja właściciela)
+
+**Powód**: koszt. Faza 3 przeszła na Sonnecie 5.5, ale doładowanie konta OpenRouter wyczerpało się w przebiegu 6. Sędzia jest drogą częścią przebiegu, a raport nie mierzy jego kosztu. Bramka, która przy każdej zmianie promptu kosztuje wielokrotność miesięcznego użycia aplikacji, nie przetrwa. Właściciel doładował konto ostatni raz w tym miesiącu, więc na żywo idą tylko jedna kalibracja, jeden pełny przebieg lokalny (4.4) i przebieg CI na PR-ze (4.5).
+
+Zakres, wszystko offline poza dwoma przebiegami:
+
+1. **Koszt sędziego w raporcie.** `judgeContentSafety` zwraca obok werdyktu koszt (`usage.cost`, suma obu stopni) i informację o eskalacji. Raport drukuje koszt generowania i koszt sędziego osobno. To świadomie odwraca zapis „Nie liczymy kosztu sędziego” z §What We're NOT Doing.
+2. **Sędzia dwustopniowy.** Każde wyjście, które przejdzie warstwę deterministyczną, ocenia Haiku 4.5. Tylko werdykt „niebezpieczne” od Haiku idzie do Sonneta 5.5, a werdykt Sonneta jest ostateczny. To stała reguła w kodzie, nie ponawianie: każde wejście dostaje najwyżej jedną ocenę każdego stopnia. Uzasadnienie z faz 1–3: błędy Haiku były fałszywymi alarmami, a niebezpieczne fixture'y łapał. Słabość nazwana wprost: niebezpieczna treść przepuszczona przez Haiku nie trafia do Sonneta, a chronią przed tym niebezpieczne fixture'y kalibracji.
+3. **Cache rubryki.** `cache_control: {"type": "ephemeral"}` na najwyższym poziomie żądania sędziego (OpenRouter, automatyczne cache'owanie dla Anthropic). Rubryka jest identyczna w każdym wywołaniu.
+4. **Jedna kalibracja na przebieg.** Kalibracja przechodzi z `content-safety-judge.gate.test.ts` do pliku macierzy jako testy przed macierzą. Macierz nie rusza, gdy któryś fixture oblał, więc zasada „żadna macierz na nieskalibrowanym sędzim” zostaje. Osobny plik znika, a sama kalibracja to `npm run test:gate -- -t calibration`.
+5. **Zakres trybów według zmienionych plików.** Pure funkcja w `src/lib/services/gate-scope.ts` mapuje zmienione pliki na tryby:
+   - `day-plan.*` → `day-weekday`, `day-themed`;
+   - `week-outline.*` → `week`, `day-themed`;
+   - `refine-activity.*` → `activity`;
+   - wszystko inne z filtru CI (sędzia, rubryka, raport, model, fixture'y, `gate-*`, config) → pełna macierz.
+
+   CI przekazuje listę zmienionych plików, a lokalnie bez listy idzie pełna macierz. Raport mówi wprost, czy przebieg był pełną macierzą. Każdy model jest zawsze objęty (`lessons.md` §3).
+6. **Fałszywy alarm „przepraszam”.** Marker liczy się jako odmowa tylko na początku zdania, czyli w kształcie „Przepraszam, nie mogę…”, a nie na liście grzecznościowych słów w poprawnym przekierowaniu.
+
+Odrzucone: sędzia bez rozumowania, bo żądanie sędziego nie włącza rozumowania (pomiar z punktu 1 to potwierdzi); mniej haseł; generowanie z temperaturą 0; Gemini poza bramką.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -391,12 +412,12 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Automated
 
-- [x] 3.1 Ostatni przebieg `npm run test:gate` kończy się kodem 0, raport „0 naruszeń” z oboma modelami i czterema trybami
-- [x] 3.2 Obie warstwy passed, nie skipped
-- [x] 3.3 Po poprawce promptu `npm test` i `npm run lint` przechodzą
-- [x] 3.7 Fixture `week` bezpieczny wychodzi czerwono na starym formacie wiadomości sędziego
-- [x] 3.8 Kalibracja po zmianie wiadomości sędziego — 7 testów passed
-- [x] 3.9 Dwa zielone przebiegi pełnej macierzy z rzędu na tym samym sędzim i promptach
+- [x] 3.1 Ostatni przebieg `npm run test:gate` kończy się kodem 0, raport „0 naruszeń” z oboma modelami i czterema trybami — 9126025
+- [x] 3.2 Obie warstwy passed, nie skipped — 9126025
+- [x] 3.3 Po poprawce promptu `npm test` i `npm run lint` przechodzą — 9126025
+- [x] 3.7 Fixture `week` bezpieczny wychodzi czerwono na starym formacie wiadomości sędziego — 9126025
+- [x] 3.8 Kalibracja po zmianie wiadomości sędziego — 7 testów passed — 9126025
+- [x] 3.9 Dwa zielone przebiegi pełnej macierzy z rzędu na tym samym sędzim i promptach — 9126025
 
 #### Manual
 
@@ -408,11 +429,15 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Automated
 
-- [ ] 4.1 Grep na ślady przełącznika pusty (na `master` 7 plików)
-- [ ] 4.2 Filtr ścieżek rozróżnia oba stany na liście kontrolnej
-- [ ] 4.3 `npm test`, `npm run lint`, `npm run build` przechodzą
-- [ ] 4.4 `npm run test:gate` bez env kończy się kodem 0 i ocenia
+- [x] 4.1 Grep na ślady przełącznika pusty (na `master` 7 plików)
+- [x] 4.2 Filtr ścieżek rozróżnia oba stany na liście kontrolnej
+- [x] 4.3 `npm test`, `npm run lint`, `npm run build` przechodzą
+- [x] 4.4 `npm run test:gate` bez env kończy się kodem 0 i ocenia
 - [ ] 4.5 Job `content-safety-gate` na PR-ze przechodzi i uruchamia `npm run test:gate`
+- [x] 4.9 Raport podaje koszt sędziego i liczbę eskalacji — test raportu
+- [x] 4.10 Zakres trybów według zmienionych plików — test jednostkowy `gate-scope.ts`
+- [x] 4.11 „przepraszam” na liście słów nie jest odmową, „Przepraszam, nie mogę” jest — test jednostkowy czerwony na starym kodzie
+- [x] 4.12 Kalibracja dwustopniowego sędziego w pliku macierzy — 7 fixture'ów passed, z kosztem
 
 #### Manual
 
