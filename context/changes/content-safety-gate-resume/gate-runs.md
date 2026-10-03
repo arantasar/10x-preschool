@@ -237,3 +237,9 @@ Koszt sędziego: 0.2468 USD (każde wywołanie zwróciło koszt; eskalacje do s�
 - **Wynik**: `Test Files 1 passed (1)`, `Tests 8 passed (8)`, 167 s. Job 3 min 21 s. W logu nie ma kroku z notice o zawieszeniu.
 - **Raport** jest w step summary joba (kryterium ręczne 4.6). Log nie zawiera raportu, bo Vitest nie wypisuje stdout testu, który przeszedł.
 - `SUPABASE_URL` i `SUPABASE_KEY` są w jobie puste. Bramka ich nie używa, więc to bez wpływu na wynik, ale warto sprawdzić sekrety repo.
+
+## 2026-10-03 — CI, PR #40, job `content-safety-gate` po poprawkach z przeglądu (zielony)
+
+- **Commit**: `361fbc1` (poprawki F1–F10 z `reviews/impl-review.md`: ponowienie per stopień sędziego, kalibracja liczona po zaliczeniach, szerszy filtr ścieżek, bez `cache_control`). PR zmienia sędziego, więc zakres to pełna macierz.
+- **Wynik**: `Test Files 1 passed (1)`, `Tests 8 passed (8)`, 157 s. Job 3 min 23 s, run `37140854681`.
+- **Raport** z kosztem jest w step summary joba (kryterium ręczne 4.6).
