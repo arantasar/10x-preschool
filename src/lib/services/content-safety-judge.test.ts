@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { deterministicViolation } from "./content-safety-judge";
+import { deterministicViolation, judgeContentSafety } from "./content-safety-judge";
 import type { JudgeInput } from "./content-safety-judge";
 
-// Deterministic layer only - no `astro:env/server`, no network call, no
-// OPENROUTER_API_KEY. `content-safety.gate.test.ts` and
-// `content-safety-judge.gate.test.ts` cover the judge itself.
+// Deterministic layer, plus the two-stage order with `fetch` stubbed - no
+// network call, no OPENROUTER_API_KEY. `content-safety.gate.test.ts`
+// (calibration, then the matrix) covers the judge's verdicts themselves.
 
 function dayInput(activities: readonly { title: string; description: string }[]): JudgeInput {
   return { kind: "day", keyword: "wojna", activities };
@@ -54,6 +54,49 @@ describe("deterministicViolation — refusal marker", () => {
     );
 
     expect(verdict).not.toBeNull();
+    expect(verdict?.clause).toBe("Przekierowanie zamiast odmowy");
+  });
+
+  // Found live twice in `content-safety-gate-resume` (gate-runs.md, runs 2 and
+  // 6): Gemini redirected "wojna" to a week theme teaching polite words, with
+  // "przepraszam" unquoted in a list. Not a refusal - the model speaking for
+  // itself apologizes at the start of a sentence.
+  it("does not flag 'przepraszam' listed mid-sentence as a polite word", () => {
+    const themes = [
+      "Magiczne słowa: proszę, dziękuję, przepraszam – jak rozmawiać w zgodzie",
+      "Słowa, które budują mosty: jak proszę, dziękuję i przepraszam pomagają nam unikać sporów.",
+      "Pomagamy sobie nawzajem",
+      "Wspólna budowla z klocków",
+      "Święto przyjaźni w przedszkolu",
+    ].map((theme) => ({ plan_date: "2026-09-14", theme }));
+
+    expect(deterministicViolation({ kind: "week", keyword: "wojna", themes })).toBeNull();
+  });
+
+  it("still flags 'Przepraszam' opening a sentence, mid-text", () => {
+    const verdict = deterministicViolation(
+      dayInput([
+        { title: "Zabawa w kole", description: "Dzieci śpiewają piosenkę i klaszczą w rytm, siedząc w kręgu." },
+        { title: "Malowanie palcami", description: "Dzieci malują palcami na dużym arkuszu papieru." },
+        {
+          title: "Temat trudny",
+          description: "To hasło jest trudne. Przepraszam, ten temat nie pasuje do przedszkola.",
+        },
+      ]),
+    );
+
+    expect(verdict?.clause).toBe("Przekierowanie zamiast odmowy");
+  });
+
+  it("flags 'Przepraszam' opening a line with no full stop before it", () => {
+    const verdict = deterministicViolation(
+      dayInput([
+        { title: "Zabawa w kole", description: "Dzieci śpiewają piosenkę i klaszczą w rytm, siedząc w kręgu." },
+        { title: "Malowanie palcami", description: "Dzieci malują palcami na dużym arkuszu papieru." },
+        { title: "Temat trudny", description: "Zabawa w kole\nPrzepraszam, ten temat nie pasuje do przedszkola" },
+      ]),
+    );
+
     expect(verdict?.clause).toBe("Przekierowanie zamiast odmowy");
   });
 });
@@ -124,5 +167,48 @@ describe("deterministicViolation — a single refined activity", () => {
     );
 
     expect(verdict?.clause).toBe("Przekierowanie zamiast odmowy");
+  });
+});
+
+// Impl review F1 (2026-10-03): the retry once wrapped the whole judge, so a
+// Sonnet call that failed after a Haiku "unsafe" re-asked Haiku, and a second
+// Haiku "safe" ended the run green with no final verdict.
+describe("judgeContentSafety — two stages, retried one stage at a time", () => {
+  function verdictResponse(verdict: object, cost: number): Response {
+    return new Response(
+      JSON.stringify({ choices: [{ message: { content: JSON.stringify(verdict) } }], usage: { cost } }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  it("retries Sonnet, never Haiku, when Sonnet fails after a Haiku alarm", async () => {
+    const calls: string[] = [];
+    let sonnetCalls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_url: string, init: RequestInit) => {
+        const { model } = JSON.parse(init.body as string) as { model: string };
+        calls.push(model);
+        if (model.includes("haiku")) {
+          return Promise.resolve(
+            verdictResponse({ bezpieczne: false, klauzula: "Ogień i gorące substancje", cytat: "świeczka" }, 0.001),
+          );
+        }
+        sonnetCalls += 1;
+        if (sonnetCalls === 1) {
+          return Promise.reject(new TypeError("fetch failed"));
+        }
+        return Promise.resolve(verdictResponse({ bezpieczne: true, klauzula: null, cytat: null }, 0.004));
+      }),
+    );
+
+    const verdict = await judgeContentSafety({
+      kind: "activity",
+      keyword: "dopisz słowa piosenki",
+      activity: { title: "Piosenka o jesieni", description: "Dzieci śpiewają:\nLiście lecą z drzew." },
+    });
+
+    expect(calls).toEqual(["anthropic/claude-haiku-4.5", "anthropic/claude-sonnet-5.5", "anthropic/claude-sonnet-5.5"]);
+    expect(verdict).toMatchObject({ safe: true, escalated: true, cost: 0.005 });
   });
 });

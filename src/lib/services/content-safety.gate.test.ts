@@ -1,12 +1,11 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { ActivityDraft, DayTheme } from "@/types";
 import { ALLOWED_MODELS } from "./allowed-models";
 import { generateDayActivities, generateWeekOutline, refineActivity } from "./activity-generator";
 import { CONTENT_SAFETY_FIXTURES, GATE_KEYWORDS, REFINE_GATE_CASES } from "./__fixtures__/content-safety";
-import { judgeContentSafety, type JudgeInput, type SafetyVerdict } from "./content-safety-judge";
-import { retryGateCall } from "./gate-retry";
+import { judgeContentSafety, type JudgedVerdict, type JudgeInput } from "./content-safety-judge";
+import { gateScopeFor, parseChangedFiles, type GateMode } from "./gate-scope";
 import { formatGateReport, writeGitHubStepSummary, type GateFinding } from "./content-safety-report";
-import { GATE_SUSPENDED, warnIfSuspended } from "./gate-suspension";
 
 // Gate tier - excluded from `npm test`, run only via `npm run test:gate`
 // (requires a real `OPENROUTER_API_KEY`). This is the phase's centerpiece: every
@@ -14,6 +13,11 @@ import { GATE_SUSPENDED, warnIfSuspended } from "./gate-suspension";
 // through the *production* path (`generateDayActivities` / `generateWeekOutline`
 // with a model override) rather than a re-implementation of message building -
 // the mistake `scripts/compare-models.sh` makes.
+//
+// One file, calibration first: the calibration tests below run before the
+// matrix test (Vitest runs a file's tests in order), and the matrix refuses to
+// start when any of them failed. Calibration alone, for the price of a few
+// judge calls: `npm run test:gate -- -t calibration`.
 
 /**
  * A fixed working week, chosen once so two runs of this gate are comparable -
@@ -23,17 +27,18 @@ import { GATE_SUSPENDED, warnIfSuspended } from "./gate-suspension";
 const WEEK_DATES = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18"] as const;
 
 /**
- * The three reachable day configurations plus the week outline -
- * `activity-generator.ts:100-111` and the S-03 implementation review: coverage
- * counts per configuration, not per prompt.
+ * The modes this run grades - all of `GATE_MODES` unless CI passed the files a
+ * PR changed (`GATE_CHANGED_FILES`, see `gate-scope.ts`). Every allowed model
+ * is graded in every scope.
  *
  * `activity` is the refine path (`refine-activity.pl.md`, `follow-up-questions`),
  * driven by `REFINE_GATE_CASES` rather than `GATE_KEYWORDS`: its input is an
  * activity and an instruction, not a hasło. It merged without a run of this
- * gate (see `gate-suspension.ts`) and is the first mode to run once it is back.
+ * gate while the gate was suspended (2026-09-19 to 2026-10-01); its first run
+ * was clean on both models (`content-safety-gate-resume`, `gate-runs.md`).
  */
-const GATE_MODES = ["day", "day-weekday", "day-themed", "week", "activity"] as const;
-type GateMode = (typeof GATE_MODES)[number];
+const SCOPE = gateScopeFor(parseChangedFiles(process.env.GATE_CHANGED_FILES));
+const inScope = (mode: GateMode): boolean => SCOPE.modes.includes(mode);
 
 /**
  * How many `{model, keyword}` combos run at once. Bounded by OpenRouter's
@@ -85,57 +90,96 @@ function describeError(error: unknown): string {
 }
 
 /**
- * `content-safety-judge.ts` deliberately carries no retry policy of its own -
- * its own comment names this phase as the owner of "retry transient transport
- * failures only, never a safety verdict" for the live matrix. Retry policy
- * itself lives in `gate-retry.ts` (transient transport failures, plus the
- * matrix's own 402 in-flight-budget collisions); a verdict the judge actually
- * returned - safe or not - is never retried, because a retried verdict is a
- * gate hunting for green.
+ * Retry policy lives in `gate-retry.ts` (transient transport failures, plus the
+ * matrix's own 402 in-flight-budget collisions) and `judgeContentSafety`
+ * applies it to each judge stage on its own. Wrapping the whole judge here
+ * would re-ask Haiku after a failed Sonnet call, i.e. retry a verdict, which
+ * is a gate hunting for green (impl review F1, 2026-10-03).
  */
 async function judgeSafely(
   input: JudgeInput,
-): Promise<SafetyVerdict | { readonly failed: true; readonly reason: string }> {
+): Promise<JudgedVerdict | { readonly failed: true; readonly reason: string }> {
   try {
-    return await retryGateCall(() => judgeContentSafety(input));
+    return await judgeContentSafety(input);
   } catch (error) {
     return { failed: true, reason: describeError(error) };
   }
 }
+
+/** Every judge verdict of the run, calibration included - one judge bill, one line in the report. */
+const judgeCost = { total: 0, missing: 0, escalations: 0 };
+function addJudgeCost(verdict: JudgedVerdict): void {
+  if (verdict.cost === null) {
+    judgeCost.missing += 1;
+  } else {
+    judgeCost.total += verdict.cost;
+  }
+  if (verdict.escalated) {
+    judgeCost.escalations += 1;
+  }
+}
+
+// Counted on pass, not on failure: a calibration case that times out (its
+// `catch` never runs before the matrix reads this) or is filtered out by `-t`
+// must stop the matrix too (impl review F2, 2026-10-03).
+let calibrationPassed = 0;
 
 interface Combo {
   readonly model: string;
   readonly keyword: string;
 }
 
-// Suspended by decision — see `gate-suspension.ts` for what that costs and how
-// to turn it back on. `describe.skip` keeps the suite compiled and reported as
-// skipped rather than deleting it or letting it report a pass it never earned.
-warnIfSuspended("content safety gate — live matrix");
+// The repeatable half of "bramka potrafi nie przejść": it catches judge drift
+// on every run, unlike the one-off negative control in `negative-control.md`.
+describe("content safety judge — calibration", () => {
+  it.each(CONTENT_SAFETY_FIXTURES)("$name", async ({ input, expected }) => {
+    const verdict = await judgeContentSafety(input);
+    addJudgeCost(verdict);
 
-const gateDescribe = GATE_SUSPENDED ? describe.skip : describe;
+    expect(verdict.safe).toBe(expected.safe);
 
-gateDescribe("content safety gate — live matrix", () => {
-  // State sequencing (Critical Implementation Details): the judge is graded on
-  // every calibration fixture *before* the live matrix runs. A judge that
-  // mis-scores a known fixture must stop the run, not produce a green matrix it
-  // scored - that would be the worst outcome the gate could produce.
-  beforeAll(async () => {
-    for (const fixture of CONTENT_SAFETY_FIXTURES) {
-      const verdict = await judgeContentSafety(fixture.input);
-      if (verdict.safe !== fixture.expected.safe) {
-        throw new Error(
-          `Sędzia oblał kalibrację na fixture "${fixture.name}" (oczekiwano safe=${fixture.expected.safe}, ` +
-            `otrzymano safe=${verdict.safe}) — macierz żywych wywołań wstrzymana.`,
-        );
+    if (expected.safe) {
+      expect(verdict.clause).toBeNull();
+      expect(verdict.quote).toBeNull();
+    } else {
+      expect(verdict.clause).toBeTruthy();
+      expect(verdict.quote).toBeTruthy();
+      if (expected.clauseContains) {
+        expect(verdict.clause?.toLowerCase()).toContain(expected.clauseContains.toLowerCase());
+      }
+      if (expected.quoteContains) {
+        expect(verdict.quote?.toLowerCase()).toContain(expected.quoteContains.toLowerCase());
       }
     }
-  }, 120_000);
+    calibrationPassed += 1;
+  });
+});
 
+describe("content safety gate — live matrix", () => {
   it(
     "każdy dopuszczony model × każde hasło × każdy osiągalny tryb jest bezpieczny",
     async () => {
+      // State sequencing (Critical Implementation Details): a judge that
+      // mis-scores a known fixture must stop the run, not produce a green
+      // matrix it scored - the worst outcome the gate could produce.
+      if (calibrationPassed < CONTENT_SAFETY_FIXTURES.length) {
+        throw new Error(
+          `Sędzia nie przeszedł kalibracji (${String(calibrationPassed)} z ${String(CONTENT_SAFETY_FIXTURES.length)}) — macierz żywych wywołań wstrzymana.`,
+        );
+      }
+
       const findings: GateFinding[] = [];
+
+      // Summed over every successful generation call; a `null` cost is missing
+      // data, counted separately rather than as zero.
+      const generationCost = { total: 0, missing: 0 };
+      function addCost(cost: number | null): void {
+        if (cost === null) {
+          generationCost.missing += 1;
+        } else {
+          generationCost.total += cost;
+        }
+      }
 
       function record(mode: GateMode, model: string, keyword: string, clause: string, quote: string): void {
         findings.push({ model, keyword, mode, clause, quote });
@@ -145,35 +189,47 @@ gateDescribe("content safety gate — live matrix", () => {
         const verdict = await judgeSafely(input);
         if ("failed" in verdict) {
           record(mode, model, keyword, "Awaria sędziego", verdict.reason);
-        } else if (!verdict.safe) {
+          return;
+        }
+        addJudgeCost(verdict);
+        if (!verdict.safe) {
           record(mode, model, keyword, verdict.clause ?? "(brak nazwy klauzuli)", verdict.quote ?? "(brak cytatu)");
         }
       }
 
       const combos: Combo[] = ALLOWED_MODELS.flatMap((model) => GATE_KEYWORDS.map((keyword) => ({ model, keyword })));
 
-      await mapWithConcurrency(combos, GATE_CONCURRENCY, async ({ model, keyword }) => {
-        const [outline, day, dayWeekday] = await Promise.allSettled([
-          generateWeekOutline(keyword, WEEK_DATES, { model }),
-          generateDayActivities(keyword, undefined, { model }),
-          generateDayActivities(keyword, { planDate: WEEK_DATES[0] }, { model }),
+      // `day-themed` needs the outline for its theme, so the outline is
+      // generated whenever either of the two is in scope; it is only *judged*
+      // as `week` when `week` is.
+      const needsOutline = inScope("week") || inScope("day-themed");
+      const dayModes = needsOutline || inScope("day-weekday");
+
+      await mapWithConcurrency(dayModes ? combos : [], GATE_CONCURRENCY, async ({ model, keyword }) => {
+        const [outline, dayWeekday] = await Promise.allSettled([
+          needsOutline
+            ? generateWeekOutline(keyword, WEEK_DATES, { model })
+            : Promise.reject(new Error("poza zakresem")),
+          inScope("day-weekday")
+            ? generateDayActivities(keyword, { planDate: WEEK_DATES[0] }, { model })
+            : Promise.reject(new Error("poza zakresem")),
         ]);
 
         if (outline.status === "fulfilled") {
-          await judge("week", model, keyword, weekInput(keyword, outline.value.themes));
-        } else {
-          record("week", model, keyword, "Awaria wywołania", String(outline.reason));
-        }
-
-        if (day.status === "fulfilled") {
-          await judge("day", model, keyword, dayInput(keyword, day.value.activities));
-        } else {
-          record("day", model, keyword, "Awaria wywołania", String(day.reason));
+          addCost(outline.value.cost);
+          if (inScope("week")) {
+            await judge("week", model, keyword, weekInput(keyword, outline.value.themes));
+          }
+        } else if (needsOutline) {
+          // Label the failure with a mode the report lists: with only
+          // `day-plan.*` changed the outline feeds `day-themed` alone.
+          record(inScope("week") ? "week" : "day-themed", model, keyword, "Awaria wywołania", String(outline.reason));
         }
 
         if (dayWeekday.status === "fulfilled") {
+          addCost(dayWeekday.value.cost);
           await judge("day-weekday", model, keyword, dayInput(keyword, dayWeekday.value.activities));
-        } else {
+        } else if (inScope("day-weekday")) {
           record("day-weekday", model, keyword, "Awaria wywołania", String(dayWeekday.reason));
         }
 
@@ -183,7 +239,7 @@ gateDescribe("content safety gate — live matrix", () => {
         // themed run without its own model's theme would measure a configuration
         // that cannot occur in production (`scripts/compare-models.sh`'s
         // precedent for the same skip).
-        if (outline.status === "fulfilled") {
+        if (inScope("day-themed") && outline.status === "fulfilled") {
           const theme = outline.value.themes[0]?.theme;
           if (theme) {
             const themed = await generateDayActivities(keyword, { planDate: WEEK_DATES[0], theme }, { model }).then(
@@ -191,6 +247,7 @@ gateDescribe("content safety gate — live matrix", () => {
               (reason: unknown) => ({ status: "rejected" as const, reason }),
             );
             if (themed.status === "fulfilled") {
+              addCost(themed.value.cost);
               await judge("day-themed", model, keyword, dayInput(keyword, themed.value.activities));
             } else {
               record("day-themed", model, keyword, "Awaria wywołania", String(themed.reason));
@@ -202,19 +259,27 @@ gateDescribe("content safety gate — live matrix", () => {
       // The refine path: every allowed model × every fixed case, through the
       // production `refineActivity`. The case name stands in the report's
       // hasło column; the instruction itself reaches the judge in its input.
-      const refineCombos = ALLOWED_MODELS.flatMap((model) =>
-        REFINE_GATE_CASES.map((refineCase) => ({ model, refineCase })),
-      );
+      const refineCombos = inScope("activity")
+        ? ALLOWED_MODELS.flatMap((model) => REFINE_GATE_CASES.map((refineCase) => ({ model, refineCase })))
+        : [];
       await mapWithConcurrency(refineCombos, GATE_CONCURRENCY, async ({ model, refineCase }) => {
         try {
           const refined = await refineActivity(refineCase.activity, refineCase.instruction, { model });
+          addCost(refined.cost);
           await judge("activity", model, refineCase.name, activityInput(refineCase.instruction, refined.activity));
         } catch (error) {
           record("activity", model, refineCase.name, "Awaria wywołania", describeError(error));
         }
       });
 
-      const report = formatGateReport({ models: ALLOWED_MODELS, modes: GATE_MODES, findings });
+      const report = formatGateReport({
+        models: ALLOWED_MODELS,
+        modes: SCOPE.modes,
+        findings,
+        fullMatrix: SCOPE.full,
+        generationCost,
+        judgeCost,
+      });
       // eslint-disable-next-line no-console -- the report is the gate's actual product; it must reach stdout.
       console.log(report);
       writeGitHubStepSummary(report);
@@ -222,7 +287,7 @@ gateDescribe("content safety gate — live matrix", () => {
       for (const model of ALLOWED_MODELS) {
         expect(report).toContain(model);
       }
-      for (const mode of GATE_MODES) {
+      for (const mode of SCOPE.modes) {
         expect(report).toContain(mode);
       }
 

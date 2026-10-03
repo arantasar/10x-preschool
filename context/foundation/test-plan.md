@@ -331,10 +331,47 @@ Dowodzi trasy i RLS naraz, bez HTTP, middleware i przeglądarki.
 
 - **Lokalizacja bramki**: `src/lib/services/content-safety.gate.test.ts` — macierz
   żywych wywołań (każdy dopuszczony model × każde hasło z fixture'u × każdy
-  osiągalny tryb: `day`, `day-weekday`, `day-themed`, `week`). Kalibracja
-  sędziego mieszka osobno: `src/lib/services/content-safety-judge.gate.test.ts`.
-  Oba to warstwa bramki (`*.gate.test.ts`), poza `npm test`, uruchamiana przez
-  `npm run test:gate` (wymaga `OPENROUTER_API_KEY`).
+  tryb produkcyjny: `day-weekday` z `generate.ts`, `day-themed` z
+  `week/day.ts`, `week` z `week/outline.ts` i `activity` z `refine.ts`, ten
+  ostatni na przypadkach `REFINE_GATE_CASES` zamiast haseł). Baseline `day` bez
+  kontekstu odpadł 2026-10-01, bo żadna trasa go nie wysyła. Kalibracja
+  sędziego mieszka w tym samym pliku, przed macierzą (do 2026-10-03 osobno).
+  To warstwa bramki (`*.gate.test.ts`), poza `npm test`, uruchamiana przez
+  `npm run test:gate` (wymaga `OPENROUTER_API_KEY`), bez żadnej flagi:
+  mechanizm zawieszenia z 2026-09-19 usunięto 2026-10-03. Kalibracja to
+  pierwsze testy pliku macierzy, a macierz nie rusza, gdy któraś oblała. Sama
+  kalibracja: `npm run test:gate -- -t calibration`.
+- **Sędzia i koszt** (od 2026-10-03): dwustopniowy. Haiku 4.5 ocenia każde
+  wyjście, które przeszło warstwę deterministyczną. Tylko jego werdykt
+  „niebezpieczne” idzie do Sonneta 5.5, którego werdykt jest ostateczny.
+  Rubryka jest cache'owana (`cache_control`). Raport podaje osobno koszt
+  generowania i sędziego. Pełna macierz to około 0,40 USD
+  (`content-safety-gate-resume/gate-runs.md`).
+- **Bramka w CI**: job `content-safety-gate` w `ci.yml` uruchamia
+  `npm run test:gate` na PR-ze, który zmienia którąkolwiek ścieżkę z filtru:
+  prompty i schematy (`src/lib/services/prompts/*.{pl.md,schema.json}`),
+  `allowed-models.ts`, `src/lib/services/content-safety*` (sędzia, rubryka
+  przez prompty, raport, pliki bramki), fixture'y
+  `src/lib/services/__fixtures__/content-safety.ts`, `src/lib/services/gate-*`
+  (polityka ponowień, zakres trybów), generator wywołań i jego kategorie błędów
+  (`activity-generator.ts`, `generation-error.ts`), liczby sprawdzane przez
+  sędziego (`src/lib/day-plan-limits.ts`) i `vitest.gate.config.ts`. To samo
+  wyrażenie stoi w `gate-scope.ts` jako `FULL_MATRIX`, a `gate-scope.test.ts`
+  pada, gdy obie kopie się rozjadą. Raport trafia do step summary joba. Job jest doradczy (brak branch protection), bez crona.
+  Zakres trybów zależy od zmienionych plików (`src/lib/services/gate-scope.ts`):
+  - `day-plan` → `day-weekday`, `day-themed`;
+  - `week-outline` → `week`, `day-themed`;
+  - `refine-activity` → `activity`;
+  - każdy inny plik z filtru → pełna macierz.
+
+  Każdy dopuszczony model jest objęty zawsze, a raport mówi wprost, czy
+  przebieg był pełną macierzą. Lokalnie, bez `GATE_CHANGED_FILES`, idzie
+  pełna macierz.
+- **Dziennik przebiegów**: każdy przebieg na żywo w ramach zmiany, także
+  czerwony, dostaje wpis w `context/changes/<change-id>/gate-runs.md`: data,
+  sędzia, macierz, koszt generowania z raportu, findingi z cytatami, a przy
+  poprawce promptu plik i jednozdaniowy opis zmiany. Wzór:
+  `content-safety-gate-resume/gate-runs.md`.
 - **Zbiór haseł kontrolnych**: `src/lib/services/__fixtures__/content-safety.ts`,
   eksporty `DANGEROUS_KEYWORDS` (wzięte wprost z sekcji przekierowania w
   `day-plan.pl.md`/`week-outline.pl.md`) i `CONTROL_KEYWORDS` (pięć haseł
@@ -354,10 +391,11 @@ Dowodzi trasy i RLS naraz, bez HTTP, middleware i przeglądarki.
   wchodzi w zakres filtru ścieżek CI (`content-safety-gate` w `ci.yml` obserwuje
   `src/lib/services/content-safety*`).
 - **Fixture'y kalibracyjne sędziego**: `src/lib/services/__fixtures__/content-safety.ts`,
-  eksport `CONTENT_SAFETY_FIXTURES` — cztery znane wyjścia o znanych werdyktach
-  (w tym prawdziwe wyjście DeepSeeka z „Laniem wosku" i kontrola negatywna na
-  polskiej fleksji). Dopisanie nowego przypadku kalibracyjnego to dopisanie
-  wpisu tutaj; `content-safety-judge.gate.test.ts` go automatycznie obejmuje.
+  eksport `CONTENT_SAFETY_FIXTURES` — siedem znanych wyjść o znanych werdyktach
+  (w tym prawdziwe wyjście DeepSeeka z „Laniem wosku", kontrola negatywna na
+  polskiej fleksji i od 2026-10-01 dwa tygodnie `kind: "week"`, bez których
+  kalibracja była ślepa na tryb `week`). Dopisanie nowego przypadku kalibracyjnego to dopisanie
+  wpisu tutaj; kalibracja w `content-safety.gate.test.ts` go automatycznie obejmuje.
 - **Dlaczego warstwa jest osobna od `npm test`**: zmierzone w Fazie 3 —
   `test.projects` zdefiniowany inline w `vitest.config.ts` nie dziedziczy
   pluginów Astro z `getViteConfig`, więc plik bramki wywraca się na

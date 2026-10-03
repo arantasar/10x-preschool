@@ -21,9 +21,12 @@
 - `test-plan.md` §3: fazy 1–3 `complete`, faza 4 `not started`. Testy bazy (pgTAP i trasa +
   prawdziwy klient) stoją w CI jako doradczy job `db`. Warstwa e2e (Playwright, ryzyka #3, #4
   i #7) stoi na `master` poza rolloutem i poza CI.
-- **Bramka bezpieczeństwa treści zawieszona od 2026-09-19** (koszt OpenRouter,
-  `src/lib/services/gate-suspension.ts`). `refine-activity.pl.md` z `S-15` wszedł na produkcję
-  oceniony tylko ręcznie — po odwieszeniu pierwszy do uruchomienia jest tryb `activity`.
+- **Bramka bezpieczeństwa treści odwieszona 2026-10-03** (`F-02`, `content-safety-gate-resume`).
+  Była zawieszona od 2026-09-19 z powodu kosztu, a mechanizm zawieszenia zniknął z repozytorium.
+  `npm run test:gate` ocenia bez flag: 2 modele × 4 tryby produkcyjne. Sędzia jest dwustopniowy:
+  Haiku 4.5, a jego alarmy rozstrzyga Sonnet 5.5. Pełna macierz kosztuje około 0,40 USD. Job CI `content-safety-gate` uruchamia ją na PR-ach z dopasowaną
+  ścieżką. Tryb `activity` (`refine-activity.pl.md` z `S-15`) przeszedł czysto przy pierwszym
+  przebiegu. Przebiegi i koszt: `context/changes/content-safety-gate-resume/gate-runs.md`.
 - Otwarte pytania roadmapy bez właściciela w kolejce: #4 reset hasła, #5 limit regeneracji,
   #9 generator bez tekstów piosenek i wierszyków; #3 (dług PRD za `S-04`, `S-05`, `S-08`)
   zostaje otwarte z wyboru.
@@ -60,7 +63,7 @@ tabela, nie numer**.
 | 3 | **Krok 12** | PRD v3 i roadmapa kamienia `M-03` „Gotowi do sprzedaży" | shape → prd → roadmap |
 | 4 | **Krok 13** | Slice'y `M-03` bez pieniędzy: reset hasła, strony prawne i FAQ, kontakt, limity | slice'y |
 | 5 | Krok 9 | Faza 4 test-planu: e2e w CI **przed** pierwszym slice'em płatności | test-plan |
-| 6 | **Krok 14** | Slice'y `M-03` z pieniędzmi: Stripe, cennik i paywall; odwieszenie bramki; start sprzedaży | slice'y + wydanie |
+| 6 | **Krok 14** | Slice'y `M-03` z pieniędzmi: Stripe, cennik i paywall; ~~odwieszenie bramki~~ ✅ 2026-10-03 (`F-02`); start sprzedaży | slice'y + wydanie |
 | 7 | **Krok 15** | Kamień `M-04` „Lepsza treść": kalendarz świąt, rodzaje aktywności, materiały → start Pro | shape → prd → roadmap |
 
 Dlaczego tak:
@@ -445,7 +448,7 @@ wszystkich według reguły z §4.2.
 ### Krok 14 — slice'y `M-03` z pieniędzmi i start sprzedaży
 
 **Warunki wejścia:** Krok 9 zrobiony (e2e w CI), Krok 11 zamknięty (JDG, Stripe, księgowy),
-bramka bezpieczeństwa odwieszona i przepuszczona na żywo.
+bramka bezpieczeństwa odwieszona i przepuszczona na żywo (✅ 2026-10-03, `F-02`).
 
 Kolejność: płatności (Stripe w trybie testowym, webhook, uprawnienia) → cennik i paywall.
 **Klucze produkcyjne Stripe'a dopiero po** przejściu całej ścieżki zakupu i rezygnacji w trybie
@@ -496,7 +499,7 @@ przed kolejnym pełnym przebiegiem `npm run test:gate` na żywo.
 
 | Co | Właściciel / bramka wejścia |
 | --- | --- |
-| **Ograniczenie liczby trybów w macierzy bramki bezpieczeństwa treści** — `GATE_MODES` w `content-safety.gate.test.ts` z czterech (`day`, `day-weekday`, `day-themed`, `week`) do dwóch: zostają `day-weekday` i `week`, odpadają `day` (nieprodukcyjny baseline — `activity-generator.ts:100-111` mówi wprost, że `/plan?date=` nigdy go nie wysyła) i `day-themed` (dzień w kontekście tygodnia, ze slotem „Temat dnia:”). Cel: 2x mniej realnych wywołań LLM na przebieg (z ~8 do ~4 na kombinację model×hasło), bez utraty jedynej konfiguracji odpowiadającej pojedynczemu dniu generowanemu w produkcji. **Świadomy koszt**: `day-themed` był jedyną konfiguracją bramki testującą slot „Temat dnia:”, który plan fazy 2 nazwał najbardziej wrażliwym na wstrzyknięcie (ryzyko #6) — to ubytek pokrycia, nie tylko oszczędność, i wart odnotowania przy zmianie | Brak formalnej bramki wejścia — zmiana lokalna w `content-safety.gate.test.ts` i `test-plan.md` §6.5 (opis macierzy). Rozważyć razem: `4.12`/`4.17` z Kroku 2 zakładają dziś macierz 4-trybową — commit message powinien to nazwać |
+| ✅ **Zamknięte 2026-10-01 w połowie** (`content-safety-gate-resume`, faza 2): odpadł `day` (nieprodukcyjny baseline), a `day-themed` został, bo to trasa produkcyjna `week/day.ts` i jej pominięcie łamie Guardrail 2 PRD v3. Macierz ma dziś cztery tryby: `day-weekday`, `day-themed`, `week`, `activity`. Pierwotny opis: **Ograniczenie liczby trybów w macierzy bramki bezpieczeństwa treści** — `GATE_MODES` w `content-safety.gate.test.ts` z czterech (`day`, `day-weekday`, `day-themed`, `week`) do dwóch: zostają `day-weekday` i `week`, odpadają `day` (nieprodukcyjny baseline — `activity-generator.ts:100-111` mówi wprost, że `/plan?date=` nigdy go nie wysyła) i `day-themed` (dzień w kontekście tygodnia, ze slotem „Temat dnia:”). Cel: 2x mniej realnych wywołań LLM na przebieg (z ~8 do ~4 na kombinację model×hasło), bez utraty jedynej konfiguracji odpowiadającej pojedynczemu dniu generowanemu w produkcji. **Świadomy koszt**: `day-themed` był jedyną konfiguracją bramki testującą slot „Temat dnia:”, który plan fazy 2 nazwał najbardziej wrażliwym na wstrzyknięcie (ryzyko #6) — to ubytek pokrycia, nie tylko oszczędność, i wart odnotowania przy zmianie | Brak formalnej bramki wejścia — zmiana lokalna w `content-safety.gate.test.ts` i `test-plan.md` §6.5 (opis macierzy). Rozważyć razem: `4.12`/`4.17` z Kroku 2 zakładają dziś macierz 4-trybową — commit message powinien to nazwać |
 
 ## Otwarte ogony po warstwie e2e (2026-09-03, odświeżone 2026-09-19)
 

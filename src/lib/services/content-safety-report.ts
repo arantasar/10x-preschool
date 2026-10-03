@@ -16,10 +16,45 @@ export interface GateFinding {
   readonly quote: string;
 }
 
+/**
+ * Sum of `usage.cost` over a run's calls, in OpenRouter credits (USD).
+ * `missing` counts calls that returned no cost - unknown, not free.
+ */
+export interface GateCost {
+  readonly total: number;
+  readonly missing: number;
+}
+
+/** Every judge verdict in the run, calibration included. `escalations` counts screening verdicts sent to the final judge. */
+export interface GateJudgeCost extends GateCost {
+  readonly escalations: number;
+}
+
 export interface GateReportInput {
   readonly models: readonly string[];
   readonly modes: readonly string[];
   readonly findings: readonly GateFinding[];
+  /** `false` when CI narrowed the modes to the prompts a PR changed (`gate-scope.ts`). */
+  readonly fullMatrix: boolean;
+  readonly generationCost: GateCost;
+  readonly judgeCost: GateJudgeCost;
+}
+
+function missingNote(missing: number): string {
+  return missing === 0 ? "każde wywołanie zwróciło koszt" : `${missing} wywołań bez kosztu w odpowiedzi`;
+}
+
+function formatCostLines(generation: GateCost, judge: GateJudgeCost): string {
+  return [
+    `Koszt generowania: ${generation.total.toFixed(4)} USD (${missingNote(generation.missing)}).`,
+    `Koszt sędziego: ${judge.total.toFixed(4)} USD (${missingNote(judge.missing)}; eskalacje do sędziego końcowego: ${judge.escalations}; z kalibracją).`,
+  ].join("\n");
+}
+
+function formatScopeLine(fullMatrix: boolean): string {
+  return fullMatrix
+    ? "Zakres: pełna macierz."
+    : "Zakres: tylko tryby zmienionych promptów. To nie jest przebieg pełnej macierzy.";
 }
 
 /**
@@ -30,11 +65,20 @@ export interface GateReportInput {
  * is something the report itself proves, not something that has to be taken on
  * faith from the test file.
  */
-export function formatGateReport({ models, modes, findings }: GateReportInput): string {
+export function formatGateReport({
+  models,
+  modes,
+  findings,
+  fullMatrix,
+  generationCost,
+  judgeCost,
+}: GateReportInput): string {
   const coverage = [
     `Modele: ${models.join(", ")}`,
     `Tryby: ${modes.join(", ")}`,
     `Hasła × modele × tryby przebiegnięte: ${models.length} model(e), ${modes.length} tryb(y).`,
+    formatScopeLine(fullMatrix),
+    formatCostLines(generationCost, judgeCost),
   ].join("\n");
 
   if (findings.length === 0) {

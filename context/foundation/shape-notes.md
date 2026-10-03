@@ -10,484 +10,506 @@ timeline_budget:
   delivery_weeks: null         # świadomie bez bramki czasowej — patrz ## Timeline acknowledgment
   hard_deadline: null
   after_hours_only: true
-created: 2026-09-19
-updated: 2026-09-19
+created: 2026-10-01
+updated: 2026-10-01
 checkpoint:
   current_phase: 8
   phases_completed: [1, 2, 3, 4, 5, 6, 7]
-  frs_drafted: 10
   gray_areas_resolved:
-    - topic: "rdzeń bólu M-02"
-      decision: "brak jednego rdzenia — trzy osie równorzędnie (poprawialność, czytelność, wyjście poza aplikację); paczka dojrzewania przepływu po M-01"
+    - topic: "wynik Kroku 11 (walidacja)"
+      decision: "brak — shape idzie na decyzjach z monetization.md; chęć płacenia i kalibracja limitów niezweryfikowane (ryzyko jawne, trafia do Open Questions)"
+    - topic: "rdzeń bólu M-03"
+      decision: "dwa równorzędne: właściciel (produkt nie zarabia, bramka bezpieczeństwa wstrzymana kosztem) i obecne nauczycielki (braki: reset hasła, kontakt, informacja o usłudze)"
+    - topic: "walidacja vs budowa płatności"
+      decision: "fake door (cennik z zapisem na cenę założycielską) przed Stripe; Stripe zostaje w M-03, ale jego slice ma bramę wejścia — wynik zapisów; przy słabym wyniku kamień zamyka się bez niego, decyzja wraca do właściciela"
+    - topic: "warunki wstępne a wynik fake door"
+      decision: "reset hasła, regulamin, FAQ, kontakt, limity i odwieszona bramka są warte zrobienia niezależnie od sprzedaży; idą przed fake door"
     - topic: "charakter zmiany"
-      decision: "jedna paczka dojrzewania UX; regeneracja tygodnia jako rozszerzenie istniejącego generowania — SPRZECZNE z roadmap.md §Kandydaci pkt 1 („nowa zdolność\"), rozstrzygnięcie odłożone do fazy 4"
-    - topic: "co nie może się zepsuć"
-      decision: "cztery niezmienniki: izolacja kont (RLS), zaakceptowany dzień nie ginie po cichu, protokół licznika generacji przy zapisie partii, bezpieczeństwo treści propozycji"
-    - topic: "model dostępu"
-      decision: "bez zmian — jedna rola, model płaski, RLS per konto zachowane"
+      decision: "nowy moduł (plan, uprawnienia, limity, płatności) + poprawki rdzenia (reset hasła, strony, kontakt, odwieszenie bramki)"
+    - topic: "persona"
+      decision: "jedna rola bez zmian, ale konto ma stan planu (okres próbny / darmowy / Basic / założycielski); obecni użytkownicy sprzed paywalla jako grupa z prezentem"
+    - topic: "zmiany konta"
+      decision: "reset zapomnianego hasła, zmiana hasła po zalogowaniu, usunięcie konta przez użytkownika"
+    - topic: "powierzchnie bez logowania"
+      decision: "regulamin, polityka prywatności, FAQ, cennik, formularz kontaktowy, zapis na cenę założycielską (fake door także dla odwiedzających bez konta)"
+    - topic: "kto zmienia stan planu"
+      decision: "system (okres próbny, płatność) + właściciel ręcznie poza aplikacją; użytkownik tylko czyta; bez panelu operatora i bez nowej roli"
+    - topic: "fake door — odpowiedź po kliknięciu"
+      decision: "uczciwe potwierdzenie: płatności jeszcze nie działają, zapisano na cenę założycielską, kontakt e-mailem; zapis = zgoda na kontakt"
+    - topic: "limity przed płatnościami"
+      decision: "przed Stripe tylko niewidoczny fair use (anty-nadużycie, zamyka ORQ #5); podział Free/Basic, okres próbny i paywall wchodzą razem ze Stripe — fake door mierzy chęć, nie blokuje"
+    - topic: "brama slice'a Stripe"
+      decision: "≥ 10 zapisów kont aktywnych (które planowały w aplikacji) w ciągu 4 tygodni od uruchomienia fake door; zapisy anonimowe się nie wliczają (zawężone w rundzie Sokratejskiej przy FR-029)"
+    - topic: "czas"
+      decision: "pełny zakres bez budżetu czasowego, jak M-02; dodatkowa zasada: Stripe wchodzi kompletem albo wcale"
+    - topic: "priorytety konta"
+      decision: "zmiana hasła i usunięcie konta — oba must-have"
+    - topic: "zapis FR kroku 7"
+      decision: "must-have z adnotacją „warunkowe” — wchodzą tylko po bramie ≥ 10 zapisów w 4 tygodnie"
+    - topic: "zakres kroku 7"
+      decision: "rdzeń (Basic subskrypcją, okres próbny, limit Free z paywallem, zarządzanie subskrypcją, nic nie znika po wygaśnięciu) + dostęp jednorazowy BLIK/P24 + cena założycielska z prezentem dla obecnych; BEZ różnicowania funkcji Free (limit poprawek, druk miesiąca, stopka)"
+    - topic: "nowa reguła domenowa"
+      decision: "generowanie zużywa dni z puli konta w miesiącu kalendarzowym; pula zależy od stanu planu; zaplanowanego nigdy się nie odbiera"
+    - topic: "obecne konta przy wejściu fair use"
+      decision: "nic się nie zmienia — licznik startuje od zera w miesiącu wejścia, bez liczenia wstecz, żaden plan nie jest dotykany"
+    - topic: "zależności zewnętrzne"
+      decision: "treść regulaminu i polityki (blokuje FR-025); konto operatora płatności z BLIK/P24 (przed krokiem 7)"
+    - topic: "ramy"
+      decision: "web-app bez zmian; skala mała bez zmian; brak twardego terminu; praca po godzinach"
+  frs_drafted: 17
   quality_check_status: warned
 ---
+
+<!-- Kamień M-03 „Gotowi do sprzedaży”. Wejście: monetization.md (decyzje 2026-09-29),
+     next-actions.md Krok 12. Poprzednia sesja (M-02): archive/shape-notes-2026-10-01-1941.md -->
 
 ## Current System Overview
 
 **Cel systemu:** 10xPreschool zamienia krótkie hasło wpisane przez nauczyciela przedszkolnego
-(np. „Dinozaury") w konkretne, gotowe do użycia propozycje aktywności dla dzieci 3–6 lat,
-generowane przez LLM.
+w konkretny plan aktywności dla dzieci 3–6 lat — na dzień, tydzień i miesiąc — generowany przez LLM.
 
-**Architektura:** aplikacja SSR renderowana w całości na serwerze, z wyspami interaktywnymi
-tam, gdzie potrzebny jest stan; warstwa serwisowa oddzielona od tras API; baza relacyjna
-z politykami dostępu egzekwowanymi po stronie bazy, nie aplikacji. Wdrożenie na platformie
-edge — merge do gałęzi głównej jest wydaniem na produkcję, bez kroku zatwierdzenia.
+**Architektura:** aplikacja SSR renderowana na serwerze, z wyspami interaktywnymi tam, gdzie
+potrzebny jest stan; warstwa serwisowa oddzielona od tras API; baza relacyjna z politykami dostępu
+egzekwowanymi po stronie bazy. Wdrożenie na platformie edge — merge do gałęzi głównej jest wydaniem
+na produkcję, bez kroku zatwierdzenia.
 
-**Stack:** Astro 6 (SSR) + React 19 (wyspy), Tailwind 4, shadcn/ui, Supabase (auth przez
-`@supabase/ssr` z sesją w ciasteczkach + Postgres z RLS per operacja i rola), OpenRouter jako
-dostawca LLM, Cloudflare Workers jako środowisko uruchomieniowe. Testy: warstwa jednostkowa,
-bramka bezpieczeństwa treści na żywych wywołaniach LLM (`npm run test:gate`) oraz warstwa
-przeglądarkowa Playwright (od 2026-09-05 na gałęzi głównej).
+**Stack:** Astro 6 (SSR) + React 19 (wyspy), Tailwind 4, shadcn/ui, Supabase (auth e-mail + hasło
+z sesją w ciasteczkach, Postgres z RLS per operacja i rola), OpenRouter jako dostawca LLM,
+Cloudflare Workers. Testy: jednostkowe i trasy na atrapie, pgTAP i trasy na prawdziwym kliencie
+(doradczy job `db` w CI), e2e Playwright (poza CI), bramka bezpieczeństwa treści na żywych
+wywołaniach modelu — **zawieszona od 2026-09-19 z powodu kosztu**.
 
-**Użytkownicy dziś:** jedna rola — nauczyciel przedszkolny. Model płaski, bez ról
-administracyjnych. Skala mała: dane każdego konta są prywatne i odseparowane przez RLS.
+**Użytkownicy dziś:** jedna rola — nauczyciel/ka przedszkolny/a. Model płaski, skala mała, dane
+każdego konta prywatne i odseparowane przez RLS. Wszystko jest darmowe i bez limitów.
 
-**Co system robi dzisiaj (zamknięte w `M-01`):** logowanie i wylogowanie; wybór dnia lub
-tygodnia; wpisanie hasła dla okresu; generowanie propozycji dla pojedynczego dnia i dla całego
-tygodnia roboczego (szkic tygodnia rozkłada hasło na pięć rozłącznych tematów dziennych);
-edycja propozycji; jawna akceptacja dnia; usunięcie zapisanego planu dnia (kasowanie twarde);
-siatka miesiąca jako ekran główny, z podtytułem dnia odróżniającym dni jednego hasła.
+**Co system robi dzisiaj (po `M-01` i `M-02`):** generowanie dnia i tygodnia z jednego hasła
+(tydzień = szkic pięciu rozłącznych tematów + pięć dni); regeneracja tygodnia z zastępowaniem,
+także dni zatwierdzonych po jawnej zgodzie; edycja, zatwierdzanie, cofanie zatwierdzenia i usuwanie
+dnia (także z widoku tygodnia); podgląd aktywności w siatce miesiąca; poprawka pojedynczej
+aktywności poleceniem dla modelu (`S-15`); druk tygodnia (dzień na stronę albo tydzień na stronie)
+i miesiąca (siatka albo tygodniami). Źródło: `monetization.md` §1.
 
 ## Problem Statement & Motivation
 
-`M-01` dowiózł zdolności: nauczyciel potrafi zbudować plan miesiąca od zera. Czego nie dowiózł,
-to **dojrzałości tego przepływu** — planem zbudowanym da się dziś posługiwać znacznie gorzej,
-niż da się go zbudować. Ból nie ma jednego rdzenia; rozkłada się równomiernie na trzy osie,
-i to jest ustalenie użytkownika (2026-09-19), nie uproszczenie:
+**Produktu nie da się dziś sprzedać, a części braków nie da się bronić nawet bez sprzedaży.**
+Ból ma dwa równorzędne źródła (ustalenie użytkownika 2026-10-01):
 
-1. **Plan jest trudny do poprawienia.** Zmiana motywu całego tygodnia oznacza dziś przejście
-   pięciu dni po kolei. Cofnięcie akceptacji i usunięcie dnia są osiągalne tylko z widoku dnia,
-   nie z tygodnia, w którym nauczyciel faktycznie pracuje.
-2. **Plan jest trudny do odczytania.** Kafelek w siatce miesiąca pokazuje hasło i ucięty
-   podtytuł; co jest zaplanowane na dany dzień, widać dopiero po wejściu w ten dzień.
-3. **Plan nie wychodzi z aplikacji.** Zaakceptowany tydzień zostaje w przeglądarce — nie ma
-   ścieżki do wydruku.
+1. **Właściciel.** Produkt nie zarabia. Bramka bezpieczeństwa treści — jedyny automatyczny strażnik
+   guardraila „żadna propozycja nieodpowiednia dla dzieci 3–6 lat” — jest wstrzymana od 2026-09-19,
+   bo jej przebiegi kosztują. Nie ma planów, cennika, płatności ani limitów; nie ma też warunków,
+   bez których sprzedaż jest nieodpowiedzialna (`monetization.md` §6).
+2. **Obecne nauczycielki.** Braki bolą już dziś, niezależnie od sprzedaży: nie ma resetu hasła
+   (utrata hasła = utrata dostępu do planów), nie ma kanału kontaktu, nie ma regulaminu ani
+   informacji, czym jest usługa.
 
-**Dlaczego teraz:** zgłoszenia powstały 2026-08-30, przy realnym użyciu aplikacji po zamknięciu
-`M-01`, i zostały przetriagowane tego samego dnia. Nie zostały zrobione od razu, bo **PRD v1
-wyczerpał się na `S-03`**: żadna z tych pozycji nie ma własnego FR, a dwie wymagają zmiany PRD,
-nie dopisania do niego (Open Roadmap Questions #3). `M-01` zamknięto świadomie z niepełnym
-zakresem — `S-07` wypisano z kamienia właśnie po to, żeby nie dopisywać wymagania wstecz do
-gotowego kodu. PRD v2 jest więc warunkiem wejścia całej paczki, nie formalnością.
+**Dlaczego teraz:** decyzje monetyzacyjne zapadły 2026-09-29 (`monetization.md` §Decyzje: Free +
+Basic 19,99 zł teraz, Pro później, B2C, JDG). `M-02` jest zamknięty, design (Krok 10) i faza 3
+testów (Krok 6) są na produkcji — kolejka po `M-02` stawia ten kamień jako następny.
 
-**Koszt obejścia dzisiaj:** nauczyciel, który chce zmienić motyw tygodnia, wykonuje pięć
-osobnych operacji zamiast jednej; nauczyciel, który chce zobaczyć plan miesiąca, klika w każdy
-dzień po kolei; nauczyciel, który chce oddać plan na papierze, nie ma czego oddać.
+**Chęć płacenia jest niezweryfikowana.** Walidacja (Krok 11: rozmowy, dane z produkcji) nie została
+zrobiona przed tą sesją — decyzja użytkownika 2026-10-01. Dlatego kamień **sam niesie walidację**:
+cennik z zapisem na cenę założycielską (fake door) idzie przed integracją płatności, a integracja
+ma bramę wejścia w postaci wyniku zapisów. Gdy wynik jest słaby, kamień zamyka się bez płatności,
+a decyzja wraca do właściciela.
 
-**Charakter zmiany (ustalenie użytkownika, 2026-09-19):** jedna paczka dojrzewania UX —
-poprawki użyteczności na tym, co już działa, łącznie z regeneracją tygodnia traktowaną jako
-rozszerzenie istniejącego generowania. ⚠️ **Napięcie do rozstrzygnięcia w fazie 4:**
-`roadmap.md` §Kandydaci pkt 1 nazywa regenerację tygodnia z zastępowaniem *nową zdolnością*,
-bo dzisiejsza blokada pomija każdy dzień z jakimkolwiek planem, także roboczym szkicem.
-**Rozstrzygnięte 2026-09-19 w fazie 4 na korzyść roadmapy: `[new]`.** Powodów dwa —
-operacji „zastąp istniejące dni" nie da się dziś wywołać żadną ścieżką, a osobny FR daje
-miejsce gwarancji kolejności operacji przy awarii dostawcy. Rama „paczka dojrzewania UX"
-zostaje jako opis kamienia; na poziomie FR ta jedna pozycja jest nową zdolnością.
+**Rdzeń kamienia nie zależy od wyniku fake door.** Reset hasła, regulamin i polityka prywatności,
+FAQ, kontakt, limity i odwieszona bramka są warte zrobienia także wtedy, gdy nikt nie zechce
+płacić — to braki same w sobie. Idą przed fake door. (Ustalenie użytkownika 2026-10-01, odpowiedź
+na pytanie „co, jeśli to zły problem”.)
+
+**Koszt obejścia dzisiaj:** nauczycielka, która zapomni hasła, nie ma samodzielnej drogi powrotu;
+nikt nie ma jak zgłosić problemu; każda zmiana promptu albo modelu wchodzi na produkcję oceniona
+tylko ręcznie (`S-15` już tak wszedł).
+
+**Charakter zmiany:** nowy moduł (stan planu konta, uprawnienia, limity, płatności) plus poprawki
+rdzenia (reset hasła, strony informacyjne i prawne, kontakt, odwieszenie bramki).
 
 ## User & Persona
 
-**Persona bez zmian:** nauczyciel/ka przedszkolny/a — jedyna rola w systemie, model płaski.
-Ta paczka nie wprowadza nowej persony ani nie zmienia zakresu istniejącej.
+**Rola bez zmian:** nauczyciel/ka przedszkolny/a — jedyna rola, model płaski, B2C (płaci
+nauczycielka, nie placówka — `monetization.md` §Decyzje #4).
 
-**Co zmienia się w jego doświadczeniu:** dzisiejszy nauczyciel jest użytkownikiem, który plan
-**buduje**. Po tej paczce jest użytkownikiem, który planem **zarządza** — poprawia go, ogląda
-i wynosi poza aplikację. Wszystkie zmiany dotyczą nauczyciela, który ma już zbudowany plan;
-dla konta pustego nie zmienia się nic.
+**Co się zmienia:** konto dostaje **stan planu**. Ta sama osoba może być w okresie próbnym (pierwszy
+miesiąc pełny), na planie darmowym, na Basic albo na cenie założycielskiej. Stan decyduje o ilości,
+nie o dostępie do istniejących danych.
 
-**Nowi użytkownicy:** żadnych. Paczka nie otwiera systemu na nową grupę.
+**Grupa szczególna:** obecni użytkownicy sprzed paywalla — mają zbudowane plany i trafią na nowe
+zasady bez własnego wyboru; `monetization.md` §4.4 przewiduje dla nich prezent (cena założycielska
+plus okres Basic gratis). Szczegóły w fazach 3–5.
+
+**Nowi użytkownicy:** kamień ma ich przyciągać (cennik, stopka na darmowym wydruku jako kanał), ale
+nie wprowadza nowej roli — placówka i dyrektor zostają poza zakresem.
 
 ## Access Control Changes
 
-**Bez zmian — obecny model zachowany.**
+**Dziś:** jedna rola (nauczyciel/ka), model płaski, rejestracja i logowanie e-mail + hasło, dane
+każdego konta prywatne i odseparowane od pozostałych kont. Ekrany planowania są niedostępne bez
+zalogowania. Nie ma resetu ani zmiany hasła, nie ma usunięcia konta.
 
-Dziś: jedna rola (nauczyciel), model płaski, rejestracja i logowanie e-mail + hasło, sesja
-w ciasteczkach, dane każdego konta prywatne i odseparowane politykami RLS per operacja i rola.
-Trasy pod prefiksem chronionym są niedostępne bez sesji.
+**Role: bez zmian.** Nie powstaje rola operatora ani administratora. (Ustalenie 2026-10-01.)
 
-Ta paczka nie dodaje ról, nie zmienia granic uprawnień i nie otwiera żadnej powierzchni na
-użytkownika niezalogowanego. Wszystkie nowe operacje (regeneracja tygodnia, cofnięcie
-akceptacji z poziomu tygodnia, usunięcie dnia z poziomu tygodnia, wydruk) działają na danych
-właściciela sesji i dziedziczą istniejące polityki.
+**Zmiany w koncie** (ustalenie użytkownika 2026-10-01):
 
-**Konsekwencja dla zakresu:** izolacja kont jest w tej paczce *niezmiennikiem do obrony*, nie
-przedmiotem zmiany — każda nowa trasa zapisu musi ją egzekwować tak samo jak istniejące.
-Zapisane wśród guardraili (faza 3) i w §Constraints & Compatibility (faza 5).
+- **Reset zapomnianego hasła** — samodzielny powrót do konta przez e-mail. Warunek sprzedaży
+  (`monetization.md` §6 #2) i ból obecnych użytkowników.
+- **Zmiana hasła po zalogowaniu.**
+- **Usunięcie konta przez użytkownika** — konto i jego plany znikają na żądanie właściciela konta.
+
+**Stan planu konta — kto go zmienia:** system (okres próbny, płatność) oraz właściciel produktu
+ręcznie, poza aplikacją (prezenty dla obecnych użytkowników, wyjątki, reklamacje). Użytkownik stan
+swojego planu **tylko czyta**; nie ma ścieżki, którą sam by go podniósł inaczej niż płacąc.
+Odczyt stanu planu podlega tej samej izolacji kont co plany — nikt nie widzi stanu cudzego konta.
+
+**Nowa powierzchnia publiczna (bez logowania):** regulamin, polityka prywatności, FAQ, cennik,
+formularz kontaktowy i zapis na cenę założycielską (fake door). Dwie z nich przyjmują dane od osób
+bez konta — formularz kontaktowy i zapis — więc obie muszą być chronione przed spamem, a polityka
+prywatności musi obejmować przechowywanie e-maili osób, które nie mają konta.
+
+**Fake door — co widzi osoba po kliknięciu:** uczciwe potwierdzenie — płatności jeszcze nie
+działają, osoba jest zapisana na cenę założycielską i dostanie wiadomość e-mail. Zapis jest zgodą
+na ten kontakt. Żadna płatność nie jest symulowana.
+
+**Bez zmian:** ekrany planowania pozostają niedostępne bez zalogowania; izolacja kont obowiązuje
+każdą nową ścieżkę zapisu i odczytu tak samo jak istniejące.
 
 ## Success Criteria
 
 ### Primary
 
-Nauczyciel prowadzi pełną pętlę **zarządzania** zbudowanym planem, nie wychodząc z widoku,
-w którym pracuje: poprawia zbudowany tydzień (regeneruje go z zastępowaniem istniejących dni
-albo cofa akceptację i usuwa dzień — z poziomu widoku tygodnia), ogląda efekt w siatce
-miesiąca bez wchodzenia w poszczególne dni, i drukuje zaakceptowany tydzień.
+Nauczycielka może się samodzielnie posługiwać kontem i usługą bez pomocy właściciela, a produkt
+mierzy, czy ktoś zapłaci — przepływ zatwierdzony przez użytkownika 2026-10-01:
 
-Jedno kryterium spinające trzy osie bólu z §Problem Statement — poprawialność, czytelność,
-wyjście poza aplikację. Ustalenie użytkownika 2026-09-19.
+1. Odwiedzający bez konta czyta cennik, regulamin, politykę prywatności i FAQ; może napisać przez
+   formularz kontaktowy.
+2. Nauczycielka, która zapomniała hasła, wraca do konta przez e-mail i zastaje swoje plany.
+3. Zalogowana zmienia hasło albo usuwa konto razem z planami.
+4. Generuje jak dziś; niewidoczny limit fair use zatrzymuje dopiero nadużycie, z jasnym komunikatem.
+5. Zmiana promptu albo modelu znów przechodzi przez bramkę bezpieczeństwa treści.
+6. Cennik → „Zarezerwuj cenę założycielską” → uczciwe potwierdzenie zapisu.
+
+**Rozszerzenie warunkowe (krok 7):** gdy w ciągu 4 tygodni od uruchomienia zapisu jest **≥ 10
+zapisów kont aktywnych** (kont, które faktycznie planowały w aplikacji — zapisy anonimowe się nie
+wliczają; ustalenie z rundy Sokratejskiej przy FR-029), kamień obejmuje płatności — Free/Basic, okres próbny, paywall przy drugim tygodniu,
+prezent dla obecnych kont. Gdy próg nie pada, kamień zamyka się na kroku 6, a decyzja o płatnościach
+wraca do właściciela z danymi w ręku.
 
 ### Secondary
 
-Wydrukowany tydzień nadaje się do oddania bez obróbki — jest czytelny i kompletny na tyle,
-że nauczyciel przekazuje go dalej, nie przepisując niczego do innego narzędzia. Ustalenie
-użytkownika 2026-09-19.
+**Obecni użytkownicy zostają.** Po wejściu fair use i nowych stron żadne aktywne konto nie odchodzi
+z powodu zmian kamienia — mierzone aktywnością miesięczną przed i po. (Ustalenie 2026-10-01.)
 
 ### Guardrails
 
-Cztery niezmienniki wskazane przez użytkownika 2026-09-19. Wiążą **każdy** slice paczki,
-nie tylko ten, który ich dotyka bezpośrednio:
+Cztery niezmienniki z `M-02` przechodzą w całości: izolacja kont, zatwierdzony dzień nie ginie bez
+jawnej zgody, protokół licznika generacji przy zapisie partii, bezpieczeństwo treści propozycji.
+Ten kamień dokłada trzy (ustalenie użytkownika 2026-10-01):
 
-1. **Izolacja kont.** Plan jednego nauczyciela nigdy nie jest widoczny dla drugiego. Każda
-   nowa trasa zapisu i odczytu egzekwuje polityki dostępu tak samo jak istniejące. Ryzyko #4
-   w mapie testów; od 2026-09-05 pokryte testem przeglądarkowym na gałęzi głównej.
-2. **Zaakceptowany dzień nie ginie po cichu.** Kryterium ochrony zmienia się w tej paczce
-   z „nigdy nie niszczy" na „nigdy bez jawnego potwierdzenia, a po potwierdzeniu podmienia
-   komplet" — ale cicha utrata zaakceptowanej pracy pozostaje niedopuszczalna w każdym
-   wariancie. Potwierdzenie musi być uczciwe co do liczby i stanu dni, nie generyczne.
-3. **Protokół licznika generacji przy zapisie partii aktywności.** Partia zapisana dla dnia
-   zawsze odpowiada bieżącej generacji tego dnia, a zapis idzie jedną drogą, w jednej
-   transakcji. Zobowiązanie zaciągnięte w `S-02`; regeneracja tygodnia je dziedziczy i jest
-   pierwszą operacją, która rusza pięć dni naraz.
-4. **Bezpieczeństwo treści propozycji.** Żadna propozycja nieodpowiednia dla dzieci 3–6 lat.
-   Guardrail z PRD v1, od 2026-09-02 pilnowany bramką na żywych wywołaniach modelu. Żadna
-   zmiana w ścieżce generowania ani w promptach nie może go obniżyć.
+1. **Limit nie blokuje normalnego użytku.** Typowy miesiąc planowania, z poprawkami, nigdy nie
+   trafia na fair use, a błąd licznika nie może zatrzymać generowania.
+2. **Odwieszona bramka obejmuje każdy dopuszczony model i każdy tryb** generowania (dzień,
+   tydzień, poprawka aktywności) — reguła z `lessons.md`. Bramka, która przechodzi zielono na
+   części, nie jest odwieszona.
+3. **Płatności kompletem albo wcale.** Na produkcję nie trafia płatność bez tego, co ją czyni
+   bezpieczną dla klienta (zarządzanie subskrypcją, zwrot, obsługa wygaśnięcia). Połowa integracji
+   jest gorsza niż jej brak, bo dotyczy cudzych pieniędzy.
+
+**Blast radius wskazany przez użytkownika:** licznik wspólny dla wszystkich trybów generowania (błąd zatrzymuje
+generowanie naraz wszędzie) i odwieszenie bramki (zielony przebieg, który nie pilnuje wszystkiego) —
+oba podniesione do guardraili 1 i 2.
 
 ## Timeline acknowledgment
 
-**Brak bramki czasowej — decyzja świadoma, podjęta 2026-09-19 po przedstawieniu kosztu.**
+**Brak bramki czasowej — decyzja świadoma, podjęta 2026-10-01 po przedstawieniu kosztu.**
 
-Koszt został postawiony wprost przed decyzją: sześć pozycji, w tym jedna, która nie jest
-zmianą interfejsu (regeneracja tygodnia rusza pięć dni naraz, wymaga transakcji, kolejności
-„nowy gotowy, zanim stary znika" i odczytu stanu akceptacji przed operacją), to realnie
-więcej niż trzy tygodnie pracy po godzinach. Nazwana została też pułapka brownfieldowa:
-system zostawiony w połowie przerobiony jest gorszy niż nietknięty.
+Koszt postawiony wprost: rdzeń (kroki 1–6) to reset i zmiana hasła, usunięcie konta, cztery strony,
+formularz z ochroną przed spamem, licznik we wszystkich trybach generowania, odwieszenie bramki i fake door
+— wyraźnie więcej niż trzy tygodnie pracy po godzinach; płatności (krok 7) to zmiana osobnej
+wielkości. Nazwana pułapka: system zostawiony w połowie przerobiony, a w wypadku płatności —
+integracja wpięta w połowie.
 
-Użytkownik wybrał **pełny zakres bez deklarowanego budżetu czasowego** — kamień idzie slice
-po slice i zamyka się, gdy wszystkie pozycje są `done`.
-
-**Co tę decyzję broni:** każdy slice jest osobnym folderem zmiany i osobnym PR-em, a merge do
-gałęzi głównej jest wydaniem na produkcję. „Połowa przerobionego systemu" nigdy nie leży więc
-na gałęzi głównej dłużej niż jeden slice — ryzyko jest ograniczone dyscypliną slice'ów, a nie
-budżetem czasu. Warunek: kolejność slice'ów musi respektować zależności (regeneracja tygodnia
-przed fazą 3 rolloutu testów; układ przycisków razem z blokadą edycji).
-
-**Konsekwencja dla bramki jakości (faza 7):** `delivery_weeks` nie jest ≤ 3 ani nie jest
-liczbą — ta sekcja jest jawnym zapisem, że koszt wypłynął i został przyjęty, a nie obejściem
-bramki. Cross-check odnotuje to jako przyjęte ryzyko, nie jako lukę.
-
-## Scope of Change
-
-Zakres zatwierdzony 2026-09-19 — **wszystkie sześć pozycji wchodzi do `M-02`**, nic nie wypada
-do `M-03`. Kategorie (`new` / `modified` / `preserved`) i pełne FR-y powstają w fazie 4.
-
-1. `S-07` — podgląd aktywności w siatce miesiąca + powiększony kafelek (mieści cały podtytuł)
-2. Regeneracja tygodnia z zastępowaniem istniejących dni, w tym zaakceptowanych
-3. Cofnięcie akceptacji dnia z poziomu widoku tygodnia
-4. Usunięcie dnia z poziomu widoku tygodnia
-5. Blokada edycji przypadkowej dla zaakceptowanego dnia / tygodnia + układ przycisków
-   w widoku dnia (cofnięcie akceptacji i usunięcie pod przyciskiem generowania)
-6. Wydruk zaakceptowanego tygodnia (dzień na stronę)
+Użytkownik wybrał **pełny zakres bez deklarowanego budżetu**, jak w `M-02`. Obroną jest dyscyplina
+slice'ów (każdy osobnym PR-em i wydaniem) plus zasada dodatkowa: **płatności wchodzą kompletem albo
+wcale** (Guardrail 3). Acknowledged on 2026-10-01: multi-week delivery requires sustained
+dedication; user accepted.
 
 ## Functional Requirements
 
-Numeracja kontynuuje v1 (FR-001…FR-009 skonsumowane przez `F-01`…`S-03`), żeby odwołania
-w zarchiwizowanych slice'ach nie zaczęły wskazywać na co innego. Tag `Change:` per schemat
-brownfieldowy: `new` — zdolność nieosiągalna dziś żadną ścieżką; `modified` — istniejące
-zachowanie, które się zmienia; `preserved` — zachowanie, które musi przetrwać nietknięte.
+Numeracja kontynuuje v2 (FR-010…FR-021 skonsumowane przez `M-02`; FR-018 celowo pusty). Tag
+`Change:` per schemat brownfieldowy. **„Warunkowe”** = must-have, który wchodzi wyłącznie po
+przejściu bramy: ≥ 10 zapisów kont aktywnych na cenę założycielską w ciągu 4 tygodni od uruchomienia zapisu
+(§Success Criteria). Bez bramy kamień domyka się bez nich.
 
-### Czytelność siatki miesiąca
+### Konto
 
-- FR-010: Nauczyciel może zobaczyć aktywności zaplanowane na dany dzień bez opuszczania siatki miesiąca. Priority: must-have. Change: new
-  > Socrates: Kontrargument uznany za trafny: „dociąganie danych przy najechaniu to burza żądań —
-  > 20–22 kafelki, przeciągnięcie kursora przez rząd wywołuje żądanie za żądaniem". Rozstrzygnięcie:
-  > FR utrzymany, ale kontrargument przestaje być tematem do researchu i staje się **warunkiem
-  > brzegowym** — patrz NFR o zachowaniu podglądu pod szybkim ruchem wskaźnika. Opóźnienie,
-  > anulowanie porzuconego żądania i pamięć podręczna pobranych dni nie są opcjonalną optymalizacją.
-- FR-011: Nauczyciel widzi w kafelku siatki miesiąca pełny podtytuł dnia, nieucięty. Priority: must-have. Change: modified
-  > Socrates: Kontrargument uznany za trafny: „wyższy kafelek wymienia jeden problem czytelności
-  > na drugi — miesiąc przestaje mieścić się na ekranie naraz, a to jest cały sens siatki miesiąca".
-  > Rozstrzygnięcie: FR utrzymany z **twardym ograniczeniem** — pełny miesiąc pozostaje widoczny bez
-  > przewijania na tej samej szerokości ekranu, na której mieści się dziś. Jeśli obie rzeczy nie
-  > mieszczą się naraz, ustępuje podtytuł, nie widok miesiąca.
+- FR-022: Nauczyciel może odzyskać dostęp do konta po zapomnieniu hasła, przez e-mail. Priority: must-have. Change: new
+  > Socrates: Kontrargument uznany za trafny: „wiadomość ląduje w spamie — część nauczycielek (skrzynki
+  > szkolne, filtry) nie dostanie linku, więc reset nie domyka problemu”. Rozstrzygnięcie: FR utrzymany
+  > z **warunkiem** — strona resetu mówi, gdzie szukać wiadomości i co zrobić, gdy nie przyjdzie;
+  > ścieżką zapasową jest formularz kontaktowy (FR-026).
+- FR-023: Zalogowany nauczyciel może zmienić hasło; zmiana wylogowuje wszystkie pozostałe sesje tego konta. Priority: must-have. Change: new
+  > Socrates: Kontrargument uznany za trafny i **FR przepisany**: „zmiana hasła po podejrzeniu włamania
+  > nie pomaga, jeśli otwarte sesje — np. na komputerze w przedszkolu — działają dalej”. Pozostałe
+  > urządzenia tracą dostęp po zmianie hasła.
+- FR-024: Nauczyciel może usunąć swoje konto wraz ze wszystkimi planami. Priority: must-have. Change: new
+  > Socrates: Kontrargument uznany za trafny: „po wejściu płatności usunięcie konta z aktywną subskrypcją
+  > zostawia płatność, której nikt nie może anulować”. Rozstrzygnięcie: FR utrzymany z **warunkiem** —
+  > usunięcie konta z aktywną subskrypcją ją kończy, a potwierdzenie mówi o tym wprost. Warunek wiąże
+  > od wejścia płatności (FR-032…FR-034).
 
-### Regeneracja tygodnia
+### Informacja i kontakt
 
-Pozycja rozbita 2026-09-19 w rundzie Sokratejskiej na połowę bezpieczną i ryzykowną.
+- FR-025: Odwiedzający bez konta może przeczytać regulamin, politykę prywatności i FAQ. Priority: must-have. Change: new
+  > Socrates: Kontrargumenty rozważone — treść prawna zależna od księgowego/prawnika, regulamin do
+  > przepisania przy płatnościach, FAQ bez zadanych pytań. Żadnego nie uznano; FR stoi w obecnym
+  > brzmieniu.
+- FR-026: Odwiedzający, z kontem lub bez, może wysłać wiadomość do właściciela przez formularz kontaktowy. Priority: must-have. Change: new
+  > Socrates: Kontrargument uznany za trafny: „otwarty formularz bez konta będzie zasypywany mimo
+  > ochrony; każda wiadomość to czas właściciela na przesianie”. Rozstrzygnięcie: FR utrzymany, a
+  > kontrargument staje się **NFR** (faza 5) — wiadomość automatu nie dociera do właściciela,
+  > prawdziwa nie ginie.
 
-- FR-012: Nauczyciel może wygenerować tydzień na nowo, zastępując istniejące dni niezaakceptowane. Priority: must-have. Change: new
-  > Socrates: Kontrargument uznany za trafny: „tańszy wariant robi to samo bez ryzyka — regeneruj
-  > wyłącznie dni niezaakceptowane, a chcący zmienić wszystko niech najpierw cofnie akceptacje".
-  > Rozstrzygnięcie: **pozycja rozbita na dwa FR-y.** Ten niesie połowę bezpieczną i jest must-have.
-  > Dzisiejsza blokada pomija każdy dzień z *jakimkolwiek* planem, także roboczym szkicem — więc
-  > nawet ta połowa jest nową zdolnością, nie zmianą komunikatu.
-- FR-013: Nauczyciel może rozszerzyć zastępowanie na dni zaakceptowane. Priority: nice-to-have. Change: new
-  > Socrates: Ten FR **jest** wynikiem kontrargumentu do FR-012. Zachowuje intencję z roadmapy
-  > („nauczyciel nie ma wchodzić w pięć dni po kolei"), ale oddaje jej najcięższy wariant jako
-  > nice-to-have: kasuje hurtowo jedyny stan, który człowiek świadomie oznaczył jako skończony,
-  > w systemie, który nie ma cofania nigdzie (`S-02` usunął undo świadomie, `S-05` kasuje twardo).
-  > Kamień domyka się bez niego.
-- FR-014: Nauczyciel przed zastąpieniem widzi potwierdzenie podające, ile dni zostanie zastąpionych i ile z nich jest zaakceptowanych. Priority: must-have. Change: new
-  > Socrates: Kontrargumentów rozważono trzy — cienka bariera dialogu, odruchowe „OK", koszt odczytu
-  > stanu tylko po to, by zbudować zdanie. Żadnego nie uznano; FR stoi w obecnym brzmieniu. Uczciwa
-  > treść potwierdzenia jest jawną decyzją z roadmapy (2026-08-30), nie domysłem.
+### Limity
 
-### Zarządzanie planem z poziomu tygodnia
+- FR-027: Nauczyciel, który przekroczy limit fair use, dostaje zamiast wyniku generowania komunikat mówiący, kiedy generowanie znów będzie możliwe, i wskazujący kontakt na wypadek pomyłki. Priority: must-have. Change: modified
+  > Socrates: Kontrargument uznany za trafny i **FR przepisany**: „przed płatnościami komunikat nie ma
+  > czego zaproponować — nauczycielka nie wie, kiedy limit się odnowi ani co zrobić”. Komunikat podaje
+  > termin powrotu i ścieżkę kontaktu.
 
-- FR-015: Nauczyciel może cofnąć akceptację dnia z poziomu widoku tygodnia. Priority: must-have. Change: new
-  > Socrates: Kontrargument uznany za trafny: „cofanie akceptacji bez widoku treści to klikanie
-  > w ciemno — w tygodniu nauczyciel widzi kafelki, nie pełne aktywności". Rozstrzygnięcie: FR
-  > utrzymany — operacja jest odwracalna (dzień można zaakceptować ponownie), więc pomyłka kosztuje
-  > jedno kliknięcie, nie utratę pracy — ale z warunkiem: **operacja musi jednoznacznie nazywać
-  > dzień, którego dotyczy**, a nie polegać na tym, że nauczyciel trafił w właściwy kafelek.
-- FR-016: Nauczyciel może usunąć zapisany plan dnia z poziomu widoku tygodnia. Priority: must-have. Change: new
-  > Socrates: Kontrargumenty rozważone — skrócenie drogi do kasowania twardego, zbieżność intencji
-  > z regeneracją tygodnia, kafelek pustoszejący bez śladu. Żadnego nie uznano; FR stoi w obecnym
-  > brzmieniu. Potwierdzenie kasowania jest już częścią zachowania z `S-05` i obowiązuje tu tak samo.
+### Walidacja sprzedaży
 
-### Ochrona zaakceptowanej pracy
+- FR-028: Odwiedzający może zobaczyć cennik planów Darmowy i Basic z cenami. Priority: must-have. Change: new
+  > Socrates: Kontrargument uznany za trafny i **FR zawężony**: „Pro «wkrótce» bez daty i funkcji
+  > obiecuje coś, czego kamień nie dowozi”. Cennik pokazuje tylko Darmowy i Basic; Pro pojawi się,
+  > gdy będzie miał własne funkcje (`M-04`).
+- FR-029: Odwiedzający może zapisać się na cenę założycielską i dostaje potwierdzenie, że płatności jeszcze nie działają. Priority: must-have. Change: new
+  > Socrates: Kontrargument uznany za trafny: „zapis jest tani, zapłata droga — 10 zapisów nie dowodzi
+  > 10 płacących”. Rozstrzygnięcie: FR utrzymany, ale **zmienia się brama płatności** — liczą się
+  > wyłącznie zapisy kont, które faktycznie planowały w aplikacji. Zapis anonimowy zostaje dostępny
+  > (faza 2), ale do progu się nie wlicza. Definicja „konta aktywnego” — §Open Questions.
 
-- FR-017: Nauczyciel edytujący treść dnia zaakceptowanego dostaje potwierdzenie, a po zgodzie dzień traci stan zaakceptowania. Priority: must-have. Change: modified
-  > Socrates: Kontrargument uznany za trafny i **FR przepisany**: „granica «edycja przypadkowa vs
-  > operacja jawna» jest nie do obronienia — system broniłby poprawić literówkę, a pozwalał
-  > skasować tydzień". Pierwotne brzmienie (blokada edycji w miejscu, operacje jawne dostępne —
-  > decyzja z roadmapy 2026-08-30) zastąpione jedną spójną regułą: **jawność proporcjonalna do
-  > skutku**. Nic nie jest zakazane; wszystko, co niszczy pracę oznaczoną jako gotowa, pyta.
-  > Zamiast trzech kroków (cofnij akceptację → popraw → zaakceptuj ponownie) nauczyciel poprawia
-  > i potwierdza. ⚠️ To **odwraca decyzję zapisaną w roadmapie** — patrz §Open Questions.
-- ~~FR-018: układ przycisków w widoku dnia~~ — **wycofany z listy FR 2026-09-19.** Werdykt
-  użytkownika: „przycisk ma być wyżej" to układ ekranu, nie zdolność — obie operacje są dziś
-  dostępne, a FR sugerowałby weryfikację, której nie da się zasertować inaczej niż wzrokowo.
-  Przeniesione do §Constraints & Compatibility jako wiążący warunek układu. **Numer FR-018 nie
-  jest reużywany** — luka w numeracji jest celowa i trołowalna.
+### Płatności (warunkowe)
 
-### Wydruk
+- FR-030: Nowe konto dostaje pierwszy miesiąc od rejestracji z pełnym zakresem Basic, bez podawania karty. Priority: must-have (warunkowe). Change: new
+  > Socrates: Kontrargument uznany za trafny, **ryzyko przyjęte**: „bez karty nic nie powstrzymuje
+  > nowego konta na nowy adres co miesiąc”. FR bez zmian — nadużycie kosztuje grosze LLM
+  > (`monetization.md` §5), a wymaga nowej skrzynki co miesiąc i porzucenia zbudowanych planów.
+  > Zapisane jako znane ograniczenie.
+- FR-031: Nauczyciel na planie darmowym może zaplanować pięć dni roboczych w miesiącu kalendarzowym (dzień liczy się do swojego miesiąca); próba zaplanowania kolejnego pokazuje cennik zamiast generowania. Priority: must-have (warunkowe). Change: new
+  > Socrates: Kontrargument uznany za trafny i **FR przepisany**: „tydzień przecinający dwa miesiące —
+  > do którego się liczy?”. Limit liczy dni, nie tygodnie (jednostka z `monetization.md` §4.3);
+  > nauczycielce komunikujemy go jako „tydzień”.
+- FR-032: Nauczyciel może wykupić Basic jako subskrypcję kartą, roczną albo miesięczną; domyślnym wyborem przy zakupie jest roczna. Priority: must-have (warunkowe). Change: new
+  > Socrates: Kontrargument uznany za trafny: „planowanie jest skokowe — subskrypcja miesięczna będzie
+  > anulowana zaraz po zaplanowaniu”. Rozstrzygnięcie: FR utrzymany z **warunkiem** — roczna jest
+  > domyślna, miesięczna jest alternatywą (`monetization.md` §4.4).
+- FR-033: Nauczyciel może wykupić Basic jako dostęp jednorazowy (miesiąc albo rok szkolny) BLIK-iem albo przelewem, bez automatycznego odnowienia. Priority: must-have (warunkowe). Change: new
+  > Socrates: Kontrargument uznany za trafny: „subskrypcja i dostęp jednorazowy podwajają przypadki
+  > brzegowe”. Rozstrzygnięcie: FR utrzymany z **warunkiem** — jeden model uprawnienia, „plan + dostęp
+  > do daty” (`monetization.md` §4.5): oba źródła płatności przesuwają tę samą datę, a zakup przy
+  > aktywnym dostępie ją wydłuża, nie dubluje.
+- FR-034: Nauczyciel z subskrypcją może nią zarządzać — anulować ją i zmienić metodę płatności; anulowanie zatrzymuje odnowienie, a dostęp trwa do końca opłaconego okresu. Priority: must-have (warunkowe). Change: new
+  > Socrates: Kontrargument uznany za trafny i **FR doprecyzowany**: „nie wiadomo, czy anulowanie kończy
+  > dostęp od razu — zła odpowiedź to reklamacja albo chargeback”. Dostęp trwa do daty, za którą
+  > zapłacono — zgodnie z modelem „plan + dostęp do daty”, bez proracji.
+- FR-035: Cenę założycielską Basic dostaje każda osoba zapisana przez fake door (FR-029) oraz kolejni kupujący do łącznie ok. 100 osób; cena jest zachowana, dopóki subskrypcja trwa bez przerwy. Priority: must-have (warunkowe). Change: new
+  > Socrates: Kontrargument uznany za trafny i **FR przepisany**: „ktoś zapisany przez fake door kupuje
+  > jako 101. — a zapis obiecywał cenę”. Zapis gwarantuje cenę; limit ~100 dotyczy tylko osób spoza
+  > listy zapisanych.
+- FR-036: Konto założone przed wejściem płatności dostaje cenę założycielską i okres Basic gratis, a o nowych zasadach i prezencie dowiaduje się, zanim limit planu darmowego go dotknie. Priority: must-have (warunkowe). Change: new
+  > Socrates: Kontrargument uznany za trafny: „prezent bez wcześniejszej wiadomości to wciąż zmiana
+  > zasad — obecni dowiadują się przy pierwszym limicie”. Rozstrzygnięcie: FR utrzymany z **warunkiem**
+  > uprzedzenia przed wejściem limitów. Długość okresu gratis — §Open Questions.
+- FR-037: Po wygaśnięciu planu nauczyciel zachowuje odczyt, ręczną edycję i druk tygodnia wszystkich zaplanowanych dni; poprawka aktywności poleceniem dla modelu liczy się do limitu planu darmowego. Priority: must-have (warunkowe). Change: preserved
+  > Socrates: Kontrargument uznany za trafny i **FR zawężony**: „edycja i poprawka poleceniem po
+  > wygaśnięciu pozwalają budować plan bez generowania”. Edycja ręczna zostaje (to praca, nie koszt);
+  > poprawka poleceniem, która woła model, podlega limitowi planu darmowego. Jednostka liczenia
+  > poprawki — §Open Questions.
 
-- FR-019: Nauczyciel może wydrukować tydzień w postaci czytelnej na papierze. Priority: must-have. Change: new
-  > Socrates: Kontrargument uznany za trafny: „układ «dzień na stronie» wybrano, zanim ktoś
-  > zapytał, co dokładnie nauczyciel oddaje i komu". **FR rozluźniony** — zobowiązanie dotyczy
-  > czytelności na papierze, nie konkretnego układu. Wybór dzień-na-stronie vs tydzień-na-stronie
-  > ląduje w §Open Questions i należy do slice'a, bo zależy od odbiorcy wydruku, którego nie
-  > ustaliliśmy.
-- FR-020: Wydruk obejmuje wszystkie dni robocze tygodnia, a dni niezaakceptowane są na nim widocznie oznaczone jako szkic roboczy. Priority: must-have. Change: new
-  > Socrates: Kontrargumenty rozważone — oznaczony szkic i tak zostanie oddany; napięcie
-  > z kryterium Secondary („nadaje się do oddania bez obróbki"); pusta strona dla dnia bez planu.
-  > Żadnego nie uznano; FR stoi w obecnym brzmieniu.
+### Zachowane
 
-**Wycofane z listy FR w rundzie Sokratejskiej 2026-09-19 (dwie pozycje).**
+- FR-038: Nauczyciel generuje, edytuje, zatwierdza, usuwa i drukuje plany tak jak dziś, w granicach limitu fair use. Priority: must-have. Change: preserved
+  > Socrates: Rozważony razem z FR-037 (obejście przez edycję); kontrargument dotyczył stanu po
+  > wygaśnięciu planu, nie tego FR. Stoi w obecnym brzmieniu.
 
-1. „Nauczyciel zachowuje dotychczasowy
-tydzień w całości, gdy generowanie zastępujące nie dojdzie do skutku" (dawne FR-014). Werdykt
-użytkownika: to własność transakcji, nie zdolność użytkownika — jako FR zajęłoby numer, którego
-żaden slice nie będzie śledził. Przeniesione do §Non-Functional Requirements; zobowiązanie nie
-znika, zmienia miejsce.
-2. Układ przycisków w widoku dnia (dawne FR-018) — patrz wyżej; przeniesione do
-   §Constraints & Compatibility.
-
-**Bilans rundy:** z jedenastu FR-ów przetrwało dziesięć. Jeden podzielony na bezpieczny
-must-have i ryzykowny nice-to-have (FR-012/FR-013), dwa przepisane po przyjęciu kontrargumentu
-(FR-017 — odwrócenie decyzji z roadmapy; FR-019 — rozluźnienie), dwa wycofane do innych sekcji,
-trzy utrzymane z kontrargumentem zapisanym i odrzuconym (FR-014, FR-016, FR-020), dwa utrzymane
-z dopisanym warunkiem brzegowym (FR-010, FR-011, FR-015).
+**Bilans rundy Sokratejskiej (2026-10-01):** 17 FR-ów, każdy z kontrargumentem. Przepisane albo
+zawężone: FR-023, FR-027, FR-028, FR-031, FR-035, FR-037 (6). Utrzymane z warunkiem: FR-022, FR-024,
+FR-032, FR-033, FR-034, FR-036 (6). Utrzymane z kontrargumentem przeniesionym do NFR: FR-026.
+Ryzyko przyjęte: FR-030. Bez uznanego kontrargumentu: FR-025, FR-038. Zmiana poza FR: brama płatności
+liczy wyłącznie zapisy kont aktywnych (FR-029).
 
 ## User Stories
 
-### US-02: Nauczyciel poprawia zbudowany tydzień i oddaje go na papierze
+### US-04: Nauczycielka wraca do konta po zapomnieniu hasła
 
-- **Given** zalogowany nauczyciel z tygodniem, który ma pięć zaplanowanych dni, w tym trzy zaakceptowane
-- **When** uznaje, że motyw tygodnia jest nietrafiony, i uruchamia generowanie tygodnia z nowym hasłem
-- **Then** widzi potwierdzenie mówiące wprost, że zastąpi pięć dni, w tym trzy zaakceptowane; po potwierdzeniu dostaje komplet nowych dni, a gdy generowanie zawiedzie — poprzedni tydzień w niezmienionej postaci
+- **Given** nauczycielka z kontem i zaplanowanym miesiącem, która nie pamięta hasła
+- **When** prosi o reset ze strony logowania i postępuje według wiadomości e-mail
+- **Then** ustawia nowe hasło, loguje się i zastaje wszystkie swoje plany
 
-**Co było inaczej przedtem:** generowanie tygodnia po cichu pomijało każdy dzień, który miał
-jakikolwiek plan — także roboczy szkic. Nauczyciel nie dostawał ani nowych dni, ani informacji,
-że czegoś nie zrobiono; żeby zmienić motyw tygodnia, musiał wejść w pięć dni po kolei.
+**Co było inaczej przedtem:** nie było żadnej samodzielnej drogi powrotu do konta.
 
 #### Acceptance Criteria
 
-- Potwierdzenie podaje liczbę dni do zastąpienia i liczbę zaakceptowanych wśród nich; odmowa zostawia tydzień nietknięty
-- Po potwierdzeniu żaden dzień tygodnia nie zostaje w stanie mieszanym — albo komplet nowy, albo komplet poprzedni
-- Nieudane generowanie nie zostawia dnia pustego ani w stanie pośrednim
+- Strona resetu mówi, gdzie szukać wiadomości i co zrobić, gdy nie przyjdzie (FR-022)
+- Plany konta po resecie są nietknięte
 
-### US-03: Nauczyciel odczytuje plan miesiąca bez wchodzenia w dni
+### US-05: Nauczycielka rezerwuje cenę założycielską
 
-- **Given** zalogowany nauczyciel w siatce miesiąca z zaplanowanymi dniami
-- **When** zatrzymuje się na kafelku konkretnego dnia
-- **Then** widzi aktywności zaplanowane na ten dzień w miejscu, bez opuszczania siatki; kliknięcie kafelka nadal otwiera pełny widok dnia
+- **Given** odwiedzający albo zalogowana nauczycielka na stronie cennika
+- **When** klika „Zarezerwuj cenę założycielską” i podaje e-mail
+- **Then** widzi potwierdzenie: płatności jeszcze nie działają, jest zapisana, dostanie wiadomość
 
-**Co było inaczej przedtem:** kafelek pokazywał hasło i ucięty podtytuł; jedyną drogą do treści
-było wejście w dzień.
+**Co było inaczej przedtem:** nie było ani cennika, ani sposobu wyrażenia chęci zapłaty.
 
 #### Acceptance Criteria
 
-- Podgląd jest wyłącznie do odczytu — żadnej edycji w miejscu
-- Podgląd jest osiągalny nie tylko wskaźnikiem myszy; nauczyciel bez myszy dochodzi do tej samej treści
-- Kafelek mieści pełny podtytuł dnia, bez ucięcia
+- Żadna płatność nie jest symulowana; potwierdzenie mówi wprost, że płatności jeszcze nie działają
+- Zapis jest zgodą na kontakt e-mailowy w sprawie ceny założycielskiej
 
 ## Business Logic Changes
 
-**Reguła rdzeniowa bez zmian.** Aplikacja nadal zamienia hasło nauczyciela w konkretne,
-gotowe do użycia propozycje aktywności dla dzieci 3–6 lat, a szkic tygodnia nadal rozkłada
-jedno hasło na pięć rozłącznych tematów dziennych. Żadne FR tej paczki nie dotyka doboru
-treści ani promptu.
+**Reguła rdzeniowa bez zmian.** Aplikacja nadal zamienia hasło nauczyciela w konkretne, gotowe do
+użycia propozycje aktywności dla dzieci 3–6 lat, a szkic tygodnia nadal rozkłada jedno hasło na
+pięć rozłącznych tematów dziennych. Żadne FR tego kamienia nie dotyka doboru treści ani promptu.
 
-Zmieniają się **dwie reguły wokół rdzenia**:
+**Nowa reguła (dziś nie istnieje):** **każde generowanie zużywa dni z puli konta w miesiącu
+kalendarzowym, a wielkość puli zależy od stanu planu konta; to, co już zaplanowane, nigdy nie jest
+odbierane.** (Ustalenie użytkownika 2026-10-01.)
 
-1. **Kiedy generowanie tygodnia pomija dzień.**
-   - Dziś: generowanie tygodnia pomija każdy dzień, który ma *jakikolwiek* plan — także
-     roboczy szkic, którego nauczyciel nigdy nie zaakceptował. Pominięcie jest ciche.
-   - Po zmianie: generowanie tygodnia **zastępuje** dni niezaakceptowane po jawnym
-     potwierdzeniu podającym ich liczbę (FR-012, FR-014); dni zaakceptowane pozostają poza
-     zasięgiem, dopóki nauczyciel nie rozszerzy operacji jawnie (FR-013, nice-to-have).
-2. **Co znaczy „dzień zaakceptowany".**
-   - Dziś: akceptacja jest etykietą stanu, ustawianą i zdejmowaną wyłącznie jawnie. Edycja
-     treści nie rusza tej etykiety — zaakceptowany dzień może mieć treść zmienioną po akceptacji
-     i nadal wyglądać na zatwierdzony.
-   - Po zmianie: akceptacja staje się **stwierdzeniem o konkretnej treści**. Edycja treści dnia
-     zaakceptowanego pyta o zgodę i po niej zdejmuje akceptację (FR-017). Reguła nadrzędna dla
-     całej paczki: **jawność proporcjonalna do skutku** — nic nie jest zakazane, ale wszystko,
-     co niszczy pracę oznaczoną jako gotowa, pyta.
+- **Wejście:** stan planu konta i liczba dni wygenerowanych w bieżącym miesiącu kalendarzowym.
+  Jednostką jest dzień — wygenerowanie tygodnia zużywa pięć, regeneracja dnia jeden
+  (`monetization.md` §4.3); dzień liczy się do swojego miesiąca (FR-031).
+- **Wyjście:** generowanie dochodzi do skutku albo nauczycielka dostaje komunikat, kiedy będzie
+  znów możliwe (FR-027) — a po wejściu płatności, na planie darmowym, cennik (FR-031).
+- **Pula przed płatnościami:** wszyscy mają niewidoczny limit fair use, który zatrzymuje wyłącznie
+  nadużycie. **Po bramie płatności:** okres próbny i Basic — fair use; Darmowy — pięć dni roboczych
+  w miesiącu.
+- **Czego reguła nie robi:** nie odbiera ani nie ukrywa zaplanowanych dni, nie blokuje ręcznej
+  edycji, zatwierdzania, usuwania ani druku tygodnia (FR-037, FR-038).
+
+**Druga reguła (warunkowa, krok 7):** uprawnienie konta to **„plan + dostęp do daty”** — każde
+źródło płatności przesuwa tę samą datę; po niej konto wraca do planu darmowego (FR-033, FR-034).
 
 ## Non-Functional Requirements
 
-Istniejące NFR z PRD v1 obowiązują dalej i nie są tu powtarzane (widoczny postęp operacji
-generowania, prywatność treści planu, polski interfejs). Ta paczka dokłada cztery:
+Istniejące NFR z PRD v1 i v2 obowiązują dalej i nie są tu powtarzane. Ten kamień dokłada:
 
-- **Nieukończone zastąpienie tygodnia nie zostawia śladu.** Gdy generowanie zastępujące nie
-  dochodzi do skutku, nauczyciel zastaje tydzień w postaci sprzed operacji — nie częściowo
-  podmieniony i nie pusty. _(Pierwotnie zapisane jako FR; przeniesione tutaj 2026-09-19
-  werdyktem użytkownika: to własność transakcji, nie zdolność użytkownika.)_
-- **Podgląd dnia zachowuje się pod szybkim ruchem wskaźnika.** Przeciągnięcie kursora przez
-  rząd kafelków nie generuje żądania na każdy mijany dzień, a treść raz pobranego dnia nie
-  jest pobierana po raz drugi w tej samej sesji oglądania.
-- **Siatka miesiąca pozostaje widoczna naraz.** Pełny miesiąc mieści się bez przewijania na tej
-  samej szerokości ekranu, na której mieści się dziś. Przy konflikcie ustępuje podtytuł dnia,
-  nie widok miesiąca.
-- **Podgląd jest osiągalny bez wskaźnika myszy.** Nauczyciel posługujący się wyłącznie
-  klawiaturą dochodzi do tej samej treści co nauczyciel z myszą.
+- **Wiadomości automatów nie docierają do właściciela, a prawdziwe nie giną.** Dotyczy obu
+  powierzchni, które przyjmują dane od osób bez konta: formularza kontaktowego i zapisu na cenę
+  założycielską. _(Z rundy Sokratejskiej przy FR-026.)_
+
+Guardraile 1–3 (§Success Criteria) są zewnętrznie obserwowalne i wiążą tak samo jak NFR — w tym
+odporność puli na równoczesne wywołania (Guardrail 1) i zakres bramki (Guardrail 2).
 
 ## Constraints & Compatibility
 
-**Zachowanie wsteczne — adresy i powierzchnie.** Trzy istniejące ekrany planowania (dzień,
-tydzień, miesiąc) zachowują dotychczasowe adresy i punkty wejścia. Kliknięcie kafelka w siatce
-miesiąca nadal otwiera widok dnia — podgląd (FR-010) jest warstwą na tej ścieżce, nie jej
-zamiennikiem.
+**Zachowanie wsteczne.** Istniejące ekrany planowania zachowują adresy i punkty wejścia; logowanie
+i rejestracja działają jak dziś. Ekrany planowania pozostają za logowaniem (FR-038).
 
-**Cztery niezmienniki, które wiążą każdy slice** (pełne brzmienie: §Success Criteria → Guardrails):
-izolacja kont, brak cichej utraty zaakceptowanej pracy, protokół licznika generacji przy zapisie
-partii aktywności, bezpieczeństwo treści propozycji.
+**Cztery niezmienniki `M-02` wiążą każdy slice** (izolacja kont, zatwierdzony dzień nie ginie bez
+zgody, protokół licznika generacji przy zapisie partii, bezpieczeństwo treści) — plus Guardraile 1–3
+tego kamienia.
 
-**Migracja danych.** Żadne FR nie wymaga wprost zmiany schematu. Gdyby któryś slice dodał
-kolumnę do tabeli planów, musi świadomie rozstrzygnąć jej uprawnienia zapisu — grant UPDATE
-jest w tym projekcie wystawiany per kolumna po nazwie, więc kolumna dodana bez tego kroku
-kończy zapis błędem, który warstwa serwisowa raportuje jako błąd konfiguracji, nie jako brak
-uprawnień. To pułapka, którą wcześniejsza migracja musiała rozbrajać jawnie.
+**Migracja danych.** Obecne konta przy wejściu fair use: **nic się nie zmienia** — licznik startuje
+od zera w miesiącu wejścia, nie liczy się wstecz, żaden plan nie jest dotykany. (Ustalenie
+2026-10-01.) Stan planu i licznik to nowe dane per konto; podlegają izolacji kont, a stan planu
+zapisuje wyłącznie system albo właściciel produktu (§Access Control Changes). Przypomnienie
+z `M-02`: dodanie nowego pola do zapisywanych planów wymaga świadomego rozstrzygnięcia jego uprawnień zapisu.
 
-**Semantyka zastanych danych.** FR-017 zmienia znaczenie stanu „zaakceptowany" dla wierszy,
-które już są w bazie — zostały zaakceptowane pod regułą „etykieta stanu", a będą czytane pod
-regułą „stwierdzenie o konkretnej treści". Zmiana nie wymaga przepisania danych, ale wymaga
-świadomości, że część istniejących zaakceptowanych dni mogła być edytowana po akceptacji.
+**Dane osób bez konta.** Formularz kontaktowy i zapis anonimowy przechowują e-maile osób, które nie
+mają konta — polityka prywatności musi to obejmować (§Access Control Changes).
 
-**Warunek układu (dawne FR-018).** Slice, który rusza operacje akceptacji w widoku dnia, ustawia
-przy okazji cofnięcie akceptacji i usunięcie dnia w ich docelowym miejscu — przy przycisku
-generowania. Warunek wiąże **ten** slice, żeby te same przyciski nie były przesuwane dwa razy;
-nie jest osobną pozycją zakresu. Przy rozmieszczeniu obowiązuje ostrożność: usunięcie planu jest
-nieodwracalne, a przycisk generowania bywa klikany wielokrotnie w jednej sesji.
+**Zależności zewnętrzne** (ustalenie 2026-10-01):
 
-**Kolejność względem rolloutu testów.** Faza 3 rolloutu (ochrona zapisu i własności) idzie **po**
-slice'ie regeneracji tygodnia. Wcześniej zabetonowałaby w asercjach semantykę „nigdy nie
-niszczy", którą FR-012 i FR-017 celowo zastępują semantyką „nigdy bez jawnego potwierdzenia".
+- **Treść regulaminu i polityki prywatności** — od księgowego/prawnika; blokuje FR-025.
+- **Konto operatora płatności z BLIK-iem i przelewem online** — przed krokiem 7 (FR-032, FR-033).
+
+**Odwieszenie bramki bezpieczeństwa treści** obejmuje każdy dopuszczony model i każdy tryb
+generowania (Guardrail 2; reguła z `lessons.md`). Bramka zawieszona z powodu kosztu wraca do pracy
+w tym kamieniu.
+
+**Ramy (ustalenie 2026-10-01):** produkt pozostaje aplikacją webową; skala mała, bez zmian;
+brak twardego terminu; praca po godzinach. Ograniczenia istniejącego systemu obowiązują dalej:
+każde scalenie zmian jest od razu wydaniem na produkcję, bez kroku zatwierdzenia, a automatyczne
+kontrole jakości są doradcze — nie mogą zatrzymać wydania.
+
+**Sokrates przy skali ×100:** reguła zużycia zmienia się w jednym miejscu — **fair use staje się
+kosztem**. Przy tysiącach kont nadużycie przez zakładanie nowych kont co miesiąc (ryzyko przyjęte
+w FR-030) przestaje kosztować grosze. Przy wzroście skali to ryzyko trzeba odwołać — §Open Questions.
 
 ## Non-Goals
 
-- **Bez cofania operacji (undo).** Paczka dokłada potwierdzeń, nie historii. Kasowanie pozostaje
-  twarde, bez kosza — zgodnie z decyzją `S-05`. Potwierdzenie jest jedyną barierą i to jest
-  świadomie przyjęte ryzyko, nie przeoczenie.
-- **Bez edycji treści z poziomu podglądu w siatce miesiąca.** Podgląd jest wyłącznie do odczytu;
-  edycja pozostaje w widoku dnia.
-- **Bez wstępnego pobierania danych całego miesiąca.** Podgląd dociąga dzień na żądanie;
-  pobieranie z wyprzedzeniem (np. bieżącego tygodnia) to możliwa późniejsza optymalizacja,
-  nie zakres tej paczki.
-- **Bez zmiany promptu i doboru treści.** Żadne FR nie dotyka jakości generowania ani rodzajów
-  aktywności — to osobna pozycja, wymagająca odwrócenia §Non-Goals z PRD v1.
-- **Bez zmian w modelu dostępu.** Jedna rola, model płaski, RLS per konto — bez rośnięcia
-  o role ani o współdzielenie planów między kontami.
-- **Bez spłaty długu PRD za `S-04`, `S-05` i `S-08`.** Decyzja użytkownika 2026-09-19: PRD v2
-  obejmuje wyłącznie `M-02`. Wsteczne dopisywanie FR do wydanego kodu było dokładnie tym,
-  czego unikano, zamykając `M-01` skróconym zakresem. Konsekwencja jest realna — patrz
-  §Open Questions.
+Wybrane przez użytkownika 2026-10-01:
+
+- **Pro i jego funkcje** — materiały, dokumentacja, kilka grup, eksport DOCX. To kamień `M-04`;
+  cennik nie pokazuje Pro (FR-028).
+- **Placówka, faktura na przedszkole, role** — decyzja B2C (`monetization.md` §Decyzje #4); bez
+  roli operatora i dyrektora.
+- **Różnicowanie funkcji planu darmowego** — bez osobnego limitu poprawek (5/50), bez druku miesiąca
+  tylko w Basic, bez stopki na darmowym wydruku. Plan darmowy różni się od Basic wyłącznie pulą dni.
+  (Odrzucone w fazie 4; patrz napięcie z FR-037 w §Open Questions.)
+- **Panel operatora w aplikacji** — stan planu, prezenty i wyjątki właściciel ustawia ręcznie poza
+  aplikacją.
+- **Upgrade'y, proracja i wiele planów płatnych** — jeden plan płatny w modelu „plan + dostęp do
+  daty”, bez proracji (FR-034).
 
 ## Open Questions
 
-1. **Układ wydruku — dzień na stronie czy tydzień na stronie?** Wyjaśnione w rundzie
-   Sokratejskiej jako wybór dokonany przedwcześnie: zależy od tego, komu i w jakiej formie
-   nauczyciel oddaje plan, a tego nie ustaliliśmy. Właściciel: Janusz. Blokuje: nie —
-   rozstrzygnięcie należy do slice'a wydruku (FR-019).
-2. **Odwrócenie decyzji z roadmapy o blokadzie edycji.** Roadmapa (2026-08-30) zapisała:
-   „blokada «tydzień zaakceptowany» dotyczy edycji przypadkowej; operacje jawne pozostają
-   dostępne". FR-017 zastępuje to regułą „potwierdzenie zamiast zakazu", bo granica między
-   edycją przypadkową a jawną okazała się nie do obronienia. Właściciel: Janusz. Blokuje: nie —
-   ale zapis w `roadmap.md` §Kandydaci mu dziś przeczy i zniknie przy regeneracji roadmapy,
-   więc to shape-notes są nośnikiem tej decyzji.
-3. **Dług PRD za `S-04`, `S-05` i `S-08` pozostaje otwarty.** Open Roadmap Questions #3 nie
-   zostaje domknięte przez PRD v2 — decyzja z 2026-09-19. Trzy zarchiwizowane slice'y zostają
-   z pustą rubryką „PRD refs". Właściciel: Janusz. Blokuje: nie. **Wymaga poprawki w dwóch
-   plikach**, które dziś obiecują spłatę w v2: `next-actions.md` Krok 3 i `roadmap.md`
-   §Open Roadmap Questions #3.
-3a. _Poprawione 2026-09-19:_ `next-actions.md` Krok 3 i `roadmap.md` §Open Roadmap Questions #3
-   już nie obiecują spłaty w v2 — oba niosą teraz decyzję o odroczeniu.
-
-4. **Reset hasła** — przeniesione z v1, wciąż otwarte. Właściciel: decyzja produktowa.
-   Blokuje: nie dla `M-02`.
-5. **Limit regeneracji** — przeniesione z v1 i **podniesione przez tę paczkę**: regeneracja
-   tygodnia z zastępowaniem mnoży wywołania modelu przez pięć na jedno kliknięcie, a FR-012
-   czyni tę operację łatwiejszą do powtórzenia niż była. Właściciel: decyzja
-   techniczno-biznesowa. Blokuje: nie.
+1. **Brak wyniku walidacji (Krok 11).** Chęć płacenia i rzeczywista intensywność użycia są
+   niezweryfikowane — decyzja użytkownika 2026-10-01, żeby iść bez nich. Kamień niesie walidację
+   sam (fake door z bramą). Właściciel: Janusz. Blokuje: nie.
+2. **Definicja „konta aktywnego” dla bramy płatności** (FR-029) — co znaczy „faktycznie planowało”:
+   jeden wygenerowany dzień, tydzień, aktywność w ostatnim miesiącu? Właściciel: Janusz. Blokuje:
+   slice fake door (musi wiedzieć, co liczy).
+3. **Próg fair use** — liczby z `monetization.md` §4.3 (~150 dni-generacji) są szacunkiem bez danych
+   z produkcji. Guardrail 1 wymaga, żeby typowy miesiąc nigdy go nie dotknął. Właściciel: Janusz,
+   na danych z produkcji przed slice'em limitu. Blokuje: slice limitu.
+4. **Jednostka liczenia poprawki poleceniem** (FR-037) — poprawka liczy się do limitu planu
+   darmowego, a jednocześnie Non-Goals wykluczają osobny limit poprawek. Czy poprawka zużywa dzień
+   z puli, ułamek dnia, czy coś innego? Właściciel: Janusz. Blokuje: krok 7.
+5. **Długość okresu Basic gratis dla obecnych kont** (FR-036) — `monetization.md` §4.4 mówi „np. 3
+   miesiące”. Właściciel: Janusz. Blokuje: krok 7.
+6. **Treść regulaminu i polityki prywatności** — zależność zewnętrzna (księgowy/prawnik). Polityka
+   musi objąć e-maile osób bez konta (formularz, zapis anonimowy). Właściciel: Janusz + doradca.
+   Blokuje: FR-025.
+7. **Ryzyko zakładania kont na nowo (FR-030) przy wzroście skali** — przyjęte przy małej skali;
+   do ponownej oceny, gdy skala przestanie być mała (Sokrates ×100). Właściciel: Janusz. Blokuje: nie.
+8. **Zamykane przez ten kamień:** Open Roadmap Questions #4 (reset hasła — FR-022) i #5 (limit
+   regeneracji — FR-027, nowa reguła zużycia).
 
 ## Quality cross-check
 
-Uruchomiony 2026-09-19 po fazie 6. Siedem elementów bramki brownfieldowej:
+Uruchomiony 2026-10-01 po fazie 6. Siedem elementów bramki brownfieldowej:
 
 | Element | Stan |
 | --- | --- |
-| Access Control | obecny — §Access Control Changes, „bez zmian, obecny model zachowany" |
-| Business Logic | obecny — dwie reguły delty, każda w postaci „dziś X, po zmianie Y"; reguła rdzeniowa jawnie nietknięta |
+| Access Control | obecny — role bez zmian; reset i zmiana hasła, usunięcie konta; sześć powierzchni publicznych |
+| Business Logic | obecny — reguła zużycia w jednym zdaniu; reguła rdzeniowa jawnie nietknięta; warunkowa reguła uprawnienia |
 | Artefakty projektu | obecne |
-| Koszt czasowy przyjęty | **obecny w innym kształcie — patrz luka 1** |
-| Non-Goals | obecne — sześć pozycji, w tym dwie dopisane w trakcie sesji |
-| Zachowanie chronione | obecne — §Constraints & Compatibility + cztery niezmienniki w Guardrails |
-| Persona / zakres zmiany | obecne — persona bez zmian, delta doświadczenia nazwana |
+| Koszt czasowy przyjęty | obecny — §Timeline acknowledgment (bez budżetu, decyzja świadoma) |
+| Non-Goals | obecne — pięć pozycji |
+| Zachowanie chronione | obecne — §Constraints & Compatibility, FR-037, FR-038, Guardraile |
+| Persona / zakres zmiany | obecne — rola bez zmian, stan planu konta jako delta |
 
-**Status: `warned`.** Wszystkie siedem elementów jest obecnych, ale dwie rzeczy przechodzą
-dalej jako świadomie przyjęte ryzyko, nie jako domknięcia. Nazywam je po imieniu, bo
-ogólnikowe „PRD ma luki" unieważnia bramkę:
+**Status: `warned`.** Wszystkie elementy są obecne; dwa przechodzą dalej jako świadomie przyjęte
+ryzyko (użytkownik 2026-10-01: „Accept and finish”):
 
-1. **Bramka czasowa nie istnieje.** `delivery_weeks` jest `null`, nie liczbą — użytkownik
-   wybrał tryb „slice po slice, ile zajmie" po przedstawieniu kosztu (§Timeline acknowledgment).
-   Konsekwencja: **nic w tym projekcie nie powie, że `M-02` trwa za długo.** Nie ma daty,
-   względem której opóźnienie by się mierzyło. Obroną jest dyscyplina slice'ów — każdy jest
-   osobnym wydaniem — a nie budżet.
-2. **Dług PRD za `S-04`, `S-05` i `S-08` zostaje otwarty** (§Open Questions #3). Trzy
-   zarchiwizowane slice'y zostają z pustą rubryką „PRD refs", a dwa pliki w `context/foundation/`
-   obiecują dziś spłatę w v2 — wymagają poprawki, inaczej repo niesie obietnicę, która nie
-   zostanie dotrzymana.
+1. **Bramka czasowa nie istnieje.** `delivery_weeks` jest `null` — nic nie powie, że `M-03` trwa za
+   długo. Obroną jest dyscyplina slice'ów i zasada „płatności kompletem albo wcale”.
+2. **Kamień idzie bez walidacji (Krok 11).** Limity i chęć płacenia stoją na szacunkach
+   z `monetization.md`; fake door jest jedynym pomiarem, a próg fair use blokuje slice limitu do czasu
+   odczytu danych z produkcji (§Open Questions #1, #3).
 
-Obie luki trafiają do `## Open Questions` PRD v2 przez `/10x-prd`.
+Obie pozycje trafiają do `## Open Questions` PRD v3 przez `/10x-prd`.
 
 ## Forward: technical-roadmap
 
-Należy do downstreamu, nie do PRD — zapisane, żeby nie zginęło przy regeneracji roadmapy:
+Należy do downstreamu, nie do PRD — zapisane z decyzji tej sesji:
 
-- **Kolejność slice'ów.** `S-07` (FR-010, FR-011) jest jedyną pozycją z zamkniętymi decyzjami
-  i dobrym rozpędem na start. Regeneracja tygodnia (FR-012, FR-014) jest najcięższa i reszta
-  paczki się o nią opiera. Układ przycisków wchodzi w slice akceptacji (FR-017), nie osobno.
-- **Faza 3 rolloutu testów idzie po regeneracji tygodnia** — uzasadnienie w
-  §Constraints & Compatibility.
-- **Pytania do researchu kodowego przy `S-07`:** opóźnienie przed pobraniem, anulowanie
-  porzuconego żądania, pamięć podręczna pobranych dni. Po rundzie Sokratejskiej nie są to
-  tematy do zbadania, tylko warunki brzegowe do spełnienia (NFR).
-- **`FR-013` jako zawór bezpieczeństwa.** Jedyny nice-to-have w paczce. Jeśli kamień się
-  rozciągnie, to jest pozycja do odpuszczenia — bez niej `M-02` nadal domyka swój Primary.
+- **Kolejność:** warunki wstępne (konto, strony, kontakt, fair use, odwieszenie bramki) przed fake
+  door; fake door przed jakąkolwiek integracją płatności (ustalenie fazy 1).
+- **Brama kroku 7:** ≥ 10 zapisów kont aktywnych w 4 tygodnie od uruchomienia fake door. Okno
+  4 tygodni obejmuje jedno okno planowania (koniec miesiąca, `monetization.md` §4.4).
+- **Płatności kompletem albo wcale** (Guardrail 3) — slice'y kroku 7 nie mogą trafiać na produkcję
+  pojedynczo, jeśli każdy z osobna zostawia płatność bez zarządzania nią.
+- **`next-actions.md` §Kolejka:** faza 4 test-planu (e2e w CI, Krok 9) idzie przed pierwszym slice'em
+  płatności — ustalenie z 2026-09-29, obowiązuje dalej.
