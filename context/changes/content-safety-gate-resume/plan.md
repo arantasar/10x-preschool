@@ -317,6 +317,17 @@ Zakres, wszystko offline poza dwoma przebiegami:
 
 Odrzucone: sędzia bez rozumowania, bo żądanie sędziego nie włącza rozumowania (pomiar z punktu 1 to potwierdzi); mniej haseł; generowanie z temperaturą 0; Gemini poza bramką.
 
+#### 5. Poprawki po przeglądzie implementacji (2026-10-03)
+
+Zmiany spoza punktów 1–4, odnotowane tu, żeby plan pozostał źródłem prawdy (`reviews/impl-review.md`):
+
+- **`JUDGE_MAX_TOKENS` 4000 → 1000.** Weszło w `96bfb95` bez wpisu w planie (F10). Werdykt to trzy pola JSON, a rezerwacja kosztu rośnie z tą liczbą.
+- **Bez `cache_control`** (F4, odwraca punkt 4.4.3). Breakpoint na najwyższym poziomie stoi na wiadomości użytkownika, która jest inna w każdym wywołaniu, a sama rubryka jest poniżej minimum cache'owania Haiku.
+- **Ponowienie per stopień sędziego** (F1). `retryGateCall` obejmuje każde wywołanie sędziego osobno w `judgeContentSafety`, a nie całego sędziego w macierzy. Inaczej awaria Sonneta po alarmie Haiku pytała Haiku drugi raz.
+- **Bramka kalibracji liczy zaliczone fixture'y, nie oblane** (F2). Przekroczony czas testu i filtr `-t` też wstrzymują macierz. `testTimeout` 150 s, bo dwa stopnie z ponowieniem to do 4 × 30 s.
+- **Filtr ścieżek CI i `FULL_MATRIX`** obejmują `activity-generator.ts`, `generation-error.ts` i `src/lib/day-plan-limits.ts` (F3). Test w `gate-scope.test.ts` pilnuje, że wyrażenie w `ci.yml` i w `gate-scope.ts` jest to samo.
+- **Job `content-safety-gate` dostaje tylko `OPENROUTER_API_KEY`** (F9). To odchodzi od „trzech sekretów” z punktu 2.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -330,7 +341,7 @@ Odrzucone: sędzia bez rozumowania, bo żądanie sędziego nie włącza rozumowa
 #### Manual Verification:
 
 - Step summary joba `content-safety-gate` na PR-ze pokazuje raport bramki (nagłówek, modele, tryby, koszt), a nie notice o zawieszeniu
-- `roadmap.md` diff (`git diff -w master..HEAD -- context/foundation/roadmap.md`) zmienia tylko F-02 i Baseline
+- `roadmap.md` diff (`git diff -w b8b7cf4..HEAD -- context/foundation/roadmap.md`) zmienia tylko F-02 i Baseline. Zakres od `b8b7cf4`, nie od `master`: ten commit wnosi na gałąź całą roadmapę M-03, bez której F-02 nie istnieje, więc `master..HEAD` pokazuje całą przebudowę (przegląd implementacji, F5)
 - Gałąź `feat/content-safety-gate-resume`, nie `master`, w każdym commicie
 
 **Implementation Note**: Merge do `master` to wydanie na produkcję. Prompt poprawiony w fazie 3 wchodzi do nauczycielek dopiero wtedy, więc merge następuje po zielonym jobie na PR-ze i ręcznym potwierdzeniu.

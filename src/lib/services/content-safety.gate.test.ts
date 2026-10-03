@@ -4,7 +4,6 @@ import { ALLOWED_MODELS } from "./allowed-models";
 import { generateDayActivities, generateWeekOutline, refineActivity } from "./activity-generator";
 import { CONTENT_SAFETY_FIXTURES, GATE_KEYWORDS, REFINE_GATE_CASES } from "./__fixtures__/content-safety";
 import { judgeContentSafety, type JudgedVerdict, type JudgeInput } from "./content-safety-judge";
-import { retryGateCall } from "./gate-retry";
 import { gateScopeFor, parseChangedFiles, type GateMode } from "./gate-scope";
 import { formatGateReport, writeGitHubStepSummary, type GateFinding } from "./content-safety-report";
 
@@ -91,19 +90,17 @@ function describeError(error: unknown): string {
 }
 
 /**
- * `content-safety-judge.ts` deliberately carries no retry policy of its own -
- * its own comment names this phase as the owner of "retry transient transport
- * failures only, never a safety verdict" for the live matrix. Retry policy
- * itself lives in `gate-retry.ts` (transient transport failures, plus the
- * matrix's own 402 in-flight-budget collisions); a verdict the judge actually
- * returned - safe or not - is never retried, because a retried verdict is a
- * gate hunting for green.
+ * Retry policy lives in `gate-retry.ts` (transient transport failures, plus the
+ * matrix's own 402 in-flight-budget collisions) and `judgeContentSafety`
+ * applies it to each judge stage on its own. Wrapping the whole judge here
+ * would re-ask Haiku after a failed Sonnet call, i.e. retry a verdict, which
+ * is a gate hunting for green (impl review F1, 2026-10-03).
  */
 async function judgeSafely(
   input: JudgeInput,
 ): Promise<JudgedVerdict | { readonly failed: true; readonly reason: string }> {
   try {
-    return await retryGateCall(() => judgeContentSafety(input));
+    return await judgeContentSafety(input);
   } catch (error) {
     return { failed: true, reason: describeError(error) };
   }
@@ -122,7 +119,10 @@ function addJudgeCost(verdict: JudgedVerdict): void {
   }
 }
 
-const calibrationFailures: string[] = [];
+// Counted on pass, not on failure: a calibration case that times out (its
+// `catch` never runs before the matrix reads this) or is filtered out by `-t`
+// must stop the matrix too (impl review F2, 2026-10-03).
+let calibrationPassed = 0;
 
 interface Combo {
   readonly model: string;
@@ -132,30 +132,26 @@ interface Combo {
 // The repeatable half of "bramka potrafi nie przejść": it catches judge drift
 // on every run, unlike the one-off negative control in `negative-control.md`.
 describe("content safety judge — calibration", () => {
-  it.each(CONTENT_SAFETY_FIXTURES)("$name", async ({ name, input, expected }) => {
-    try {
-      const verdict = await judgeContentSafety(input);
-      addJudgeCost(verdict);
+  it.each(CONTENT_SAFETY_FIXTURES)("$name", async ({ input, expected }) => {
+    const verdict = await judgeContentSafety(input);
+    addJudgeCost(verdict);
 
-      expect(verdict.safe).toBe(expected.safe);
+    expect(verdict.safe).toBe(expected.safe);
 
-      if (expected.safe) {
-        expect(verdict.clause).toBeNull();
-        expect(verdict.quote).toBeNull();
-      } else {
-        expect(verdict.clause).toBeTruthy();
-        expect(verdict.quote).toBeTruthy();
-        if (expected.clauseContains) {
-          expect(verdict.clause?.toLowerCase()).toContain(expected.clauseContains.toLowerCase());
-        }
-        if (expected.quoteContains) {
-          expect(verdict.quote?.toLowerCase()).toContain(expected.quoteContains.toLowerCase());
-        }
+    if (expected.safe) {
+      expect(verdict.clause).toBeNull();
+      expect(verdict.quote).toBeNull();
+    } else {
+      expect(verdict.clause).toBeTruthy();
+      expect(verdict.quote).toBeTruthy();
+      if (expected.clauseContains) {
+        expect(verdict.clause?.toLowerCase()).toContain(expected.clauseContains.toLowerCase());
       }
-    } catch (error) {
-      calibrationFailures.push(name);
-      throw error;
+      if (expected.quoteContains) {
+        expect(verdict.quote?.toLowerCase()).toContain(expected.quoteContains.toLowerCase());
+      }
     }
+    calibrationPassed += 1;
   });
 });
 
@@ -166,9 +162,9 @@ describe("content safety gate — live matrix", () => {
       // State sequencing (Critical Implementation Details): a judge that
       // mis-scores a known fixture must stop the run, not produce a green
       // matrix it scored - the worst outcome the gate could produce.
-      if (calibrationFailures.length > 0) {
+      if (calibrationPassed < CONTENT_SAFETY_FIXTURES.length) {
         throw new Error(
-          `Sędzia oblał kalibrację (${calibrationFailures.join("; ")}) — macierz żywych wywołań wstrzymana.`,
+          `Sędzia nie przeszedł kalibracji (${String(calibrationPassed)} z ${String(CONTENT_SAFETY_FIXTURES.length)}) — macierz żywych wywołań wstrzymana.`,
         );
       }
 
@@ -225,7 +221,9 @@ describe("content safety gate — live matrix", () => {
             await judge("week", model, keyword, weekInput(keyword, outline.value.themes));
           }
         } else if (needsOutline) {
-          record("week", model, keyword, "Awaria wywołania", String(outline.reason));
+          // Label the failure with a mode the report lists: with only
+          // `day-plan.*` changed the outline feeds `day-themed` alone.
+          record(inScope("week") ? "week" : "day-themed", model, keyword, "Awaria wywołania", String(outline.reason));
         }
 
         if (dayWeekday.status === "fulfilled") {

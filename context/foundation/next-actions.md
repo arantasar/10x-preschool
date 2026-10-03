@@ -21,7 +21,7 @@
 - `test-plan.md` §3: fazy 1–3 `complete`, faza 4 `not started`. Testy bazy (pgTAP i trasa +
   prawdziwy klient) stoją w CI jako doradczy job `db`. Warstwa e2e (Playwright, ryzyka #3, #4
   i #7) stoi na `master` poza rolloutem i poza CI.
-- **Bramka bezpieczeństwa treści odwieszona 2026-10-01** (`F-02`, `content-safety-gate-resume`).
+- **Bramka bezpieczeństwa treści odwieszona 2026-10-03** (`F-02`, `content-safety-gate-resume`).
   Była zawieszona od 2026-09-19 z powodu kosztu, a mechanizm zawieszenia zniknął z repozytorium.
   `npm run test:gate` ocenia bez flag: 2 modele × 4 tryby produkcyjne. Sędzia jest dwustopniowy:
   Haiku 4.5, a jego alarmy rozstrzyga Sonnet 5.5. Pełna macierz kosztuje około 0,40 USD. Job CI `content-safety-gate` uruchamia ją na PR-ach z dopasowaną
@@ -63,7 +63,7 @@ tabela, nie numer**.
 | 3 | **Krok 12** | PRD v3 i roadmapa kamienia `M-03` „Gotowi do sprzedaży" | shape → prd → roadmap |
 | 4 | **Krok 13** | Slice'y `M-03` bez pieniędzy: reset hasła, strony prawne i FAQ, kontakt, limity | slice'y |
 | 5 | Krok 9 | Faza 4 test-planu: e2e w CI **przed** pierwszym slice'em płatności | test-plan |
-| 6 | **Krok 14** | Slice'y `M-03` z pieniędzmi: Stripe, cennik i paywall; ~~odwieszenie bramki~~ ✅ 2026-10-01 (`F-02`); start sprzedaży | slice'y + wydanie |
+| 6 | **Krok 14** | Slice'y `M-03` z pieniędzmi: Stripe, cennik i paywall; ~~odwieszenie bramki~~ ✅ 2026-10-03 (`F-02`); start sprzedaży | slice'y + wydanie |
 | 7 | **Krok 15** | Kamień `M-04` „Lepsza treść": kalendarz świąt, rodzaje aktywności, materiały → start Pro | shape → prd → roadmap |
 
 Dlaczego tak:
@@ -448,7 +448,7 @@ wszystkich według reguły z §4.2.
 ### Krok 14 — slice'y `M-03` z pieniędzmi i start sprzedaży
 
 **Warunki wejścia:** Krok 9 zrobiony (e2e w CI), Krok 11 zamknięty (JDG, Stripe, księgowy),
-bramka bezpieczeństwa odwieszona i przepuszczona na żywo (✅ 2026-10-01, `F-02`).
+bramka bezpieczeństwa odwieszona i przepuszczona na żywo (✅ 2026-10-03, `F-02`).
 
 Kolejność: płatności (Stripe w trybie testowym, webhook, uprawnienia) → cennik i paywall.
 **Klucze produkcyjne Stripe'a dopiero po** przejściu całej ścieżki zakupu i rezygnacji w trybie

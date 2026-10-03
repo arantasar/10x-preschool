@@ -22,13 +22,17 @@ const PROMPT_MODES: readonly { readonly pattern: RegExp; readonly modes: readonl
 
 /**
  * Everything else that changes what the gate grades or how - the same set as
- * the path filter in `ci.yml`, minus the three prompts above. Any one of these
- * means the full matrix: a new judge, rubric, model, fixture or retry policy
- * is not scoped to a mode. An unknown prompt file under `prompts/` lands here
- * too, rather than being silently skipped.
+ * the path filter in `ci.yml` (pinned by `gate-scope.test.ts`), minus the three
+ * prompts above. Any one of these means the full matrix: a new judge, rubric,
+ * model, fixture or retry policy is not scoped to a mode, and neither is the
+ * generator that builds every mode's messages, sets the temperature and parses
+ * the answer (`activity-generator.ts`), the error categories the retry reads
+ * (`generation-error.ts`) or the counts the judge checks (`day-plan-limits.ts`).
+ * An unknown prompt file under `prompts/` lands here too, rather than being
+ * silently skipped.
  */
-const FULL_MATRIX =
-  /^src\/lib\/services\/prompts\/.*\.(pl\.md|schema\.json)$|^src\/lib\/services\/allowed-models\.ts$|^src\/lib\/services\/content-safety|^src\/lib\/services\/__fixtures__\/content-safety\.ts$|^src\/lib\/services\/gate-|^vitest\.gate\.config\.ts$/;
+export const FULL_MATRIX =
+  /^src\/lib\/services\/prompts\/.*\.(pl\.md|schema\.json)$|^src\/lib\/services\/allowed-models\.ts$|^src\/lib\/services\/content-safety|^src\/lib\/services\/__fixtures__\/content-safety\.ts$|^src\/lib\/services\/gate-|^src\/lib\/services\/activity-generator\.ts$|^src\/lib\/services\/generation-error\.ts$|^src\/lib\/day-plan-limits\.ts$|^vitest\.gate\.config\.ts$/;
 
 export interface GateScope {
   readonly modes: readonly GateMode[];

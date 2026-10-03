@@ -15,15 +15,17 @@ export default getViteConfig(
       // The inverse of `vitest.config.ts`'s `exclude`: only the gate tier.
       include: ["src/**/*.gate.test.ts"],
       unstubGlobals: true,
-      // A real judge call over the network can run past Vitest's 5s default,
-      // especially with reasoning left enabled (`content-safety-judge.ts`).
-      // Gate-tier tests are never in the per-edit or default-suite path, so a
-      // longer ceiling here costs nothing but a slower `npm run test:gate`.
-      testTimeout: 60_000,
+      // A real judge call over the network can run past Vitest's 5s default.
+      // One calibration case is up to two judge stages, each retried once, at
+      // `JUDGE_TIMEOUT_MS` (30 s) per call: 120 s worst case, so the ceiling
+      // sits above it. Gate-tier tests are never in the per-edit or
+      // default-suite path, so a longer ceiling here costs nothing but a
+      // slower `npm run test:gate`.
+      testTimeout: 150_000,
       // Vitest runs test *files* in parallel by default, in separate workers.
-      // With two real-network gate files (this calibration suite and Phase 4's
-      // `content-safety.gate.test.ts`), that meant this file's five sequential
-      // judge calls raced the other file's own calibration and matrix calls -
+      // With two real-network gate files (the former calibration suite and
+      // `content-safety.gate.test.ts`), that meant the calibration file's
+      // sequential judge calls raced the other file's own calibration and matrix calls -
       // invisible to either file on its own, since each one's *internal*
       // concurrency was already deliberately low. Measured live: OpenRouter
       // returns `402 "in_flight_budget_exhausted"` the moment those two files'

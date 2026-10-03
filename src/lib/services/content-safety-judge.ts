@@ -2,6 +2,7 @@ import { OPENROUTER_API_KEY } from "astro:env/server";
 import { z } from "zod";
 import type { ActivityDraft, DayTheme } from "@/types";
 import { ACTIVITY_COUNT, WEEK_DAYS } from "@/lib/day-plan-limits";
+import { retryGateCall } from "./gate-retry";
 import { categorizeStatus, GenerationError } from "./generation-error";
 import rubric from "./prompts/content-safety-rubric.pl.md?raw";
 
@@ -46,7 +47,9 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
  * Its weak spot is a miss: an unsafe output Haiku calls safe never reaches
  * Sonnet. The unsafe calibration fixtures are what guard that. Calibrate the
  * pair before trusting a verdict from a different one:
- * `npm run test:gate -- -t calibration`.
+ * `npm run test:gate -- -t calibration`. The pair was calibrated on 2026-10-03:
+ * 7 of 7 fixtures; both of Haiku's escalations in that run were unsafe
+ * fixtures (gate-runs.md).
  */
 const SCREEN_JUDGE_MODEL = "anthropic/claude-haiku-4.5";
 const FINAL_JUDGE_MODEL = "anthropic/claude-sonnet-5.5";
@@ -133,9 +136,11 @@ export interface JudgedVerdict extends SafetyVerdict {
  * model apologizing for itself ("Przepraszam, nie mogę…"). Mid-sentence it is
  * a polite word a redirect teaches - found live in `content-safety-gate-resume`
  * (gate-runs.md, runs 2 and 6): "Magiczne słowa: proszę, dziękuję, przepraszam".
+ * A line break opens a sentence too, since a model's apology often stands on
+ * its own line with no full stop before it.
  */
 const REFUSAL_MARKERS = [
-  "(?<=^\\s*|[.!?…]\\s*)przepraszam",
+  "(?<=^\\s*|[.!?…\\n]\\s*)przepraszam",
   "niestety",
   "nie mog(?:ę|e)",
   "nie jestem w stanie",
@@ -326,16 +331,12 @@ function extractContent(data: unknown): string | null {
 }
 
 /**
- * One call to the judge model. No retry policy here by design - Phase 4 owns
- * the "retry transient transport failures only, never a safety verdict" policy
- * for the live gate matrix; this phase only has to prove the judge itself is
- * calibrated.
+ * One call to the judge model. Retried by `judgeContentSafety`, per stage,
+ * only when it never produced a verdict (`gate-retry.ts`).
  *
  * Temperature 0, unlike the product's 0.8: the product's creativity is a
  * feature, the judge's is not - a rubric read twice should answer the same way
- * both times. Reasoning is left enabled (unlike `buildRequestBody`'s product
- * call): a safety verdict is worth the extra latency the product's short
- * creative task is not.
+ * both times. The request enables no reasoning (`JUDGE_MAX_TOKENS`).
  */
 async function callJudge(model: string, userMessage: string): Promise<{ verdict: SafetyVerdict; cost: number | null }> {
   let response: Response;
@@ -361,11 +362,10 @@ async function callJudge(model: string, userMessage: string): Promise<{ verdict:
         provider: { data_collection: "deny" },
         temperature: 0,
         max_tokens: JUDGE_MAX_TOKENS,
-        // The rubric is the same in every call, and it is most of the input.
-        // OpenRouter's automatic caching for Anthropic caches up to the last
-        // cacheable block; a prefix below the provider's minimum just goes
-        // uncached.
-        cache_control: { type: "ephemeral" },
+        // No `cache_control`. A top-level one puts the breakpoint on the last
+        // block, the user message, which differs in every call: a cache write
+        // no later call reads. The rubric alone is below Haiku's caching
+        // minimum (impl review F4, 2026-10-03).
       }),
     });
   } catch (cause) {
@@ -427,8 +427,10 @@ function addCosts(a: number | null, b: number | null): number | null {
  * Runs the deterministic layer first; only reaches the network when shape,
  * count, language and redirect all pass, so a response the deterministic layer
  * already knows is wrong never pays for a judge call. Then the two stages
- * described at `SCREEN_JUDGE_MODEL`: at most one call to each, never a second
- * ask of the same judge.
+ * described at `SCREEN_JUDGE_MODEL`: at most one verdict from each, never a
+ * second ask of a judge that answered. The retry wraps each stage, not the
+ * pair, so a Sonnet call that fails after a Haiku "unsafe" retries Sonnet and
+ * never asks Haiku again (impl review F1, 2026-10-03).
  */
 export async function judgeContentSafety(input: JudgeInput): Promise<JudgedVerdict> {
   const violation = deterministicViolation(input);
@@ -436,10 +438,10 @@ export async function judgeContentSafety(input: JudgeInput): Promise<JudgedVerdi
     return { ...violation, cost: 0, escalated: false };
   }
   const message = buildJudgeUserMessage(input);
-  const screen = await callJudge(SCREEN_JUDGE_MODEL, message);
+  const screen = await retryGateCall(() => callJudge(SCREEN_JUDGE_MODEL, message));
   if (screen.verdict.safe) {
     return { ...screen.verdict, cost: screen.cost, escalated: false };
   }
-  const final = await callJudge(FINAL_JUDGE_MODEL, message);
+  const final = await retryGateCall(() => callJudge(FINAL_JUDGE_MODEL, message));
   return { ...final.verdict, cost: addCosts(screen.cost, final.cost), escalated: true };
 }

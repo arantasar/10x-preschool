@@ -338,7 +338,7 @@ Dowodzi trasy i RLS naraz, bez HTTP, middleware i przeglądarki.
   sędziego mieszka w tym samym pliku, przed macierzą (do 2026-10-03 osobno).
   To warstwa bramki (`*.gate.test.ts`), poza `npm test`, uruchamiana przez
   `npm run test:gate` (wymaga `OPENROUTER_API_KEY`), bez żadnej flagi:
-  mechanizm zawieszenia z 2026-09-19 usunięto 2026-10-01. Kalibracja to
+  mechanizm zawieszenia z 2026-09-19 usunięto 2026-10-03. Kalibracja to
   pierwsze testy pliku macierzy, a macierz nie rusza, gdy któraś oblała. Sama
   kalibracja: `npm run test:gate -- -t calibration`.
 - **Sędzia i koszt** (od 2026-10-03): dwustopniowy. Haiku 4.5 ocenia każde
@@ -353,8 +353,11 @@ Dowodzi trasy i RLS naraz, bez HTTP, middleware i przeglądarki.
   `allowed-models.ts`, `src/lib/services/content-safety*` (sędzia, rubryka
   przez prompty, raport, pliki bramki), fixture'y
   `src/lib/services/__fixtures__/content-safety.ts`, `src/lib/services/gate-*`
-  (polityka ponowień, zakres trybów) i `vitest.gate.config.ts`. Raport trafia
-  do step summary joba. Job jest doradczy (brak branch protection), bez crona.
+  (polityka ponowień, zakres trybów), generator wywołań i jego kategorie błędów
+  (`activity-generator.ts`, `generation-error.ts`), liczby sprawdzane przez
+  sędziego (`src/lib/day-plan-limits.ts`) i `vitest.gate.config.ts`. To samo
+  wyrażenie stoi w `gate-scope.ts` jako `FULL_MATRIX`, a `gate-scope.test.ts`
+  pada, gdy obie kopie się rozjadą. Raport trafia do step summary joba. Job jest doradczy (brak branch protection), bez crona.
   Zakres trybów zależy od zmienionych plików (`src/lib/services/gate-scope.ts`):
   - `day-plan` → `day-weekday`, `day-themed`;
   - `week-outline` → `week`, `day-themed`;

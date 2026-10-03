@@ -1,6 +1,8 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
-import { GATE_MODES, gateScopeFor, parseChangedFiles } from "./gate-scope";
+import { FULL_MATRIX, GATE_MODES, gateScopeFor, parseChangedFiles } from "./gate-scope";
 
 const FULL = { modes: GATE_MODES, full: true };
 
@@ -43,6 +45,9 @@ describe("gateScopeFor", () => {
     "src/lib/services/__fixtures__/content-safety.ts",
     "src/lib/services/gate-retry.ts",
     "src/lib/services/gate-scope.ts",
+    "src/lib/services/activity-generator.ts",
+    "src/lib/services/generation-error.ts",
+    "src/lib/day-plan-limits.ts",
     "vitest.gate.config.ts",
   ])("widens to the full matrix when %s changes, even next to a single prompt", (file) => {
     expect(gateScopeFor(["src/lib/services/prompts/refine-activity.pl.md", file])).toEqual(FULL);
@@ -50,6 +55,16 @@ describe("gateScopeFor", () => {
 
   it("falls back to the full matrix when nothing in the list is gate-relevant", () => {
     expect(gateScopeFor(["src/pages/api/day-plan/refine.ts"])).toEqual(FULL);
+  });
+});
+
+describe("FULL_MATRIX", () => {
+  // The same expression decides whether CI runs the gate at all (`ci.yml`) and
+  // how much of it (`gateScopeFor`). Two hand-kept copies that drift either
+  // skip the gate or narrow it, both silently.
+  it("is the path filter in ci.yml, character for character", () => {
+    const ci = readFileSync(".github/workflows/ci.yml", "utf8");
+    expect(ci).toContain(`'${FULL_MATRIX.source.replaceAll("\\/", "/")}'`);
   });
 });
 
