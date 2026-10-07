@@ -374,9 +374,9 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Build passes: `npm run build`
+- [x] 2.1 Unit tests pass: `npm test` — 22db401
+- [x] 2.2 Lint passes: `npm run lint` — 22db401
+- [x] 2.3 Build passes: `npm run build` — 22db401
 
 #### Manual
 
@@ -390,10 +390,10 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `npm test`
-- [ ] 3.2 Lint passes: `npm run lint`
-- [ ] 3.3 Build passes: `npm run build`
-- [ ] 3.4 Existing E2E suite stays green: `npx playwright test`
+- [x] 3.1 Unit tests pass: `npm test`
+- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.3 Build passes: `npm run build`
+- [x] 3.4 Existing E2E suite stays green: `npx playwright test`
 
 #### Manual
 

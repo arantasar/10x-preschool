@@ -1,0 +1,39 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AuthCard from "@/components/layout/AuthCard.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { RESET_LINK_INVALID } from "@/lib/auth-error-messages";
+import { cn } from "@/lib/utils";
+
+// Where the recovery e-mail's link lands. This GET deliberately asks Supabase
+// nothing: the token is single-use, and school mailbox scanners open links to
+// check them. Verifying here would let a scanner's prefetch spend the token
+// before the teacher ever sees it - so the GET only renders a button, and the
+// POST it submits (`/api/auth/confirm`) verifies.
+//
+// Only `type=recovery` is accepted. The parameters are validated for presence
+// and shape, nothing more; whether the token is good is Supabase's call.
+const tokenHash = Astro.url.searchParams.get("token_hash");
+const type = Astro.url.searchParams.get("type");
+if (!tokenHash || type !== "recovery") {
+  return Astro.redirect(`/auth/forgot-password?error=${RESET_LINK_INVALID}`);
+}
+---
+
+<Layout title="Ustaw nowe hasło">
+  <AuthCard>
+    <div class="flex flex-col gap-3">
+      <h1 class="font-display text-las text-[clamp(32px,4vw,42px)] leading-[1.1] font-normal">Ustaw nowe hasło</h1>
+      <p class="text-las-szary text-lg leading-normal">
+        Kliknij przycisk poniżej, żeby przejść do ustawienia nowego hasła do swojego konta.
+      </p>
+    </div>
+    <form method="POST" action="/api/auth/confirm">
+      <input type="hidden" name="token_hash" value={tokenHash} />
+      <input type="hidden" name="type" value="recovery" />
+      <button type="submit" class:list={cn(buttonVariants({ variant: "primary", size: "pillLg" }), "w-full")}>
+        Ustaw nowe hasło
+      </button>
+    </form>
+  </AuthCard>
+</Layout>

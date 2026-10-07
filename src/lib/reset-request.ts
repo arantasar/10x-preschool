@@ -17,3 +17,19 @@ export const RESET_EMAIL_COOKIE_OPTIONS: AstroCookieSetOptions = {
   secure: !import.meta.env.DEV,
   maxAge: 60 * 15,
 };
+
+/**
+ * One-shot "your password was changed" notice for the month page. Set by the
+ * save route only after `updateUser` succeeded; the month page deletes it on
+ * the first render that shows the notice, so a reload removes it by
+ * construction - no sticky query parameter.
+ */
+export const PASSWORD_RESET_DONE_COOKIE = "password_reset_done";
+
+export const PASSWORD_RESET_DONE_COOKIE_OPTIONS: AstroCookieSetOptions = {
+  path: "/plan",
+  httpOnly: true,
+  sameSite: "lax",
+  secure: !import.meta.env.DEV,
+  maxAge: 60,
+};
