@@ -1,9 +1,11 @@
 /**
- * The entire user-facing error vocabulary of the two auth flows, in one place.
+ * The entire user-facing error vocabulary of the three auth flows - sign-in,
+ * sign-up and password reset - in one place.
  *
  * `?error=` in the auth redirects carries a **code**, never a sentence. The
- * routes (`src/pages/api/auth/{signin,signup}.ts`) choose the code; the pages
- * (`src/pages/auth/{signin,signup}.astro`) look it up here at render time.
+ * routes (`src/pages/api/auth/{signin,signup,forgot-password,confirm,update-password}.ts`)
+ * choose the code; the pages (`src/pages/auth/{signin,signup,forgot-password,new-password}.astro`)
+ * look it up here at render time.
  *
  * Two things follow from that split, and both are the point of this module:
  *
@@ -28,6 +30,18 @@ export const CONFIG_MISSING = "config_missing";
 export const CONNECTION_FAILED = "connection_failed";
 
 /**
+ * Also ours, minted by the password-reset flow.
+ *
+ * `RESET_SESSION_MISSING`: `/auth/new-password` (or its save route) was reached
+ * without a session - the link was never opened, or the session has ended.
+ * `RESET_LINK_INVALID`: `/auth/confirm` was opened without a `token_hash`, or
+ * with a `type` other than `recovery` - a truncated or foreign link, rejected
+ * before Supabase is asked anything.
+ */
+export const RESET_SESSION_MISSING = "reset_session_missing";
+export const RESET_LINK_INVALID = "reset_link_invalid";
+
+/**
  * Shown for anything the map does not know: an unmapped Supabase code, a code
  * from a flow we deliberately did not cover (MFA, SSO, OAuth), or a value
  * someone put in the URL by hand.
@@ -40,14 +54,15 @@ export const GENERIC_AUTH_ERROR_MESSAGE =
   "Coś poszło nie tak. Spróbuj ponownie za chwilę, a jeśli problem się powtórzy — zgłoś go administratorowi przedszkola.";
 
 /**
- * Codes reachable from `signInWithPassword` and `signUp`, plus our two synthetic
- * ones. The 86-value `ErrorCode` union is **open** (`ErrorCode | (string & {})`),
+ * Codes reachable from `signInWithPassword`, `signUp`, `resetPasswordForEmail`,
+ * `verifyOtp` and `updateUser`, plus our synthetic ones. The 86-value `ErrorCode` union is **open** (`ErrorCode | (string & {})`),
  * so annotating this as `Record<ErrorCode, string>` would buy no exhaustiveness
- * check while forcing entries for MFA, SAML and SSO codes these two flows can
+ * check while forcing entries for MFA, SAML and SSO codes these flows can
  * never produce. The fallback is a runtime lookup miss by design.
  *
- * Some entries are shared by both screens (`validation_failed`,
- * `over_request_rate_limit`), so their wording has to read correctly on either.
+ * Some entries are shared by several screens (`validation_failed`,
+ * `over_request_rate_limit`, `weak_password`), so their wording has to read
+ * correctly on each.
  */
 export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // --- sign-in -------------------------------------------------------------
@@ -70,7 +85,16 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   over_email_send_rate_limit:
     "Wysłaliśmy już zbyt wiele wiadomości na ten adres. Odczekaj kilka minut i spróbuj ponownie.",
 
-  // --- either screen -------------------------------------------------------
+  // --- password reset ------------------------------------------------------
+  // Supabase answers an expired *and* an already-used link with the same code;
+  // the advice is the same either way.
+  otp_expired: "Ten link do ustawienia hasła wygasł albo został już użyty. Wyślij sobie nowy poniżej.",
+  same_password: "Nowe hasło musi się różnić od dotychczasowego. Wybierz inne.",
+  session_not_found: "Sesja ustawiania hasła wygasła. Poproś o nowy link poniżej.",
+  [RESET_SESSION_MISSING]: "Aby ustawić nowe hasło, otwórz link z wiadomości e-mail albo poproś o nowy poniżej.",
+  [RESET_LINK_INVALID]: "Ten link do ustawienia hasła jest niepełny lub nieprawidłowy. Poproś o nowy poniżej.",
+
+  // --- any screen -------------------------------------------------------
   // From the plan's coverage table; kept, but note that local Supabase answers a
   // malformed address with `validation_failed` instead, so this key has no path
   // confirmed against a running instance. Whether it fires depends on the
@@ -86,6 +110,18 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   [CONNECTION_FAILED]:
     "Nie udało się połączyć z serwerem. Sprawdź połączenie z internetem i spróbuj ponownie za chwilę.",
 };
+
+/**
+ * Codes from `resetPasswordForEmail` that only an address **with** an account
+ * can produce - the per-address send cooldown, and a not-found code should a
+ * Supabase version ever emit one. Showing them would tell a stranger which
+ * addresses are registered, so the request route treats them as success.
+ */
+const SILENT_RESET_REQUEST_ERRORS = new Set(["over_email_send_rate_limit", "user_not_found"]);
+
+export function isSilentResetRequestError(code: string | undefined): boolean {
+  return code !== undefined && SILENT_RESET_REQUEST_ERRORS.has(code);
+}
 
 /**
  * Resolve a `?error=` code to Polish text. Never returns `undefined`, never
