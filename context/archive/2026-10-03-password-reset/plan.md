@@ -368,8 +368,8 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Manual
 
-- [ ] 1.6 Sign-up rejects 7 characters and accepts 8 after Supabase restart
-- [ ] 1.7 Existing shorter-password account still signs in
+- [x] 1.6 Sign-up rejects 7 characters and accepts 8 after Supabase restart (confirmed by Janusz 2026-10-07)
+- [x] 1.7 Existing shorter-password account still signs in (confirmed by Janusz 2026-10-07)
 
 ### Phase 2: Request a reset link
 
@@ -381,11 +381,11 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Manual
 
-- [ ] 2.4 Existing address → sent page + Polish mail in Mailpit with `/auth/confirm?token_hash=…&type=recovery` link
-- [ ] 2.5 Unknown address → same sent page, no mail
-- [ ] 2.6 Rapid resend → sent page, cooldown logged
-- [ ] 2.7 Direct visit to sent page redirects to the form
-- [ ] 2.8 Layout matches mock-ups 12 / 12b (desktop + phone)
+- [x] 2.4 Existing address → sent page + Polish mail in Mailpit with `/auth/confirm?token_hash=…&type=recovery` link (confirmed by Janusz 2026-10-07)
+- [x] 2.5 Unknown address → same sent page, no mail (confirmed by Janusz 2026-10-07)
+- [x] 2.6 Rapid resend → sent page, cooldown logged (confirmed by Janusz 2026-10-07)
+- [x] 2.7 Direct visit to sent page redirects to the form (confirmed by Janusz 2026-10-07)
+- [x] 2.8 Layout matches mock-ups 12 / 12b (desktop + phone) (confirmed by Janusz 2026-10-07)
 
 ### Phase 3: From link to new password
 
@@ -398,13 +398,13 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Manual
 
-- [ ] 3.5 Cross-browser link → confirm → new password → month with notice; plans intact
-- [ ] 3.6 Other session signed out
-- [ ] 3.7 Re-used link → expired/used message
-- [ ] 3.8 Invalid confirm params → invalid-link message
-- [ ] 3.9 Signed-out `/auth/new-password` → session-missing message
-- [ ] 3.10 Same password and 7-character password rejected
-- [ ] 3.11 Layout matches mock-up 13 (desktop + phone)
+- [x] 3.5 Cross-browser link → confirm → new password → month with notice; plans intact (confirmed by Janusz 2026-10-07)
+- [x] 3.6 Other session signed out (confirmed by Janusz 2026-10-07)
+- [x] 3.7 Re-used link → expired/used message (confirmed by Janusz 2026-10-07)
+- [x] 3.8 Invalid confirm params → invalid-link message (confirmed by Janusz 2026-10-07)
+- [x] 3.9 Signed-out `/auth/new-password` → session-missing message (confirmed by Janusz 2026-10-07)
+- [x] 3.10 Same password and 7-character password rejected (confirmed by Janusz 2026-10-07)
+- [x] 3.11 Layout matches mock-up 13 (desktop + phone) (confirmed by Janusz 2026-10-07)
 
 ### Phase 4: E2E, documentation, production rollout
 
@@ -417,6 +417,6 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Manual
 
-- [ ] 4.5 E2E fails with the template reverted to `{{ .ConfirmationURL }}`
+- [x] 4.5 E2E fails with the template reverted to `{{ .ConfirmationURL }}` (confirmed by Janusz 2026-10-07)
 - [x] 4.6 Production checklist completed (2026-10-07; mail still leaves from Supabase's built-in sender — custom SMTP is not configured, see follow-ups/review-fixes.md)
 - [x] 4.7 Real cross-device reset on production after deploy (2026-10-07, Janusz)
