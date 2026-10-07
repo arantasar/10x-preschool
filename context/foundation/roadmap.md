@@ -165,6 +165,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Dokąd trafia wiadomość — e-mail do właściciela, zapis w bazie, czy oba (żeby „prawdziwa nie ginie" przeżyła awarię wysyłki)? Owner: `/10x-plan`. Block: nie.
   - Czy formularz może zbierać e-maile osób bez konta przed publikacją polityki prywatności (`S-20`)? Owner: Janusz + doradca. Block: nie dla planowania — może blokować wydanie (Open Roadmap Questions #11).
+  - `/auth/forgot-password/sent` (S-16) wskazuje `SUPPORT_EMAIL` (`src/lib/support-contact.ts`) jako tymczasowy kanał „nic nie przyszło”; S-19 przepina go na formularz kontaktowy. Owner: `/10x-plan help-and-contact`. Block: nie.
 - **Risk:** FAQ i formularz idą razem, bo FAQ bez kanału „nie znalazłeś odpowiedzi?" jest ślepą uliczką, a formularz bez FAQ ściąga pytania, na które odpowiedź jest stała. Pozycja wprowadza ochronę przed automatami, którą później dziedziczy zapis na cenę (`S-22`) — wymaganie jakościowe dotyczy obu powierzchni, więc kształt ochrony musi dać się użyć drugi raz, nie być przyklejony do jednego formularza. FAQ nie czeka na prawnika; dlatego oddzielone od `S-20`.
 - **Status:** ready
 

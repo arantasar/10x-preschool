@@ -390,10 +390,10 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `npm test`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Build passes: `npm run build`
-- [x] 3.4 Existing E2E suite stays green: `npx playwright test`
+- [x] 3.1 Unit tests pass: `npm test` — a67884b
+- [x] 3.2 Lint passes: `npm run lint` — a67884b
+- [x] 3.3 Build passes: `npm run build` — a67884b
+- [x] 3.4 Existing E2E suite stays green: `npx playwright test` — a67884b
 
 #### Manual
 
@@ -409,9 +409,9 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Automated
 
-- [ ] 4.1 New E2E passes: `npx playwright test tests/e2e/password-reset.spec.ts`
-- [ ] 4.2 Full E2E suite green: `npx playwright test`
-- [ ] 4.3 Lint passes: `npm run lint`
+- [x] 4.1 New E2E passes: `npx playwright test tests/e2e/password-reset.spec.ts`
+- [x] 4.2 Full E2E suite green: `npx playwright test`
+- [x] 4.3 Lint passes: `npm run lint`
 - [ ] 4.4 Only the S-19 block of the roadmap changed (`git diff -w master..HEAD -- context/foundation/roadmap.md`)
 
 #### Manual
