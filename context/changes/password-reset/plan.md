@@ -409,10 +409,10 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Automated
 
-- [x] 4.1 New E2E passes: `npx playwright test tests/e2e/password-reset.spec.ts`
-- [x] 4.2 Full E2E suite green: `npx playwright test`
-- [x] 4.3 Lint passes: `npm run lint`
-- [ ] 4.4 Only the S-19 block of the roadmap changed (`git diff -w master..HEAD -- context/foundation/roadmap.md`)
+- [x] 4.1 New E2E passes: `npx playwright test tests/e2e/password-reset.spec.ts` — 0a974a3
+- [x] 4.2 Full E2E suite green: `npx playwright test` — 0a974a3
+- [x] 4.3 Lint passes: `npm run lint` — 0a974a3
+- [x] 4.4 Only the S-19 block of the roadmap changed (`git diff -w master..HEAD -- context/foundation/roadmap.md`) — 0a974a3
 
 #### Manual
 
