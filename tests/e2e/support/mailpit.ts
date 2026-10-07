@@ -46,6 +46,9 @@ export async function waitForConfirmLink(email: string): Promise<string> {
     .not.toBeNull();
 
   const response = await fetch(`${e2eEnv.mailpitUrl}/api/v1/message/${messageId}`);
+  if (!response.ok) {
+    throw new Error(`Mailpit nie oddal wiadomosci ${messageId} (${response.status})`);
+  }
   const message = (await response.json()) as MailpitMessage;
   const href = /href="([^"]*\/auth\/confirm\?[^"]*)"/.exec(message.HTML)?.[1];
   if (!href) {

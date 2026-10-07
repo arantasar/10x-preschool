@@ -24,30 +24,46 @@ test.use({ storageState: { cookies: [], origins: [] } });
 const OLD_PASSWORD = "stare-haslo-e2e";
 const NEW_PASSWORD = "nowe-haslo-e2e";
 
-/** Pierwszy dzień roboczy bieżącego miesiąca — tam, gdzie po resecie ląduje nauczyciel. */
+/**
+ * Pierwszy dzień roboczy bieżącego miesiąca — tam, gdzie po resecie ląduje
+ * nauczyciel. Miesiąc liczony w Europe/Warsaw, tak jak liczy go serwer: zegar
+ * maszyny testowej w innej strefie zasiałby plan w miesiącu, którego
+ * `/plan/month` nie pokazuje.
+ */
 function firstWorkingDayOfThisMonth(): string {
-  const today = new Date();
-  const day = new Date(Date.UTC(today.getFullYear(), today.getMonth(), 1));
+  const [year, month] = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Warsaw" })
+    .format(new Date())
+    .split("-")
+    .map(Number);
+  const day = new Date(Date.UTC(year, month - 1, 1));
   while (day.getUTCDay() === 0 || day.getUTCDay() === 6) {
     day.setUTCDate(day.getUTCDate() + 1);
   }
   return day.toISOString().slice(0, 10);
 }
 
-test.describe("US-04 — reset hasła przez e-mail", () => {
+test.describe("Ryzyko #15 — reset hasła przez e-mail (US-04)", () => {
   let userId: string | null = null;
   const seededPlanIds: string[] = [];
 
   test.afterEach(async () => {
-    await deleteSeededPlans(seededPlanIds);
-    seededPlanIds.length = 0;
-    if (userId) {
-      await admin().auth.admin.deleteUser(userId);
-      userId = null;
+    // Konto znika nawet wtedy, gdy sprzątanie planów padnie — inaczej każde
+    // nieudane sprzątanie zostawia w bazie jednorazowe konto.
+    let deleteUserError: string | null = null;
+    try {
+      await deleteSeededPlans(seededPlanIds);
+    } finally {
+      seededPlanIds.length = 0;
+      if (userId) {
+        const { error } = await admin().auth.admin.deleteUser(userId);
+        userId = null;
+        deleteUserError = error?.message ?? null;
+      }
     }
+    if (deleteUserError) throw new Error(`Nie udało się usunąć konta testowego: ${deleteUserError}`);
   });
 
-  test("US-04: link z maila ustawia nowe hasło, a nauczyciel ląduje na miesiącu ze swoimi planami", async ({
+  test("ryzyko #15: link z maila ustawia nowe hasło, a nauczyciel ląduje na miesiącu ze swoimi planami", async ({
     page,
   }) => {
     const stamp = uniqueStamp();
@@ -105,7 +121,10 @@ test.describe("US-04 — reset hasła przez e-mail", () => {
     await expect(page.getByRole("status").filter({ hasText: "Hasło zostało zmienione." })).toBeVisible();
     await expect(page.getByRole("link", { name: new RegExp(`^Plan na ${planDate} — ${theme}`) })).toBeVisible();
 
-    // Stare hasło przestało działać, nowe działa.
+    // Stare hasło przestało działać, nowe działa. Logowanie przez formularz
+    // jest tu świadomym wyjątkiem od E2E-RULES (storageState zamiast formularza):
+    // zmiana hasła to właśnie zachowanie pod testem, a sesji z storageState nie
+    // da się zapytać, które hasło przyjmuje.
     await page.getByRole("button", { name: "Wyloguj się" }).click();
     await page.goto("/auth/signin");
     await waitForIslands(page);
@@ -122,7 +141,7 @@ test.describe("US-04 — reset hasła przez e-mail", () => {
     await page.waitForURL("**/plan/month");
   });
 
-  test("US-04: adres bez konta prowadzi na tę samą stronę „Sprawdź skrzynkę”", async ({ page }) => {
+  test("ryzyko #15: adres bez konta prowadzi na tę samą stronę „Sprawdź skrzynkę”", async ({ page }) => {
     const email = `e2e-reset-nikt-${uniqueStamp()}@example.test`;
 
     await page.goto("/auth/forgot-password");

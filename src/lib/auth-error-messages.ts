@@ -91,6 +91,10 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   otp_expired: "Ten link do ustawienia hasła wygasł albo został już użyty. Wyślij sobie nowy poniżej.",
   same_password: "Nowe hasło musi się różnić od dotychczasowego. Wybierz inne.",
   session_not_found: "Sesja ustawiania hasła wygasła. Poproś o nowy link poniżej.",
+  // `secure_password_change`: the session is older than 24 h. A fresh link
+  // creates a fresh session, which is all the teacher needs.
+  reauthentication_needed:
+    "Ze względów bezpieczeństwa hasło można zmienić tylko ze świeżego linku. Poproś o nowy poniżej.",
   [RESET_SESSION_MISSING]: "Aby ustawić nowe hasło, otwórz link z wiadomości e-mail albo poproś o nowy poniżej.",
   [RESET_LINK_INVALID]: "Ten link do ustawienia hasła jest niepełny lub nieprawidłowy. Poproś o nowy poniżej.",
 
@@ -100,7 +104,7 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // confirmed against a running instance. Whether it fires depends on the
   // project's address validator and blocklist settings.
   email_address_invalid: "Ten adres e-mail jest nieprawidłowy. Sprawdź, czy nie ma w nim literówki.",
-  validation_failed: "Formularz zawiera nieprawidłowe dane. Sprawdź adres e-mail i hasło, a potem spróbuj ponownie.",
+  validation_failed: "Formularz zawiera nieprawidłowe dane. Popraw je i spróbuj ponownie.",
   over_request_rate_limit: "Za dużo prób z rzędu. Odczekaj chwilę i spróbuj ponownie.",
   captcha_failed: "Nie udało się potwierdzić, że to Ty, a nie robot. Odśwież stronę i spróbuj ponownie.",
 

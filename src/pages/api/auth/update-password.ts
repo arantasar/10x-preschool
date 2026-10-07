@@ -16,6 +16,9 @@ const updateSchema = z
  * Save the new password, cut off every other device signed in to the account,
  * and take the teacher to her month.
  */
+/** `updateUser` codes that mean "this session cannot set a password any more". */
+const SESSION_ERRORS = new Set(["session_not_found", "reauthentication_needed"]);
+
 export const POST: APIRoute = async (context) => {
   const { supabase, user } = context.locals;
   if (!supabase) {
@@ -36,8 +39,12 @@ export const POST: APIRoute = async (context) => {
     /* eslint-disable-next-line no-console */
     console.error("auth.update_password.failed", { code: error.code, status: error.status, message: error.message });
 
+    // Without a usable session `/auth/new-password` would only bounce to the
+    // forgot-password form with its own code, hiding this one - send her there
+    // directly, where the message sits right above the form for a new link.
     const code = error.code ?? "";
-    return context.redirect(`/auth/new-password?error=${encodeURIComponent(code || CONNECTION_FAILED)}`);
+    const target = SESSION_ERRORS.has(code) ? "/auth/forgot-password" : "/auth/new-password";
+    return context.redirect(`${target}?error=${encodeURIComponent(code || CONNECTION_FAILED)}`);
   }
 
   // The password is changed from here on, whatever happens next. A failed

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { emailError } from "@/lib/email-check";
 import { FormField } from "@/components/auth/FormField";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { ServerError } from "@/components/auth/ServerError";
@@ -13,12 +14,7 @@ export default function ForgotPasswordForm({ serverError }: Props) {
 
   // The same check and wording as sign-in's e-mail field.
   function validate() {
-    let next: string | undefined;
-    if (!email.trim()) {
-      next = "Podaj adres e-mail";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      next = "Podaj poprawny adres e-mail";
-    }
+    const next = emailError(email);
     setError(next);
     return next === undefined;
   }

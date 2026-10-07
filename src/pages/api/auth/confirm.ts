@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { CONFIG_MISSING, CONNECTION_FAILED, RESET_LINK_INVALID } from "@/lib/auth-error-messages";
-import { createClient } from "@/lib/supabase";
+import { RESET_EMAIL_COOKIE, RESET_EMAIL_COOKIE_OPTIONS } from "@/lib/reset-request";
 
 export const prerender = false;
 
@@ -25,7 +25,7 @@ export const POST: APIRoute = async (context) => {
     return context.redirect(`/auth/forgot-password?error=${RESET_LINK_INVALID}`);
   }
 
-  const supabase = createClient(context.request.headers, context.cookies);
+  const { supabase } = context.locals;
   if (!supabase) {
     return context.redirect(`/auth/forgot-password?error=${encodeURIComponent(CONFIG_MISSING)}`);
   }
@@ -42,5 +42,8 @@ export const POST: APIRoute = async (context) => {
     return context.redirect(`/auth/forgot-password?error=${encodeURIComponent(code || CONNECTION_FAILED)}`);
   }
 
+  // The link worked, so "check your inbox" has nothing left to say - and on a
+  // shared computer it should not keep naming her address for the next person.
+  context.cookies.delete(RESET_EMAIL_COOKIE, { path: RESET_EMAIL_COOKIE_OPTIONS.path });
   return context.redirect("/auth/new-password");
 };

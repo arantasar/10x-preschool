@@ -293,6 +293,7 @@ One browser test guarding the template ↔ route seam, docs that keep the next r
 - Auth → Email Templates → Reset Password: subject + body from `supabase/templates/recovery.html` (link built from `{{ .RedirectTo }}`).
 - Auth → URL Configuration: production `https://<domain>/auth/confirm` in Redirect URLs.
 - Auth → Providers → Email: minimum password length 8; note the OTP/link expiry and confirm it is 1 hour (the sent page says so) — if it differs, change the copy, not the dashboard.
+- Auth → Providers → Email: **Secure password change** on (mirrors `secure_password_change = true` in `config.toml`; added by impl-review F1 — without it any signed-in session can set a password on `/auth/new-password` and sign the owner out everywhere).
 - Custom SMTP: sender domain has SPF and DKIM passing (send one reset to a Gmail address and inspect "Show original").
 - `SUPPORT_EMAIL` holds the real address.
 

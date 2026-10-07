@@ -29,17 +29,21 @@ describe("authErrorMessage", () => {
     expect(message).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
   });
 
-  it("covers the twenty codes the three auth flows can reach", () => {
-    expect(MAPPED_CODES).toHaveLength(20);
+  it("covers the twenty-one codes the three auth flows can reach", () => {
+    expect(MAPPED_CODES).toHaveLength(21);
   });
 
-  it.each(["otp_expired", "same_password", "session_not_found", "reset_session_missing", "reset_link_invalid"])(
-    "maps the password-reset code %s",
-    (code) => {
-      expect(Object.hasOwn(AUTH_ERROR_MESSAGES, code)).toBe(true);
-      expect(authErrorMessage(code)).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
-    },
-  );
+  it.each([
+    "otp_expired",
+    "same_password",
+    "session_not_found",
+    "reauthentication_needed",
+    "reset_session_missing",
+    "reset_link_invalid",
+  ])("maps the password-reset code %s", (code) => {
+    expect(Object.hasOwn(AUTH_ERROR_MESSAGES, code)).toBe(true);
+    expect(authErrorMessage(code)).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
+  });
 
   it("falls back for a real Supabase code from a flow we did not map", () => {
     expect(authErrorMessage("mfa_challenge_expired")).toBe(GENERIC_AUTH_ERROR_MESSAGE);

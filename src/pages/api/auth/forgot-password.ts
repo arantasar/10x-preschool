@@ -2,7 +2,6 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 import { CONFIG_MISSING, CONNECTION_FAILED, isSilentResetRequestError } from "@/lib/auth-error-messages";
 import { RESET_EMAIL_COOKIE, RESET_EMAIL_COOKIE_OPTIONS } from "@/lib/reset-request";
-import { createClient } from "@/lib/supabase";
 
 export const prerender = false;
 
@@ -21,7 +20,7 @@ export const POST: APIRoute = async (context) => {
   }
   const { email } = parsed.data;
 
-  const supabase = createClient(context.request.headers, context.cookies);
+  const { supabase } = context.locals;
   if (!supabase) {
     return context.redirect(`/auth/forgot-password?error=${encodeURIComponent(CONFIG_MISSING)}`);
   }
@@ -34,13 +33,20 @@ export const POST: APIRoute = async (context) => {
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
 
   if (error) {
-    /* eslint-disable-next-line no-console */
-    console.error("auth.reset_request.failed", { code: error.code, status: error.status, message: error.message });
-
     // The per-address cooldown can only fire for an address that has an account,
     // so showing it would be an account-enumeration oracle. It takes the success
-    // path below; the log above is the only trace.
-    if (!isSilentResetRequestError(error.code)) {
+    // path below, and the log is the only trace - under its own name, because the
+    // project-wide e-mail quota answers with the same code, and then a teacher is
+    // told to check an inbox that will stay empty.
+    const silenced = isSilentResetRequestError(error.code);
+    /* eslint-disable-next-line no-console */
+    console.error(silenced ? "auth.reset_request.silenced" : "auth.reset_request.failed", {
+      code: error.code,
+      status: error.status,
+      message: error.message,
+    });
+
+    if (!silenced) {
       const code = error.code ?? "";
       return context.redirect(`/auth/forgot-password?error=${encodeURIComponent(code || CONNECTION_FAILED)}`);
     }

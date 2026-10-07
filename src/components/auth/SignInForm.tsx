@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { emailError } from "@/lib/email-check";
 import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
@@ -16,10 +17,9 @@ export default function SignInForm({ serverError }: Props) {
 
   function validate() {
     const next: typeof errors = {};
-    if (!email.trim()) {
-      next.email = "Podaj adres e-mail";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      next.email = "Podaj poprawny adres e-mail";
+    const emailProblem = emailError(email);
+    if (emailProblem) {
+      next.email = emailProblem;
     }
     if (!password) {
       next.password = "Podaj hasło";
