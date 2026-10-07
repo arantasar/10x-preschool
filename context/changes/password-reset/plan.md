@@ -418,5 +418,5 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 #### Manual
 
 - [ ] 4.5 E2E fails with the template reverted to `{{ .ConfirmationURL }}`
-- [ ] 4.6 Production checklist completed
-- [ ] 4.7 Real cross-device reset on production after deploy
+- [x] 4.6 Production checklist completed (2026-10-07; mail still leaves from Supabase's built-in sender — custom SMTP is not configured, see follow-ups/review-fixes.md)
+- [x] 4.7 Real cross-device reset on production after deploy (2026-10-07, Janusz)
