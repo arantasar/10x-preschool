@@ -359,11 +359,11 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Build passes: `npm run build`
-- [x] 1.4 Exactly one definition of the minimum, set to 8 (`grep -rn "MIN_PASSWORD_LENGTH = " src`)
-- [x] 1.5 Local config carries the length (`grep -n "^minimum_password_length = 8" supabase/config.toml`)
+- [x] 1.1 Unit tests pass: `npm test` — 36bc86d
+- [x] 1.2 Lint passes: `npm run lint` — 36bc86d
+- [x] 1.3 Build passes: `npm run build` — 36bc86d
+- [x] 1.4 Exactly one definition of the minimum, set to 8 (`grep -rn "MIN_PASSWORD_LENGTH = " src`) — 36bc86d
+- [x] 1.5 Local config carries the length (`grep -n "^minimum_password_length = 8" supabase/config.toml`) — 36bc86d
 
 #### Manual
 
@@ -374,9 +374,9 @@ No database migration. Existing passwords shorter than 8 keep working until chan
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm test`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Build passes: `npm run build`
+- [x] 2.1 Unit tests pass: `npm test`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Build passes: `npm run build`
 
 #### Manual
 

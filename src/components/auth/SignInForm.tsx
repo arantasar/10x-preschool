@@ -74,6 +74,15 @@ export default function SignInForm({ serverError }: Props) {
         }
       />
 
+      {/* Below the field rather than beside its label (mock-up 02): FormField's
+          label is plain text, and a link inside it would change the field's
+          accessible name "Hasło". */}
+      <p className="-mt-2 text-right">
+        <a href="/auth/forgot-password" className="text-mech hover:text-las text-[15px] font-bold underline">
+          Nie pamiętasz hasła?
+        </a>
+      </p>
+
       <ServerError message={serverError} />
 
       <SubmitButton pendingText="Logowanie...">Zaloguj się</SubmitButton>
