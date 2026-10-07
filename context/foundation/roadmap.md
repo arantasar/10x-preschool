@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 3
 status: draft
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-03
 prd_version: 3
 main_goal: quality
 top_blocker: external
@@ -165,6 +165,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Dokąd trafia wiadomość — e-mail do właściciela, zapis w bazie, czy oba (żeby „prawdziwa nie ginie" przeżyła awarię wysyłki)? Owner: `/10x-plan`. Block: nie.
   - Czy formularz może zbierać e-maile osób bez konta przed publikacją polityki prywatności (`S-20`)? Owner: Janusz + doradca. Block: nie dla planowania — może blokować wydanie (Open Roadmap Questions #11).
+  - `/auth/forgot-password/sent` (S-16) wskazuje `SUPPORT_EMAIL` (`src/lib/support-contact.ts`) jako tymczasowy kanał „nic nie przyszło”; S-19 przepina go na formularz kontaktowy. Owner: `/10x-plan help-and-contact`. Block: nie.
 - **Risk:** FAQ i formularz idą razem, bo FAQ bez kanału „nie znalazłeś odpowiedzi?" jest ślepą uliczką, a formularz bez FAQ ściąga pytania, na które odpowiedź jest stała. Pozycja wprowadza ochronę przed automatami, którą później dziedziczy zapis na cenę (`S-22`) — wymaganie jakościowe dotyczy obu powierzchni, więc kształt ochrony musi dać się użyć drugi raz, nie być przyklejony do jednego formularza. FAQ nie czeka na prawnika; dlatego oddzielone od `S-20`.
 - **Status:** ready
 
@@ -355,3 +356,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-14: Nauczyciel może pobrać z widoku miesiąca plik PDF z planem całego miesiąca, czytelny na papierze; wydruk obejmuje wszystkie dni robocze miesiąca, a dni niezaakceptowane i dni bez planu są oznaczone tak samo jak w wydruku tygodnia.** — Archived 2026-09-27 → `context/archive/2026-09-27-month-print/`. Lesson: —.
 - **S-15: Nauczyciel może przy jednej aktywności w widoku dnia wpisać polecenie dla modelu („dopisz słowa piosenki", „zamień na zabawę ruchową"); poprawiony tytuł i opis trafiają do szkicu tej aktywności i zapisują się dopiero przyciskiem „Zapisz".** — Archived 2026-09-28 → `context/archive/2026-09-28-follow-up-questions/`. Lesson: —.
 - **S-10: Nauczyciel może jawnie rozszerzyć regenerację tygodnia na dni zaakceptowane, zamiast najpierw cofać akceptacje po kolei.** — Archived 2026-09-29 → `context/archive/2026-09-28-accepted-day-replacement/`. Lesson: —.
+- **F-02: (foundation) bramka bezpieczeństwa treści przechodzi na żywo dla każdego dopuszczonego modelu i każdego trybu generowania (dzień, tydzień, poprawka aktywności), a zmiana promptu albo modelu znów nie wchodzi na produkcję bez jej przebiegu.** — Archived 2026-10-03 → `context/archive/2026-10-01-content-safety-gate-resume/`. Lesson: —.

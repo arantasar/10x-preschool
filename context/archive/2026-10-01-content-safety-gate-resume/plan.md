@@ -403,8 +403,8 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Manual
 
-- [ ] 1.3 Wynik w `gate-runs.md` zgadza się z wyjściem przebiegu
-- [ ] 1.4 Komentarz przy `JUDGE_MODEL` nie twierdzi, że sędzia jest nieskalibrowany
+- [x] 1.3 Wynik w `gate-runs.md` zgadza się z wyjściem przebiegu
+- [x] 1.4 Komentarz przy `JUDGE_MODEL` nie twierdzi, że sędzia jest nieskalibrowany
 
 ### Phase 2: Macierz bez `day` i koszt w raporcie
 
@@ -417,7 +417,7 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Manual
 
-- [ ] 2.5 Żaden produkcyjny caller nie woła `generateDayActivities` bez kontekstu
+- [x] 2.5 Żaden produkcyjny caller nie woła `generateDayActivities` bez kontekstu
 
 ### Phase 3: Przebieg pełnej macierzy i poprawki promptów
 
@@ -432,9 +432,9 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Manual
 
-- [ ] 3.4 Każdy przebieg fazy ma wpis w `gate-runs.md`
-- [ ] 3.5 Bezpieczne kontrole po poprawce promptu ocenione jako nauczycielka — brak odmów
-- [ ] 3.6 Linia kosztu w `gate-runs.md` odpowiada na Unknown roadmapy
+- [x] 3.4 Każdy przebieg fazy ma wpis w `gate-runs.md`
+- [x] 3.5 Bezpieczne kontrole po poprawce promptu ocenione jako nauczycielka — brak odmów
+- [x] 3.6 Linia kosztu w `gate-runs.md` odpowiada na Unknown roadmapy
 
 ### Phase 4: Usunięcie zawieszenia i bramka w CI
 
@@ -452,6 +452,6 @@ Brak zmian danych. Wycofanie odwieszenia to świadomy revert commitu fazy 4, wid
 
 #### Manual
 
-- [ ] 4.6 Step summary joba pokazuje raport bramki, nie notice
-- [ ] 4.7 Diff `roadmap.md` (`-w`) zmienia tylko F-02 i Baseline
-- [ ] 4.8 Wszystkie commity na `feat/content-safety-gate-resume`
+- [x] 4.6 Step summary joba pokazuje raport bramki, nie notice
+- [x] 4.7 Diff `roadmap.md` (`-w`) zmienia tylko F-02 i Baseline
+- [x] 4.8 Wszystkie commity na `feat/content-safety-gate-resume`

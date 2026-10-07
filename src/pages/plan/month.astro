@@ -5,9 +5,17 @@ import MonthPdfControls from "@/components/plan/MonthPdfControls";
 import { addDays, addMonths, formatMonth, resolveMonth, weeksOfMonth } from "@/lib/day-plan-dates";
 import { acceptedCountLabel, monthCounts } from "@/lib/month-grid";
 import { readMonthSummary } from "@/lib/services/day-plan-store";
+import { PASSWORD_RESET_DONE_COOKIE, PASSWORD_RESET_DONE_COOKIE_OPTIONS } from "@/lib/reset-request";
 import type { DayPlanSummary } from "@/types";
 
 const { supabase } = Astro.locals;
+
+// One-shot: set by `/api/auth/update-password`, consumed by the first render
+// that shows it, so a reload removes the notice by construction.
+const passwordResetDone = Astro.cookies.has(PASSWORD_RESET_DONE_COOKIE);
+if (passwordResetDone) {
+  Astro.cookies.delete(PASSWORD_RESET_DONE_COOKIE, { path: PASSWORD_RESET_DONE_COOKIE_OPTIONS.path });
+}
 
 // The entry point to the rhythm the PRD describes: a teacher plans 20-22 days
 // once a month. This page generates nothing - it shows what is planned and
@@ -49,6 +57,18 @@ const stepLink =
 
 <PlannerLayout title={`Plan miesiąca — ${monthName}`} active="plan">
   <main class="max-w-content px-app-gutter mx-auto w-full py-8 min-[900px]:py-10">
+    {
+      /* One line, above everything else: the month grid has to fit without a
+         scroll, so the notice may cost no more than its own height. */
+      passwordResetDone && (
+        <p
+          class="rounded-input bg-szalwia-soft text-mech-ciemny mb-4 px-4 py-2 text-[15px] font-semibold"
+          role="status"
+        >
+          Hasło zostało zmienione. Pozostałe urządzenia zostały wylogowane.
+        </p>
+      )
+    }
     <header class="mb-6 flex flex-col gap-4 min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between">
       <div class="flex items-center gap-3">
         <a href={`/plan/month?month=${previousMonth}`} aria-label="Poprzedni miesiąc" class:list={stepLink}>

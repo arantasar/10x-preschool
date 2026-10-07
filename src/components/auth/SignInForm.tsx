@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { emailError } from "@/lib/email-check";
 import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
@@ -16,10 +17,9 @@ export default function SignInForm({ serverError }: Props) {
 
   function validate() {
     const next: typeof errors = {};
-    if (!email.trim()) {
-      next.email = "Podaj adres e-mail";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      next.email = "Podaj poprawny adres e-mail";
+    const emailProblem = emailError(email);
+    if (emailProblem) {
+      next.email = emailProblem;
     }
     if (!password) {
       next.password = "Podaj hasło";
@@ -73,6 +73,15 @@ export default function SignInForm({ serverError }: Props) {
           />
         }
       />
+
+      {/* Below the field rather than beside its label (mock-up 02): FormField's
+          label is plain text, and a link inside it would change the field's
+          accessible name "Hasło". */}
+      <p className="-mt-2 text-right">
+        <a href="/auth/forgot-password" className="text-mech hover:text-las text-[15px] font-bold underline">
+          Nie pamiętasz hasła?
+        </a>
+      </p>
 
       <ServerError message={serverError} />
 

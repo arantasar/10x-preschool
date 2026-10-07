@@ -1,0 +1,62 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AuthCard from "@/components/layout/AuthCard.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { RESET_EMAIL_COOKIE } from "@/lib/reset-request";
+import { SUPPORT_EMAIL } from "@/lib/support-contact";
+import { cn } from "@/lib/utils";
+
+// Mock-up 12b. The same page for every address, registered or not - the copy
+// says "if there is an account", and nothing on it depends on Supabase's answer.
+// The mock-up's „Otwórz link (demo)” is a design-tool artefact and is not built.
+const email = Astro.cookies.get(RESET_EMAIL_COOKIE)?.value;
+if (!email) {
+  return Astro.redirect("/auth/forgot-password");
+}
+---
+
+<Layout title="Sprawdź skrzynkę">
+  <AuthCard>
+    <div
+      class="bg-szalwia-soft text-mech-ciemny flex size-[76px] items-center justify-center rounded-[50%_50%_50%_14px]"
+      aria-hidden="true"
+    >
+      <svg
+        width="34"
+        height="34"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="3" y="5" width="18" height="14" rx="2.5"></rect>
+        <path d="M4 7l8 6 8-6"></path>
+      </svg>
+    </div>
+    <div class="flex flex-col gap-3" role="status">
+      <h1 class="font-display text-las text-[clamp(32px,4vw,42px)] leading-[1.1] font-normal">Sprawdź skrzynkę</h1>
+      <p class="text-las-szary text-lg leading-normal">
+        Jeśli pod adresem <strong class="text-las break-all">{email}</strong> jest konto, wysłaliśmy na nie link do ustawienia
+        nowego hasła. Link jest ważny przez godzinę.
+      </p>
+      <p class="text-las-szary text-[15px]">Nie widzisz wiadomości? Zajrzyj do folderu spam.</p>
+      <p class="text-las-szary text-[15px]">
+        Nic nie przyszło po kilku minutach? Napisz do nas: <a
+          href={`mailto:${SUPPORT_EMAIL}`}
+          class="text-las hover:text-mech font-bold break-all underline">{SUPPORT_EMAIL}</a
+        >
+      </p>
+    </div>
+    <form method="POST" action="/api/auth/forgot-password">
+      <input type="hidden" name="email" value={email} />
+      <button type="submit" class:list={cn(buttonVariants({ variant: "outlinePill", size: "pillLg" }), "w-full")}>
+        Wyślij ponownie
+      </button>
+    </form>
+    <p class="text-center">
+      <a href="/auth/signin" class="text-las hover:text-mech font-extrabold underline">Wróć do logowania</a>
+    </p>
+  </AuthCard>
+</Layout>

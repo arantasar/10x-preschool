@@ -38,9 +38,11 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 - `src/middleware.ts` — runs on every request, resolves the current user, attaches to `context.locals.user`. Redirects unauthenticated users away from routes listed in `PROTECTED_ROUTES`.
 
-- API endpoints: `src/pages/api/auth/{signin,signup,signout}.ts`
+- API endpoints: `src/pages/api/auth/{signin,signup,signout,forgot-password,confirm,update-password}.ts`
 
-- Auth pages: `src/pages/auth/{signin,signup,confirm-email}.astro`
+- Auth pages: `src/pages/auth/{signin,signup,confirm-email,forgot-password,confirm,new-password}.astro` and `src/pages/auth/forgot-password/sent.astro`
+
+- Password reset: the recovery e-mail links to `/auth/confirm?token_hash=…&type=recovery` (built from `{{ .RedirectTo }}`); `GET /auth/confirm` only renders a button, `POST /api/auth/confirm` calls `verifyOtp` — so a mailbox scanner's prefetch cannot spend the token, and the link works on any device. The template lives in `supabase/templates/recovery.html` locally and in the Supabase dashboard (Auth → Email Templates → Reset Password) in production; the redirect allow-list must contain `/auth/confirm` of every origin, or Supabase silently falls back to Site URL and the link breaks.
 
 - Home screen of the signed-in app: `src/pages/plan/month.astro` (protected via the `/plan` prefix in `PROTECTED_ROUTES`; `/` redirects a signed-in user there)
 

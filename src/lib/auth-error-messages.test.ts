@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { AUTH_ERROR_MESSAGES, GENERIC_AUTH_ERROR_MESSAGE, authErrorMessage } from "./auth-error-messages";
+import {
+  AUTH_ERROR_MESSAGES,
+  GENERIC_AUTH_ERROR_MESSAGE,
+  authErrorMessage,
+  isSilentResetRequestError,
+} from "./auth-error-messages";
 
 // Nothing is mocked here: the module is pure and imports nothing. Per
 // `test-plan.md` §6.1 that is exactly the layer an error mapping belongs to.
@@ -24,8 +29,20 @@ describe("authErrorMessage", () => {
     expect(message).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
   });
 
-  it("covers the fifteen codes the two auth flows can reach", () => {
-    expect(MAPPED_CODES).toHaveLength(15);
+  it("covers the twenty-one codes the three auth flows can reach", () => {
+    expect(MAPPED_CODES).toHaveLength(21);
+  });
+
+  it.each([
+    "otp_expired",
+    "same_password",
+    "session_not_found",
+    "reauthentication_needed",
+    "reset_session_missing",
+    "reset_link_invalid",
+  ])("maps the password-reset code %s", (code) => {
+    expect(Object.hasOwn(AUTH_ERROR_MESSAGES, code)).toBe(true);
+    expect(authErrorMessage(code)).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
   });
 
   it("falls back for a real Supabase code from a flow we did not map", () => {
@@ -68,5 +85,28 @@ describe("the Polish copy contract", () => {
     for (const word of ENGLISH_STOP_WORDS) {
       expect(message).not.toMatch(new RegExp(`\\b${word}\\b`, "i"));
     }
+  });
+});
+
+describe("isSilentResetRequestError", () => {
+  // Both of these can only happen for an address that has an account, so
+  // showing them would be an account-enumeration oracle.
+  it.each(["over_email_send_rate_limit", "user_not_found"])("swallows %s", (code) => {
+    expect(isSilentResetRequestError(code)).toBe(true);
+  });
+
+  // Address-independent failures: the teacher needs to see these.
+  it.each([
+    "over_request_rate_limit",
+    "validation_failed",
+    "email_address_invalid",
+    "connection_failed",
+    "config_missing",
+  ])("shows %s", (code) => {
+    expect(isSilentResetRequestError(code)).toBe(false);
+  });
+
+  it("shows a missing code", () => {
+    expect(isSilentResetRequestError(undefined)).toBe(false);
   });
 });

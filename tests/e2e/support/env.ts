@@ -54,6 +54,10 @@ export const e2eEnv = {
   get password(): string {
     return required("E2E_PASSWORD");
   },
+  /** Mailpit lokalnego stacku (`[inbucket]` w `supabase/config.toml`) - tam laduja maile auth. */
+  get mailpitUrl(): string {
+    return process.env.E2E_MAILPIT_URL ?? fileEnv.E2E_MAILPIT_URL ?? "http://127.0.0.1:54324";
+  },
 };
 
 /**

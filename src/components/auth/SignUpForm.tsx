@@ -1,10 +1,10 @@
 import React, { useState } from "react";
+import { emailError } from "@/lib/email-check";
 import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { ServerError } from "@/components/auth/ServerError";
-
-const MIN_PASSWORD_LENGTH = 6;
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
 
 interface Props {
   serverError?: string | null;
@@ -21,10 +21,9 @@ export default function SignUpForm({ serverError }: Props) {
   function validate() {
     const next: typeof errors = {};
 
-    if (!email.trim()) {
-      next.email = "Podaj adres e-mail";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      next.email = "Podaj poprawny adres e-mail";
+    const emailProblem = emailError(email);
+    if (emailProblem) {
+      next.email = emailProblem;
     }
 
     if (!password) {
