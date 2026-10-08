@@ -20,7 +20,9 @@
   },
   // The old production host redirects to the canonical origin
   // (`src/lib/canonical-host.ts`). Exact host match: preview hosts are untouched.
-  // Rollback: remove this block.
+  // Rollback: removing this block stops new redirects, but browsers cache the
+  // 301/308 indefinitely, so anyone who already visited the old host stays
+  // redirected.
   "vars": {
     "LEGACY_HOST": "10x-preschool.janusz-guzowski.workers.dev",
     "CANONICAL_ORIGIN": "https://temio.pl",

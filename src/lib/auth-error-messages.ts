@@ -17,6 +17,8 @@
  *    invariant of the lookup, not a sanitisation step someone has to remember.
  */
 
+import { SUPPORT_EMAIL } from "@/lib/support-contact";
+
 /**
  * Ours, not Supabase's — do not look for these two in `ErrorCode`.
  *
@@ -99,9 +101,9 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   over_email_send_rate_limit:
     "Wysłaliśmy już zbyt wiele wiadomości na ten adres. Odczekaj kilka minut i spróbuj ponownie.",
   // Supabase's built-in sender refuses any address outside the project's team.
-  // Reached from sign-up and from the reset request, so the wording names no flow.
-  email_address_not_authorized:
-    "Nie możemy teraz wysłać wiadomości na ten adres. Spróbuj ponownie później albo napisz do nas: kontakt@temio.pl.",
+  // Only reachable if custom SMTP is ever switched off. Shown by sign-up; the
+  // reset request swallows it (see SILENT_RESET_REQUEST_ERRORS below).
+  email_address_not_authorized: `Nie możemy teraz wysłać wiadomości na ten adres. Spróbuj ponownie później albo napisz do nas: ${SUPPORT_EMAIL}.`,
   // Re-signing up with an unconfirmed address makes Supabase send a fresh link,
   // so that is the advice for both - there is no separate "resend" screen.
   [SIGNUP_LINK_INVALID]:
@@ -141,11 +143,18 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
 
 /**
  * Codes from `resetPasswordForEmail` that only an address **with** an account
- * can produce - the per-address send cooldown, and a not-found code should a
- * Supabase version ever emit one. Showing them would tell a stranger which
- * addresses are registered, so the request route treats them as success.
+ * can produce - the per-address send cooldown, a not-found code should a
+ * Supabase version ever emit one, and the built-in sender's refusal of a
+ * non-team address (Supabase only tries to send for an existing user, so the
+ * refusal itself says "this account exists"). Showing them would tell a
+ * stranger which addresses are registered, so the request route treats them as
+ * success.
  */
-const SILENT_RESET_REQUEST_ERRORS = new Set(["over_email_send_rate_limit", "user_not_found"]);
+const SILENT_RESET_REQUEST_ERRORS = new Set([
+  "over_email_send_rate_limit",
+  "user_not_found",
+  "email_address_not_authorized",
+]);
 
 export function isSilentResetRequestError(code: string | undefined): boolean {
   return code !== undefined && SILENT_RESET_REQUEST_ERRORS.has(code);

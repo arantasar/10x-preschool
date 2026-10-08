@@ -94,7 +94,7 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 1. **GitHub Actions** — `@.github/workflows/ci.yml`, on push to `master` and on PRs against it. Runs `npm ci`, `astro sync`, `npm run lint`, `npm run build`. Requires `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step. **Does not deploy.**
 
-2. **Cloudflare Workers Builds** — connected to the repo through the Cloudflare dashboard, not through a file in this repo. It builds and **deploys the `10x-preschool` worker to `production`** when `master` changes, and posts a `Workers Builds: 10x-preschool` check on PRs. There is no YAML for it here; `wrangler.jsonc` only names the worker.
+2. **Cloudflare Workers Builds** — connected to the repo through the Cloudflare dashboard, not through a file in this repo. It builds and **deploys the `10x-preschool` worker to `production`** when `master` changes, and posts a `Workers Builds: 10x-preschool` check on PRs. There is no YAML for it here; `wrangler.jsonc` names the worker and carries the redirect `vars` (below), and the build settings live in the dashboard.
 
 **Production is `https://temio.pl`**, served through a Workers Custom Domain (the `temio.pl` zone is in Cloudflare; mail for `kontakt@temio.pl` stays at OVH through DNS-only MX records). `www.temio.pl` redirects to the apex through a Cloudflare Redirect Rule. The old `10x-preschool.janusz-guzowski.workers.dev` host redirects to `temio.pl` in the middleware (`src/lib/canonical-host.ts`), driven by `LEGACY_HOST` / `CANONICAL_ORIGIN` in `wrangler.jsonc` `vars`. Those two are declared `access: "secret"` in `astro.config.mjs` even though they are not secret: Astro inlines `public` server variables at build time, when Workers Builds has no `vars`.
 

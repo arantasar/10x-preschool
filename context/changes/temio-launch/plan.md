@@ -441,7 +441,7 @@ The redirect check is a string comparison that runs before the Supabase client i
 
 - **Rollback, DNS:** put OVH's nameservers back at OVH. The OVH zone keeps its records, since we never delete them there, and `dns-inventory.md` holds a copy.
 - **Rollback, mail:** turn custom SMTP off in Supabase, which brings back the built-in sender with its team-only limits.
-- **Rollback, redirect:** remove `vars` from `wrangler.jsonc`.
+- **Rollback, redirect:** remove `vars` from `wrangler.jsonc`. This stops new redirects only: browsers cache 301/308 indefinitely, so anyone who already visited the old host stays redirected (impl-review F2).
 - Existing sessions are tied to the workers.dev origin, so teachers sign in once more on `temio.pl`. That is acceptable at the current user count.
 
 ## References
@@ -498,35 +498,35 @@ The redirect check is a string comparison that runs before the Supabase client i
 #### Manual
 
 - [x] 3.4 Dev without vars behaves as before
-- [ ] 3.5 PR checks green; preview shows Temio and is not redirected
-- [ ] 3.6 Merged to master; production on workers.dev shows Temio, sign-in and reset work
+- [x] 3.5 PR checks green; preview shows Temio and is not redirected
+- [x] 3.6 Merged to master; production on workers.dev shows Temio, sign-in and reset work
 
 ### Phase 4: Move temio.pl to Cloudflare and serve the app there
 
 #### Automated
 
 - [x] 4.1 NS records are Cloudflare's — ccf004b
-- [ ] 4.2 MX and SPF match dns-inventory.md
+- [x] 4.2 MX and SPF match dns-inventory.md
 - [x] 4.3 https://temio.pl answers 200 — ccf004b
 - [x] 4.4 www redirects to apex with path and query — ccf004b
-- [ ] 4.5 Legacy workers.dev host redirects to temio.pl with path and query
-- [ ] 4.6 DNSSEC validates with DS at the registrar
+- [x] 4.5 Legacy workers.dev host redirects to temio.pl with path and query — fdb42ed
+- [x] 4.6 DNSSEC validates with DS at the registrar
 
 #### Manual
 
-- [ ] 4.7 External mail reaches kontakt@temio.pl after the NS change
-- [ ] 4.8 Sign-in and generation work on temio.pl with interactive islands
-- [ ] 4.9 Preview URL is not redirected
+- [x] 4.7 External mail reaches kontakt@temio.pl after the NS change
+- [x] 4.8 Sign-in and generation work on temio.pl with interactive islands
+- [x] 4.9 Preview URL is not redirected
 
 ### Phase 5: Auth mail through Resend
 
 #### Automated
 
-- [ ] 5.1 Resend DKIM, send MX and DMARC records resolve
+- [x] 5.1 Resend DKIM, send MX and DMARC records resolve — fdb42ed
 
 #### Manual
 
-- [ ] 5.2 Reset to a non-team address: inbox, Polish, SPF/DKIM/DMARC pass, link works
-- [ ] 5.3 Sign-up to a non-team address: Polish confirmation activates and signs in
-- [ ] 5.4 Reply to the auth mail reaches kontakt@temio.pl
-- [ ] 5.5 Resend logs both sends as delivered
+- [x] 5.2 Reset to a non-team address: inbox, Polish, SPF/DKIM/DMARC pass, link works
+- [x] 5.3 Sign-up to a non-team address: Polish confirmation activates and signs in
+- [x] 5.4 Reply to the auth mail reaches kontakt@temio.pl
+- [x] 5.5 Resend logs both sends as delivered

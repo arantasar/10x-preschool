@@ -1,12 +1,8 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import {
-  CONFIG_MISSING,
-  CONNECTION_FAILED,
-  RESET_LINK_INVALID,
-  SIGNUP_LINK_EXPIRED,
-  SIGNUP_LINK_INVALID,
-} from "@/lib/auth-error-messages";
+import { invalidConfirmRedirect } from "@/lib/auth-confirm";
+import { CONFIG_MISSING, CONNECTION_FAILED, SIGNUP_LINK_EXPIRED } from "@/lib/auth-error-messages";
+import { normalizePendingTopic, PENDING_TOPIC_COOKIE } from "@/lib/pending-topic";
 import { RESET_EMAIL_COOKIE, RESET_EMAIL_COOKIE_OPTIONS } from "@/lib/reset-request";
 
 export const prerender = false;
@@ -32,10 +28,7 @@ export const POST: APIRoute = async (context) => {
   const form = await context.request.formData();
   const parsed = confirmSchema.safeParse({ token_hash: form.get("token_hash"), type: form.get("type") });
   if (!parsed.success) {
-    if (form.get("type") === "email") {
-      return context.redirect(`/auth/signin?error=${SIGNUP_LINK_INVALID}`);
-    }
-    return context.redirect(`/auth/forgot-password?error=${RESET_LINK_INVALID}`);
+    return context.redirect(invalidConfirmRedirect(form.get("type")));
   }
   const { token_hash, type } = parsed.data;
   const errorPage = type === "email" ? "/auth/signin" : "/auth/forgot-password";
@@ -64,6 +57,12 @@ export const POST: APIRoute = async (context) => {
   }
 
   if (type === "email") {
+    // The activation is her first sign-in, so it lands where `signin.ts` would:
+    // on the week when she typed a hasło on the landing (the week page consumes
+    // it), on the month otherwise.
+    if (normalizePendingTopic(context.cookies.get(PENDING_TOPIC_COOKIE)?.value)) {
+      return context.redirect("/plan/week");
+    }
     return context.redirect("/plan/month");
   }
 
