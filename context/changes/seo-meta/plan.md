@@ -233,12 +233,12 @@ None. Facebook and Messenger cache previews. If a card looks stale after deploy,
 
 #### Automated
 
-- [x] 2.1 Unit tests pass, including the new isOffCanonicalHost cases
-- [x] 2.2 Lint passes
-- [x] 2.3 Build passes
-- [x] 2.4 Sitemap holds exactly the three indexable URLs
-- [x] 2.5 No sitemap URL ends in a slash except the root
-- [x] 2.6 robots.txt ships
+- [x] 2.1 Unit tests pass, including the new isOffCanonicalHost cases — ddcf09b
+- [x] 2.2 Lint passes — ddcf09b
+- [x] 2.3 Build passes — ddcf09b
+- [x] 2.4 Sitemap holds exactly the three indexable URLs — ddcf09b
+- [x] 2.5 No sitemap URL ends in a slash except the root — ddcf09b
+- [x] 2.6 robots.txt ships — ddcf09b
 
 #### Manual
 
