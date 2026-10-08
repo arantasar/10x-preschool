@@ -1,6 +1,7 @@
 import type { APIContext } from "astro";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { PENDING_TOPIC_COOKIE } from "@/lib/pending-topic";
 import { RESET_EMAIL_COOKIE } from "@/lib/reset-request";
 
 import { POST } from "./confirm";
@@ -12,7 +13,11 @@ import { POST } from "./confirm";
 
 type VerifyResult = { error: null } | { error: { code?: string; status?: number; message: string } };
 
-function call(fields: Record<string, string>, verify: VerifyResult = { error: null }) {
+function call(
+  fields: Record<string, string>,
+  verify: VerifyResult = { error: null },
+  options: { supabase?: boolean; pendingTopic?: string } = {},
+) {
   const form = new FormData();
   for (const [name, value] of Object.entries(fields)) form.set(name, value);
 
@@ -20,8 +25,14 @@ function call(fields: Record<string, string>, verify: VerifyResult = { error: nu
   const deleteCookie = vi.fn();
   const context = {
     request: new Request("https://example.test/api/auth/confirm", { method: "POST", body: form }),
-    locals: { supabase: { auth: { verifyOtp } } },
-    cookies: { delete: deleteCookie },
+    locals: { supabase: options.supabase === false ? null : { auth: { verifyOtp } } },
+    cookies: {
+      delete: deleteCookie,
+      get: (name: string) =>
+        name === PENDING_TOPIC_COOKIE && options.pendingTopic !== undefined
+          ? { value: options.pendingTopic }
+          : undefined,
+    },
     redirect: (location: string) => new Response(null, { status: 302, headers: { Location: location } }),
   };
 
@@ -51,6 +62,34 @@ describe("POST /api/auth/confirm — sign-up activation (type=email)", () => {
     expect(await location(response)).toBe("/plan/month");
     expect(verifyOtp).toHaveBeenCalledWith({ type: "email", token_hash: "abc" });
     expect(deleteCookie).not.toHaveBeenCalled();
+  });
+
+  it("lands on the week when a hasło from the landing is waiting, like sign-in does", async () => {
+    const { response } = call(
+      { token_hash: "abc", type: "email" },
+      { error: null },
+      { pendingTopic: "jesień w lesie" },
+    );
+
+    expect(await location(response)).toBe("/plan/week");
+  });
+
+  it("ignores an empty pending hasło and lands on the month", async () => {
+    const { response } = call({ token_hash: "abc", type: "email" }, { error: null }, { pendingTopic: "   " });
+
+    expect(await location(response)).toBe("/plan/month");
+  });
+
+  it("reports a missing server config on sign-in, not on the reset page", async () => {
+    const { response } = call({ token_hash: "abc", type: "email" }, { error: null }, { supabase: false });
+
+    expect(await location(response)).toBe("/auth/signin?error=config_missing");
+  });
+
+  it("falls back to connection_failed when Supabase gives no code", async () => {
+    const { response } = call({ token_hash: "abc", type: "email" }, { error: { message: "fetch failed" } });
+
+    expect(await location(response)).toBe("/auth/signin?error=connection_failed");
   });
 
   it("sends an expired or reused link to sign-in with the activation code, not the reset one", async () => {

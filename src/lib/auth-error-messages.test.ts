@@ -6,8 +6,10 @@ import {
   authErrorMessage,
   isSilentResetRequestError,
 } from "./auth-error-messages";
+import { SUPPORT_EMAIL } from "./support-contact";
 
-// Nothing is mocked here: the module is pure and imports nothing. Per
+// Nothing is mocked here: the module is pure and imports only another pure
+// constant (`SUPPORT_EMAIL`). Per
 // `test-plan.md` §6.1 that is exactly the layer an error mapping belongs to.
 
 const MAPPED_CODES = Object.keys(AUTH_ERROR_MESSAGES);
@@ -43,6 +45,10 @@ describe("authErrorMessage", () => {
 
   // The activation link's failure lands on sign-in, so its message must not be
   // the reset wording that `otp_expired` carries.
+  it("names the support address from SUPPORT_EMAIL, not a copy of it", () => {
+    expect(authErrorMessage("email_address_not_authorized")).toContain(SUPPORT_EMAIL);
+  });
+
   it("words an expired activation link differently from an expired reset link", () => {
     expect(authErrorMessage("signup_link_expired")).not.toBe(authErrorMessage("otp_expired"));
     expect(authErrorMessage("signup_link_expired")).toContain("aktywacyjny");
@@ -106,7 +112,7 @@ describe("the Polish copy contract", () => {
 describe("isSilentResetRequestError", () => {
   // Both of these can only happen for an address that has an account, so
   // showing them would be an account-enumeration oracle.
-  it.each(["over_email_send_rate_limit", "user_not_found"])("swallows %s", (code) => {
+  it.each(["over_email_send_rate_limit", "user_not_found", "email_address_not_authorized"])("swallows %s", (code) => {
     expect(isSilentResetRequestError(code)).toBe(true);
   });
 

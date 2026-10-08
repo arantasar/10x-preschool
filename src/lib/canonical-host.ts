@@ -7,8 +7,15 @@
  * host match is **exact**: preview hosts (`<id>-10x-preschool.<account>.workers.dev`)
  * and `localhost` never match, so previews and local dev are never redirected.
  *
- * GET and HEAD get a 301. Anything else gets a 308, which keeps the method and
- * the body - a 301 would let a browser turn a sign-in POST into a GET.
+ * GET and HEAD get a 301. Anything else gets a 308, which at least does not
+ * turn a POST into a GET. In practice a POST from a stale tab on the old host
+ * still fails on temio.pl (cross-origin `Origin` → `checkOrigin` 403, or CORS for
+ * an island's `fetch`), and her session cookie belongs to the old host anyway -
+ * that tab has to reload. Both codes are cached by browsers indefinitely, so
+ * removing the vars stops new redirects but not ones a browser already saw.
+ *
+ * A malformed `canonicalOrigin` (e.g. `temio.pl` without a scheme) leaves the
+ * redirect off rather than throwing on every request to the old host.
  */
 export function canonicalRedirect(
   url: URL,
@@ -19,7 +26,12 @@ export function canonicalRedirect(
   if (!legacyHost || !canonicalOrigin) return null;
   if (url.hostname !== legacyHost) return null;
 
-  const target = new URL(canonicalOrigin);
+  let target: URL;
+  try {
+    target = new URL(canonicalOrigin);
+  } catch {
+    return null;
+  }
   // A misconfiguration that names the same host twice would redirect to itself forever.
   if (target.hostname === legacyHost) return null;
 

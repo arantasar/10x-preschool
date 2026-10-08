@@ -51,6 +51,16 @@ describe("canonicalRedirect", () => {
     expect(canonicalRedirect(new URL("https://temio.pl/auth/signin"), "GET", LEGACY, CANONICAL)).toBeNull();
   });
 
+  it("stays inert instead of throwing when CANONICAL_ORIGIN is malformed", () => {
+    expect(canonicalRedirect(new URL(`https://${LEGACY}/`), "GET", LEGACY, "temio.pl")).toBeNull();
+  });
+
+  it("uses only the origin of CANONICAL_ORIGIN, dropping a path or trailing slash", () => {
+    expect(
+      canonicalRedirect(new URL(`https://${LEGACY}/plan/week`), "GET", LEGACY, "https://temio.pl/x/")?.location,
+    ).toBe("https://temio.pl/plan/week");
+  });
+
   it("does not loop when both values name the same host", () => {
     expect(canonicalRedirect(new URL("https://temio.pl/"), "GET", "temio.pl", CANONICAL)).toBeNull();
   });

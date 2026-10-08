@@ -2,7 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import AuthCard from "@/components/layout/AuthCard.astro";
 import { buttonVariants } from "@/components/ui/button";
-import { RESET_LINK_INVALID, SIGNUP_LINK_INVALID } from "@/lib/auth-error-messages";
+import { invalidConfirmRedirect } from "@/lib/auth-confirm";
 import { cn } from "@/lib/utils";
 
 // Where the recovery and the sign-up activation e-mails' links land. This GET
@@ -30,11 +30,8 @@ const COPY = {
 
 const tokenHash = Astro.url.searchParams.get("token_hash");
 const type = Astro.url.searchParams.get("type");
-if (type === "email" && !tokenHash) {
-  return Astro.redirect(`/auth/signin?error=${SIGNUP_LINK_INVALID}`);
-}
 if (!tokenHash || (type !== "recovery" && type !== "email")) {
-  return Astro.redirect(`/auth/forgot-password?error=${RESET_LINK_INVALID}`);
+  return Astro.redirect(invalidConfirmRedirect(type));
 }
 const copy = COPY[type];
 ---

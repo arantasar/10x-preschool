@@ -441,7 +441,7 @@ The redirect check is a string comparison that runs before the Supabase client i
 
 - **Rollback, DNS:** put OVH's nameservers back at OVH. The OVH zone keeps its records, since we never delete them there, and `dns-inventory.md` holds a copy.
 - **Rollback, mail:** turn custom SMTP off in Supabase, which brings back the built-in sender with its team-only limits.
-- **Rollback, redirect:** remove `vars` from `wrangler.jsonc`.
+- **Rollback, redirect:** remove `vars` from `wrangler.jsonc`. This stops new redirects only: browsers cache 301/308 indefinitely, so anyone who already visited the old host stays redirected (impl-review F2).
 - Existing sessions are tied to the workers.dev origin, so teachers sign in once more on `temio.pl`. That is acceptable at the current user count.
 
 ## References
