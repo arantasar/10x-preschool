@@ -9,6 +9,8 @@ import cloudflare from "@astrojs/cloudflare";
 // https://astro.build/config
 export default defineConfig({
   output: "server",
+  // Canonical origin: the sitemap integration needs it to emit sitemap-index.xml.
+  site: "https://temio.pl",
   integrations: [react(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
@@ -33,6 +35,14 @@ export default defineConfig({
       // would tie every CI build to a repository secret, for the reason stated
       // above OPENROUTER_API_KEY.
       OPENROUTER_MODEL: envField.string({ context: "server", access: "secret", optional: true }),
+      // The old production host and where it moves to (`src/lib/canonical-host.ts`).
+      // Not secret in content - the values live in `wrangler.jsonc` `vars` - but
+      // declared `secret` on purpose: Astro inlines `public` server variables into
+      // the bundle at build time, when Workers Builds has no `vars`, so the redirect
+      // would stay off forever. `secret` is read from the Worker's env at runtime.
+      // Optional, and the redirect is inert until both are set.
+      LEGACY_HOST: envField.string({ context: "server", access: "secret", optional: true }),
+      CANONICAL_ORIGIN: envField.string({ context: "server", access: "secret", optional: true }),
     },
   },
 });

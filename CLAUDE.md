@@ -26,7 +26,7 @@ Pre-commit hooks: husky + lint-staged runs `eslint --fix` on `*.{ts,tsx,astro}` 
 
 ## Architecture
 
-**Astro 6 SSR app** with React 19 islands, Tailwind 4, Supabase auth, and shadcn/ui components. Deployed to Cloudflare Workers.
+**Temio** (`temio.pl`) — a preschool lesson planner. **Astro 6 SSR app** with React 19 islands, Tailwind 4, Supabase auth, and shadcn/ui components. Deployed to Cloudflare Workers.
 
 ### Rendering mode
 
@@ -43,6 +43,8 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 - Auth pages: `src/pages/auth/{signin,signup,confirm-email,forgot-password,confirm,new-password}.astro` and `src/pages/auth/forgot-password/sent.astro`
 
 - Password reset: the recovery e-mail links to `/auth/confirm?token_hash=…&type=recovery` (built from `{{ .RedirectTo }}`); `GET /auth/confirm` only renders a button, `POST /api/auth/confirm` calls `verifyOtp` — so a mailbox scanner's prefetch cannot spend the token, and the link works on any device. The template lives in `supabase/templates/recovery.html` locally and in the Supabase dashboard (Auth → Email Templates → Reset Password) in production; the redirect allow-list must contain `/auth/confirm` of every origin, or Supabase silently falls back to Site URL and the link breaks.
+
+- Sign-up confirmation: the same `/auth/confirm` button page with `type=email` (the link is built from `signUp`'s `emailRedirectTo`). A good token lands the teacher signed in on `/plan/month`; a bad one goes to `/auth/signin?error=signup_link_{invalid,expired}`, never to the reset page. The template is `supabase/templates/confirmation.html` locally and lives in the dashboard (Auth → Email Templates → Confirm signup) in production.
 
 - Home screen of the signed-in app: `src/pages/plan/month.astro` (protected via the `/plan` prefix in `PROTECTED_ROUTES`; `/` redirects a signed-in user there)
 
@@ -93,6 +95,8 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 1. **GitHub Actions** — `@.github/workflows/ci.yml`, on push to `master` and on PRs against it. Runs `npm ci`, `astro sync`, `npm run lint`, `npm run build`. Requires `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step. **Does not deploy.**
 
 2. **Cloudflare Workers Builds** — connected to the repo through the Cloudflare dashboard, not through a file in this repo. It builds and **deploys the `10x-preschool` worker to `production`** when `master` changes, and posts a `Workers Builds: 10x-preschool` check on PRs. There is no YAML for it here; `wrangler.jsonc` only names the worker.
+
+**Production is `https://temio.pl`**, served through a Workers Custom Domain (the `temio.pl` zone is in Cloudflare; mail for `kontakt@temio.pl` stays at OVH through DNS-only MX records). `www.temio.pl` redirects to the apex through a Cloudflare Redirect Rule. The old `10x-preschool.janusz-guzowski.workers.dev` host redirects to `temio.pl` in the middleware (`src/lib/canonical-host.ts`), driven by `LEGACY_HOST` / `CANONICAL_ORIGIN` in `wrangler.jsonc` `vars`. Those two are declared `access: "secret"` in `astro.config.mjs` even though they are not secret: Astro inlines `public` server variables at build time, when Workers Builds has no `vars`.
 
 **Merging to `master` ships to production.** Nothing else has to be run, and there is no approval step between the merge and the live worker. Reading `ci.yml` alone gives the opposite impression — it has no deploy step — which is exactly the trap: the deploy lives outside the repo. Treat a `master` merge as a release, not as an integration.
 

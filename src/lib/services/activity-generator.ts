@@ -237,7 +237,7 @@ async function callOpenRouter(
       headers: {
         Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "X-OpenRouter-Title": "10xPreschool",
+        "X-OpenRouter-Title": "Temio",
       },
       body: JSON.stringify(body),
     });

@@ -237,7 +237,7 @@ call_model() {
     -X POST "$OPENROUTER_URL" \
     -H "Authorization: Bearer $OPENROUTER_API_KEY" \
     -H "Content-Type: application/json" \
-    -H "X-OpenRouter-Title: 10xPreschool" \
+    -H "X-OpenRouter-Title: Temio" \
     --data-binary @- <<<"$body")"
   status=$?
   set -e

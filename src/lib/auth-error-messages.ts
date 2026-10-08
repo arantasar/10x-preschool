@@ -1,6 +1,6 @@
 /**
  * The entire user-facing error vocabulary of the three auth flows - sign-in,
- * sign-up and password reset - in one place.
+ * sign-up (with its e-mail confirmation) and password reset - in one place.
  *
  * `?error=` in the auth redirects carries a **code**, never a sentence. The
  * routes (`src/pages/api/auth/{signin,signup,forgot-password,confirm,update-password}.ts`)
@@ -40,6 +40,20 @@ export const CONNECTION_FAILED = "connection_failed";
  */
 export const RESET_SESSION_MISSING = "reset_session_missing";
 export const RESET_LINK_INVALID = "reset_link_invalid";
+
+/**
+ * Also ours, minted by the sign-up confirmation (`/auth/confirm` with
+ * `type=email`), and shown on `/auth/signin` - never on the forgot-password page,
+ * whose wording is about a new password.
+ *
+ * `SIGNUP_LINK_INVALID`: the activation link arrived without a `token_hash` - a
+ * truncated link, rejected before Supabase is asked anything.
+ * `SIGNUP_LINK_EXPIRED`: Supabase answered `otp_expired` - the link is too old
+ * or was already used. Renamed from the Supabase code because `otp_expired` is
+ * worded for the reset.
+ */
+export const SIGNUP_LINK_INVALID = "signup_link_invalid";
+export const SIGNUP_LINK_EXPIRED = "signup_link_expired";
 
 /**
  * Shown for anything the map does not know: an unmapped Supabase code, a code
@@ -84,6 +98,16 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
     "Logowanie adresem e-mail i hasłem jest teraz wyłączone. Skontaktuj się z administratorem przedszkola.",
   over_email_send_rate_limit:
     "Wysłaliśmy już zbyt wiele wiadomości na ten adres. Odczekaj kilka minut i spróbuj ponownie.",
+  // Supabase's built-in sender refuses any address outside the project's team.
+  // Reached from sign-up and from the reset request, so the wording names no flow.
+  email_address_not_authorized:
+    "Nie możemy teraz wysłać wiadomości na ten adres. Spróbuj ponownie później albo napisz do nas: kontakt@temio.pl.",
+  // Re-signing up with an unconfirmed address makes Supabase send a fresh link,
+  // so that is the advice for both - there is no separate "resend" screen.
+  [SIGNUP_LINK_INVALID]:
+    "Ten link aktywacyjny jest niepełny lub nieprawidłowy. Załóż konto ponownie na ten sam adres, a wyślemy nowy.",
+  [SIGNUP_LINK_EXPIRED]:
+    "Ten link aktywacyjny wygasł albo został już użyty. Jeśli konto nie jest jeszcze aktywne, załóż je ponownie na ten sam adres, a wyślemy nowy.",
 
   // --- password reset ------------------------------------------------------
   // Supabase answers an expired *and* an already-used link with the same code;

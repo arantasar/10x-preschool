@@ -13,7 +13,12 @@ export const POST: APIRoute = async (context) => {
   if (!supabase) {
     return context.redirect(`/auth/signup?error=${encodeURIComponent(CONFIG_MISSING)}`);
   }
-  const { error } = await supabase.auth.signUp({ email, password });
+  // The confirmation template builds its link from `{{ .RedirectTo }}`, the same
+  // way `forgot-password.ts` does for the reset: this origin's `/auth/confirm`
+  // must be in the project's redirect allow-list, or Supabase silently swaps in
+  // Site URL.
+  const emailRedirectTo = `${new URL(context.request.url).origin}/auth/confirm`;
+  const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo } });
 
   if (error) {
     /* eslint-disable-next-line no-console */
