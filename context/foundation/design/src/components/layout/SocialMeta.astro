@@ -1,0 +1,44 @@
+---
+/**
+ * Link preview (Open Graph + Twitter/X card) for Facebook, Messenger, WhatsApp, Slack, LinkedIn, iMessage…
+ * Put inside <head> of the base layout: <SocialMeta title={title} description={description} />
+ * Image must be an ABSOLUTE https URL — crawlers don't resolve relative paths.
+ */
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;      // path under public/ or absolute URL
+  imageAlt?: string;
+  url?: string;        // canonical URL of this page
+}
+const site = 'https://temio.pl';
+const {
+  title = 'Temio — plan zajęć przedszkolnych',
+  description = 'Wpisz temat, np. „Dinozaury”, i dostań gotowe propozycje aktywności na każdy dzień dla dzieci 3–6 lat. Ty decydujesz, co trafi do planu.',
+  image = '/og-image.png',
+  imageAlt = 'Temio: Jedno hasło. Cały miesiąc zajęć.',
+  url = new URL(Astro.url.pathname, site).href,
+} = Astro.props;
+const imageUrl = new URL(image, site).href;
+---
+<link rel="canonical" href={url} />
+<meta name="description" content={description} />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Temio" />
+<meta property="og:locale" content="pl_PL" />
+<meta property="og:url" content={url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:secure_url" content={imageUrl} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={imageAlt} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={imageAlt} />

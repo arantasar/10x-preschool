@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pl" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>Ustaw nowe hasło w Temio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Young+Serif&amp;family=Nunito+Sans:wght@400;700;800&amp;display=swap" rel="stylesheet" />
+    <style>
+      body { margin: 0; padding: 0; }
+      a { color: #1F3B2D; }
+      @media (max-width: 600px) {
+        .card { padding: 32px 24px !important; border-radius: 22px !important; }
+        .h1 { font-size: 28px !important; }
+        .btn a { display: block !important; }
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #F3EFE4;">
+    <!-- Tekst podglądu w skrzynce odbiorczej (niewidoczny w treści) -->
+    <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">Link do ustawienia nowego hasła jest ważny przez godzinę.&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F3EFE4;">
+      <tr>
+        <td align="center" style="padding: 40px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px;">
+
+            <!-- Logo -->
+            <tr>
+              <td style="padding: 0 8px 24px;">
+                <img src="{{ .SiteURL }}/email/temio-logo.png" width="124" height="32" alt="Temio" style="display: block; border: 0; outline: none; text-decoration: none; width: 124px; height: 32px;" />
+              </td>
+            </tr>
+
+            <!-- Karta -->
+            <tr>
+              <td class="card" style="background-color: #FFFDF7; border-radius: 28px; padding: 44px 40px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 13px; line-height: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #4F6E4B; padding-bottom: 12px;">Reset hasła</td>
+                  </tr>
+                  <tr>
+                    <td class="h1" style="font-family: 'Young Serif', Georgia, 'Times New Roman', serif; font-size: 34px; line-height: 40px; font-weight: 400; color: #1F3B2D; padding-bottom: 16px;">Ustaw nowe hasło</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 17px; line-height: 27px; color: #3E5347; padding-bottom: 28px;">Ktoś — najpewniej Ty — poprosił o ustawienie nowego hasła do konta w Temio.</td>
+                  </tr>
+
+                  <!-- Przycisk -->
+                  <tr>
+                    <td style="padding-bottom: 28px;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="btn">
+                        <tr>
+                          <td align="center" bgcolor="#1F3B2D" style="border-radius: 999px; background-color: #1F3B2D;">
+                            <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=recovery" target="_blank" style="display: inline-block; padding: 16px 34px; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 17px; line-height: 20px; font-weight: 800; color: #F3EFE4; text-decoration: none; border-radius: 999px;">Ustaw nowe hasło</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Informacja -->
+                  <tr>
+                    <td style="background-color: #FBEBC4; border-radius: 16px; padding: 14px 18px; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 15px; line-height: 22px; font-weight: 700; color: #4A3500;">Link jest ważny przez godzinę i działa tylko raz. Możesz go otworzyć na dowolnym urządzeniu.</td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding-top: 28px; border-bottom: 1px solid #E2DBC8; font-size: 0; line-height: 0;">&nbsp;</td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding-top: 24px; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 15px; line-height: 23px; color: #3E5347;">Jeśli ta prośba nie pochodzi od Ciebie, zignoruj tę wiadomość — Twoje obecne hasło dalej działa.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top: 16px; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 13px; line-height: 20px; color: #3E5347;">Przycisk nie działa? Skopiuj ten adres do przeglądarki:<br /><a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=recovery" target="_blank" style="color: #4F6E4B; word-break: break-all;">{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=recovery</a></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Stopka -->
+            <tr>
+              <td style="padding: 24px 8px 0; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 13px; line-height: 20px; color: #3E5347;">Temio · plan zajęć przedszkolnych<br />Ta wiadomość została wysłana automatycznie.</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
