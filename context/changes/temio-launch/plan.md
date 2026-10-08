@@ -498,7 +498,7 @@ The redirect check is a string comparison that runs before the Supabase client i
 #### Manual
 
 - [x] 3.4 Dev without vars behaves as before
-- [ ] 3.5 PR checks green; preview shows Temio and is not redirected
+- [x] 3.5 PR checks green; preview shows Temio and is not redirected
 - [x] 3.6 Merged to master; production on workers.dev shows Temio, sign-in and reset work
 
 ### Phase 4: Move temio.pl to Cloudflare and serve the app there
@@ -510,13 +510,13 @@ The redirect check is a string comparison that runs before the Supabase client i
 - [x] 4.3 https://temio.pl answers 200 — ccf004b
 - [x] 4.4 www redirects to apex with path and query — ccf004b
 - [x] 4.5 Legacy workers.dev host redirects to temio.pl with path and query — fdb42ed
-- [ ] 4.6 DNSSEC validates with DS at the registrar
+- [x] 4.6 DNSSEC validates with DS at the registrar
 
 #### Manual
 
 - [x] 4.7 External mail reaches kontakt@temio.pl after the NS change
-- [ ] 4.8 Sign-in and generation work on temio.pl with interactive islands
-- [ ] 4.9 Preview URL is not redirected
+- [x] 4.8 Sign-in and generation work on temio.pl with interactive islands
+- [x] 4.9 Preview URL is not redirected
 
 ### Phase 5: Auth mail through Resend
 

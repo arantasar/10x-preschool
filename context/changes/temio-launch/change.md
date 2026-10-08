@@ -1,7 +1,7 @@
 ---
 change_id: temio-launch
 title: Temio launch
-status: implementing
+status: implemented
 created: 2026-10-08
 updated: 2026-10-08
 archived_at: null
