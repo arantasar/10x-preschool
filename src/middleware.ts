@@ -48,7 +48,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     try {
       response.headers.set("X-Robots-Tag", "noindex");
     } catch {
-      // Immutable headers (e.g. a `Response.redirect`): copy the response instead.
+      // Immutable headers (e.g. a route returning a `fetch` response as is): copy
+      // the response instead.
       const copy = new Response(response.body, response);
       copy.headers.set("X-Robots-Tag", "noindex");
       return copy;

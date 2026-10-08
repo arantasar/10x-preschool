@@ -41,10 +41,10 @@ export function canonicalRedirect(
 
 /**
  * Whether this request reached a host other than the canonical one: a preview
- * deployment (`<id>-10x-preschool.<account>.workers.dev`), the legacy host, or
- * `localhost`. The middleware marks such responses `X-Robots-Tag: noindex`, so a
- * preview URL leaked through a PR comment never competes with `temio.pl` in
- * search results.
+ * deployment (`<id>-10x-preschool.<account>.workers.dev`) or `localhost`. (The
+ * legacy host never gets this far: `canonicalRedirect` sends it away first.)
+ * The middleware marks such responses `X-Robots-Tag: noindex`, so a preview URL
+ * leaked through a PR comment never competes with `temio.pl` in search results.
  *
  * Inert (`false`) while `canonicalOrigin` is unset or malformed, like
  * `canonicalRedirect`.

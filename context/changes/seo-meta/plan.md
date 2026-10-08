@@ -227,7 +227,7 @@ None. Facebook and Messenger cache previews. If a card looks stale after deploy,
 
 - [ ] 1.6 View-source of four pages shows correct title, canonical, og:image, robots
 - [ ] 1.7 Owner approves the wording of SITE_DESCRIPTION
-- [ ] 1.8 Owner decides what happens to the untracked root og-image.png and temio-design-astro (1)/
+- [x] 1.8 Owner decides what happens to the untracked root og-image.png and temio-design-astro (1)/ — 190a036
 
 ### Phase 2: Crawl control
 
