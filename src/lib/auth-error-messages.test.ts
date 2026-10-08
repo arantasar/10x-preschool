@@ -29,8 +29,23 @@ describe("authErrorMessage", () => {
     expect(message).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
   });
 
-  it("covers the twenty-one codes the three auth flows can reach", () => {
-    expect(MAPPED_CODES).toHaveLength(21);
+  it("covers the twenty-four codes the three auth flows can reach", () => {
+    expect(MAPPED_CODES).toHaveLength(24);
+  });
+
+  it.each(["signup_link_invalid", "signup_link_expired", "email_address_not_authorized"])(
+    "maps the sign-up confirmation code %s",
+    (code) => {
+      expect(Object.hasOwn(AUTH_ERROR_MESSAGES, code)).toBe(true);
+      expect(authErrorMessage(code)).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
+    },
+  );
+
+  // The activation link's failure lands on sign-in, so its message must not be
+  // the reset wording that `otp_expired` carries.
+  it("words an expired activation link differently from an expired reset link", () => {
+    expect(authErrorMessage("signup_link_expired")).not.toBe(authErrorMessage("otp_expired"));
+    expect(authErrorMessage("signup_link_expired")).toContain("aktywacyjny");
   });
 
   it.each([

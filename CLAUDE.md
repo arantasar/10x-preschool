@@ -44,6 +44,8 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 - Password reset: the recovery e-mail links to `/auth/confirm?token_hash=…&type=recovery` (built from `{{ .RedirectTo }}`); `GET /auth/confirm` only renders a button, `POST /api/auth/confirm` calls `verifyOtp` — so a mailbox scanner's prefetch cannot spend the token, and the link works on any device. The template lives in `supabase/templates/recovery.html` locally and in the Supabase dashboard (Auth → Email Templates → Reset Password) in production; the redirect allow-list must contain `/auth/confirm` of every origin, or Supabase silently falls back to Site URL and the link breaks.
 
+- Sign-up confirmation: the same `/auth/confirm` button page with `type=email` (the link is built from `signUp`'s `emailRedirectTo`). A good token lands the teacher signed in on `/plan/month`; a bad one goes to `/auth/signin?error=signup_link_{invalid,expired}`, never to the reset page. The template is `supabase/templates/confirmation.html` locally and lives in the dashboard (Auth → Email Templates → Confirm signup) in production.
+
 - Home screen of the signed-in app: `src/pages/plan/month.astro` (protected via the `/plan` prefix in `PROTECTED_ROUTES`; `/` redirects a signed-in user there)
 
 ### Planner shell

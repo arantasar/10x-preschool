@@ -238,6 +238,14 @@ otp_expiry = 3600
 subject = "Ustaw nowe hasło w Temio"
 content_path = "./supabase/templates/recovery.html"
 
+# Sign-up confirmation: the same scanner-safe `token_hash` link through the `/auth/confirm`
+# button page, with `type=email`. Production carries the same subject and body in the
+# dashboard (Auth → Email Templates → Confirm signup). Only sent once
+# `enable_confirmations` is on - it stays off locally.
+[auth.email.template.confirmation]
+subject = "Potwierdź adres e-mail w Temio"
+content_path = "./supabase/templates/confirmation.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

@@ -459,11 +459,11 @@ The redirect check is a string comparison that runs before the Supabase client i
 
 #### Automated
 
-- [x] 1.1 No old name remains in src/scripts/supabase/public/package.json (grep seen red before, empty after)
-- [x] 1.2 Logo renders the "temio" wordmark
-- [x] 1.3 Lint passes
-- [x] 1.4 Unit tests pass
-- [x] 1.5 Build passes and emits sitemap-index.xml
+- [x] 1.1 No old name remains in src/scripts/supabase/public/package.json (grep seen red before, empty after) — 2aa7ea5
+- [x] 1.2 Logo renders the "temio" wordmark — 2aa7ea5
+- [x] 1.3 Lint passes — 2aa7ea5
+- [x] 1.4 Unit tests pass — 2aa7ea5
+- [x] 1.5 Build passes and emits sitemap-index.xml — 2aa7ea5
 
 #### Manual
 
@@ -475,11 +475,11 @@ The redirect check is a string comparison that runs before the Supabase client i
 
 #### Automated
 
-- [ ] 2.1 Error-map tests cover the new codes and email_address_not_authorized
-- [ ] 2.2 confirm.test.ts covers both types, success, error and malformed input
-- [ ] 2.3 Template uses the token_hash&type=email link and no ConfirmationURL
-- [ ] 2.4 Lint passes
-- [ ] 2.5 Build passes
+- [x] 2.1 Error-map tests cover the new codes and email_address_not_authorized
+- [x] 2.2 confirm.test.ts covers both types, success, error and malformed input
+- [x] 2.3 Template uses the token_hash&type=email link and no ConfirmationURL
+- [x] 2.4 Lint passes
+- [x] 2.5 Build passes
 
 #### Manual
 
