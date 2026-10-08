@@ -8,13 +8,16 @@ import "@fontsource/young-serif/latin.css";
 import "@fontsource-variable/nunito-sans/wght.css";
 import "../styles/global.css";
 import Banner from "@/components/Banner.astro";
+import SocialMeta from "@/components/layout/SocialMeta.astro";
 import { missingConfigs } from "@/lib/config-status";
+import { isIndexable, pageTitle } from "@/lib/seo";
 
 interface Props {
   title?: string;
 }
 
-const { title = "Temio" } = Astro.props;
+// No title is the landing page; every other page gets „<title> · Temio”.
+const title = pageTitle(Astro.props.title);
 ---
 
 <!doctype html>
@@ -27,6 +30,8 @@ const { title = "Temio" } = Astro.props;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#1F3B2D" />
     <title>{title}</title>
+    <SocialMeta title={title} />
+    {!isIndexable(Astro.url.pathname) && <meta name="robots" content="noindex" />}
   </head>
   <body>
     {
