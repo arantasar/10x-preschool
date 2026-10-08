@@ -467,9 +467,9 @@ The redirect check is a string comparison that runs before the Supabase client i
 
 #### Manual
 
-- [ ] 1.6 Leaf logo and wordmark on landing, sign-in, sign-up, month at 390/768/1440 px
-- [ ] 1.7 Leaf favicon and `© 2026 Temio` in the public footer
-- [ ] 1.8 Logo link's accessible name reads Temio
+- [x] 1.6 Leaf logo and wordmark on landing, sign-in, sign-up, month at 390/768/1440 px
+- [x] 1.7 Leaf favicon and `© 2026 Temio` in the public footer
+- [x] 1.8 Logo link's accessible name reads Temio
 
 ### Phase 2: Polish sign-up confirmation
 
@@ -483,21 +483,21 @@ The redirect check is a string comparison that runs before the Supabase client i
 
 #### Manual
 
-- [ ] 2.6 Local sign-up through Mailpit activates and lands on /plan/month
-- [ ] 2.7 Reused activation link shows the activation-specific message on /auth/signin
-- [ ] 2.8 Reset flow regression passes
+- [x] 2.6 Local sign-up through Mailpit activates and lands on /plan/month
+- [x] 2.7 Reused activation link shows the activation-specific message on /auth/signin
+- [x] 2.8 Reset flow regression passes
 
 ### Phase 3: Old-host redirect
 
 #### Automated
 
-- [x] 3.1 canonical-host tests pass
-- [x] 3.2 Middleware calls canonicalRedirect before createClient
-- [x] 3.3 Lint and build pass
+- [x] 3.1 canonical-host tests pass — 34f143c
+- [x] 3.2 Middleware calls canonicalRedirect before createClient — 34f143c
+- [x] 3.3 Lint and build pass — 34f143c
 
 #### Manual
 
-- [ ] 3.4 Dev without vars behaves as before
+- [x] 3.4 Dev without vars behaves as before
 - [ ] 3.5 PR checks green; preview shows Temio and is not redirected
 - [ ] 3.6 Merged to master; production on workers.dev shows Temio, sign-in and reset work
 
