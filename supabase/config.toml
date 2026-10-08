@@ -231,6 +231,10 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Both templates come from the design package (`context/foundation/design/emails/`). Their logo
+# is hardcoded to `https://temio.pl/email/temio-logo.png` (`public/email/`) rather than built
+# from `{{ .SiteURL }}`, so it shows in every environment, local Inbucket included.
+#
 # Password reset: a `token_hash` link verified server-side by `/auth/confirm`, so it works on
 # any device (the default PKCE link needs the requesting browser). Production carries the same
 # subject and body in the dashboard (Auth → Email Templates → Reset Password).

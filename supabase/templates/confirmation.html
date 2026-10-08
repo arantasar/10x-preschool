@@ -1,16 +1,91 @@
 <!doctype html>
-<html lang="pl">
+<html lang="pl" xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <title>Potwierdź adres e-mail w Temio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Young+Serif&amp;family=Nunito+Sans:wght@400;700;800&amp;display=swap" rel="stylesheet" />
+    <style>
+      body { margin: 0; padding: 0; }
+      a { color: #1F3B2D; }
+      @media (max-width: 600px) {
+        .card { padding: 32px 24px !important; border-radius: 22px !important; }
+        .h1 { font-size: 28px !important; }
+        .btn a { display: block !important; }
+      }
+    </style>
   </head>
-  <body style="font-family: Arial, Helvetica, sans-serif; color: #1f2d24; line-height: 1.5">
-    <h2>Aktywuj konto</h2>
-    <p>Dziękujemy za założenie konta w Temio. Zostało jeszcze jedno: potwierdź, że ten adres e-mail należy do Ciebie.</p>
-    <p>
-      <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=email">Aktywuj konto</a>
-    </p>
-    <p>Link działa tylko raz. Możesz go otworzyć na dowolnym urządzeniu.</p>
-    <p>Jeśli to nie Ty zakładałaś lub zakładałeś konto, zignoruj tę wiadomość — bez potwierdzenia konto nie zostanie aktywowane.</p>
+  <body style="margin: 0; padding: 0; background-color: #F3EFE4;">
+    <!-- Tekst podglądu w skrzynce odbiorczej (niewidoczny w treści) -->
+    <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">Zostało jedno kliknięcie: potwierdź, że ten adres e-mail należy do Ciebie.&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F3EFE4;">
+      <tr>
+        <td align="center" style="padding: 40px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px;">
+
+            <!-- Logo -->
+            <tr>
+              <td style="padding: 0 8px 24px;">
+                <img src="https://temio.pl/email/temio-logo.png" width="124" height="32" alt="Temio" style="display: block; border: 0; outline: none; text-decoration: none; width: 124px; height: 32px;" />
+              </td>
+            </tr>
+
+            <!-- Karta -->
+            <tr>
+              <td class="card" style="background-color: #FFFDF7; border-radius: 28px; padding: 44px 40px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 13px; line-height: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #4F6E4B; padding-bottom: 12px;">Nowe konto</td>
+                  </tr>
+                  <tr>
+                    <td class="h1" style="font-family: 'Young Serif', Georgia, 'Times New Roman', serif; font-size: 34px; line-height: 40px; font-weight: 400; color: #1F3B2D; padding-bottom: 16px;">Aktywuj konto</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 17px; line-height: 27px; color: #3E5347; padding-bottom: 28px;">Dziękujemy za założenie konta w Temio. Zostało jeszcze jedno: potwierdź, że ten adres e-mail należy do Ciebie.</td>
+                  </tr>
+
+                  <!-- Przycisk -->
+                  <tr>
+                    <td style="padding-bottom: 28px;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="btn">
+                        <tr>
+                          <td align="center" bgcolor="#1F3B2D" style="border-radius: 999px; background-color: #1F3B2D;">
+                            <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=email" target="_blank" style="display: inline-block; padding: 16px 34px; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 17px; line-height: 20px; font-weight: 800; color: #F3EFE4; text-decoration: none; border-radius: 999px;">Aktywuj konto</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Informacja -->
+                  <tr>
+                    <td style="background-color: #DCE7D6; border-radius: 16px; padding: 14px 18px; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 15px; line-height: 22px; font-weight: 700; color: #2E4A2B;">Link działa tylko raz. Możesz go otworzyć na dowolnym urządzeniu.</td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding-top: 28px; border-bottom: 1px solid #E2DBC8; font-size: 0; line-height: 0;">&nbsp;</td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding-top: 24px; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 15px; line-height: 23px; color: #3E5347;">Jeśli to nie Ty zakładałaś lub zakładałeś konto, zignoruj tę wiadomość — bez potwierdzenia konto nie zostanie aktywowane.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top: 16px; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 13px; line-height: 20px; color: #3E5347;">Przycisk nie działa? Skopiuj ten adres do przeglądarki:<br /><a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=email" target="_blank" style="color: #4F6E4B; word-break: break-all;">{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=email</a></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Stopka -->
+            <tr>
+              <td style="padding: 24px 8px 0; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; font-size: 13px; line-height: 20px; color: #3E5347;">Temio · plan zajęć przedszkolnych<br />Ta wiadomość została wysłana automatycznie.</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>
