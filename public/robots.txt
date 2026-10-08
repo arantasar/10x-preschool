@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /plan
+Disallow: /api/
+
+Sitemap: https://temio.pl/sitemap-index.xml

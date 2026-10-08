@@ -10,8 +10,9 @@ src/
                TextField, Notice, FaqItem
     plan/      ProposalCard, RemovedProposal, MonthGrid
     billing/   PricingCard, BillingToggle, PaywallDialog
-    layout/    MarketingHeader, SiteFooter, AppHeader, AuthSplit, AuthCard, LegalLayout
-public/        favicon.svg, favicon-32.png, apple-touch-icon.png (180), icon-512.png
+    layout/    SocialMeta, MarketingHeader, SiteFooter, AppHeader, AuthSplit, AuthCard, LegalLayout
+emails/        szablony e-maili Supabase: potwierdzenie-konta.html, reset-hasla.html
+public/        og-image.png (podgląd linku 1200×630), email/temio-logo.png (logo do e-maili), favicon.svg, favicon-32.png, apple-touch-icon.png (180), icon-512.png
 design/
   brand/       logo Temio w SVG: znak (liść), znak odwrócony, pełne logo i logo na ciemne tło
   screens/     PNG każdego ekranu — tak ma to wyglądać
@@ -38,6 +39,24 @@ Znak to pełny, jednolity liść: zaokrąglony kształt z jednym mniej zaokrągl
 - Kolory: liść `#1F3B2D` (Las). Na ciemnym tle liść `#C9DAC2` (Szałwia), a napis `#F3EFE4`.
 - Nie dodawaj do znaku innych elementów, nie obracaj go i nie zmieniaj proporcji. Minimalny rozmiar znaku: 16 px.
 
+## Podgląd linku (Facebook, Messenger, WhatsApp, Slack…)
+
+- Obrazek: `public/og-image.png`, 1200×630 px (wzór: `design/screens/17-podglad-linku.png`).
+- Tagi Open Graph i Twitter/X generuje `src/components/layout/SocialMeta.astro`; wstaw go w `<head>` głównego layoutu (patrz przykład w sekcji 1). Domyślnie używa domeny `https://temio.pl`, tytułu „Temio — plan zajęć przedszkolnych” i opisu z hasłem strony; każda strona może podać własne `title` i `description`.
+- Adres obrazka musi być pełny (https), inaczej Facebook i WhatsApp go nie pokażą.
+- Po wdrożeniu sprawdź podgląd i wyczyść pamięć podręczną Facebooka/Messengera w Sharing Debuggerze (developers.facebook.com/tools/debug). WhatsApp i Slack odświeżają podgląd same, czasem po kilku godzinach.
+
+## E-maile (Supabase Auth)
+
+`emails/potwierdzenie-konta.html` → Supabase › Authentication › Email Templates › **Confirm signup**
+`emails/reset-hasla.html` → **Reset password**
+
+- Zmienne `{{ .RedirectTo }}`, `{{ .TokenHash }}` i `{{ .SiteURL }}` zostają bez zmian (Supabase podstawia je przy wysyłce).
+- Logo ładuje się z `{{ .SiteURL }}/email/temio-logo.png`, więc plik `public/email/temio-logo.png` musi być dostępny publicznie pod adresem ustawionym jako Site URL. Jeśli Site URL jest inny niż domena strony, wpisz pełny adres obrazka na sztywno.
+- Kod jest pisany pod klienty poczty: układ na tabelach, style w atrybutach, bez SVG. Fonty Young Serif / Nunito Sans pokażą się tylko tam, gdzie klient je obsługuje (np. Apple Mail); w Gmailu i Outlooku zastąpią je Georgia i Arial — to zamierzone.
+- Tytuł wiadomości (Subject) ustaw w Supabase: „Potwierdź adres e-mail w Temio” i „Ustaw nowe hasło w Temio”.
+- Wzór: `design/screens/15-email-aktywacja.png`, `16-email-reset-hasla.png`.
+
 ## 1. Fonty
 
 Young Serif (tylko 400) i Nunito Sans (400–800). Obie mają polskie znaki.
@@ -55,6 +74,7 @@ import '@fontsource/young-serif/latin-ext.css';
 import '@fontsource/young-serif/latin.css';
 import '@fontsource-variable/nunito-sans/wght.css';
 import '../styles/tokens.css';
+import SocialMeta from '../components/layout/SocialMeta.astro';
 const { title = 'Temio — plan zajęć przedszkolnych' } = Astro.props;
 ---
 <!doctype html>
@@ -67,6 +87,7 @@ const { title = 'Temio — plan zajęć przedszkolnych' } = Astro.props;
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#1F3B2D" />
+    <SocialMeta title={title} />
   </head>
   <body><slot /></body>
 </html>

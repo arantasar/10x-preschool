@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { canonicalRedirect } from "./canonical-host";
+import { canonicalRedirect, isOffCanonicalHost } from "./canonical-host";
 
 // Pure function, nothing mocked.
 
@@ -63,5 +63,27 @@ describe("canonicalRedirect", () => {
 
   it("does not loop when both values name the same host", () => {
     expect(canonicalRedirect(new URL("https://temio.pl/"), "GET", "temio.pl", CANONICAL)).toBeNull();
+  });
+});
+
+describe("isOffCanonicalHost", () => {
+  it("is inert when CANONICAL_ORIGIN is unset", () => {
+    expect(isOffCanonicalHost(new URL("https://abc123-10x-preschool.example.workers.dev/"), undefined)).toBe(false);
+  });
+
+  it("stays inert instead of throwing when CANONICAL_ORIGIN is malformed", () => {
+    expect(isOffCanonicalHost(new URL("https://abc123-10x-preschool.example.workers.dev/"), "temio.pl")).toBe(false);
+  });
+
+  it("leaves the canonical host alone", () => {
+    expect(isOffCanonicalHost(new URL("https://temio.pl/auth/signin"), CANONICAL)).toBe(false);
+  });
+
+  it("marks a preview host", () => {
+    expect(isOffCanonicalHost(new URL("https://abc123-10x-preschool.example.workers.dev/"), CANONICAL)).toBe(true);
+  });
+
+  it("marks localhost once CANONICAL_ORIGIN is set", () => {
+    expect(isOffCanonicalHost(new URL("http://localhost:4321/"), CANONICAL)).toBe(true);
   });
 });

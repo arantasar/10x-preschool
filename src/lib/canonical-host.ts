@@ -38,3 +38,25 @@ export function canonicalRedirect(
   const safe = method === "GET" || method === "HEAD";
   return { location: `${target.origin}${url.pathname}${url.search}`, status: safe ? 301 : 308 };
 }
+
+/**
+ * Whether this request reached a host other than the canonical one: a preview
+ * deployment (`<id>-10x-preschool.<account>.workers.dev`) or `localhost`. (The
+ * legacy host never gets this far: `canonicalRedirect` sends it away first.)
+ * The middleware marks such responses `X-Robots-Tag: noindex`, so a preview URL
+ * leaked through a PR comment never competes with `temio.pl` in search results.
+ *
+ * Inert (`false`) while `canonicalOrigin` is unset or malformed, like
+ * `canonicalRedirect`.
+ */
+export function isOffCanonicalHost(url: URL, canonicalOrigin: string | undefined): boolean {
+  if (!canonicalOrigin) return false;
+
+  let canonical: URL;
+  try {
+    canonical = new URL(canonicalOrigin);
+  } catch {
+    return false;
+  }
+  return url.hostname !== canonical.hostname;
+}

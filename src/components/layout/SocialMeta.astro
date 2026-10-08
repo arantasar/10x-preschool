@@ -1,0 +1,51 @@
+---
+/**
+ * Link preview (Open Graph + Twitter/X card) for Facebook, Messenger, WhatsApp,
+ * Slack, LinkedIn, iMessage… plus the canonical link and the description.
+ * Adopted from the design package; the site comes from `Astro.site` and the
+ * defaults from `src/lib/seo.ts`. Crawlers do not resolve relative paths, so
+ * every URL here is absolute.
+ */
+import { SITE_DESCRIPTION, SITE_NAME, canonicalUrl } from "@/lib/seo";
+
+interface Props {
+  /** The final, already branded title (`pageTitle`). */
+  title: string;
+  description?: string;
+  /** A path under `public/` or an absolute URL. */
+  image?: string;
+  imageAlt?: string;
+}
+
+const site = Astro.site ?? Astro.url.origin;
+const {
+  title,
+  description = SITE_DESCRIPTION,
+  image = "/og-image.png",
+  imageAlt = "Temio: Jedno hasło. Cały miesiąc zajęć.",
+} = Astro.props;
+const url = canonicalUrl(Astro.url.pathname, site);
+const imageUrl = new URL(image, site).href;
+---
+
+<link rel="canonical" href={url} />
+<meta name="description" content={description} />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={SITE_NAME} />
+<meta property="og:locale" content="pl_PL" />
+<meta property="og:url" content={url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:secure_url" content={imageUrl} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={imageAlt} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={imageAlt} />

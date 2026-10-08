@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { CANONICAL_ORIGIN, LEGACY_HOST } from "astro:env/server";
-import { canonicalRedirect } from "@/lib/canonical-host";
+import { canonicalRedirect, isOffCanonicalHost } from "@/lib/canonical-host";
 import { createClient } from "@/lib/supabase";
 
 // Pages only. `POST /api/day-plan/generate` deliberately stays out and checks
@@ -40,5 +40,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  return next();
+  const response = await next();
+  // Preview deployments must never compete with temio.pl in search results.
+  // Static files (`robots.txt`, `og-image.png`) never reach the Worker; this
+  // covers every server-rendered response.
+  if (isOffCanonicalHost(context.url, CANONICAL_ORIGIN)) {
+    try {
+      response.headers.set("X-Robots-Tag", "noindex");
+    } catch {
+      // Immutable headers (e.g. a route returning a `fetch` response as is): copy
+      // the response instead.
+      const copy = new Response(response.body, response);
+      copy.headers.set("X-Robots-Tag", "noindex");
+      return copy;
+    }
+  }
+  return response;
 });

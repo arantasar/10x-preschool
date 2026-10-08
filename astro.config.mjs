@@ -5,13 +5,25 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
+// Relative, not `@/`: the alias does not resolve in the config file.
+import { canonicalUrl, isIndexable } from "./src/lib/seo.ts";
+
+const site = "https://temio.pl";
 
 // https://astro.build/config
 export default defineConfig({
   output: "server",
   // Canonical origin: the sitemap integration needs it to emit sitemap-index.xml.
-  site: "https://temio.pl",
-  integrations: [react(), sitemap()],
+  site,
+  integrations: [
+    react(),
+    // Only the pages `src/lib/seo.ts` lets a search engine index, at the URLs the
+    // app links to (no trailing slash) - the same list drives the `robots` meta tag.
+    sitemap({
+      filter: (page) => isIndexable(new URL(page).pathname),
+      serialize: (item) => ({ ...item, url: canonicalUrl(new URL(item.url).pathname, site) }),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },
