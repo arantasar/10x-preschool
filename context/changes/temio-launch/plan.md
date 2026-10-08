@@ -505,10 +505,10 @@ The redirect check is a string comparison that runs before the Supabase client i
 
 #### Automated
 
-- [ ] 4.1 NS records are Cloudflare's
+- [x] 4.1 NS records are Cloudflare's
 - [ ] 4.2 MX and SPF match dns-inventory.md
-- [ ] 4.3 https://temio.pl answers 200
-- [ ] 4.4 www redirects to apex with path and query
+- [x] 4.3 https://temio.pl answers 200
+- [x] 4.4 www redirects to apex with path and query
 - [ ] 4.5 Legacy workers.dev host redirects to temio.pl with path and query
 - [ ] 4.6 DNSSEC validates with DS at the registrar
 

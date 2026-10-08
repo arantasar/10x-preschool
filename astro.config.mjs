@@ -36,10 +36,13 @@ export default defineConfig({
       // above OPENROUTER_API_KEY.
       OPENROUTER_MODEL: envField.string({ context: "server", access: "secret", optional: true }),
       // The old production host and where it moves to (`src/lib/canonical-host.ts`).
-      // Not secrets - the values live in `wrangler.jsonc` `vars`. Optional, and
-      // the redirect is inert until both are set.
-      LEGACY_HOST: envField.string({ context: "server", access: "public", optional: true }),
-      CANONICAL_ORIGIN: envField.string({ context: "server", access: "public", optional: true }),
+      // Not secret in content - the values live in `wrangler.jsonc` `vars` - but
+      // declared `secret` on purpose: Astro inlines `public` server variables into
+      // the bundle at build time, when Workers Builds has no `vars`, so the redirect
+      // would stay off forever. `secret` is read from the Worker's env at runtime.
+      // Optional, and the redirect is inert until both are set.
+      LEGACY_HOST: envField.string({ context: "server", access: "secret", optional: true }),
+      CANONICAL_ORIGIN: envField.string({ context: "server", access: "secret", optional: true }),
     },
   },
 });

@@ -18,4 +18,11 @@
   "observability": {
     "enabled": true,
   },
+  // The old production host redirects to the canonical origin
+  // (`src/lib/canonical-host.ts`). Exact host match: preview hosts are untouched.
+  // Rollback: remove this block.
+  "vars": {
+    "LEGACY_HOST": "10x-preschool.janusz-guzowski.workers.dev",
+    "CANONICAL_ORIGIN": "https://temio.pl",
+  },
 }

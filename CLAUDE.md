@@ -96,6 +96,8 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 2. **Cloudflare Workers Builds** — connected to the repo through the Cloudflare dashboard, not through a file in this repo. It builds and **deploys the `10x-preschool` worker to `production`** when `master` changes, and posts a `Workers Builds: 10x-preschool` check on PRs. There is no YAML for it here; `wrangler.jsonc` only names the worker.
 
+**Production is `https://temio.pl`**, served through a Workers Custom Domain (the `temio.pl` zone is in Cloudflare; mail for `kontakt@temio.pl` stays at OVH through DNS-only MX records). `www.temio.pl` redirects to the apex through a Cloudflare Redirect Rule. The old `10x-preschool.janusz-guzowski.workers.dev` host redirects to `temio.pl` in the middleware (`src/lib/canonical-host.ts`), driven by `LEGACY_HOST` / `CANONICAL_ORIGIN` in `wrangler.jsonc` `vars`. Those two are declared `access: "secret"` in `astro.config.mjs` even though they are not secret: Astro inlines `public` server variables at build time, when Workers Builds has no `vars`.
+
 **Merging to `master` ships to production.** Nothing else has to be run, and there is no approval step between the merge and the live worker. Reading `ci.yml` alone gives the opposite impression — it has no deploy step — which is exactly the trap: the deploy lives outside the repo. Treat a `master` merge as a release, not as an integration.
 
 <!-- BEGIN @przeprogramowani/10x-cli -->
