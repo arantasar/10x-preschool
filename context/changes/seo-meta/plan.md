@@ -217,11 +217,11 @@ None. Facebook and Messenger cache previews. If a card looks stale after deploy,
 
 #### Automated
 
-- [x] 1.1 Unit tests pass, including the new src/lib/seo.test.ts
-- [x] 1.2 Lint passes
-- [x] 1.3 Build passes
-- [x] 1.4 Image is shipped at the right size
-- [x] 1.5 The rejected promise did not come in with the component
+- [x] 1.1 Unit tests pass, including the new src/lib/seo.test.ts — a819a09
+- [x] 1.2 Lint passes — a819a09
+- [x] 1.3 Build passes — a819a09
+- [x] 1.4 Image is shipped at the right size — a819a09
+- [x] 1.5 The rejected promise did not come in with the component — a819a09
 
 #### Manual
 
@@ -233,12 +233,12 @@ None. Facebook and Messenger cache previews. If a card looks stale after deploy,
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass, including the new isOffCanonicalHost cases
-- [ ] 2.2 Lint passes
-- [ ] 2.3 Build passes
-- [ ] 2.4 Sitemap holds exactly the three indexable URLs
-- [ ] 2.5 No sitemap URL ends in a slash except the root
-- [ ] 2.6 robots.txt ships
+- [x] 2.1 Unit tests pass, including the new isOffCanonicalHost cases
+- [x] 2.2 Lint passes
+- [x] 2.3 Build passes
+- [x] 2.4 Sitemap holds exactly the three indexable URLs
+- [x] 2.5 No sitemap URL ends in a slash except the root
+- [x] 2.6 robots.txt ships
 
 #### Manual
 
