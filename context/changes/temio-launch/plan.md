@@ -475,11 +475,11 @@ The redirect check is a string comparison that runs before the Supabase client i
 
 #### Automated
 
-- [x] 2.1 Error-map tests cover the new codes and email_address_not_authorized
-- [x] 2.2 confirm.test.ts covers both types, success, error and malformed input
-- [x] 2.3 Template uses the token_hash&type=email link and no ConfirmationURL
-- [x] 2.4 Lint passes
-- [x] 2.5 Build passes
+- [x] 2.1 Error-map tests cover the new codes and email_address_not_authorized — 77fece1
+- [x] 2.2 confirm.test.ts covers both types, success, error and malformed input — 77fece1
+- [x] 2.3 Template uses the token_hash&type=email link and no ConfirmationURL — 77fece1
+- [x] 2.4 Lint passes — 77fece1
+- [x] 2.5 Build passes — 77fece1
 
 #### Manual
 
@@ -491,9 +491,9 @@ The redirect check is a string comparison that runs before the Supabase client i
 
 #### Automated
 
-- [ ] 3.1 canonical-host tests pass
-- [ ] 3.2 Middleware calls canonicalRedirect before createClient
-- [ ] 3.3 Lint and build pass
+- [x] 3.1 canonical-host tests pass
+- [x] 3.2 Middleware calls canonicalRedirect before createClient
+- [x] 3.3 Lint and build pass
 
 #### Manual
 

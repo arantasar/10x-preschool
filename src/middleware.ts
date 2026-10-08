@@ -1,4 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
+import { CANONICAL_ORIGIN, LEGACY_HOST } from "astro:env/server";
+import { canonicalRedirect } from "@/lib/canonical-host";
 import { createClient } from "@/lib/supabase";
 
 // Pages only. `POST /api/day-plan/generate` deliberately stays out and checks
@@ -8,6 +10,13 @@ import { createClient } from "@/lib/supabase";
 const PROTECTED_ROUTES = ["/plan"];
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  // First, before the Supabase client: a request that is about to leave for the
+  // canonical origin costs no `getUser()` round trip.
+  const moved = canonicalRedirect(context.url, context.request.method, LEGACY_HOST, CANONICAL_ORIGIN);
+  if (moved) {
+    return new Response(null, { status: moved.status, headers: { Location: moved.location } });
+  }
+
   const supabase = createClient(context.request.headers, context.cookies);
 
   // Handed to the routes as well as used here. It is already built and already

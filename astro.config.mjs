@@ -35,6 +35,11 @@ export default defineConfig({
       // would tie every CI build to a repository secret, for the reason stated
       // above OPENROUTER_API_KEY.
       OPENROUTER_MODEL: envField.string({ context: "server", access: "secret", optional: true }),
+      // The old production host and where it moves to (`src/lib/canonical-host.ts`).
+      // Not secrets - the values live in `wrangler.jsonc` `vars`. Optional, and
+      // the redirect is inert until both are set.
+      LEGACY_HOST: envField.string({ context: "server", access: "public", optional: true }),
+      CANONICAL_ORIGIN: envField.string({ context: "server", access: "public", optional: true }),
     },
   },
 });
