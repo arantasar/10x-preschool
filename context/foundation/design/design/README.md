@@ -1,4 +1,4 @@
-# 10xPreschool — pakiet projektu „Ogród” dla Astro
+# Temio — pakiet projektu „Ogród” dla Astro
 
 Przekazanie projektu graficznego do implementacji. Pakiet zawiera:
 
@@ -11,20 +11,32 @@ src/
     plan/      ProposalCard, RemovedProposal, MonthGrid
     billing/   PricingCard, BillingToggle, PaywallDialog
     layout/    MarketingHeader, SiteFooter, AppHeader, AuthSplit, AuthCard, LegalLayout
+public/        favicon.svg, favicon-32.png, apple-touch-icon.png (180), icon-512.png
 design/
+  brand/       logo Temio w SVG: znak (liść), znak odwrócony, pełne logo i logo na ciemne tło
   screens/     PNG każdego ekranu — tak ma to wyglądać
   reference/   statyczne HTML tych ekranów (style inline, dokładne wartości px) — źródło prawdy dla układu
 ```
 
 ## Instrukcja dla modelu kodującego (np. Claude Code)
 
-> Zaimplementuj nowy wygląd 10xPreschool według `design/README.md`.
-> 1. Skopiuj `src/styles/tokens.css` i `src/components/**` do projektu (dopasuj ścieżki, nie nadpisuj istniejących komponentów o tych nazwach bez sprawdzenia).
+> Zaimplementuj nowy wygląd Temio według `design/README.md`.
+> 0. Aplikacja zmieniła nazwę z 10xPreschool na **Temio**. Zamień starą nazwę w całym projekcie (tytuły stron, meta, e-maile, `package.json` itp.).
+> 1. Skopiuj `src/styles/tokens.css`, `src/components/**` i `public/*` do projektu (dopasuj ścieżki, nie nadpisuj istniejących komponentów o tych nazwach bez sprawdzenia).
 > 2. Podłącz fonty i `tokens.css` w głównym layoucie.
 > 3. Przebuduj istniejące strony tak, żeby wyglądały jak `design/screens/*.png`. Wymiary i odstępy bierz z `design/reference/*.html`, ale w kodzie używaj zmiennych z `tokens.css` i komponentów — nie kopiuj stylów inline.
 > 4. Zachowaj istniejącą logikę (auth, wywołania LLM, zapis planu). Podepnij przyciski z `data-action` do tego, czego aplikacja już używa.
 > 5. Nowe strony (cennik, FAQ, regulamin, kontakt, reset hasła) i okno płatności zbuduj z komponentów wymienionych w sekcji 4. Teksty w [NAWIASACH] zostaw jako placeholdery — uzupełni je właściciel.
 > 6. Sprawdź widoki przy 390 px, 768 px i 1440 px.
+
+## Logo Temio
+
+Znak to pełny, jednolity liść: zaokrąglony kształt z jednym mniej zaokrąglonym rogiem w lewym dolnym narożniku, bez żadnych linii ani kropek w środku. Napis „temio” jest **małymi literami**, fontem Young Serif. W tekście ciągłym nazwę piszemy normalnie: „Temio”.
+
+- W kodzie używaj `<Logo />` (`src/components/ui/Logo.astro`): rozmiary `sm` / `md` / `lg`, `variant="inverse"` na ciemne tło, `markOnly` gdy jest tylko miejsce na znak.
+- Pliki do innych zastosowań (e-maile, social media, dokumenty) są w `design/brand/`. Napis jest tam zamieniony na krzywe, więc nie wymaga fontu.
+- Kolory: liść `#1F3B2D` (Las). Na ciemnym tle liść `#C9DAC2` (Szałwia), a napis `#F3EFE4`.
+- Nie dodawaj do znaku innych elementów, nie obracaj go i nie zmieniaj proporcji. Minimalny rozmiar znaku: 16 px.
 
 ## 1. Fonty
 
@@ -43,7 +55,7 @@ import '@fontsource/young-serif/latin-ext.css';
 import '@fontsource/young-serif/latin.css';
 import '@fontsource-variable/nunito-sans/wght.css';
 import '../styles/tokens.css';
-const { title = '10xPreschool — plan zajęć przedszkolnych' } = Astro.props;
+const { title = 'Temio — plan zajęć przedszkolnych' } = Astro.props;
 ---
 <!doctype html>
 <html lang="pl">
@@ -51,6 +63,10 @@ const { title = '10xPreschool — plan zajęć przedszkolnych' } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#1F3B2D" />
   </head>
   <body><slot /></body>
 </html>

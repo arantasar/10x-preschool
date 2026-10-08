@@ -1,20 +1,28 @@
 ---
-interface Props { href?: string; size?: 'sm' | 'md' | 'lg'; }
-const { href = '/', size = 'md' } = Astro.props;
+/**
+ * Temio logo: solid leaf mark + lowercase "temio" wordmark (Young Serif).
+ * variant="inverse" for dark backgrounds (sage leaf, oat text).
+ * markOnly renders just the leaf (e.g. tight mobile headers) — keeps the accessible name.
+ */
+interface Props { href?: string; size?: 'sm' | 'md' | 'lg'; variant?: 'default' | 'inverse'; markOnly?: boolean; }
+const { href = '/', size = 'md', variant = 'default', markOnly = false } = Astro.props;
+const px = { sm: 26, md: 30, lg: 34 }[size];
+const leaf = variant === 'inverse' ? 'var(--color-sage)' : 'var(--color-primary)';
 ---
-<a href={href} class:list={['logo', `logo--${size}`]} aria-label="10xPreschool — strona główna">
-  <span class="logo__mark" aria-hidden="true"></span>
-  <span class="logo__word">10xPreschool</span>
+<a href={href} class:list={['logo', `logo--${size}`, `logo--${variant}`]} aria-label="Temio — strona główna">
+  <svg class="logo__mark" width={px} height={px} viewBox="0 0 64 64" aria-hidden="true">
+    <path d="M32 2C48.6 2 62 15.4 62 32S48.6 62 32 62H12C6.5 62 2 57.5 2 52V32C2 15.4 15.4 2 32 2Z" fill={leaf} />
+  </svg>
+  {!markOnly && <span class="logo__word" aria-hidden="true">temio</span>}
 </a>
 
 <style>
   .logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--color-text); }
-  .logo__mark { display: block; background: var(--color-primary); border-radius: var(--radius-logo); }
+  .logo--inverse { color: var(--color-on-primary); }
+  .logo__mark { flex-shrink: 0; display: block; }
   .logo__word { font-family: var(--font-display); line-height: 1; }
-  .logo--sm .logo__mark { width: 26px; height: 26px; border-radius: 50% 50% 50% 6px; }
   .logo--sm .logo__word { font-size: 20px; }
-  .logo--md .logo__mark { width: 30px; height: 30px; }
   .logo--md .logo__word { font-size: 22px; }
-  .logo--lg .logo__mark { width: 34px; height: 34px; }
   .logo--lg .logo__word { font-size: 25px; }
+  .logo:hover { color: inherit; }
 </style>
