@@ -225,8 +225,8 @@ None. Facebook and Messenger cache previews. If a card looks stale after deploy,
 
 #### Manual
 
-- [ ] 1.6 View-source of four pages shows correct title, canonical, og:image, robots
-- [ ] 1.7 Owner approves the wording of SITE_DESCRIPTION
+- [x] 1.6 View-source of four pages shows correct title, canonical, og:image, robots
+- [x] 1.7 Owner approves the wording of SITE_DESCRIPTION
 - [x] 1.8 Owner decides what happens to the untracked root og-image.png and temio-design-astro (1)/ — 190a036
 
 ### Phase 2: Crawl control
@@ -242,7 +242,7 @@ None. Facebook and Messenger cache previews. If a card looks stale after deploy,
 
 #### Manual
 
-- [ ] 2.7 X-Robots-Tag present locally with CANONICAL_ORIGIN set, absent without
+- [x] 2.7 X-Robots-Tag present locally with CANONICAL_ORIGIN set, absent without
 - [ ] 2.8 Production: no X-Robots-Tag on temio.pl; robots.txt and sitemap-index.xml resolve
 - [ ] 2.9 Facebook Sharing Debugger shows the branded card
 - [ ] 2.10 Sitemap submitted in Google Search Console
