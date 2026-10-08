@@ -235,7 +235,7 @@ otp_expiry = 3600
 # any device (the default PKCE link needs the requesting browser). Production carries the same
 # subject and body in the dashboard (Auth → Email Templates → Reset Password).
 [auth.email.template.recovery]
-subject = "Ustaw nowe hasło w 10xPreschool"
+subject = "Ustaw nowe hasło w Temio"
 content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize email template

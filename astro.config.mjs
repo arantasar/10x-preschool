@@ -9,6 +9,8 @@ import cloudflare from "@astrojs/cloudflare";
 // https://astro.build/config
 export default defineConfig({
   output: "server",
+  // Canonical origin: the sitemap integration needs it to emit sitemap-index.xml.
+  site: "https://temio.pl",
   integrations: [react(), sitemap()],
   vite: {
     plugins: [tailwindcss()],

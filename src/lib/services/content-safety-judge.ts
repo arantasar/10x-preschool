@@ -347,7 +347,7 @@ async function callJudge(model: string, userMessage: string): Promise<{ verdict:
       headers: {
         Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "X-OpenRouter-Title": "10xPreschool-content-safety-gate",
+        "X-OpenRouter-Title": "Temio-content-safety-gate",
       },
       body: JSON.stringify({
         model,

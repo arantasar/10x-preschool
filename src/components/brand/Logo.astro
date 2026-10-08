@@ -1,7 +1,9 @@
 ---
-// The "Ogród" wordmark: a leaf-shaped mark and the name in Young Serif.
-// Always a link home - on the public pages that is the landing (the default);
-// the planner's app bar points it straight at the month.
+// The Temio wordmark: a leaf mark and the lowercase name in Young Serif
+// (`context/foundation/design/src/components/ui/Logo.astro`). Always a link home -
+// on the public pages that is the landing (the default); the planner's app bar
+// points it straight at the month. `variant="inverse"` is for dark panels (sage
+// leaf, oat text); `markOnly` drops the word but keeps the accessible name.
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -9,23 +11,49 @@ interface Props {
   href?: string;
   label?: string;
   class?: string;
+  variant?: "default" | "inverse";
+  markOnly?: boolean;
 }
 
-const { size = "md", href = "/", label = "10xPreschool — strona główna", class: className } = Astro.props;
+const {
+  size = "md",
+  href = "/",
+  label = "Temio — strona główna",
+  class: className,
+  variant = "default",
+  markOnly = false,
+} = Astro.props;
 
-const markSize = {
-  sm: "size-[26px] rounded-[50%_50%_50%_6px]",
-  md: "size-[30px] rounded-logo",
-  lg: "size-[34px] rounded-logo",
-};
+const markPx = { sm: 26, md: 30, lg: 34 }[size];
 const wordSize = { sm: "text-xl", md: "text-[22px]", lg: "text-[25px]" };
+const inverse = variant === "inverse";
+const wordClass = cn("font-display leading-none", wordSize[size]);
+const wordmark = "temio";
 ---
 
 <a
   href={href}
-  class:list={cn("text-las inline-flex min-h-11 items-center gap-2.5 no-underline", className)}
+  class:list={cn(
+    "inline-flex min-h-11 items-center gap-2.5 no-underline",
+    inverse ? "text-owies" : "text-las",
+    className,
+  )}
   aria-label={label}
 >
-  <span class:list={cn("bg-las block", markSize[size])} aria-hidden="true"></span>
-  <span class:list={cn("font-display leading-none", wordSize[size])} aria-hidden="true">10xPreschool</span>
+  <svg
+    class:list={cn("block shrink-0", inverse ? "fill-szalwia" : "fill-las")}
+    width={markPx}
+    height={markPx}
+    viewBox="0 0 64 64"
+    aria-hidden="true"
+  >
+    <path d="M32 2C48.6 2 62 15.4 62 32S48.6 62 32 62H12C6.5 62 2 57.5 2 52V32C2 15.4 15.4 2 32 2Z"></path>
+  </svg>
+  {
+    !markOnly && (
+      <span class:list={wordClass} aria-hidden="true">
+        {wordmark}
+      </span>
+    )
+  }
 </a>

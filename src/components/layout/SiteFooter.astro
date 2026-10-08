@@ -3,11 +3,14 @@
 // here; none of those pages exists yet, so there are no links until their M-03
 // slices add them - a dead link is worse than none.
 import Logo from "@/components/brand/Logo.astro";
+
+// Read at render time: the page is server-rendered, so the year never goes stale.
+const year = new Date().getFullYear();
 ---
 
 <footer
   class="border-linia sm:px-gutter mt-auto flex flex-col items-start justify-between gap-4 border-t-[1.5px] px-5 py-8 sm:flex-row sm:items-center sm:py-11"
 >
   <Logo size="sm" />
-  <p class="text-las-szary text-[15px]">Plan zajęć przedszkolnych</p>
+  <p class="text-las-szary text-[15px]">Plan zajęć przedszkolnych · © {year} Temio</p>
 </footer>

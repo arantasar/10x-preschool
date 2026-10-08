@@ -5,4 +5,4 @@
  * Temporary: S-19 (`help-and-contact`) owns replacing this with the contact
  * form - see the S-19 block in `context/foundation/roadmap.md`.
  */
-export const SUPPORT_EMAIL = "janusz.guzowski@gmail.com";
+export const SUPPORT_EMAIL = "kontakt@temio.pl";
