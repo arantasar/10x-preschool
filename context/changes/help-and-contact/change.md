@@ -1,7 +1,7 @@
 ---
 change_id: help-and-contact
 title: Help and contact
-status: implementing
+status: implemented
 created: 2026-10-08
 updated: 2026-10-09
 archived_at: null

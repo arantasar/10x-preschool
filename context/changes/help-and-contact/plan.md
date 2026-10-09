@@ -520,9 +520,9 @@ The migration is additive: a new table, new policies, and one cron job. Rolling 
 
 #### Automated
 
-- [x] 3.1 New e2e test passes against the local stack
-- [x] 3.2 Whole e2e suite still passes
-- [x] 3.3 Lint and build pass
+- [x] 3.1 New e2e test passes against the local stack — 435abaa
+- [x] 3.2 Whole e2e suite still passes — 435abaa
+- [x] 3.3 Lint and build pass — 435abaa
 
 #### Manual
 
