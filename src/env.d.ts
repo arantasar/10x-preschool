@@ -13,3 +13,13 @@ declare namespace App {
     supabase: ReturnType<typeof import("@/lib/supabase").createClient>;
   }
 }
+
+/**
+ * The Worker's bindings, as `@astrojs/cloudflare` v13 exposes them. Typed loosely
+ * on purpose - the project does not generate `wrangler types` - and read in
+ * exactly one place, `src/lib/services/email-binding.ts`, which narrows what it
+ * needs. Vitest cannot resolve this module; tests mock that file instead.
+ */
+declare module "cloudflare:workers" {
+  export const env: Record<string, unknown>;
+}

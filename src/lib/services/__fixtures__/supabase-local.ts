@@ -244,3 +244,46 @@ export async function cleanup(planIds: readonly string[]): Promise<void> {
     throw new Error(`Sprzątanie nie powiodło się: ${error.message}`);
   }
 }
+
+/**
+ * A publishable-key client with no session: what `locals.supabase` is for a
+ * visitor without an account, so RLS treats it as `anon`.
+ */
+export function anonClient(): SupabaseClient<Database> {
+  return createClient<Database>(stack.apiUrl, stack.publishableKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+/**
+ * Contact messages whose text contains `stamp`, read as the service client.
+ *
+ * The one reasoned exception to "never assert through the service client":
+ * `contact_messages` is write-only for every api role, so no client a route
+ * could hold can see the row at all. What this reads is whether the write
+ * landed, not whether another account can see it.
+ */
+export async function contactMessagesContaining(
+  stamp: string,
+): Promise<{ id: string; user_id: string | null; email: string }[]> {
+  const { data, error } = await service
+    .from("contact_messages")
+    .select("id, user_id, email")
+    .like("message", `%${stamp}%`);
+  if (error) {
+    throw new Error(`Nie udało się odczytać wiadomości: ${error.message}`);
+  }
+  return data;
+}
+
+/** Deletes contact messages by id. */
+export async function deleteContactMessages(ids: readonly string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const { error } = await service
+    .from("contact_messages")
+    .delete()
+    .in("id", [...ids]);
+  if (error) {
+    throw new Error(`Sprzątanie wiadomości nie powiodło się: ${error.message}`);
+  }
+}
