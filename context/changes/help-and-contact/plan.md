@@ -494,8 +494,8 @@ The migration is additive: a new table, new policies, and one cron job. Rolling 
 
 #### Manual
 
-- [ ] 1.8 curl POST with always-pass keys returns ok and the row exists
-- [ ] 1.9 Always-fail secret returns 403 bot_check_failed and no row
+- [x] 1.8 curl POST with always-pass keys returns ok and the row exists
+- [x] 1.9 Always-fail secret returns 403 bot_check_failed and no row
 
 ### Phase 2: Pages and wiring
 
@@ -509,12 +509,12 @@ The migration is additive: a new table, new policies, and one cron job. Rolling 
 
 #### Manual
 
-- [ ] 2.6 Pages match mock-ups 09/11/11b at 390/768/1440 px, with only the intended departures
-- [ ] 2.7 Janusz approves every FAQ answer and the notice sentence
-- [ ] 2.8 Failed bot check keeps the typed message; retry after switching keys succeeds
-- [ ] 2.9 Signed-in: Pomoc in AppHeader, e-mail prefilled, „Wróć do planu” in header
-- [ ] 2.10 Keyboard-only order correct, honeypot never focused, FAQ toggles by keyboard
-- [ ] 2.11 Reset "sent" page links to `/kontakt`
+- [x] 2.6 Pages match mock-ups 09/11/11b at 390/768/1440 px, with only the intended departures
+- [x] 2.7 Janusz approves every FAQ answer and the notice sentence
+- [x] 2.8 Failed bot check keeps the typed message; retry after switching keys succeeds
+- [x] 2.9 Signed-in: Pomoc in AppHeader, e-mail prefilled, „Wróć do planu” in header
+- [x] 2.10 Keyboard-only order correct, honeypot never focused, FAQ toggles by keyboard
+- [x] 2.11 Reset "sent" page links to `/kontakt`
 
 ### Phase 3: E2E, production setup, documentation
 
