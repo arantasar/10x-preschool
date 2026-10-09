@@ -1,16 +1,33 @@
 ---
 // Public footer. The design package puts Cennik / FAQ / Regulamin / Kontakt
-// here; none of those pages exists yet, so there are no links until their M-03
-// slices add them - a dead link is worse than none.
+// here; each link arrives with the page it points to - Pomoc and Kontakt with
+// S-19, Regulamin with S-20, Cennik with S-22. A dead link is worse than none.
 import Logo from "@/components/brand/Logo.astro";
 
 // Read at render time: the page is server-rendered, so the year never goes stale.
 const year = new Date().getFullYear();
+
+const links = [
+  { label: "Pomoc", href: "/pomoc" },
+  { label: "Kontakt", href: "/kontakt" },
+];
 ---
 
 <footer
   class="border-linia sm:px-gutter mt-auto flex flex-col items-start justify-between gap-4 border-t-[1.5px] px-5 py-8 sm:flex-row sm:items-center sm:py-11"
 >
   <Logo size="sm" />
+  <nav aria-label="Stopka" class="-mx-3 flex flex-wrap">
+    {
+      links.map((link) => (
+        <a
+          href={link.href}
+          class="text-las hover:text-mech inline-flex min-h-11 items-center px-3 text-[15px] font-bold underline-offset-4 hover:underline"
+        >
+          {link.label}
+        </a>
+      ))
+    }
+  </nav>
   <p class="text-las-szary text-[15px]">Plan zajęć przedszkolnych · © {year} Temio</p>
 </footer>

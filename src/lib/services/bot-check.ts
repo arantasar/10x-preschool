@@ -30,6 +30,7 @@ interface SiteverifyResponse {
   success?: boolean;
   action?: string;
   "error-codes"?: string[];
+  metadata?: { result_with_testing_key?: boolean };
 }
 
 export async function verifyHumanToken(
@@ -64,7 +65,10 @@ export async function verifyHumanToken(
     return { ok: false, reason: "unavailable" };
   }
 
-  if (result.success !== true || result.action !== action) {
+  // Turnstile's test keys (local dev, e2e) answer without an `action`, and say
+  // so in `metadata`. Only then may it be absent; a real key always echoes it.
+  const testingKeyWithoutAction = result.metadata?.result_with_testing_key === true && result.action === undefined;
+  if (result.success !== true || (result.action !== action && !testingKeyWithoutAction)) {
     /* eslint-disable-next-line no-console */
     console.error("bot_check.rejected", { action, got: result.action, codes: result["error-codes"] });
     return { ok: false, reason: "rejected" };

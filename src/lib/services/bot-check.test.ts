@@ -40,6 +40,24 @@ describe("verifyHumanToken", () => {
     expect(await verifyHumanToken("token", { ...options, fetchImpl })).toEqual({ ok: false, reason: "rejected" });
   });
 
+  it("accepts a testing-key result, which carries no action, but not a real result without one", async () => {
+    const testing = answering({ success: true, metadata: { result_with_testing_key: true } });
+    expect(await verifyHumanToken("token", { ...options, fetchImpl: testing })).toEqual({ ok: true });
+
+    const real = answering({ success: true });
+    expect(await verifyHumanToken("token", { ...options, fetchImpl: real })).toEqual({ ok: false, reason: "rejected" });
+
+    const testingOtherAction = answering({
+      success: true,
+      action: "founding-price",
+      metadata: { result_with_testing_key: true },
+    });
+    expect(await verifyHumanToken("token", { ...options, fetchImpl: testingOtherAction })).toEqual({
+      ok: false,
+      reason: "rejected",
+    });
+  });
+
   it("is unavailable when siteverify answers with an error status", async () => {
     const fetchImpl = answering({}, 500);
     expect(await verifyHumanToken("token", { ...options, fetchImpl })).toEqual({ ok: false, reason: "unavailable" });

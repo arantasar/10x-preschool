@@ -1,0 +1,25 @@
+---
+// The left column of mock-ups 11 and 11b, shared by `/kontakt` and
+// `/kontakt/wyslano`. No promised response time: the mock-up's
+// [CZAS ODPOWIEDZI] placeholder stays out until the owner names one.
+import { SUPPORT_EMAIL } from "@/lib/support-contact";
+---
+
+<div class="flex flex-col gap-[22px] lg:col-span-5">
+  <p class="eyebrow">Kontakt</p>
+  <h1 class="font-display text-display-xl text-las font-normal">Napisz <em class="text-mech">do nas.</em></h1>
+  <p class="text-las-szary text-lg leading-relaxed text-pretty sm:text-[19px]">
+    Pytanie, pomysł na nową funkcję albo coś nie działa? Odpowiemy na adres e-mail podany w formularzu.
+  </p>
+  <div class="flex flex-col gap-1 pt-2">
+    <p class="text-mech text-sm font-extrabold">E-mail</p>
+    <a href={`mailto:${SUPPORT_EMAIL}`} class="text-las hover:text-mech text-xl font-extrabold break-all underline">
+      {SUPPORT_EMAIL}
+    </a>
+  </div>
+  <p class="text-las-szary text-base">
+    Zanim napiszesz, zajrzyj do <a href="/pomoc" class="text-las hover:text-mech font-extrabold underline"
+      >najczęstszych pytań</a
+    >.
+  </p>
+</div>

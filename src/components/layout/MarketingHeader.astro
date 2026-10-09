@@ -1,27 +1,70 @@
 ---
-// Header of the signed-out pages. No ☰ menu: the design package hides Cennik /
-// FAQ / Kontakt behind it, and none of those pages exists yet - they arrive with
-// their M-03 slices, and so does the menu. On a phone only "Zaloguj się" stays;
-// the landing's own form and CTA band lead to sign-up.
+// Header of the public pages. "Pomoc" and "Kontakt" (S-19) show from `sm` up;
+// on a phone they live in the footer instead - the design package's ☰ menu
+// would hold only these two, so it is not built. Cennik joins with S-22.
+//
+// A signed-in teacher can land here too (`/pomoc`, `/kontakt` are public): the
+// account links then make way for a single way back to the planner.
 import Logo from "@/components/brand/Logo.astro";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+interface Props {
+  active?: "pomoc" | "kontakt";
+}
+
+const { active } = Astro.props;
+const { user } = Astro.locals;
+
+const pages = [
+  { key: "pomoc", label: "Pomoc", href: "/pomoc" },
+  { key: "kontakt", label: "Kontakt", href: "/kontakt" },
+] as const;
 ---
 
 <header class="sm:px-gutter relative z-10 flex items-center justify-between px-5 py-[18px] sm:py-[30px]">
   <Logo size="lg" />
-  <nav class="flex items-center gap-2 sm:gap-5" aria-label="Konto">
-    <a
-      href="/auth/signin"
-      class="text-las hover:text-mech inline-flex min-h-11 items-center rounded-full px-1 text-base font-extrabold no-underline sm:font-bold"
-    >
-      Zaloguj się
-    </a>
-    <a
-      href="/auth/signup"
-      class:list={cn(buttonVariants({ variant: "primary", size: "pill" }), "hidden sm:inline-flex")}
-    >
-      Załóż konto
-    </a>
-  </nav>
+  <div class="flex items-center gap-2 sm:gap-5">
+    <nav class="hidden items-center gap-1 sm:flex" aria-label="Informacje">
+      {
+        pages.map((page) => (
+          <a
+            href={page.href}
+            aria-current={active === page.key ? "page" : undefined}
+            class:list={cn(
+              "text-las hover:text-mech inline-flex min-h-11 items-center rounded-full px-4 text-base font-bold no-underline",
+              active === page.key && "bg-szalwia-soft hover:text-las font-extrabold",
+            )}
+          >
+            {page.label}
+          </a>
+        ))
+      }
+    </nav>
+    <span class="bg-linia hidden h-6 w-[1.5px] sm:block" aria-hidden="true"></span>
+    {
+      user ? (
+        <nav class="flex items-center" aria-label="Konto">
+          <a href="/plan/month" class:list={cn(buttonVariants({ variant: "primary", size: "pill" }))}>
+            Wróć do planu
+          </a>
+        </nav>
+      ) : (
+        <nav class="flex items-center gap-2 sm:gap-5" aria-label="Konto">
+          <a
+            href="/auth/signin"
+            class="text-las hover:text-mech inline-flex min-h-11 items-center rounded-full px-1 text-base font-extrabold no-underline sm:font-bold"
+          >
+            Zaloguj się
+          </a>
+          <a
+            href="/auth/signup"
+            class:list={cn(buttonVariants({ variant: "primary", size: "pill" }), "hidden sm:inline-flex")}
+          >
+            Załóż konto
+          </a>
+        </nav>
+      )
+    }
+  </div>
 </header>

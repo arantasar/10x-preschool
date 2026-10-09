@@ -484,13 +484,13 @@ The migration is additive: a new table, new policies, and one cron job. Rolling 
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly on a fresh local stack
-- [x] 1.2 pgTAP passes including the new suite
-- [x] 1.3 Route against the real stack passes for anon and signed-in
-- [x] 1.4 Unit and route tests pass
-- [x] 1.5 Lint passes
-- [x] 1.6 Build passes
-- [x] 1.7 Deliberate break: `.select()` after insert turns `contact.db.test.ts` red for anon, then reverted
+- [x] 1.1 Migration applies cleanly on a fresh local stack — 738529f
+- [x] 1.2 pgTAP passes including the new suite — 738529f
+- [x] 1.3 Route against the real stack passes for anon and signed-in — 738529f
+- [x] 1.4 Unit and route tests pass — 738529f
+- [x] 1.5 Lint passes — 738529f
+- [x] 1.6 Build passes — 738529f
+- [x] 1.7 Deliberate break: `.select()` after insert turns `contact.db.test.ts` red for anon, then reverted — 738529f
 
 #### Manual
 
@@ -501,11 +501,11 @@ The migration is additive: a new table, new policies, and one cron job. Rolling 
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass including `seo.test.ts`
-- [ ] 2.2 Lint passes
-- [ ] 2.3 Build passes
-- [ ] 2.4 `sent.astro` has no `mailto:` (prints 0; 1 on master)
-- [ ] 2.5 `sent.astro` links to `/kontakt` (prints 1; 0 on master)
+- [x] 2.1 Unit tests pass including `seo.test.ts`
+- [x] 2.2 Lint passes
+- [x] 2.3 Build passes
+- [x] 2.4 `sent.astro` has no `mailto:` (prints 0; 1 on master)
+- [x] 2.5 `sent.astro` links to `/kontakt` (prints 1; 0 on master)
 
 #### Manual
 

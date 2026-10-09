@@ -58,6 +58,13 @@ const initial = user?.email?.charAt(0).toUpperCase() ?? "";
       )
     }
     {user?.email && <span class="text-las-szary hidden text-[15px] min-[721px]:inline">{user.email}</span>}
+    {/* The signed-in way to the FAQ and the contact form (S-19). */}
+    <a
+      href="/pomoc"
+      class="text-las hover:text-mech inline-flex min-h-11 items-center rounded-full px-2 text-[15px] font-extrabold underline underline-offset-4"
+    >
+      Pomoc
+    </a>
     <form method="POST" action="/api/auth/signout">
       <button
         type="submit"

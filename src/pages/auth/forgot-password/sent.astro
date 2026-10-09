@@ -3,7 +3,6 @@ import Layout from "@/layouts/Layout.astro";
 import AuthCard from "@/components/layout/AuthCard.astro";
 import { buttonVariants } from "@/components/ui/button";
 import { RESET_EMAIL_COOKIE } from "@/lib/reset-request";
-import { SUPPORT_EMAIL } from "@/lib/support-contact";
 import { cn } from "@/lib/utils";
 
 // Mock-up 12b. The same page for every address, registered or not - the copy
@@ -43,10 +42,10 @@ if (!email) {
       </p>
       <p class="text-las-szary text-[15px]">Nie widzisz wiadomości? Zajrzyj do folderu spam.</p>
       <p class="text-las-szary text-[15px]">
-        Nic nie przyszło po kilku minutach? Napisz do nas: <a
-          href={`mailto:${SUPPORT_EMAIL}`}
-          class="text-las hover:text-mech font-bold break-all underline">{SUPPORT_EMAIL}</a
-        >
+        Nic nie przyszło po kilku minutach? Napisz do nas przez <a
+          href="/kontakt"
+          class="text-las hover:text-mech font-bold underline">formularz kontaktowy</a
+        >.
       </p>
     </div>
     <form method="POST" action="/api/auth/forgot-password">

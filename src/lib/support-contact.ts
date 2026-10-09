@@ -1,8 +1,9 @@
 /**
- * Where a teacher writes when the reset e-mail never arrives (FR-022's "what to
- * do when it does not come"). Shown as a `mailto:` on `/auth/forgot-password/sent`.
+ * The owner's public mailbox, shown on `/kontakt` beside the form - the channel
+ * that still works when the form itself does not (e.g. its bot check is down).
  *
- * Temporary: S-19 (`help-and-contact`) owns replacing this with the contact
- * form - see the S-19 block in `context/foundation/roadmap.md`.
+ * Mail for this address is hosted at OVH, not on Cloudflare: the contact form's
+ * notifications go elsewhere (`CONTACT_TO`). The password-reset "nothing
+ * arrived" path used to `mailto:` this address; since S-19 it links to the form.
  */
 export const SUPPORT_EMAIL = "kontakt@temio.pl";

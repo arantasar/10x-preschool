@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { CircleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const inputBase =
+export const inputBase =
   "h-14 w-full rounded-input border bg-mleko px-4 text-[17px] text-las shadow-input placeholder:text-las-szary/70 transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-las focus-visible:shadow-[0_0_0_2px_var(--color-morela)] focus-visible:outline-solid";
 
 interface FormFieldProps {
