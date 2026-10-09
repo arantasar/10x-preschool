@@ -52,6 +52,15 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 - `src/layouts/PlannerLayout.astro` — the shell of every `/plan*` screen (`/plan`, `/plan/week`, `/plan/month`): it wraps `Layout.astro`, renders `src/components/AppHeader.astro` across the full width and takes `active: "plan" | "generate"` for the main nav (month → `plan`, week and day → `generate`). A new signed-in screen uses this layout rather than `Layout.astro` directly.
 
+### Public help and contact
+
+- Pages: `/pomoc` (FAQ, data in `src/lib/faq.ts` — every answer must be true today), `/kontakt` (form island `src/components/contact/ContactForm.tsx`), `/kontakt/wyslano`. Public pages use `MarketingHeader` + `SiteFooter`; signed-in teachers reach `/pomoc` through „Pomoc” in `AppHeader`.
+- `POST /api/contact` runs a fixed pipeline: parse → honeypot (answers like success) → zod (`src/lib/contact-form.ts`) → config → bot check → **store** → mail → `{ ok }`. Storing comes before mailing, so a failed mail never loses a message.
+- **`verifyHumanToken` (`src/lib/services/bot-check.ts`) is the bot check for every public form** that takes data from people without an account — the founding-price sign-up (S-22) calls it with its own `action`. Turnstile's test keys answer without an `action`; only those results may omit it.
+- `public.contact_messages` is **insert-only** for `anon` and `authenticated`: insert without `.select()` (a read-back is `insert … returning` and fails). Rows are deleted after 12 months by the `contact-messages-retention` pg_cron job.
+- The `send_email` binding (`EMAIL` in `wrangler.jsonc`) is read only in `src/lib/services/email-binding.ts`, which route tests mock — Vitest cannot resolve `cloudflare:workers`.
+- Secrets: `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `CONTACT_TO` (all `access: "secret"`, read at runtime). Locally: Turnstile's always-pass test keys and no `CONTACT_TO`, so no mail leaves the machine.
+
 ### Key conventions
 
 - **Path alias**: `@/*` maps to `./src/*` (tsconfig paths).

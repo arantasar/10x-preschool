@@ -501,11 +501,11 @@ The migration is additive: a new table, new policies, and one cron job. Rolling 
 
 #### Automated
 
-- [x] 2.1 Unit tests pass including `seo.test.ts`
-- [x] 2.2 Lint passes
-- [x] 2.3 Build passes
-- [x] 2.4 `sent.astro` has no `mailto:` (prints 0; 1 on master)
-- [x] 2.5 `sent.astro` links to `/kontakt` (prints 1; 0 on master)
+- [x] 2.1 Unit tests pass including `seo.test.ts` — 1cfadbc
+- [x] 2.2 Lint passes — 1cfadbc
+- [x] 2.3 Build passes — 1cfadbc
+- [x] 2.4 `sent.astro` has no `mailto:` (prints 0; 1 on master) — 1cfadbc
+- [x] 2.5 `sent.astro` links to `/kontakt` (prints 1; 0 on master) — 1cfadbc
 
 #### Manual
 
@@ -520,9 +520,9 @@ The migration is additive: a new table, new policies, and one cron job. Rolling 
 
 #### Automated
 
-- [ ] 3.1 New e2e test passes against the local stack
-- [ ] 3.2 Whole e2e suite still passes
-- [ ] 3.3 Lint and build pass
+- [x] 3.1 New e2e test passes against the local stack
+- [x] 3.2 Whole e2e suite still passes
+- [x] 3.3 Lint and build pass
 
 #### Manual
 

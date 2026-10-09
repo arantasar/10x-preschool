@@ -57,6 +57,9 @@ function loadTurnstile(): Promise<TurnstileApi> {
   });
 }
 
+/** How long a submit waits for Turnstile's token before sending without one. */
+const TOKEN_WAIT_MS = 10_000;
+
 /** The counter appears only near the limit, where it helps. */
 const COUNTER_FROM = CONTACT_MESSAGE_MAX - 500;
 
@@ -85,6 +88,8 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
   const widgetContainer = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
   const token = useRef<string | null>(null);
+  // Submits waiting for a token that has not arrived yet (see `tokenFor`).
+  const tokenWaiters = useRef<((value: string) => void)[]>([]);
 
   useEffect(() => {
     if (!siteKey || !widgetContainer.current || widgetId.current) return;
@@ -96,6 +101,7 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
           action: "contact",
           callback: (value) => {
             token.current = value;
+            for (const resolve of tokenWaiters.current.splice(0)) resolve(value);
           },
           "expired-callback": () => {
             token.current = null;
@@ -117,6 +123,23 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
     if (widgetId.current && window.turnstile) window.turnstile.reset(widgetId.current);
   }
 
+  // The widget earns its token a moment after it renders. A quick submit waits
+  // for it - up to a bound - instead of sending none and being refused.
+  function tokenFor(): Promise<string> {
+    if (token.current) return Promise.resolve(token.current);
+    return new Promise((resolve) => {
+      const timer = window.setTimeout(() => {
+        tokenWaiters.current = tokenWaiters.current.filter((waiter) => waiter !== done);
+        resolve("");
+      }, TOKEN_WAIT_MS);
+      const done = (value: string) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      };
+      tokenWaiters.current.push(done);
+    });
+  }
+
   function validate(): boolean {
     const next: FieldErrors = { email: emailError(email) };
     const length = message.trim().length;
@@ -135,10 +158,11 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
     setServerError(null);
     let code = "unknown";
     try {
+      const turnstileToken = await tokenFor();
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, topic, message, website, turnstileToken: token.current ?? "" }),
+        body: JSON.stringify({ name, email, topic, message, website, turnstileToken }),
       });
       const body = (await response.json()) as { ok?: boolean; error?: string };
       if (response.ok && body.ok) {
