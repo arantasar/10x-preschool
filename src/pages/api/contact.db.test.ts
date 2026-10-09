@@ -19,9 +19,15 @@ import {
 //
 // Only Turnstile and the mail binding are substituted: both are external, and
 // neither has anything to say about the database.
-vi.mock("@/lib/services/bot-check", () => ({ verifyHumanToken: () => Promise.resolve({ ok: true }) }));
+vi.mock("@/lib/services/bot-check", () => ({
+  verifyHumanToken: () => Promise.resolve({ ok: true, testingKey: false }),
+}));
 vi.mock("@/lib/services/email-binding", () => ({ getEmailBinding: () => undefined }));
-vi.mock("astro:env/server", () => ({ TURNSTILE_SECRET_KEY: "sekret", CONTACT_TO: undefined }));
+vi.mock("astro:env/server", () => ({
+  TURNSTILE_SECRET_KEY: "sekret",
+  CONTACT_TO: undefined,
+  CANONICAL_ORIGIN: undefined,
+}));
 
 const { POST } = await import("./contact");
 

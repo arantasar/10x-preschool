@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import { SUPPORT_EMAIL } from "./support-contact";
+
 import {
   CONTACT_MESSAGE_MAX,
   CONTACT_NAME_MAX,
   CONTACT_TOPICS,
+  CONTACT_WIDGET_FAILED_MESSAGE,
   contactErrorMessage,
   contactPayloadSchema,
   topicLabel,
@@ -64,5 +67,11 @@ describe("contactErrorMessage", () => {
   it("falls back to a generic sentence for anything else, including prototype keys", () => {
     expect(contactErrorMessage("<b>dowolne zdanie</b>")).toBe(contactErrorMessage("unknown"));
     expect(contactErrorMessage("toString")).toBe(contactErrorMessage("unknown"));
+  });
+});
+
+describe("CONTACT_WIDGET_FAILED_MESSAGE", () => {
+  it("points to the mailbox, since the form cannot succeed without its bot check", () => {
+    expect(CONTACT_WIDGET_FAILED_MESSAGE).toContain(SUPPORT_EMAIL);
   });
 });

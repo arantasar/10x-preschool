@@ -11,6 +11,12 @@ declare namespace App {
      * thrown from module scope. Routes must handle it.
      */
     supabase: ReturnType<typeof import("@/lib/supabase").createClient>;
+    /**
+     * The Worker's execution context, set by `@astrojs/cloudflare` v13 on every
+     * request (the replacement for `Astro.locals.runtime.ctx`). Only the slice
+     * this app uses; absent under Vitest.
+     */
+    cfContext?: { waitUntil(promise: Promise<unknown>): void };
   }
 }
 

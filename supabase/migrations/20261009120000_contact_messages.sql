@@ -16,6 +16,14 @@
 --     `src/lib/contact-form.ts`; change both together.
 --   * retention is code, not a promise: the cron job below deletes rows older
 --     than 12 months, the period the form's notice states.
+--   * the honeypot and turnstile live in the route, not here. anyone holding the
+--     publishable key could insert straight through postgrest and skip both
+--     (only the check constraints would apply, and no mail would go out). that
+--     is closed today only because the key is server-only (`SUPABASE_KEY`,
+--     `access: "secret"` in astro.config.mjs). shipping the key to a browser
+--     reopens it - move this insert behind the service role first.
+--   * rollback: `select cron.unschedule('contact-messages-retention');` before
+--     `drop table public.contact_messages;` - a job left behind fails daily.
 
 create table public.contact_messages (
   id uuid primary key default gen_random_uuid(),

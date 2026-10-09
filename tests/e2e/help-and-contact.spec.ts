@@ -29,9 +29,17 @@ test.describe("Ryzyko #16 — wiadomość z formularza kontaktowego nie ginie", 
   let stamp = "";
 
   test.afterEach(async () => {
-    // Po znaczniku, nie po adresie: równoległy przebieg ma własny znacznik.
-    const { error } = await admin().from("contact_messages").delete().like("message", `%${stamp}%`);
-    if (error) throw new Error(`Sprzątanie wiadomości nie powiodło się: ${error.message}`);
+    // Przed wylosowaniem znacznika nie ma czego sprzątać - a pusty znacznik
+    // zamieniłby `like '%%'` w „każdą wiadomość w tabeli”.
+    if (!stamp) return;
+    const { data, error } = await admin().from("contact_messages").select("id").like("message", `%${stamp}%`);
+    if (error) throw new Error(`Odczyt wiadomości do sprzątania nie powiódł się: ${error.message}`);
+    // Po id, jak każe E2E-RULES: znacznik służy tylko do znalezienia wierszy.
+    const ids = data.map((row) => row.id);
+    if (ids.length === 0) return;
+    const { error: deleteError } = await admin().from("contact_messages").delete().in("id", ids);
+    if (deleteError) throw new Error(`Sprzątanie wiadomości nie powiodło się: ${deleteError.message}`);
+    stamp = "";
   });
 
   test("ryzyko #16: odwiedzający bez konta przechodzi z FAQ przez formularz do podziękowania, a wiadomość jest w bazie", async ({
@@ -40,7 +48,11 @@ test.describe("Ryzyko #16 — wiadomość z formularza kontaktowego nie ginie", 
     stamp = uniqueStamp();
 
     await page.goto("/pomoc");
-    await page.getByRole("link", { name: "Formularz kontaktowy" }).first().click();
+    // Pas na końcu strony, po jego nagłówku - do formularza linkuje też jedna z odpowiedzi.
+    await page
+      .getByRole("region", { name: "Nie ma tu Twojego pytania?" })
+      .getByRole("link", { name: "Formularz kontaktowy" })
+      .click();
     await page.waitForURL("**/kontakt");
     await waitForIslands(page);
 

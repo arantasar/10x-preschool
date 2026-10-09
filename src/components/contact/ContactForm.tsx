@@ -4,9 +4,12 @@ import { FormField, inputBase } from "@/components/auth/FormField";
 import { ServerError } from "@/components/auth/ServerError";
 import { Button } from "@/components/ui/button";
 import {
+  CONTACT_EMAIL_MAX,
   CONTACT_MESSAGE_MAX,
   CONTACT_MESSAGE_MIN,
+  CONTACT_NAME_MAX,
   CONTACT_TOPICS,
+  CONTACT_WIDGET_FAILED_MESSAGE,
   contactErrorMessage,
   type ContactTopic,
 } from "@/lib/contact-form";
@@ -36,17 +39,20 @@ declare global {
 
 const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
-/** One script tag per page, however often the island mounts. */
+/**
+ * One script tag per page, however often the island mounts: the load is
+ * memoised, so a second mount waits on the same promise instead of attaching
+ * listeners to a script that has already fired. A failed load is forgotten, so
+ * a later mount may try again.
+ */
+let turnstileLoad: Promise<TurnstileApi> | null = null;
+
 function loadTurnstile(): Promise<TurnstileApi> {
   if (window.turnstile) return Promise.resolve(window.turnstile);
-  return new Promise((resolve, reject) => {
-    let script = document.querySelector<HTMLScriptElement>(`script[src="${TURNSTILE_SRC}"]`);
-    if (!script) {
-      script = document.createElement("script");
-      script.src = TURNSTILE_SRC;
-      script.async = true;
-      document.head.appendChild(script);
-    }
+  turnstileLoad ??= new Promise<TurnstileApi>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = TURNSTILE_SRC;
+    script.async = true;
     script.addEventListener("load", () => {
       if (window.turnstile) resolve(window.turnstile);
       else reject(new Error("turnstile missing after load"));
@@ -54,7 +60,12 @@ function loadTurnstile(): Promise<TurnstileApi> {
     script.addEventListener("error", () => {
       reject(new Error("turnstile failed to load"));
     });
+    document.head.appendChild(script);
+  }).catch((error: unknown) => {
+    turnstileLoad = null;
+    throw error;
   });
+  return turnstileLoad;
 }
 
 /** How long a submit waits for Turnstile's token before sending without one. */
@@ -84,6 +95,9 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(siteKey ? null : contactErrorMessage("config_missing"));
   const [pending, setPending] = useState(false);
+  // Turnstile cannot run here at all: the form cannot succeed, so it stops
+  // offering to send and points to the mailbox (`CONTACT_WIDGET_FAILED_MESSAGE`).
+  const [widgetFailed, setWidgetFailed] = useState(false);
 
   const widgetContainer = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
@@ -108,11 +122,14 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
           },
           "error-callback": () => {
             token.current = null;
+            // Release any submit already waiting: it goes out without a token,
+            // is refused, and the reset after the refusal starts a new attempt.
+            for (const resolve of tokenWaiters.current.splice(0)) resolve("");
           },
         });
       })
       .catch(() => {
-        setServerError(contactErrorMessage("bot_check_unavailable"));
+        setWidgetFailed(true);
       });
   }, [siteKey]);
 
@@ -152,7 +169,7 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (pending || !siteKey || !validate()) return;
+    if (pending || !siteKey || widgetFailed || !validate()) return;
 
     setPending(true);
     setServerError(null);
@@ -184,7 +201,7 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
   return (
     <form className="flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField id="name" label="Imię" value={name} onChange={setName} />
+        <FormField id="name" label="Imię" value={name} onChange={setName} maxLength={CONTACT_NAME_MAX} />
         <FormField
           id="email"
           type="email"
@@ -195,6 +212,7 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
             if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
           }}
           placeholder="imie@przedszkole.pl"
+          maxLength={CONTACT_EMAIL_MAX}
           error={errors.email}
         />
       </div>
@@ -277,10 +295,16 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
       </p>
 
       <div role="alert">
-        <ServerError message={serverError} />
+        <ServerError message={widgetFailed ? CONTACT_WIDGET_FAILED_MESSAGE : serverError} />
       </div>
 
-      <Button type="submit" variant="primary" size="pillLg" disabled={pending || !siteKey} className="w-full">
+      <Button
+        type="submit"
+        variant="primary"
+        size="pillLg"
+        disabled={pending || !siteKey || widgetFailed}
+        className="w-full"
+      >
         {pending ? (
           <span className="flex items-center gap-2">
             <span

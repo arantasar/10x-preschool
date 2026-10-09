@@ -1,11 +1,18 @@
 import type { APIRoute } from "astro";
-import { CONTACT_TO, TURNSTILE_SECRET_KEY } from "astro:env/server";
+import { CANONICAL_ORIGIN, CONTACT_TO, TURNSTILE_SECRET_KEY } from "astro:env/server";
 import { contactPayloadSchema, type ContactErrorCode } from "@/lib/contact-form";
 import { verifyHumanToken } from "@/lib/services/bot-check";
 import { sendContactMail } from "@/lib/services/contact-mail";
 import { getEmailBinding } from "@/lib/services/email-binding";
 
 export const prerender = false;
+
+/**
+ * Far above the largest valid payload (5000 characters of message, at most four
+ * UTF-8 bytes each, plus the token and the short fields), far below anything
+ * worth parsing on a route anyone can call.
+ */
+export const CONTACT_BODY_MAX_BYTES = 32 * 1024;
 
 function json(body: { ok: true } | { error: ContactErrorCode }, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -22,9 +29,19 @@ function json(body: { ok: true } | { error: ContactErrorCode }, status = 200): R
  * sentence - the island translates it (`contactErrorMessage`).
  */
 export const POST: APIRoute = async (context) => {
+  // Refused before the body is read: a declared size over the cap, or a body
+  // that turns out bigger than declared (or declares nothing).
+  const declared = Number(context.request.headers.get("Content-Length") ?? "0");
+  if (declared > CONTACT_BODY_MAX_BYTES) {
+    return json({ error: "validation_failed" }, 413);
+  }
   let raw: unknown;
   try {
-    raw = await context.request.json();
+    const text = await context.request.text();
+    if (new TextEncoder().encode(text).byteLength > CONTACT_BODY_MAX_BYTES) {
+      return json({ error: "validation_failed" }, 413);
+    }
+    raw = JSON.parse(text);
   } catch {
     return json({ error: "validation_failed" }, 400);
   }
@@ -52,15 +69,25 @@ export const POST: APIRoute = async (context) => {
     return json({ error: "config_missing" }, 503);
   }
 
+  // The token must come from a widget on this very host: the form posts to its
+  // own origin, so a token earned on a preview or on localhost fails here.
+  const host = new URL(context.request.url).hostname;
   const check = await verifyHumanToken(payload.turnstileToken, {
     secret: TURNSTILE_SECRET_KEY,
     action: "contact",
     remoteIp: context.request.headers.get("CF-Connecting-IP"),
+    hostname: host,
   });
   if (!check.ok) {
     return check.reason === "unavailable"
       ? json({ error: "bot_check_unavailable" }, 503)
       : json({ error: "bot_check_failed" }, 403);
+  }
+  // A test secret lets every token through. Expected locally; on the canonical
+  // host it means the production secret was set to a test key.
+  if (check.testingKey && CANONICAL_ORIGIN && host === new URL(CANONICAL_ORIGIN).hostname) {
+    /* eslint-disable-next-line no-console */
+    console.error("contact.bot_check_testing_key", { host });
   }
 
   // No `.select()`: the table is insert-only for the api roles, and reading the
@@ -84,23 +111,30 @@ export const POST: APIRoute = async (context) => {
     /* eslint-disable-next-line no-console */
     console.error("contact.mail_skipped", { binding: Boolean(binding), recipient: Boolean(CONTACT_TO) });
   } else {
-    try {
-      await sendContactMail(
-        binding,
-        {
-          name: payload.name,
-          email: payload.email,
-          topic: payload.topic,
-          message: payload.message,
-          signedIn: Boolean(user),
-        },
-        CONTACT_TO,
-      );
-    } catch (sendError) {
+    const delivery = sendContactMail(
+      binding,
+      {
+        name: payload.name,
+        email: payload.email,
+        topic: payload.topic,
+        message: payload.message,
+        signedIn: Boolean(user),
+      },
+      CONTACT_TO,
+    ).catch((sendError: unknown) => {
       /* eslint-disable-next-line no-console */
       console.error("contact.mail_failed", {
         message: sendError instanceof Error ? sendError.message : String(sendError),
       });
+    });
+    // The message is already stored, so the visitor does not wait for the mail:
+    // on Workers the send finishes after the answer (`waitUntil`). Without an
+    // execution context (tests) it is awaited instead.
+    const { cfContext } = context.locals;
+    if (cfContext) {
+      cfContext.waitUntil(delivery);
+    } else {
+      await delivery;
     }
   }
 

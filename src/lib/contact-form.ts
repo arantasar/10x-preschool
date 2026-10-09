@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SUPPORT_EMAIL } from "@/lib/support-contact";
 
 /**
  * The contact form's contract (S-19), shared by the route (`POST /api/contact`)
@@ -68,6 +69,13 @@ const MESSAGES: Record<ContactErrorCode, string> = {
 };
 
 const FALLBACK = "Nie udało się wysłać wiadomości. Spróbuj ponownie za chwilę.";
+
+/**
+ * Shown by the island, not the route, when Turnstile cannot run in this browser
+ * at all (the script is blocked or fails to load): retrying the form would
+ * never succeed, so it names the mailbox instead.
+ */
+export const CONTACT_WIDGET_FAILED_MESSAGE = `Nie udało się wczytać zabezpieczenia formularza (np. przez blokadę treści w przeglądarce). Napisz do nas e-mailem: ${SUPPORT_EMAIL}.`;
 
 /**
  * The Polish sentence for a code from the route. An unknown code falls back to

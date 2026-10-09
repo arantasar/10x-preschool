@@ -9,6 +9,7 @@ const getEmailBinding = vi.fn();
 const env = {
   TURNSTILE_SECRET_KEY: "sekret" as string | undefined,
   CONTACT_TO: "w@example.test" as string | undefined,
+  CANONICAL_ORIGIN: "https://temio.example" as string | undefined,
 };
 
 vi.mock("@/lib/services/bot-check", () => ({ verifyHumanToken }));
@@ -20,9 +21,12 @@ vi.mock("astro:env/server", () => ({
   get CONTACT_TO() {
     return env.CONTACT_TO;
   },
+  get CANONICAL_ORIGIN() {
+    return env.CANONICAL_ORIGIN;
+  },
 }));
 
-const { POST } = await import("./contact");
+const { CONTACT_BODY_MAX_BYTES, POST } = await import("./contact");
 
 const valid = {
   name: "Ola",
@@ -37,17 +41,28 @@ type InsertResult = { error: null } | { error: { code: string; message: string }
 
 function call(
   body: unknown,
-  options: { user?: { id: string } | null; supabase?: boolean; insert?: InsertResult } = {},
+  options: {
+    user?: { id: string } | null;
+    supabase?: boolean;
+    insert?: InsertResult;
+    url?: string;
+    headers?: Record<string, string>;
+    waitUntil?: (promise: Promise<unknown>) => void;
+  } = {},
 ) {
   const insert = vi.fn(() => Promise.resolve(options.insert ?? { error: null }));
   const from = vi.fn(() => ({ insert }));
   const context = {
-    request: new Request("https://example.test/api/contact", {
+    request: new Request(options.url ?? "https://example.test/api/contact", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "CF-Connecting-IP": "203.0.113.7" },
+      headers: { "Content-Type": "application/json", "CF-Connecting-IP": "203.0.113.7", ...options.headers },
       body: typeof body === "string" ? body : JSON.stringify(body),
     }),
-    locals: { user: options.user ?? null, supabase: options.supabase === false ? null : { from } },
+    locals: {
+      user: options.user ?? null,
+      supabase: options.supabase === false ? null : { from },
+      ...(options.waitUntil ? { cfContext: { waitUntil: options.waitUntil } } : {}),
+    },
   };
   return { insert, from, response: POST(context as unknown as APIContext) as Promise<Response> };
 }
@@ -64,7 +79,8 @@ beforeEach(() => {
   logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
   env.TURNSTILE_SECRET_KEY = "sekret";
   env.CONTACT_TO = "w@example.test";
-  verifyHumanToken.mockResolvedValue({ ok: true });
+  env.CANONICAL_ORIGIN = "https://temio.example";
+  verifyHumanToken.mockResolvedValue({ ok: true, testingKey: false });
   send = vi.fn(() => Promise.resolve({ messageId: "m" }));
   getEmailBinding.mockReturnValue({ send });
 });
@@ -84,6 +100,7 @@ describe("POST /api/contact — success", () => {
       secret: "sekret",
       action: "contact",
       remoteIp: "203.0.113.7",
+      hostname: "example.test",
     });
     expect(from).toHaveBeenCalledWith("contact_messages");
     expect(insert).toHaveBeenCalledWith({
@@ -197,5 +214,68 @@ describe("POST /api/contact — after the bot check", () => {
 
     expect(send).not.toHaveBeenCalled();
     expect(logged).toHaveBeenCalledWith("contact.mail_skipped", expect.anything());
+  });
+});
+
+describe("POST /api/contact — request size", () => {
+  it("refuses a declared body over the cap without reading it", async () => {
+    const { response, insert } = call(valid, { headers: { "Content-Length": String(CONTACT_BODY_MAX_BYTES + 1) } });
+
+    expect(await answer(response)).toEqual({ status: 413, body: { error: "validation_failed" } });
+    expect(verifyHumanToken).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("refuses a body over the cap even when the size header understates it", async () => {
+    const { response, insert } = call({ ...valid, message: "x".repeat(CONTACT_BODY_MAX_BYTES) });
+
+    expect(await answer(response)).toEqual({ status: 413, body: { error: "validation_failed" } });
+    expect(insert).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/contact — delivery on Workers", () => {
+  it("answers before the mail is sent and hands the send to waitUntil", async () => {
+    let finish: (value: unknown) => void = () => undefined;
+    send.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    const waitUntil = vi.fn<(promise: Promise<unknown>) => void>();
+
+    const { response } = call(valid, { waitUntil });
+
+    expect(await answer(response)).toEqual({ status: 200, body: { ok: true } });
+    expect(send).toHaveBeenCalledOnce();
+    expect(waitUntil).toHaveBeenCalledOnce();
+    finish({ messageId: "m" });
+    await waitUntil.mock.calls[0][0];
+  });
+
+  it("logs a failed send handed to waitUntil, without rejecting it", async () => {
+    send.mockRejectedValue(new Error("E_DELIVERY_FAILED"));
+    const waitUntil = vi.fn<(promise: Promise<unknown>) => void>();
+
+    const { response } = call(valid, { waitUntil });
+
+    expect(await answer(response)).toEqual({ status: 200, body: { ok: true } });
+    await expect(waitUntil.mock.calls[0][0]).resolves.toBeUndefined();
+    expect(logged).toHaveBeenCalledWith("contact.mail_failed", { message: "E_DELIVERY_FAILED" });
+  });
+});
+
+describe("POST /api/contact — Turnstile test keys", () => {
+  it("warns when a test secret answers on the canonical host", async () => {
+    verifyHumanToken.mockResolvedValue({ ok: true, testingKey: true });
+
+    const { response } = call(valid, { url: "https://temio.example/api/contact" });
+
+    expect(await answer(response)).toEqual({ status: 200, body: { ok: true } });
+    expect(logged).toHaveBeenCalledWith("contact.bot_check_testing_key", { host: "temio.example" });
+  });
+
+  it("stays quiet about a test secret anywhere else", async () => {
+    verifyHumanToken.mockResolvedValue({ ok: true, testingKey: true });
+
+    await call(valid).response;
+
+    expect(logged).not.toHaveBeenCalledWith("contact.bot_check_testing_key", expect.anything());
   });
 });

@@ -15,7 +15,10 @@ export const SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/si
 
 const TIMEOUT_MS = 5000;
 
-export type BotCheckResult = { ok: true } | { ok: false; reason: "missing" | "rejected" | "unavailable" };
+/** `testingKey`: Turnstile answered for a test secret - fine locally, a misconfiguration in production. */
+export type BotCheckResult =
+  | { ok: true; testingKey: boolean }
+  | { ok: false; reason: "missing" | "rejected" | "unavailable" };
 
 export interface BotCheckOptions {
   secret: string;
@@ -23,19 +26,27 @@ export interface BotCheckOptions {
   action: string;
   /** `CF-Connecting-IP`, when the request has one. */
   remoteIp?: string | null;
+  /**
+   * The host the token must have been earned on - the page that posts to the
+   * route, so a token from a preview or `localhost` widget is refused on
+   * production. Not checked for testing-key results, which report a fixed
+   * placeholder host.
+   */
+  hostname?: string | null;
   fetchImpl?: typeof fetch;
 }
 
 interface SiteverifyResponse {
   success?: boolean;
   action?: string;
+  hostname?: string;
   "error-codes"?: string[];
   metadata?: { result_with_testing_key?: boolean };
 }
 
 export async function verifyHumanToken(
   token: string | null | undefined,
-  { secret, action, remoteIp, fetchImpl = fetch }: BotCheckOptions,
+  { secret, action, remoteIp, hostname, fetchImpl = fetch }: BotCheckOptions,
 ): Promise<BotCheckResult> {
   if (!token) {
     return { ok: false, reason: "missing" };
@@ -65,13 +76,21 @@ export async function verifyHumanToken(
     return { ok: false, reason: "unavailable" };
   }
 
-  // Turnstile's test keys (local dev, e2e) answer without an `action`, and say
-  // so in `metadata`. Only then may it be absent; a real key always echoes it.
-  const testingKeyWithoutAction = result.metadata?.result_with_testing_key === true && result.action === undefined;
-  if (result.success !== true || (result.action !== action && !testingKeyWithoutAction)) {
+  // Turnstile's test keys (local dev, e2e) answer without an `action` and with a
+  // placeholder `hostname`, and say so in `metadata`. Only then may the two be
+  // off; a real key always echoes both.
+  const testingKey = result.metadata?.result_with_testing_key === true;
+  const actionOk = result.action === action || (testingKey && result.action === undefined);
+  const hostnameOk = !hostname || testingKey || result.hostname === hostname;
+  if (result.success !== true || !actionOk || !hostnameOk) {
     /* eslint-disable-next-line no-console */
-    console.error("bot_check.rejected", { action, got: result.action, codes: result["error-codes"] });
+    console.error("bot_check.rejected", {
+      action,
+      got: result.action,
+      hostname: result.hostname,
+      codes: result["error-codes"],
+    });
     return { ok: false, reason: "rejected" };
   }
-  return { ok: true };
+  return { ok: true, testingKey };
 }

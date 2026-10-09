@@ -13,6 +13,7 @@ interface FormFieldProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  maxLength?: number;
   error?: string;
   hint?: ReactNode;
   endContent?: ReactNode;
@@ -26,6 +27,7 @@ export function FormField({
   value,
   onChange,
   placeholder,
+  maxLength,
   error,
   hint,
   endContent,
@@ -47,6 +49,7 @@ export function FormField({
             onChange(e.target.value);
           }}
           placeholder={placeholder}
+          maxLength={maxLength}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={cn(inputBase, error ? "border-red-700" : "border-obrys-przerywany", endContent && "pr-14")}

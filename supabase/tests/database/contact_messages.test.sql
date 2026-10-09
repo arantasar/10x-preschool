@@ -12,7 +12,7 @@
 
 begin;
 
-select plan(17);
+select plan(19);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (as the owner, so rls is bypassed here by design)
@@ -168,6 +168,32 @@ select ok(
       and command like '%interval ''12 months''%'
   ),
   'retention: a cron job deletes messages older than 12 months'
+);
+
+-- the job's own command, run once: an old row goes, a fresh one stays.
+-- (the delete runs as the owner here, like the scheduled job.)
+
+insert into public.contact_messages (id, created_at, email, topic, message)
+values
+  ('dddddddd-dddd-dddd-dddd-dddddddddddd', now() - interval '13 months', 'stary@example.test', 'other', 'wiadomosc sprzed roku'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', now() - interval '11 months', 'swiezy@example.test', 'other', 'wiadomosc sprzed miesiecy');
+
+do $$
+begin
+  execute (select command from cron.job where jobname = 'contact-messages-retention');
+end;
+$$;
+
+select is(
+  (select count(*)::int from public.contact_messages where id = 'dddddddd-dddd-dddd-dddd-dddddddddddd'),
+  0,
+  'retention: the job deletes a message older than 12 months'
+);
+
+select is(
+  (select count(*)::int from public.contact_messages where id = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  1,
+  'retention: the job keeps a message younger than 12 months'
 );
 
 select * from finish();
