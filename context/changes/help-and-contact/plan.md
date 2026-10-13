@@ -527,6 +527,6 @@ The migration is additive: a new table, new policies, and one cron job. Rolling 
 #### Manual
 
 - [x] 3.4 Production setup steps done and recorded in `release-notes.md` (2026-10-13)
-- [ ] 3.5 Production message arrives in the owner's inbox and Reply-To reaches the visitor
-- [ ] 3.6 Production message is a row in the Supabase dashboard
-- [ ] 3.7 `kontakt@temio.pl` mail still arrives at OVH
+- [x] 3.5 Production message arrives in the owner's inbox and Reply-To reaches the visitor (confirmed by Janusz 2026-10-13)
+- [x] 3.6 Production message is a row in the Supabase dashboard (confirmed by Janusz 2026-10-13)
+- [x] 3.7 `kontakt@temio.pl` mail still arrives at OVH (confirmed by Janusz 2026-10-13)
