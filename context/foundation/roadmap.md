@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 3
 status: draft
 created: 2026-10-01
-updated: 2026-10-07
+updated: 2026-10-13
 prd_version: 3
 main_goal: quality
 top_blocker: external
@@ -63,7 +63,7 @@ nowy fundament to `F-02`, a pierwszy nowy slice `S-16`. Pozycje `S-23`…`S-27` 
 | S-16 | password-reset             | wrócić do konta przez e-mail po zapomnieniu hasła i zastać swoje plany                                   | —                                                | FR-022, US-04                  | done     |
 | S-17 | password-change            | zmienić hasło po zalogowaniu, wylogowując pozostałe sesje konta                                          | —                                                | FR-023                         | ready    |
 | S-18 | account-deletion           | usunąć swoje konto razem ze wszystkimi planami                                                           | —                                                | FR-024                         | ready    |
-| S-19 | help-and-contact           | przeczytać FAQ i napisać do właściciela przez formularz, z kontem lub bez                                | —                                                | FR-025, FR-026                 | ready    |
+| S-19 | help-and-contact           | przeczytać FAQ i napisać do właściciela przez formularz, z kontem lub bez                                | —                                                | FR-025, FR-026                 | done     |
 | S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | treść od księgowego/prawnika                     | FR-025                         | blocked  |
 | S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | blocked  |
 | S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic i zapisać się na cenę założycielską z uczciwym potwierdzeniem              | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
@@ -167,7 +167,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Czy formularz może zbierać e-maile osób bez konta przed publikacją polityki prywatności (`S-20`)? Owner: Janusz + doradca. Block: nie dla planowania — może blokować wydanie (Open Roadmap Questions #11). **Rozstrzygnięte 2026-10-09:** tak — formularz wychodzi z jednozdaniową informacją, co zapisujemy i na jak długo, bez checkboxa zgody i linku do nieistniejącego regulaminu; `S-20` dokłada link do polityki.
   - `/auth/forgot-password/sent` (S-16) wskazuje `SUPPORT_EMAIL` (`src/lib/support-contact.ts`) jako tymczasowy kanał „nic nie przyszło”; S-19 przepina go na formularz kontaktowy. Owner: `/10x-plan help-and-contact`. Block: nie. **Rozstrzygnięte 2026-10-09:** strona prowadzi do `/kontakt`; `SUPPORT_EMAIL` zostaje jako adres obok formularza.
 - **Risk:** FAQ i formularz idą razem, bo FAQ bez kanału „nie znalazłeś odpowiedzi?" jest ślepą uliczką, a formularz bez FAQ ściąga pytania, na które odpowiedź jest stała. Pozycja wprowadza ochronę przed automatami, którą później dziedziczy zapis na cenę (`S-22`) — wymaganie jakościowe dotyczy obu powierzchni, więc kształt ochrony musi dać się użyć drugi raz, nie być przyklejony do jednego formularza. FAQ nie czeka na prawnika; dlatego oddzielone od `S-20`.
-- **Status:** ready
+- **Status:** done
 
 ### S-20: Regulamin i polityka prywatności
 
@@ -358,3 +358,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-10: Nauczyciel może jawnie rozszerzyć regenerację tygodnia na dni zaakceptowane, zamiast najpierw cofać akceptacje po kolei.** — Archived 2026-09-29 → `context/archive/2026-09-28-accepted-day-replacement/`. Lesson: —.
 - **F-02: (foundation) bramka bezpieczeństwa treści przechodzi na żywo dla każdego dopuszczonego modelu i każdego trybu generowania (dzień, tydzień, poprawka aktywności), a zmiana promptu albo modelu znów nie wchodzi na produkcję bez jej przebiegu.** — Archived 2026-10-03 → `context/archive/2026-10-01-content-safety-gate-resume/`. Lesson: —.
 - **S-16: Nauczycielka, która nie pamięta hasła, prosi o reset ze strony logowania, ustawia nowe hasło przez link z wiadomości e-mail, loguje się i zastaje wszystkie swoje plany; strona resetu mówi, gdzie szukać wiadomości i co zrobić, gdy nie przyjdzie.** — Archived 2026-10-07 → `context/archive/2026-10-03-password-reset/`. Lesson: —.
+- **S-19: Odwiedzający, z kontem lub bez, czyta FAQ (czym jest usługa, jak działa) i — gdy nie znajdzie odpowiedzi — wysyła wiadomość do właściciela przez formularz; wiadomość automatu do właściciela nie dociera, prawdziwa nie ginie.** — Archived 2026-10-13 → `context/archive/2026-10-08-help-and-contact/`. Lesson: —.
