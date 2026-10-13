@@ -1,0 +1,55 @@
+---
+// Mock-up 11b: where the contact form lands after `POST /api/contact` answered
+// ok. Reachable directly too, and harmless - it states that a message arrived,
+// nothing about which one. Not indexed (absent from `INDEXABLE_PATHS`).
+import Blob from "@/components/brand/Blob.astro";
+import ContactIntro from "@/components/contact/ContactIntro.astro";
+import MarketingHeader from "@/components/layout/MarketingHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import { buttonVariants } from "@/components/ui/button";
+import Layout from "@/layouts/Layout.astro";
+import { cn } from "@/lib/utils";
+---
+
+<Layout title="Wiadomość wysłana">
+  <div class="relative flex min-h-screen flex-col overflow-hidden">
+    <Blob shape="b" color="sage" class="bottom-16 -left-36 h-[320px] w-[340px] sm:h-[420px] sm:w-[460px]" />
+
+    <MarketingHeader active="kontakt" />
+
+    <main
+      class="sm:px-gutter relative z-10 grid items-start gap-10 px-5 pt-8 pb-20 sm:pt-16 md:pb-[100px] lg:grid-cols-12 lg:gap-12"
+    >
+      <ContactIntro />
+      <div
+        class="bg-mleko shadow-panel rounded-card flex flex-col items-start gap-[18px] p-6 sm:p-11 sm:py-[84px] lg:col-span-6 lg:col-start-7"
+        role="status"
+      >
+        <div
+          class="bg-szalwia-soft text-mech-ciemny flex size-[72px] items-center justify-center rounded-[50%_50%_50%_14px]"
+          aria-hidden="true"
+        >
+          <svg
+            width="34"
+            height="34"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12.5l4.5 4.5L19 7.5"></path>
+          </svg>
+        </div>
+        <h2 class="font-display text-las text-[36px] leading-tight font-normal">Dziękujemy!</h2>
+        <p class="text-las-szary text-lg leading-normal">Wiadomość dotarła. Odpowiemy na podany adres e-mail.</p>
+        <a href="/kontakt" class:list={cn(buttonVariants({ variant: "outlinePill", size: "pill" }))}>
+          Napisz kolejną wiadomość
+        </a>
+      </div>
+    </main>
+
+    <SiteFooter />
+  </div>
+</Layout>

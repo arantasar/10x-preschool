@@ -1,0 +1,40 @@
+---
+// Mock-up 11 (contact), FR-026. Public and indexable. The form is an island
+// (Turnstile, and a typed message that must survive an error); it posts to
+// `POST /api/contact` and moves to `/kontakt/wyslano` on success.
+//
+// Departure from the mock-up: no consent checkbox linking to a Regulamin that
+// does not exist yet (S-20) - the form states in one sentence what is kept and
+// for how long (Open Roadmap Question #11, decided with this slice).
+import { TURNSTILE_SITE_KEY } from "astro:env/server";
+import Blob from "@/components/brand/Blob.astro";
+import ContactForm from "@/components/contact/ContactForm";
+import ContactIntro from "@/components/contact/ContactIntro.astro";
+import MarketingHeader from "@/components/layout/MarketingHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import Layout from "@/layouts/Layout.astro";
+
+// Read at runtime and handed over as a prop, not a `PUBLIC_` variable: see the
+// comment on TURNSTILE_SITE_KEY in `astro.config.mjs`.
+const siteKey = TURNSTILE_SITE_KEY;
+const defaultEmail = Astro.locals.user?.email;
+---
+
+<Layout title="Kontakt">
+  <div class="relative flex min-h-screen flex-col overflow-hidden">
+    <Blob shape="b" color="sage" class="bottom-16 -left-36 h-[320px] w-[340px] sm:h-[420px] sm:w-[460px]" />
+
+    <MarketingHeader active="kontakt" />
+
+    <main
+      class="sm:px-gutter relative z-10 grid items-start gap-10 px-5 pt-8 pb-20 sm:pt-16 md:pb-[100px] lg:grid-cols-12 lg:gap-12"
+    >
+      <ContactIntro />
+      <div class="bg-mleko shadow-panel rounded-card relative p-6 sm:p-11 lg:col-span-6 lg:col-start-7">
+        <ContactForm siteKey={siteKey} defaultEmail={defaultEmail} client:load />
+      </div>
+    </main>
+
+    <SiteFooter />
+  </div>
+</Layout>

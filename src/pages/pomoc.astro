@@ -1,0 +1,95 @@
+---
+// Mock-up 09 (FAQ), FR-025's FAQ part. Public and indexable. The questions are
+// data (`src/lib/faq.ts`); this page only lays them out. Departures from the
+// mock-up: no „Płatności” section and no „ile kosztuje” in the lead - there is
+// nothing to pay for yet.
+import Blob from "@/components/brand/Blob.astro";
+import MarketingHeader from "@/components/layout/MarketingHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import FaqItem from "@/components/marketing/FaqItem.astro";
+import { buttonVariants } from "@/components/ui/button";
+import Layout from "@/layouts/Layout.astro";
+import { FAQ_SECTIONS } from "@/lib/faq";
+import { cn } from "@/lib/utils";
+---
+
+<Layout title="Pomoc">
+  <div class="relative flex min-h-screen flex-col overflow-hidden">
+    <Blob shape="a" color="sage" class="-top-36 -right-30 h-[300px] w-[340px] sm:h-[440px] sm:w-[500px]" />
+
+    <MarketingHeader active="pomoc" />
+
+    <main class="relative z-10 flex flex-col pb-20 md:pb-[100px]">
+      <section class="sm:px-gutter flex flex-col gap-[18px] px-5 pt-8 sm:pt-16" aria-labelledby="faq-heading">
+        <p class="eyebrow">Pomoc</p>
+        <h1 id="faq-heading" class="font-display text-display-xl text-las font-normal">Najczęstsze pytania</h1>
+        <p class="text-las-szary sm:text-lead max-w-[620px] text-lg leading-relaxed">
+          Jak działa Temio, jak poprawiać propozycje i co dzieje się z Twoimi planami.
+        </p>
+      </section>
+
+      <div
+        class="sm:px-gutter grid items-start gap-10 px-5 pt-12 sm:pt-16 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-16"
+      >
+        <nav aria-label="Kategorie pytań" class="hidden flex-col gap-1 lg:sticky lg:top-8 lg:flex">
+          {
+            FAQ_SECTIONS.map((section) => (
+              <a
+                href={`#${section.id}`}
+                class="text-las hover:bg-szalwia-soft inline-flex min-h-11 items-center rounded-full px-[18px] text-base font-bold no-underline"
+              >
+                {section.title}
+              </a>
+            ))
+          }
+        </nav>
+
+        <div class="flex flex-col gap-12">
+          {
+            FAQ_SECTIONS.map((section, sectionIndex) => (
+              <section
+                id={section.id}
+                class="flex scroll-mt-8 flex-col gap-3"
+                aria-labelledby={`${section.id}-heading`}
+              >
+                <h2
+                  id={`${section.id}-heading`}
+                  class="font-display text-display-sm text-las mb-2 font-normal sm:text-[32px]"
+                >
+                  {section.title}
+                </h2>
+                {section.items.map((item, itemIndex) => (
+                  <FaqItem item={item} open={sectionIndex === 0 && itemIndex === 0} />
+                ))}
+              </section>
+            ))
+          }
+
+          <section
+            class="rounded-card bg-las md:rounded-panel relative flex flex-col gap-6 overflow-hidden px-7 py-10 md:flex-row md:items-center md:justify-between md:px-11"
+            aria-labelledby="ask-heading"
+          >
+            <Blob shape="a" color="forest" class="-right-12 -bottom-20 h-[200px] w-[220px]" />
+            <div class="relative z-10 flex flex-col gap-1.5">
+              <h2 id="ask-heading" class="font-display text-owies text-[30px] leading-tight font-normal">
+                Nie ma tu Twojego pytania?
+              </h2>
+              <p class="text-szalwia text-[17px]">Napisz do nas — odpowiemy na e-mail.</p>
+            </div>
+            <a
+              href="/kontakt"
+              class:list={cn(
+                buttonVariants({ variant: "inverse", size: "pillLg" }),
+                "relative z-10 self-start md:self-auto",
+              )}
+            >
+              Formularz kontaktowy
+            </a>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <SiteFooter />
+  </div>
+</Layout>

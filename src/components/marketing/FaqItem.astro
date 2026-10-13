@@ -1,0 +1,35 @@
+---
+// One question and answer on `/pomoc` (design package `ui/FaqItem.astro`).
+// Native <details>: opens with Enter or Space and is announced as a disclosure
+// without any JS. The +/– sign is decoration; the open state is the element's.
+import type { FaqItem } from "@/lib/faq";
+
+interface Props {
+  item: FaqItem;
+  open?: boolean;
+}
+
+const { item, open = false } = Astro.props;
+---
+
+<details class="group bg-mleko rounded-row px-5 py-[18px] sm:px-7 sm:py-[22px]" open={open}>
+  <summary
+    class="text-las flex min-h-8 cursor-pointer list-none items-center justify-between gap-4 text-[17px] leading-snug font-extrabold sm:text-[19px] [&::-webkit-details-marker]:hidden"
+  >
+    <span>{item.question}</span>
+    <span class="font-display text-mech text-[26px] leading-none group-open:hidden" aria-hidden="true">+</span>
+    <span class="font-display text-mech hidden text-[26px] leading-none group-open:inline" aria-hidden="true">–</span>
+  </summary>
+  <div class="text-las-szary mt-3.5 flex flex-col gap-2.5 text-[17px] leading-relaxed">
+    {item.answer.map((paragraph) => <p>{paragraph}</p>)}
+    {
+      item.link && (
+        <p>
+          <a href={item.link.href} class="text-las hover:text-mech font-extrabold underline">
+            {item.link.label}
+          </a>
+        </p>
+      )
+    }
+  </div>
+</details>

@@ -55,6 +55,16 @@ export default defineConfig({
       // Optional, and the redirect is inert until both are set.
       LEGACY_HOST: envField.string({ context: "server", access: "secret", optional: true }),
       CANONICAL_ORIGIN: envField.string({ context: "server", access: "secret", optional: true }),
+      // The contact form (S-19). The site key is public in content - it ships in
+      // the page - but declared `secret` for the reason given above LEGACY_HOST:
+      // `/kontakt` reads it at runtime and hands it to the island as a prop.
+      // CONTACT_TO is the owner's inbox; it must be a verified destination
+      // address of the account's Email Service. All optional: a missing value
+      // is reported by the route (`config_missing`, or a skipped mail), not
+      // thrown at build time.
+      TURNSTILE_SITE_KEY: envField.string({ context: "server", access: "secret", optional: true }),
+      TURNSTILE_SECRET_KEY: envField.string({ context: "server", access: "secret", optional: true }),
+      CONTACT_TO: envField.string({ context: "server", access: "secret", optional: true }),
     },
   },
 });

@@ -30,16 +30,24 @@ describe("pageTitle", () => {
 });
 
 describe("isIndexable", () => {
-  it.each(["/", "/auth/signin", "/auth/signin/", "/auth/signup", "/auth/signup/"])("indexes %s", (path) => {
-    expect(isIndexable(path)).toBe(true);
-  });
-
-  it.each(["/plan/month", "/plan/month/", "/plan", "/auth/confirm", "/auth/new-password", "/auth/signin/extra"])(
-    "does not index %s",
+  it.each(["/", "/auth/signin", "/auth/signin/", "/auth/signup", "/auth/signup/", "/pomoc", "/kontakt", "/kontakt/"])(
+    "indexes %s",
     (path) => {
-      expect(isIndexable(path)).toBe(false);
+      expect(isIndexable(path)).toBe(true);
     },
   );
+
+  it.each([
+    "/plan/month",
+    "/plan/month/",
+    "/plan",
+    "/auth/confirm",
+    "/auth/new-password",
+    "/auth/signin/extra",
+    "/kontakt/wyslano",
+  ])("does not index %s", (path) => {
+    expect(isIndexable(path)).toBe(false);
+  });
 });
 
 describe("canonicalUrl", () => {

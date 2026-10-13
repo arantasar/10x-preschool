@@ -75,6 +75,36 @@ export type Database = {
           },
         ]
       }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string | null
+          topic: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name?: string | null
+          topic: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string | null
+          topic?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       day_plans: {
         Row: {
           accepted_at: string | null

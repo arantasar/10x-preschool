@@ -15,6 +15,14 @@
       "id": "b85f34f00ac9467884163d3b58cd20ad",
     },
   ],
+  // The contact form's notification to the owner (`src/lib/services/email-binding.ts`).
+  // Restricted to one sender; `temio.pl` must be onboarded to Email Sending.
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "allowed_sender_addresses": ["formularz@temio.pl"],
+    },
+  ],
   "observability": {
     "enabled": true,
   },
