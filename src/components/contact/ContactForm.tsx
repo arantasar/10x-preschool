@@ -23,6 +23,10 @@ interface TurnstileApi {
     options: {
       sitekey: string;
       action: string;
+      appearance: "always" | "execute" | "interaction-only";
+      language: string;
+      theme: "auto" | "light" | "dark";
+      size: "normal" | "flexible" | "compact";
       callback: (token: string) => void;
       "expired-callback": () => void;
       "error-callback": () => void;
@@ -113,6 +117,14 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
         widgetId.current = turnstile.render(container, {
           sitekey: siteKey,
           action: "contact",
+          // Invisible unless Cloudflare is unsure about this visitor: then the
+          // widget appears and a person can click through instead of being
+          // refused. For that rare case it speaks Polish, stays light like
+          // the page, and takes the form's width.
+          appearance: "interaction-only",
+          language: "pl",
+          theme: "light",
+          size: "flexible",
           callback: (value) => {
             token.current = value;
             for (const resolve of tokenWaiters.current.splice(0)) resolve(value);
