@@ -1,0 +1,74 @@
+---
+/**
+ * Account settings shell: page title + left menu + content column (default slot).
+ * Add future sections (Moje płatności, Dane do faktury, Plan i subskrypcja) by appending
+ * to `items` — keep "Usuń konto" (danger) as the last regular item, "Wyloguj się" below the divider.
+ * ≤ 900px the menu becomes a horizontal, scrollable pill row above the content.
+ */
+interface Item { key: string; label: string; href: string; icon: 'lock' | 'trash' | 'card' | 'doc'; danger?: boolean; }
+interface Props { active: string; items?: Item[]; logoutHref?: string; }
+const {
+  active,
+  logoutHref = '/wyloguj',
+  items = [
+    { key: 'konto', label: 'Konto i hasło', href: '/ustawienia', icon: 'lock' },
+    // { key: 'platnosci', label: 'Moje płatności', href: '/ustawienia/platnosci', icon: 'card' },
+    // { key: 'faktura', label: 'Dane do faktury', href: '/ustawienia/faktura', icon: 'doc' },
+    { key: 'usun', label: 'Usuń konto', href: '/ustawienia#usun', icon: 'trash', danger: true },
+  ],
+} = Astro.props;
+const icons: Record<string, string> = {
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  card: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/>',
+  doc: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>',
+  out: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/>',
+};
+---
+<div class="set">
+  <header class="set__head">
+    <p class="eyebrow">Konto</p>
+    <h1>Ustawienia</h1>
+  </header>
+  <div class="set__grid">
+    <nav class="set__nav" aria-label="Ustawienia">
+      {items.map((i) => (
+        <a href={i.href} class:list={['set__item', i.danger && 'is-danger', active === i.key && 'is-active']} aria-current={active === i.key ? 'page' : undefined}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons[i.icon]} />
+          {i.label}
+        </a>
+      ))}
+      <hr class="set__sep" />
+      <a href={logoutHref} class="set__item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons.out} />
+        Wyloguj się
+      </a>
+    </nav>
+    <div class="set__content"><slot /></div>
+  </div>
+</div>
+
+<style>
+  .set { width: 100%; max-width: 1100px; margin: 0 auto; padding: 48px var(--app-gutter) 64px; display: flex; flex-direction: column; gap: 32px; }
+  .set__head { display: flex; flex-direction: column; gap: 6px; }
+  .set__head h1 { font-size: clamp(34px, 3.2vw, 44px); line-height: 1.1; }
+  .set__grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 40px; align-items: start; }
+  .set__nav { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 4px; background: var(--color-surface); border-radius: var(--radius-lg); padding: 14px; }
+  .set__item { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 10px 14px; border-radius: 14px; font-weight: 700; font-size: 16px; text-decoration: none; color: var(--color-text); }
+  .set__item:hover { background: var(--color-bg); color: var(--color-text); }
+  .set__item.is-active { background: var(--color-sage-soft); font-weight: 800; }
+  .set__item.is-danger { color: #9A2B12; }
+  .set__sep { border: 0; height: 1.5px; background: #E2DBC8; margin: 8px 6px; }
+  .set__content { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  .set__content :global(.set-card) { background: var(--color-surface); border-radius: var(--radius-xl); padding: 32px 36px; display: flex; flex-direction: column; gap: 18px; scroll-margin-top: 24px; }
+  .set__content :global(.set-card h2) { font-size: 26px; }
+  .set__content :global(.set-card--danger) { border: 1.5px solid #EBC3B5; }
+  .set__content :global(.set-card--danger h2) { color: #9A2B12; }
+  @media (max-width: 900px) {
+    .set__grid { grid-template-columns: 1fr; gap: 20px; }
+    .set__nav { position: static; flex-direction: row; overflow-x: auto; padding: 8px; }
+    .set__item { white-space: nowrap; }
+    .set__sep { display: none; }
+    .set__content :global(.set-card) { padding: 24px 20px; }
+  }
+</style>

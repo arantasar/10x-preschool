@@ -3,7 +3,7 @@
 import Logo from '../ui/Logo.astro';
 import Icon from '../ui/Icon.astro';
 interface Props { active: 'plan' | 'generate'; planHref?: string; generateHref?: string; accountHref?: string; }
-const { active, planHref = '/plan', generateHref = '/generuj', accountHref = '/konto' } = Astro.props;
+const { active, planHref = '/plan', generateHref = '/generuj', accountHref = '/ustawienia' } = Astro.props;
 const items = [
   { key: 'plan', label: 'Plan miesiąca', href: planHref },
   { key: 'generate', label: 'Nowe propozycje', href: generateHref },
@@ -16,7 +16,7 @@ const items = [
       <a href={i.href} class:list={['ah__item', active === i.key && 'is-active']} aria-current={active === i.key ? 'page' : undefined}>{i.label}</a>
     ))}
   </nav>
-  <a href={accountHref} class="ah__account" aria-label="Twoje konto"><Icon name="user" size={20} /></a>
+  <a href={accountHref} class="ah__account" aria-label="Ustawienia konta"><Icon name="user" size={20} /></a>
 </header>
 
 <style>

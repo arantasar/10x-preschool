@@ -8,6 +8,7 @@ src/
   components/
     ui/        Button, Icon, Logo, CategoryTag, StatusBadge, ScopeToggle, TopicForm, Blob,
                TextField, Notice, FaqItem
+    account/   SettingsLayout, DeleteAccountDialog
     plan/      ProposalCard, RemovedProposal, MonthGrid
     billing/   PricingCard, BillingToggle, PaywallDialog
     layout/    SocialMeta, MarketingHeader, SiteFooter, AppHeader, AuthSplit, AuthCard, LegalLayout
@@ -147,6 +148,7 @@ Trasy są propozycją, więc dopasuj je do istniejących.
 | Reset hasła `/reset-hasla` | 12, 12b | `AuthCard` + `TextField` e-mail → po wysłaniu stan „Sprawdź skrzynkę” (12b). Przycisk „Otwórz link (demo)” jest tylko w makiecie — w aplikacji go nie ma. |
 | Nowe hasło `/nowe-haslo?token=…` | 13 | `AuthCard mirror` + 2× `TextField type="password"` |
 | Konto założone `/konto-zalozone` | 14 | `AuthCard` + ikona ✓ w zielonym kształcie liścia, `<h1>Konto założone</h1>`, tekst z `role="status"`, `Button href="/logowanie" block` „Zaloguj się”. Pokazywany po udanej rejestracji. |
+| Ustawienia `/ustawienia` | 18, 18b | `AppHeader` (ikona konta → `/ustawienia`), `SettingsLayout active="konto"` z menu: Konto i hasło · Usuń konto · Wyloguj się. Karty `.set-card`: **Konto** (e-mail tylko do odczytu), **Zmień hasło** (obecne, nowe, powtórz; `Notice tone="success"` po zapisie; link „Nie pamiętasz obecnego hasła?” → `/reset-hasla`), **Usuń konto** (`.set-card--danger`, przycisk otwiera `DeleteAccountDialog`). Nowe sekcje (Moje płatności, Dane do faktury) dodaje się jako kolejne pozycje `items` w `SettingsLayout` — przykłady są tam zakomentowane. |
 
 Linki: „Nie pamiętasz hasła?” na logowaniu → `/reset-hasla` (`TextField labelAside`). Stopka `SiteFooter` na wszystkich stronach publicznych, łącznie ze stroną główną.
 

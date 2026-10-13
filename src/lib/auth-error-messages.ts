@@ -1,11 +1,12 @@
 /**
- * The entire user-facing error vocabulary of the three auth flows - sign-in,
- * sign-up (with its e-mail confirmation) and password reset - in one place.
+ * The entire user-facing error vocabulary of the auth flows - sign-in, sign-up
+ * (with its e-mail confirmation), password reset and password change - in one
+ * place.
  *
  * `?error=` in the auth redirects carries a **code**, never a sentence. The
- * routes (`src/pages/api/auth/{signin,signup,forgot-password,confirm,update-password}.ts`)
- * choose the code; the pages (`src/pages/auth/{signin,signup,forgot-password,new-password}.astro`)
- * look it up here at render time.
+ * routes (`src/pages/api/auth/{signin,signup,forgot-password,confirm,update-password,change-password}.ts`)
+ * choose the code; the pages (`src/pages/auth/{signin,signup,forgot-password,new-password}.astro`,
+ * `src/pages/ustawienia.astro`) look it up here at render time.
  *
  * Two things follow from that split, and both are the point of this module:
  *
@@ -56,6 +57,19 @@ export const RESET_LINK_INVALID = "reset_link_invalid";
  */
 export const SIGNUP_LINK_INVALID = "signup_link_invalid";
 export const SIGNUP_LINK_EXPIRED = "signup_link_expired";
+
+/**
+ * Also ours, minted by the password change on `/ustawienia`, where the e-mail
+ * is fixed and the sign-in or reset wording would mislead.
+ *
+ * `CURRENT_PASSWORD_INVALID`: the route's re-sign-in with the session's own
+ * address answered `invalid_credentials` - the current password is wrong.
+ * `PASSWORD_CHANGE_FAILED`: `updateUser` answered `reauthentication_needed`,
+ * which a fresh sign-in should make unreachable; the reset entry for that code
+ * talks about a fresh link and does not fit this screen.
+ */
+export const CURRENT_PASSWORD_INVALID = "current_password_invalid";
+export const PASSWORD_CHANGE_FAILED = "password_change_failed";
 
 /**
  * Shown for anything the map does not know: an unmapped Supabase code, a code
@@ -123,6 +137,12 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
     "Ze względów bezpieczeństwa hasło można zmienić tylko ze świeżego linku. Poproś o nowy poniżej.",
   [RESET_SESSION_MISSING]: "Aby ustawić nowe hasło, otwórz link z wiadomości e-mail albo poproś o nowy poniżej.",
   [RESET_LINK_INVALID]: "Ten link do ustawienia hasła jest niepełny lub nieprawidłowy. Poproś o nowy poniżej.",
+
+  // --- password change (/ustawienia) ----------------------------------------
+  // Unlike `invalid_credentials`, this may name the password: the e-mail is the
+  // session's own, so there is nothing to enumerate.
+  [CURRENT_PASSWORD_INVALID]: "Obecne hasło jest nieprawidłowe. Sprawdź je i spróbuj ponownie.",
+  [PASSWORD_CHANGE_FAILED]: "Nie udało się zmienić hasła. Spróbuj ponownie za chwilę.",
 
   // --- any screen -------------------------------------------------------
   // From the plan's coverage table; kept, but note that local Supabase answers a

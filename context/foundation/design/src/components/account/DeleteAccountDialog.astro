@@ -1,0 +1,52 @@
+---
+/**
+ * "Usunąć konto?" confirmation — native <dialog>. The destructive button stays disabled
+ * until the user types the confirmation word (default „USUŃ”, case-insensitive).
+ * Open with: document.getElementById('delete-account').showModal()
+ * Submits POST to `action` (your delete endpoint).
+ */
+interface Props { email: string; action: string; id?: string; word?: string; }
+const { email, action, id = 'delete-account', word = 'USUŃ' } = Astro.props;
+---
+<dialog id={id} class="del" aria-labelledby={`${id}-t`} data-word={word}>
+  <div class="del__icon" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg>
+  </div>
+  <h2 id={`${id}-t`}>Usunąć konto?</h2>
+  <p class="del__lead">Usuniemy konto <strong>{email}</strong> razem ze wszystkimi planami i propozycjami. Tej operacji nie da się cofnąć.</p>
+  <form method="post" action={action} class="del__form">
+    <label for={`${id}-c`} class="del__label">Aby potwierdzić, wpisz <code>{word}</code></label>
+    <input id={`${id}-c`} name="confirm" type="text" autocomplete="off" required class="del__input" />
+    <button type="submit" class="del__go" disabled>Usuń konto na zawsze</button>
+    <button type="submit" formmethod="dialog" formnovalidate class="del__cancel">Anuluj</button>
+  </form>
+</dialog>
+
+<script>
+  document.querySelectorAll<HTMLDialogElement>('dialog.del').forEach((dlg) => {
+    const word = (dlg.dataset.word || '').toLocaleUpperCase('pl');
+    const input = dlg.querySelector<HTMLInputElement>('.del__input')!;
+    const go = dlg.querySelector<HTMLButtonElement>('.del__go')!;
+    input.addEventListener('input', () => { go.disabled = input.value.trim().toLocaleUpperCase('pl') !== word; });
+    dlg.addEventListener('close', () => { input.value = ''; go.disabled = true; });
+  });
+</script>
+
+<style>
+  .del { width: min(560px, calc(100vw - 32px)); border: 0; padding: 44px; border-radius: 32px; background: var(--color-surface); color: var(--color-text); box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.5); }
+  .del[open] { display: flex; flex-direction: column; gap: 18px; }
+  .del::backdrop { background: rgba(31, 59, 45, 0.55); }
+  .del__icon { width: 64px; height: 64px; border-radius: 50% 50% 50% 12px; background: #FBE3DA; color: #9A2B12; display: flex; align-items: center; justify-content: center; }
+  .del h2 { font-size: 34px; line-height: 1.15; }
+  .del__lead { font-size: 17px; line-height: 1.55; color: var(--color-text-muted); }
+  .del__lead strong { color: var(--color-text); }
+  .del__form { display: flex; flex-direction: column; gap: 8px; }
+  .del__label { font-weight: 800; font-size: 15px; }
+  .del__label code { font-family: ui-monospace, Menlo, monospace; background: var(--color-bg); padding: 2px 8px; border-radius: 6px; }
+  .del__input { font: inherit; font-size: 18px; font-weight: 700; letter-spacing: 1px; color: var(--color-text); border: 1.5px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 18px; background: #fff; margin-bottom: 12px; }
+  .del__input:focus { outline: none; border-color: var(--color-text); box-shadow: 0 0 0 3px var(--color-apricot); }
+  .del__go { font: inherit; font-size: 17px; font-weight: 800; padding: 16px; min-height: 44px; border: 0; border-radius: var(--radius-pill); background: #9A2B12; color: #fff; cursor: pointer; }
+  .del__go:disabled { background: #E6D3CC; color: #6B4A40; cursor: not-allowed; }
+  .del__cancel { font: inherit; font-size: 16px; font-weight: 800; padding: 12px; border: 0; background: transparent; color: var(--color-text); text-decoration: underline; cursor: pointer; }
+  @media (max-width: 640px) { .del { padding: 28px 22px; } .del h2 { font-size: 28px; } }
+</style>
