@@ -1,0 +1,120 @@
+---
+/**
+ * Account menu in the app header (variant A): round avatar with the user's initial + chevron.
+ * Click opens a dropdown: "Zalogowano jako <email>", Ustawienia konta, Pomoc, Kontakt, | Wyloguj się.
+ * Closes on outside click, Esc, or picking an item. Keyboard: Enter/Space opens, ↑/↓ move, Tab leaves.
+ * Logout is a POST form (safer than a GET link) — point `logoutAction` at your endpoint.
+ */
+interface Props {
+  email: string;
+  name?: string;               // optional; initial is taken from name, else from email
+  settingsHref?: string;
+  helpHref?: string;
+  contactHref?: string;
+  logoutAction?: string;
+}
+const {
+  email, name,
+  settingsHref = '/ustawienia', helpHref = '/faq', contactHref = '/kontakt', logoutAction = '/api/auth/logout',
+} = Astro.props;
+const initial = (name || email).trim().charAt(0).toLocaleUpperCase('pl');
+const id = 'account-menu';
+const icons: Record<string, string> = {
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 2.2-2.3 3.5M12 17h.01"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/>',
+  out: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/>',
+};
+const links = [
+  { label: 'Ustawienia konta', href: settingsHref, icon: 'gear' },
+  { label: 'Pomoc', href: helpHref, icon: 'help' },
+  { label: 'Kontakt', href: contactHref, icon: 'mail' },
+];
+---
+<div class="am" data-account-menu>
+  <button type="button" class="am__btn" aria-haspopup="menu" aria-expanded="false" aria-controls={id} aria-label={`Menu konta: ${email}`}>
+    <span class="am__avatar" aria-hidden="true">{initial}</span>
+    <svg class="am__chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+  </button>
+  <div id={id} class="am__menu" role="menu" hidden>
+    <div class="am__who">
+      <span class="am__avatar am__avatar--lg" aria-hidden="true">{initial}</span>
+      <span class="am__who-text"><span class="am__who-label">Zalogowano jako</span><span class="am__email" title={email}>{email}</span></span>
+    </div>
+    <hr class="am__sep" />
+    {links.map((l) => (
+      <a role="menuitem" class="am__item" href={l.href}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons[l.icon]} />
+        {l.label}
+      </a>
+    ))}
+    <hr class="am__sep" />
+    <form method="post" action={logoutAction}>
+      <button type="submit" role="menuitem" class="am__item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons.out} />
+        Wyloguj się
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-account-menu]').forEach((root) => {
+    const btn = root.querySelector<HTMLButtonElement>('.am__btn')!;
+    const menu = root.querySelector<HTMLElement>('.am__menu')!;
+    const items = () => Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'));
+    const open = (focusFirst = false) => {
+      menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
+      if (focusFirst) items()[0]?.focus();
+    };
+    const close = (returnFocus = false) => {
+      menu.hidden = true; btn.setAttribute('aria-expanded', 'false');
+      if (returnFocus) btn.focus();
+    };
+    btn.addEventListener('click', () => (menu.hidden ? open() : close()));
+    btn.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { e.preventDefault(); open(true); } });
+    menu.addEventListener('keydown', (e) => {
+      const list = items(); const i = list.indexOf(document.activeElement as HTMLElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); list[(i + 1) % list.length].focus(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); list[(i - 1 + list.length) % list.length].focus(); }
+      if (e.key === 'Tab') close();
+    });
+    root.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) { e.preventDefault(); close(true); } });
+    document.addEventListener('click', (e) => { if (!root.contains(e.target as Node)) close(); });
+  });
+</script>
+
+<style>
+  .am { position: relative; }
+  .am__btn {
+    display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; min-height: 48px;
+    border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-text); cursor: pointer; font: inherit;
+  }
+  .am__btn:hover, .am__btn[aria-expanded='true'] { background: var(--color-surface-muted); }
+  .am__btn[aria-expanded='true'] .am__chev { transform: rotate(180deg); }
+  .am__chev { transition: transform .15s ease; }
+  .am__avatar {
+    width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%;
+    background: var(--color-apricot-soft); color: var(--color-text);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px;
+  }
+  .am__menu {
+    position: absolute; right: 0; top: calc(100% + 10px); z-index: 50; width: 300px; max-width: calc(100vw - 32px);
+    background: var(--color-surface); border-radius: 20px; padding: 10px;
+    box-shadow: 0 24px 48px -20px rgba(31, 59, 45, 0.35), 0 0 0 1.5px #E2DBC8;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .am__menu[hidden] { display: none; }
+  .am__who { display: flex; align-items: center; gap: 12px; padding: 10px 12px 12px; }
+  .am__who-text { display: flex; flex-direction: column; min-width: 0; }
+  .am__who-label { font-size: 13px; font-weight: 700; color: var(--color-text-accent); }
+  .am__email { font-size: 15px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .am__sep { border: 0; height: 1.5px; background: #E2DBC8; margin: 6px; }
+  .am__item {
+    display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 0 14px;
+    border: 0; border-radius: 12px; background: transparent; color: var(--color-text);
+    font: inherit; font-weight: 700; font-size: 16px; text-decoration: none; text-align: left; cursor: pointer;
+  }
+  .am__item:hover, .am__item:focus-visible { background: var(--color-bg); color: var(--color-text); }
+  form { margin: 0; }
+</style>

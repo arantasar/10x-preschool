@@ -6,10 +6,10 @@
  * ≤ 900px the menu becomes a horizontal, scrollable pill row above the content.
  */
 interface Item { key: string; label: string; href: string; icon: 'lock' | 'trash' | 'card' | 'doc'; danger?: boolean; }
-interface Props { active: string; items?: Item[]; logoutHref?: string; }
+interface Props { active: string; items?: Item[]; logoutAction?: string; }
 const {
   active,
-  logoutHref = '/wyloguj',
+  logoutAction = '/api/auth/logout',
   items = [
     { key: 'konto', label: 'Konto i hasło', href: '/ustawienia', icon: 'lock' },
     // { key: 'platnosci', label: 'Moje płatności', href: '/ustawienia/platnosci', icon: 'card' },
@@ -39,10 +39,12 @@ const icons: Record<string, string> = {
         </a>
       ))}
       <hr class="set__sep" />
-      <a href={logoutHref} class="set__item">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons.out} />
-        Wyloguj się
-      </a>
+      <form method="post" action={logoutAction} class="set__logout">
+        <button type="submit" class="set__item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons.out} />
+          Wyloguj się
+        </button>
+      </form>
     </nav>
     <div class="set__content"><slot /></div>
   </div>
@@ -55,6 +57,8 @@ const icons: Record<string, string> = {
   .set__grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 40px; align-items: start; }
   .set__nav { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 4px; background: var(--color-surface); border-radius: var(--radius-lg); padding: 14px; }
   .set__item { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 10px 14px; border-radius: 14px; font-weight: 700; font-size: 16px; text-decoration: none; color: var(--color-text); }
+  .set__logout { margin: 0; }
+  button.set__item { width: 100%; border: 0; background: transparent; font: inherit; font-weight: 700; font-size: 16px; text-align: left; cursor: pointer; }
   .set__item:hover { background: var(--color-bg); color: var(--color-text); }
   .set__item.is-active { background: var(--color-sage-soft); font-weight: 800; }
   .set__item.is-danger { color: #9A2B12; }
