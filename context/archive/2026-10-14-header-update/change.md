@@ -1,10 +1,10 @@
 ---
 change_id: header-update
 title: App header with an account dropdown (design mock-up 19)
-status: impl_reviewed
+status: archived
 created: 2026-10-14
 updated: 2026-10-14
-archived_at: null
+archived_at: 2026-10-14T20:41:09Z
 ---
 
 ## Notes
