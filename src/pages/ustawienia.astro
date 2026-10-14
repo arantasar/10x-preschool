@@ -1,0 +1,63 @@
+---
+import PlannerLayout from "@/layouts/PlannerLayout.astro";
+import SettingsLayout from "@/components/account/SettingsLayout.astro";
+import PasswordChangeForm from "@/components/account/PasswordChangeForm";
+import { PASSWORD_CHANGED_COOKIE, PASSWORD_CHANGED_COOKIE_OPTIONS } from "@/lib/account-settings";
+import { authErrorMessage } from "@/lib/auth-error-messages";
+
+// Protected by the middleware (`PROTECTED_ROUTES`), so a user is always here.
+const { user } = Astro.locals;
+
+// One-shot: set by `/api/auth/change-password`, consumed by the first render
+// that shows it, so a reload removes the notice by construction.
+const passwordChanged = Astro.cookies.has(PASSWORD_CHANGED_COOKIE);
+if (passwordChanged) {
+  Astro.cookies.delete(PASSWORD_CHANGED_COOKIE, { path: PASSWORD_CHANGED_COOKIE_OPTIONS.path });
+}
+
+// Only when present: the lookup never returns an empty string, and the error
+// box hides itself only on a falsy message.
+const errorCode = Astro.url.searchParams.get("error");
+const serverError = errorCode ? authErrorMessage(errorCode) : null;
+
+const card = "bg-mleko rounded-card flex flex-col px-5 py-6 min-[901px]:px-9 min-[901px]:py-8";
+---
+
+<PlannerLayout title="Ustawienia" active="account">
+  <main>
+    <SettingsLayout active="konto">
+      <section aria-labelledby="konto-heading" class:list={[card, "gap-3.5"]}>
+        <h2 id="konto-heading" class="font-display text-display-sm text-las">Konto</h2>
+        <div
+          class="bg-owies flex flex-col gap-2 rounded-2xl px-5 py-4 min-[600px]:flex-row min-[600px]:items-center min-[600px]:justify-between min-[600px]:gap-6"
+        >
+          <div class="flex min-w-0 flex-col gap-0.5">
+            <p class="text-mech text-sm font-extrabold">E-mail</p>
+            <p class="text-las text-lg font-bold break-all">{user?.email}</p>
+          </div>
+          <p class="text-las-szary max-w-[320px] text-sm min-[600px]:text-right">
+            Na ten adres wysyłamy linki do aktywacji i resetu hasła.
+          </p>
+        </div>
+      </section>
+
+      <section id="haslo" aria-labelledby="haslo-heading" class:list={[card, "scroll-mt-6 gap-5"]}>
+        <div class="flex flex-col gap-1.5">
+          <h2 id="haslo-heading" class="font-display text-display-sm text-las">Zmień hasło</h2>
+          <p class="text-las-szary text-base">
+            Po zmianie hasła pozostaniesz zalogowana lub zalogowany na tym urządzeniu, a na pozostałych trzeba będzie
+            zalogować się ponownie.
+          </p>
+        </div>
+        {
+          passwordChanged && (
+            <p class="rounded-input bg-szalwia-soft text-mech-ciemny px-4 py-3 text-[15px] font-semibold" role="status">
+              Hasło zostało zmienione. Na innych urządzeniach trzeba zalogować się ponownie.
+            </p>
+          )
+        }
+        <PasswordChangeForm client:load serverError={serverError} email={user?.email} />
+      </section>
+    </SettingsLayout>
+  </main>
+</PlannerLayout>

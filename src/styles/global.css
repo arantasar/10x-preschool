@@ -190,6 +190,13 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* With classic scrollbars (Windows, macOS with a mouse) a page that scrolls is
+     ~15 px narrower than one that does not, and the right-aligned header items
+     jump between, say, `/pomoc` and a short `/kontakt`. Reserving the gutter
+     everywhere keeps them still; overlay scrollbars ignore it. */
+  html {
+    scrollbar-gutter: stable;
+  }
   body {
     @apply bg-background font-body text-foreground;
     font-size: 17px;

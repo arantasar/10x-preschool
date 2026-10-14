@@ -43,3 +43,10 @@
 - **Problem**: `supabase-error-copy` 2.4 nie mogło przejść przy implementacji, którą ta sama faza nakazywała: `.` w `error.message` łapało myślnik w `auth-error-messages`, a `console.error(… error.message)` był wymagany przez kontrakt fazy. Kryterium 2.6 (`grep -c "authErrorMessage"` == 2) przechodziło wyłącznie dzięki temu, że komentarz w obu plikach `.astro` celowo nie nazywał funkcji — dopisanie zdania z nazwą funkcji zapala je na czerwono bez zmiany zachowania, a dwie wzmianki w komentarzach zapalają je na zielono przy usuniętym imporcie. Obie bramki były zielone lub czerwone przez przypadek, nie przez stan kodu.
 - **Rule**: Bramkę grepową zakotwicz na konstrukcji niosącej niezmiennik (wywołanie, przekierowanie, literał), nie na gołym identyfikatorze, który pada też w komentarzach, importach i logach. Zanim trafi do planu, uruchom ją na stanie zepsutym i na docelowym — musi rozróżnić oba.
 - **Applies to**: plan, plan-review, implement, impl-review
+
+## Logowanie z Workera nie niesie IP klienta
+
+- **Context**: Każda trasa, która woła GoTrue (`signInWithPassword`, `signUp`, `resetPasswordForEmail`, `verifyOtp`) z serwera — `src/lib/supabase.ts` przekazuje do Supabase wyłącznie ciasteczka (`password-change`, impl-review F1).
+- **Problem**: Limity Supabase Auth liczone „na IP” widzą adresy wyjściowe Cloudflare, wspólne dla wszystkich użytkowników, a nie konkretnej nauczycielki. Każda nowa trasa przyjmująca hasło jest więc kolejnymi drzwiami do zgadywania bez limitu na konto, a cudzy ruch potrafi zablokować uczciwą próbę błędem `over_request_rate_limit`. Wygląda to na ochronę, której w praktyce nie ma.
+- **Rule**: Nie traktuj limitów Supabase Auth jako ochrony przed zgadywaniem haseł w tej aplikacji. Plan każdej trasy przyjmującej hasło lub wysyłającej mail musi albo wnieść własny limit na konto/adres, albo zapisać jego brak jako jawną decyzję z właścicielem.
+- **Applies to**: plan, plan-review, implement, impl-review

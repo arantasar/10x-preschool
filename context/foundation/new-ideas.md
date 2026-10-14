@@ -8,3 +8,4 @@ Zgłoszenia Janusza. Gdzie trafiły (2026-09-29): `next-actions.md` §Kolejka po
 - Terms & Conditions → `M-03`, Krok 12–13
 - Research konkurencji → ✅ `monetization.md` §2
 - Uwzględnienie świąt kalendarzowych i dni czegoś (np. Dzień Kropki) → `M-04`, Krok 15 (Basic)
+- Mail „Twoje hasło zostało zmienione” po zmianie hasła (powiadomienie Supabase `password_changed`) — świadomie poza `S-17` (`password-change`): wymaga szablonu i kroków w panelu Supabase. Bez właściciela.

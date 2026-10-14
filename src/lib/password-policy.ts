@@ -1,6 +1,7 @@
 /**
  * The app's password rules, in one place for every form that sets a password
- * (sign-up, the post-reset new-password screen).
+ * (sign-up, the post-reset new-password screen, the password change on
+ * `/ustawienia`).
  *
  * Supabase checks the same minimum on its side - `minimum_password_length` in
  * `supabase/config.toml` locally, the Auth → Providers → Email setting in the
@@ -35,6 +36,29 @@ export function validateNewPassword(password: string, repeat: string): NewPasswo
     errors.repeat = "Powtórz nowe hasło";
   } else if (password && password !== repeat) {
     errors.repeat = "Hasła nie są takie same";
+  }
+
+  return errors;
+}
+
+export type PasswordChangeErrors = NewPasswordErrors & { current?: string };
+
+/**
+ * Validate the password change on `/ustawienia`: the current password, the new
+ * one and its repetition. The new pair follows {@link validateNewPassword}; on
+ * top of that the new password must differ from the current one, which spares
+ * the teacher the round trip to Supabase's `same_password`.
+ *
+ * The route's zod schema (`src/pages/api/auth/change-password.ts`) mirrors these
+ * rules - this check is a courtesy, the server is the authority.
+ */
+export function validatePasswordChange(current: string, password: string, repeat: string): PasswordChangeErrors {
+  const errors: PasswordChangeErrors = validateNewPassword(password, repeat);
+
+  if (!current) {
+    errors.current = "Podaj obecne hasło";
+  } else if (password && password === current) {
+    errors.password = "Nowe hasło musi się różnić od obecnego";
   }
 
   return errors;

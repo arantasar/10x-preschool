@@ -1,15 +1,16 @@
 ---
-// The shell of the signed-in planner (`/plan`, `/plan/week`, `/plan/month`):
-// the app bar across the full width, then the page. One place for it instead of
-// a copy of the wrapper on each of the three pages.
+// The shell of every signed-in screen (`/plan`, `/plan/week`, `/plan/month`,
+// `/ustawienia`): the app bar across the full width, then the page. One place
+// for it instead of a copy of the wrapper on each page.
 import Layout from "@/layouts/Layout.astro";
 import AppHeader from "@/components/AppHeader.astro";
 
 interface Props {
   title: string;
-  // Which item of the main nav is the current one: the month is `plan`, the
-  // week and the day - the two screens that generate - are `generate`.
-  active: "plan" | "generate";
+  // Which item of the header is the current one: the month is `plan`, the week
+  // and the day - the two screens that generate - are `generate`, the settings
+  // screen is `account` (the avatar). Left out, nothing is marked current.
+  active?: "plan" | "generate" | "account";
 }
 
 const { title, active } = Astro.props;

@@ -46,11 +46,15 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 
 - Sign-up confirmation: the same `/auth/confirm` button page with `type=email` (the link is built from `signUp`'s `emailRedirectTo`). A good token lands the teacher signed in on `/plan/month`; a bad one goes to `/auth/signin?error=signup_link_{invalid,expired}`, never to the reset page. The template is `supabase/templates/confirmation.html` locally and lives in the dashboard (Auth → Email Templates → Confirm signup) in production.
 
+- Account settings: `src/pages/ustawienia.astro` (protected — `SETTINGS_PATH` in `PROTECTED_ROUTES`), built on `src/components/account/SettingsLayout.astro`; S-18 adds account deletion there as a new menu item and card. In `AppHeader` the avatar and the e-mail address together are one link to it (below 721 px only the avatar shows).
+
+- Password change: `POST /api/auth/change-password` first **re-signs in** with `signInWithPassword` using the session's own e-mail (never an address from the form), then `updateUser({ password })`, then `signOut({ scope: "others" })`. The re-sign-in is not optional: `secure_password_change` is on, and GoTrue refuses `updateUser` from a session older than 24 h with `reauthentication_needed`. Only a fresh session gets through, and teachers stay signed in for days. A wrong current password becomes our `current_password_invalid`, never the sign-in wording. Like sign-out, the form has no CSRF token: it rests on `security.checkOrigin` in `astro.config.mjs`, which must stay on.
+
 - Home screen of the signed-in app: `src/pages/plan/month.astro` (protected via the `/plan` prefix in `PROTECTED_ROUTES`; `/` redirects a signed-in user there)
 
 ### Planner shell
 
-- `src/layouts/PlannerLayout.astro` — the shell of every `/plan*` screen (`/plan`, `/plan/week`, `/plan/month`): it wraps `Layout.astro`, renders `src/components/AppHeader.astro` across the full width and takes `active: "plan" | "generate"` for the main nav (month → `plan`, week and day → `generate`). A new signed-in screen uses this layout rather than `Layout.astro` directly.
+- `src/layouts/PlannerLayout.astro` — the shell of every signed-in screen (`/plan`, `/plan/week`, `/plan/month`, `/ustawienia`): it wraps `Layout.astro`, renders `src/components/AppHeader.astro` across the full width and takes an optional `active: "plan" | "generate" | "account"` (month → `plan`, week and day → `generate`, settings → `account`, which marks the avatar-and-address link to `/ustawienia` as current). A new signed-in screen uses this layout rather than `Layout.astro` directly.
 
 ### Public help and contact
 

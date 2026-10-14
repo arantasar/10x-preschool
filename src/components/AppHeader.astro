@@ -4,14 +4,19 @@
 // that one is the signed-out pages' header, and its fate is unrelated to the
 // fate of this shell.
 //
-// The avatar is decoration, not a link: there is no `/konto` page to lead to
-// (owner: M-03). "Wyloguj się" stays a visible submit button - it is the way
-// out, and the e2e setup waits for it.
+// The avatar and the address together are one link into the account settings
+// (`/ustawienia`, S-17): a bare avatar was not recognisable as a way in, and the
+// address says whose account this is - on a shared preschool computer that
+// matters. Below 721 px the address hides and the avatar stands alone.
+// "Wyloguj się" stays a visible submit button - it is the way out, and the e2e
+// setup waits for it.
 import Logo from "@/components/brand/Logo.astro";
+import StableLabel from "@/components/layout/StableLabel.astro";
+import { SETTINGS_PATH } from "@/lib/account-settings";
 import { cn } from "@/lib/utils";
 
 interface Props {
-  active: "plan" | "generate";
+  active?: "plan" | "generate" | "account";
 }
 
 const { active } = Astro.props;
@@ -41,34 +46,51 @@ const initial = user?.email?.charAt(0).toUpperCase() ?? "";
             active === item.key && "bg-szalwia-soft hover:text-las font-extrabold",
           )}
         >
-          {item.label}
+          <StableLabel label={item.label} />
         </a>
       ))
     }
   </nav>
-  <div class="flex items-center gap-3">
+  <div class="flex items-center gap-1.5">
     {
       initial && (
-        <span
-          aria-hidden="true"
-          class="bg-morela-soft text-las flex size-11 shrink-0 items-center justify-center rounded-full text-base font-extrabold"
+        <a
+          href={SETTINGS_PATH}
+          title="Ustawienia konta"
+          aria-current={active === "account" ? "page" : undefined}
+          class:list={cn(
+            "text-las hover:bg-owies hover:text-las flex min-h-11 items-center gap-2.5 rounded-full no-underline min-[721px]:pr-4",
+            // The current page, like the current item of the main nav.
+            active === "account" && "bg-szalwia-soft hover:bg-szalwia-soft",
+          )}
         >
-          {initial}
-        </span>
+          <span
+            aria-hidden="true"
+            class="bg-morela-soft flex size-11 shrink-0 items-center justify-center rounded-full text-base font-extrabold"
+          >
+            {initial}
+          </span>
+          {/* The name starts with what the link does and keeps the visible
+              address in it, so voice control finds it by either. The colon
+              hides with the address, so below 721 px the name ends cleanly. */}
+          <span class="sr-only">
+            Ustawienia konta<span class="hidden min-[721px]:inline">:</span>
+          </span>
+          <span class="text-las-szary hidden text-[15px] font-semibold min-[721px]:inline">{user?.email}</span>
+        </a>
       )
     }
-    {user?.email && <span class="text-las-szary hidden text-[15px] min-[721px]:inline">{user.email}</span>}
     {/* The signed-in way to the FAQ and the contact form (S-19). */}
     <a
       href="/pomoc"
-      class="text-las hover:text-mech inline-flex min-h-11 items-center rounded-full px-2 text-[15px] font-extrabold underline underline-offset-4"
+      class="text-las hover:text-mech inline-flex min-h-11 items-center rounded-full px-3 text-[15px] font-bold no-underline"
     >
       Pomoc
     </a>
     <form method="POST" action="/api/auth/signout">
       <button
         type="submit"
-        class="text-las hover:text-mech inline-flex min-h-11 cursor-pointer items-center rounded-full px-2 text-[15px] font-extrabold underline underline-offset-4"
+        class="text-las hover:text-mech inline-flex min-h-11 cursor-pointer items-center rounded-full px-3 text-[15px] font-bold"
       >
         Wyloguj się
       </button>

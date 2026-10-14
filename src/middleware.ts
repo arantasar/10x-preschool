@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { CANONICAL_ORIGIN, LEGACY_HOST } from "astro:env/server";
+import { SETTINGS_PATH } from "@/lib/account-settings";
 import { canonicalRedirect, isOffCanonicalHost } from "@/lib/canonical-host";
 import { createClient } from "@/lib/supabase";
 
@@ -7,7 +8,7 @@ import { createClient } from "@/lib/supabase";
 // the session itself: the redirect below is the right answer for a page and the
 // wrong one for a route a React island calls with `fetch`, which would follow it
 // and try to parse the sign-in page as JSON.
-const PROTECTED_ROUTES = ["/plan"];
+const PROTECTED_ROUTES = ["/plan", SETTINGS_PATH];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   // First, before the Supabase client: a request that is about to leave for the
