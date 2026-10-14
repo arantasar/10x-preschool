@@ -28,10 +28,11 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   adapter: cloudflare(),
-  // On by default in Astro 6, but the signed-in app's only state-changing form -
-  // the sign-out POST in `src/components/AppHeader.astro` - has no CSRF
-  // token of its own and rests entirely on this check. Stated explicitly so a
-  // future default change or a `security` edit cannot remove it silently.
+  // On by default in Astro 6, but the signed-in app's state-changing forms -
+  // the sign-out POST (`AppHeader.astro`, `SettingsLayout.astro`) and the
+  // password change (`/api/auth/change-password`) - have no CSRF token of their
+  // own and rest entirely on this check. Stated explicitly so a future default
+  // change or a `security` edit cannot remove it silently.
   security: { checkOrigin: true },
   env: {
     schema: {

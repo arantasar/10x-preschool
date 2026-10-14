@@ -71,8 +71,11 @@ const initial = user?.email?.charAt(0).toUpperCase() ?? "";
             {initial}
           </span>
           {/* The name starts with what the link does and keeps the visible
-              address in it, so voice control finds it by either. */}
-          <span class="sr-only">Ustawienia konta: </span>
+              address in it, so voice control finds it by either. The colon
+              hides with the address, so below 721 px the name ends cleanly. */}
+          <span class="sr-only">
+            Ustawienia konta<span class="hidden min-[721px]:inline">:</span>
+          </span>
           <span class="text-las-szary hidden text-[15px] font-semibold min-[721px]:inline">{user?.email}</span>
         </a>
       )

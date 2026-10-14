@@ -32,7 +32,10 @@ function fail(code: string) {
  *    session also satisfies `secure_password_change`, which refuses
  *    `updateUser` from a session older than 24 h. A failure writes no cookies,
  *    so the teacher's current session is untouched.
- * 2. `updateUser` saves the new password. Nothing has changed before this point.
+ * 2. `updateUser` saves the new password. The password has not changed before
+ *    this point - but the session has: should this step fail, the device keeps
+ *    the fresh session from step 1 and the previous one stays valid on the
+ *    server, unrevoked. Nobody is signed out and nothing is lost.
  * 3. `signOut({ scope: "others" })` revokes every other session, including this
  *    device's previous one - harmless, the browser already holds the fresh
  *    cookies. Never called before step 2 succeeded.

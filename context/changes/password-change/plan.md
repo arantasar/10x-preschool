@@ -307,6 +307,21 @@ No schema change and no dashboard change: `secure_password_change` stays on, and
 - E2E pattern: `tests/e2e/password-reset.spec.ts`
 - GoTrue enforcement: `supabase/auth` `internal/api/user.go` (`UpdatePasswordRequireReauthentication`)
 
+## Addendum (2026-10-14, after implementation)
+
+Recorded after `/10x-impl-review` (`reviews/impl-review.md`). The phase blocks above stay as written; this section says where the code deliberately differs from them.
+
+### Header link to settings (commit `fbfa016`, requested by the user)
+
+- Phase 3 §2 planned the avatar alone with `aria-label="Ustawienia konta"` and the double ring of mock-up 18 when current. In use, a bare avatar was not recognisable as a way in. The avatar and the e-mail address are now **one link** to `/ustawienia` (a pill, sage background when current, no ring). Its name is „Ustawienia konta: <adres>”; below 721 px the address hides and the name is „Ustawienia konta”.
+- „Pomoc” and „Wyloguj się” stay in the header but lose the underline and match the nav items.
+- Outside S-17's planned files: `StableLabel.astro` (nav labels reserve their extra-bold width, in `AppHeader` and `MarketingHeader`) and `scrollbar-gutter: stable` in `global.css` — the header no longer shifts between pages. `FormField.tsx` gained an optional `autoComplete` prop for the Phase 3 §4 contract.
+- **Manual row 3.6 now means:** the avatar-and-address pill leads to `/ustawienia`, has a visible focus ring, and carries `aria-current="page"` with the sage background on that page (not the double ring); signed out, `/ustawienia` → `/auth/signin`.
+
+### Known decision: no per-account limit on current-password guesses
+
+`POST /api/auth/change-password` re-signs in through GoTrue from the Worker, without the client's IP (`src/lib/supabase.ts` forwards cookies only). GoTrue's sign-in rate limit therefore counts Cloudflare's shared egress addresses, not the teacher: someone holding a stolen session can guess the current password with no per-account cap, and unrelated traffic can make a real change fail with `over_request_rate_limit`. `/api/auth/signin` has had the same exposure since F-01; this route adds a second door to it. Accepted for S-17 — a per-account counter (KV keyed by `user.id`) would cover this route but not sign-in, so the fix belongs in one change for both. **Owner:** a later security change, before S-22 opens public sign-up for paying users. See the lesson „Logowanie z Workera nie niesie IP klienta” in `context/foundation/lessons.md`.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.

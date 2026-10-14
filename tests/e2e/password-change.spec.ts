@@ -86,10 +86,17 @@ test.describe("FR-023 — zmiana hasła w ustawieniach konta", () => {
       await pageB.goto("/plan/month");
       await expect(pageB).toHaveURL(/\/plan\/month$/);
 
-      // Poprawne obecne hasło: potwierdzenie na tym samym ekranie.
+      // Poprawne obecne hasło: potwierdzenie na tym samym ekranie. Że stare
+      // hasło po złej próbie nadal działało, dowodzi dopiero ten krok — trasa
+      // przyjmuje je jako obecne.
       await fillPasswordChange(pageA, OLD_PASSWORD, NEW_PASSWORD);
       await pageA.waitForURL(/\/ustawienia$/);
-      await expect(pageA.getByRole("status").filter({ hasText: "Hasło zostało zmienione." })).toBeVisible();
+      const notice = pageA.getByRole("status").filter({ hasText: "Hasło zostało zmienione." });
+      await expect(notice).toBeVisible();
+      // Jednorazowe: przeładowanie usuwa potwierdzenie.
+      await pageA.reload();
+      await expect(pageA.getByRole("heading", { name: "Zmień hasło" })).toBeVisible();
+      await expect(notice).toBeHidden();
 
       // Wynik biznesowy: drugie urządzenie ląduje na logowaniu, to zostaje.
       await pageB.goto("/plan/month");
@@ -100,7 +107,9 @@ test.describe("FR-023 — zmiana hasła w ustawieniach konta", () => {
       // Stare hasło przestało działać, nowe działa.
       await signIn(pageB, email, OLD_PASSWORD);
       await expect(pageB).toHaveURL(/\/auth\/signin\?error=/);
-      await expect(pageB.getByText("Nieprawidłowy adres e-mail lub hasło.")).toBeVisible();
+      await expect(
+        pageB.getByText("Nieprawidłowy adres e-mail lub hasło. Sprawdź dane i spróbuj ponownie.", { exact: true }),
+      ).toBeVisible();
       await signIn(pageB, email, NEW_PASSWORD);
       await pageB.waitForURL("**/plan/month");
     } finally {

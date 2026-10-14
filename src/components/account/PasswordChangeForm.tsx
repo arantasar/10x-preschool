@@ -7,13 +7,14 @@ import { MIN_PASSWORD_LENGTH, validatePasswordChange, type PasswordChangeErrors 
 
 interface Props {
   serverError?: string | null;
+  email?: string;
 }
 
 /**
  * „Zmień hasło” on `/ustawienia`. A native POST to `/api/auth/change-password`;
  * the island only validates first, with the same parts as `NewPasswordForm`.
  */
-export default function PasswordChangeForm({ serverError }: Props) {
+export default function PasswordChangeForm({ serverError, email }: Props) {
   const [current, setCurrent] = useState("");
   const [password, setPassword] = useState("");
   const [repeat, setRepeat] = useState("");
@@ -48,6 +49,10 @@ export default function PasswordChangeForm({ serverError }: Props) {
       onSubmit={handleSubmit}
       noValidate
     >
+      {/* Tells a password manager which saved account to update. No `name`: the
+          route never reads an address from the form, only from the session. */}
+      {email && <input type="email" autoComplete="username" value={email} readOnly hidden />}
+
       <div className="min-[600px]:col-span-2 min-[600px]:max-w-[360px]">
         <FormField
           id="current"

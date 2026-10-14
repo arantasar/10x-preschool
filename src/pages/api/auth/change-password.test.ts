@@ -77,11 +77,15 @@ describe("POST /api/auth/change-password — success", () => {
     expect(order).toEqual(["signIn", "update", "signOut"]);
     expect(updateUser).toHaveBeenCalledWith({ password: VALID.password });
     expect(signOut).toHaveBeenCalledWith({ scope: "others" });
-    expect(setCookie).toHaveBeenCalledWith(
-      PASSWORD_CHANGED_COOKIE,
-      "1",
-      expect.objectContaining({ path: "/ustawienia" }),
-    );
+    // Spelled out rather than compared with the exported options, so dropping
+    // a flag from the constant fails here too.
+    expect(setCookie).toHaveBeenCalledWith(PASSWORD_CHANGED_COOKIE, "1", {
+      path: "/ustawienia",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: expect.any(Boolean) as boolean,
+      maxAge: 60,
+    });
   });
 
   it("signs in with the session's e-mail, never with an address from the form", async () => {

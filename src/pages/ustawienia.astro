@@ -56,7 +56,7 @@ const card = "bg-mleko rounded-card flex flex-col px-5 py-6 min-[901px]:px-9 min
             </p>
           )
         }
-        <PasswordChangeForm client:load serverError={serverError} />
+        <PasswordChangeForm client:load serverError={serverError} email={user?.email} />
       </section>
     </SettingsLayout>
   </main>
