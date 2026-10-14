@@ -68,6 +68,8 @@ Bring the design package into `context/foundation/design/`, add the dropdown pri
 
 **Contract**: Standard shadcn new-york component; adds `@radix-ui/react-dropdown-menu` to `package.json`. Leave the generated file as is apart from what lint/format require.
 
+> **Addendum (impl-review F2, 2026-10-14):** the current shadcn CLI installs the unified `radix-ui` package (`import { DropdownMenu } from "radix-ui"`), not `@radix-ui/react-dropdown-menu`. That is intended: `radix-ui` is side-effect-free, so unused primitives are tree-shaken. `button.tsx` keeps importing `@radix-ui/react-slot` for now; both styles resolve to one copy of `react-slot` (bumped 1.2.4 → 1.5.0 by this change).
+
 #### 3. Account menu island
 
 **File**: `src/components/account/AccountMenu.tsx` (new)
@@ -217,4 +219,4 @@ One more `client:load` island on every planner page; React is already shipped th
 
 #### Manual
 
-- [ ] 2.4 New spec reviewed against the five anti-patterns
+- [x] 2.4 New spec reviewed against the five anti-patterns — impl-review 2026-10-14

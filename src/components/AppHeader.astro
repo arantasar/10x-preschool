@@ -50,6 +50,10 @@ const items = [
     }
   </nav>
   <div class="flex items-center">
-    {user?.email && <AccountMenu client:load email={user.email} current={active === "account"} />}
+    {
+      /* Any signed-in user gets the menu, with or without an address: it is
+        the only way out of the app on these screens. */
+    }
+    {user && <AccountMenu client:load email={user.email ?? ""} current={active === "account"} />}
   </div>
 </header>

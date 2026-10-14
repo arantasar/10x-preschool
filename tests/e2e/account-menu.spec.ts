@@ -22,7 +22,7 @@ function accountMenuButton(page: Page, email: string) {
 }
 
 test.describe("Menu konta — ustawienia, pomoc, kontakt i wylogowanie z nagłówka", () => {
-  test("menu konta: adres widać dopiero po otwarciu, a Esc zamyka menu i oddaje fokus przyciskowi", async ({
+  test("ryzyko #17: adres widać dopiero po otwarciu, a Esc zamyka menu i oddaje fokus przyciskowi", async ({
     page,
   }) => {
     await page.goto("/plan/month");
@@ -49,7 +49,7 @@ test.describe("Menu konta — ustawienia, pomoc, kontakt i wylogowanie z nagłó
     await expect(trigger).toBeFocused();
   });
 
-  test("menu konta: „Pomoc” prowadzi na FAQ", async ({ page }) => {
+  test("ryzyko #17: „Pomoc” prowadzi na FAQ", async ({ page }) => {
     await page.goto("/plan/month");
     await waitForIslands(page);
 
@@ -59,7 +59,7 @@ test.describe("Menu konta — ustawienia, pomoc, kontakt i wylogowanie z nagłó
     await page.waitForURL("**/pomoc");
   });
 
-  test("menu konta: na ekranie ustawień „Ustawienia konta” jest oznaczone jako bieżąca strona", async ({ page }) => {
+  test("ryzyko #17: na ekranie ustawień „Ustawienia konta” jest oznaczone jako bieżąca strona", async ({ page }) => {
     await page.goto("/ustawienia");
     await waitForIslands(page);
 
@@ -82,7 +82,7 @@ test.describe("Menu konta — ustawienia, pomoc, kontakt i wylogowanie z nagłó
       if (error) throw new Error(`Nie udało się usunąć konta testowego: ${error.message}`);
     });
 
-    test("menu konta: „Wyloguj się” kończy sesję — plan wraca na logowanie", async ({ page }) => {
+    test("ryzyko #17: „Wyloguj się” kończy sesję — plan wraca na logowanie", async ({ page }) => {
       const email = `e2e-menu-konta-${uniqueStamp()}@example.test`;
       const { data, error } = await admin().auth.admin.createUser({ email, password: PASSWORD, email_confirm: true });
       if (error) throw new Error(`Nie udało się założyć konta ${email}: ${error.message}`);
