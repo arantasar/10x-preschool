@@ -327,10 +327,10 @@ No schema change and no dashboard change: `secure_password_change` stays on, and
 
 #### Automated
 
-- [x] 2.1 Route tests pass
-- [x] 2.2 Route signs in with the session's address (grep gate checked on both states)
-- [x] 2.3 Lint passes
-- [x] 2.4 Build passes
+- [x] 2.1 Route tests pass — 4a0cc05
+- [x] 2.2 Route signs in with the session's address (grep gate checked on both states) — 4a0cc05
+- [x] 2.3 Lint passes — 4a0cc05
+- [x] 2.4 Build passes — 4a0cc05
 
 #### Manual
 
@@ -340,10 +340,10 @@ No schema change and no dashboard change: `secure_password_change` stays on, and
 
 #### Automated
 
-- [ ] 3.1 Lint passes
-- [ ] 3.2 Build passes
-- [ ] 3.3 Unit tests pass
-- [ ] 3.4 Existing E2E still green
+- [x] 3.1 Lint passes
+- [x] 3.2 Build passes
+- [x] 3.3 Unit tests pass
+- [x] 3.4 Existing E2E still green
 
 #### Manual
 

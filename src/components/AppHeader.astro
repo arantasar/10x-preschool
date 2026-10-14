@@ -4,14 +4,15 @@
 // that one is the signed-out pages' header, and its fate is unrelated to the
 // fate of this shell.
 //
-// The avatar is decoration, not a link: there is no `/konto` page to lead to
-// (owner: M-03). "Wyloguj się" stays a visible submit button - it is the way
-// out, and the e2e setup waits for it.
+// The avatar is the way into the account settings (`/ustawienia`, S-17).
+// "Wyloguj się" stays a visible submit button - it is the way out, and the e2e
+// setup waits for it.
 import Logo from "@/components/brand/Logo.astro";
+import { SETTINGS_PATH } from "@/lib/account-settings";
 import { cn } from "@/lib/utils";
 
 interface Props {
-  active: "plan" | "generate";
+  active?: "plan" | "generate" | "account";
 }
 
 const { active } = Astro.props;
@@ -49,12 +50,18 @@ const initial = user?.email?.charAt(0).toUpperCase() ?? "";
   <div class="flex items-center gap-3">
     {
       initial && (
-        <span
-          aria-hidden="true"
-          class="bg-morela-soft text-las flex size-11 shrink-0 items-center justify-center rounded-full text-base font-extrabold"
+        <a
+          href={SETTINGS_PATH}
+          aria-label="Ustawienia konta"
+          aria-current={active === "account" ? "page" : undefined}
+          class:list={cn(
+            "bg-morela-soft text-las hover:bg-morela-hover hover:text-las focus-visible:outline-las flex size-11 shrink-0 items-center justify-center rounded-full text-base font-extrabold no-underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-solid",
+            // The double ring of mock-up 18: the page you are on.
+            active === "account" && "shadow-[0_0_0_3px_var(--color-mleko),0_0_0_5px_var(--color-las)]",
+          )}
         >
-          {initial}
-        </span>
+          <span aria-hidden="true">{initial}</span>
+        </a>
       )
     }
     {user?.email && <span class="text-las-szary hidden text-[15px] min-[721px]:inline">{user.email}</span>}
