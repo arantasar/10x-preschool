@@ -315,9 +315,9 @@ No schema change and no dashboard change: `secure_password_change` stays on, and
 
 #### Automated
 
-- [x] 1.1 Design package merged and duplicate gone
-- [x] 1.2 Unit tests pass (password-policy, auth-error-messages)
-- [x] 1.3 Lint passes
+- [x] 1.1 Design package merged and duplicate gone — 6064464
+- [x] 1.2 Unit tests pass (password-policy, auth-error-messages) — 6064464
+- [x] 1.3 Lint passes — 6064464
 
 #### Manual
 
@@ -327,10 +327,10 @@ No schema change and no dashboard change: `secure_password_change` stays on, and
 
 #### Automated
 
-- [ ] 2.1 Route tests pass
-- [ ] 2.2 Route signs in with the session's address (grep gate checked on both states)
-- [ ] 2.3 Lint passes
-- [ ] 2.4 Build passes
+- [x] 2.1 Route tests pass
+- [x] 2.2 Route signs in with the session's address (grep gate checked on both states)
+- [x] 2.3 Lint passes
+- [x] 2.4 Build passes
 
 #### Manual
 
