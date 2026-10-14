@@ -125,7 +125,10 @@ test.describe("Ryzyko #15 — reset hasła przez e-mail (US-04)", () => {
     // jest tu świadomym wyjątkiem od E2E-RULES (storageState zamiast formularza):
     // zmiana hasła to właśnie zachowanie pod testem, a sesji z storageState nie
     // da się zapytać, które hasło przyjmuje.
-    await page.getByRole("button", { name: "Wyloguj się" }).click();
+    await waitForIslands(page);
+    await page.getByRole("button", { name: `Menu konta: ${email}` }).click();
+    await page.getByRole("menuitem", { name: "Wyloguj się" }).click();
+    await page.waitForURL((url) => url.pathname === "/");
     await page.goto("/auth/signin");
     await waitForIslands(page);
     await page.getByLabel("Adres e-mail").fill(email);

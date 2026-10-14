@@ -72,8 +72,10 @@ test.describe("FR-023 — zmiana hasła w ustawieniach konta", () => {
       await signIn(pageB, email, OLD_PASSWORD);
       await pageB.waitForURL("**/plan/month");
 
-      // Do ustawień przez awatar w nagłówku.
-      await pageA.getByRole("link", { name: "Ustawienia konta" }).click();
+      // Do ustawień przez menu konta w nagłówku.
+      await waitForIslands(pageA);
+      await pageA.getByRole("button", { name: `Menu konta: ${email}` }).click();
+      await pageA.getByRole("menuitem", { name: "Ustawienia konta" }).click();
       await pageA.waitForURL("**/ustawienia");
       await expect(pageA.getByRole("region", { name: "Konto" }).getByText(email, { exact: true })).toBeVisible();
 

@@ -191,13 +191,13 @@ One more `client:load` island on every planner page; React is already shipped th
 
 #### Automated
 
-- [x] 1.1 Design synced and copy removed
-- [x] 1.2 Header no longer links help or posts sign-out directly
-- [x] 1.3 Island mounted in the header
-- [x] 1.4 Sign-out POST lives in the island
-- [x] 1.5 Lint passes
-- [x] 1.6 Unit tests pass
-- [x] 1.7 Build passes
+- [x] 1.1 Design synced and copy removed — 8263b01
+- [x] 1.2 Header no longer links help or posts sign-out directly — 8263b01
+- [x] 1.3 Island mounted in the header — 8263b01
+- [x] 1.4 Sign-out POST lives in the island — 8263b01
+- [x] 1.5 Lint passes — 8263b01
+- [x] 1.6 Unit tests pass — 8263b01
+- [x] 1.7 Build passes — 8263b01
 
 #### Manual
 
@@ -211,9 +211,9 @@ One more `client:load` island on every planner page; React is already shipped th
 
 #### Automated
 
-- [ ] 2.1 New spec passes
-- [ ] 2.2 Full E2E suite green
-- [ ] 2.3 Lint passes
+- [x] 2.1 New spec passes
+- [x] 2.2 Full E2E suite green
+- [x] 2.3 Lint passes
 
 #### Manual
 
