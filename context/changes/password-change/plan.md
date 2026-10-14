@@ -340,10 +340,10 @@ No schema change and no dashboard change: `secure_password_change` stays on, and
 
 #### Automated
 
-- [x] 3.1 Lint passes
-- [x] 3.2 Build passes
-- [x] 3.3 Unit tests pass
-- [x] 3.4 Existing E2E still green
+- [x] 3.1 Lint passes — 7aaf774
+- [x] 3.2 Build passes — 7aaf774
+- [x] 3.3 Unit tests pass — 7aaf774
+- [x] 3.4 Existing E2E still green — 7aaf774
 
 #### Manual
 
@@ -357,9 +357,9 @@ No schema change and no dashboard change: `secure_password_change` stays on, and
 
 #### Automated
 
-- [ ] 4.1 New E2E passes
-- [ ] 4.2 Full E2E suite green
-- [ ] 4.3 Lint, unit, build
+- [x] 4.1 New E2E passes
+- [x] 4.2 Full E2E suite green
+- [x] 4.3 Lint, unit, build
 
 #### Manual
 
