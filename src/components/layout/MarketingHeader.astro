@@ -6,6 +6,7 @@
 // A signed-in teacher can land here too (`/pomoc`, `/kontakt` are public): the
 // account links then make way for a single way back to the planner.
 import Logo from "@/components/brand/Logo.astro";
+import StableLabel from "@/components/layout/StableLabel.astro";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +37,7 @@ const pages = [
               active === page.key && "bg-szalwia-soft hover:text-las font-extrabold",
             )}
           >
-            {page.label}
+            <StableLabel label={page.label} />
           </a>
         ))
       }

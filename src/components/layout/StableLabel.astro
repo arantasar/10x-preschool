@@ -1,0 +1,19 @@
+---
+// A nav label whose box is always as wide as its extra-bold version, so the
+// current item (`font-extrabold`) is no wider than the others (`font-bold`) and
+// switching pages does not shift the header.
+//
+// The two copies share one grid cell; the invisible bold one only holds the
+// width. `aria-hidden` and `visibility: hidden` keep it out of the accessible
+// name, out of find-in-page and out of Playwright's role locators.
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<span class="inline-grid text-center">
+  <span class="col-start-1 row-start-1">{label}</span>
+  <span aria-hidden="true" class="invisible col-start-1 row-start-1 font-extrabold">{label}</span>
+</span>
