@@ -211,9 +211,9 @@ One more `client:load` island on every planner page; React is already shipped th
 
 #### Automated
 
-- [x] 2.1 New spec passes
-- [x] 2.2 Full E2E suite green
-- [x] 2.3 Lint passes
+- [x] 2.1 New spec passes — 4d70226
+- [x] 2.2 Full E2E suite green — 4d70226
+- [x] 2.3 Lint passes — 4d70226
 
 #### Manual
 
