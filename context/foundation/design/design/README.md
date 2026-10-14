@@ -11,7 +11,7 @@ src/
     account/   SettingsLayout, DeleteAccountDialog
     plan/      ProposalCard, RemovedProposal, MonthGrid
     billing/   PricingCard, BillingToggle, PaywallDialog
-    layout/    SocialMeta, MarketingHeader, SiteFooter, AppHeader, AuthSplit, AuthCard, LegalLayout
+    layout/    SocialMeta, AccountMenu, MarketingHeader, SiteFooter, AppHeader, AuthSplit, AuthCard, LegalLayout
 emails/        szablony e-maili Supabase: potwierdzenie-konta.html, reset-hasla.html
 public/        og-image.png (podgląd linku 1200×630), email/temio-logo.png (logo do e-maili), favicon.svg, favicon-32.png, apple-touch-icon.png (180), icon-512.png
 design/
@@ -148,7 +148,7 @@ Trasy są propozycją, więc dopasuj je do istniejących.
 | Reset hasła `/reset-hasla` | 12, 12b | `AuthCard` + `TextField` e-mail → po wysłaniu stan „Sprawdź skrzynkę” (12b). Przycisk „Otwórz link (demo)” jest tylko w makiecie — w aplikacji go nie ma. |
 | Nowe hasło `/nowe-haslo?token=…` | 13 | `AuthCard mirror` + 2× `TextField type="password"` |
 | Konto założone `/konto-zalozone` | 14 | `AuthCard` + ikona ✓ w zielonym kształcie liścia, `<h1>Konto założone</h1>`, tekst z `role="status"`, `Button href="/logowanie" block` „Zaloguj się”. Pokazywany po udanej rejestracji. |
-| Ustawienia `/ustawienia` | 18, 18b | `AppHeader` (ikona konta → `/ustawienia`), `SettingsLayout active="konto"` z menu: Konto i hasło · Usuń konto · Wyloguj się. Karty `.set-card`: **Konto** (e-mail tylko do odczytu), **Zmień hasło** (obecne, nowe, powtórz; `Notice tone="success"` po zapisie; link „Nie pamiętasz obecnego hasła?” → `/reset-hasla`), **Usuń konto** (`.set-card--danger`, przycisk otwiera `DeleteAccountDialog`). Nowe sekcje (Moje płatności, Dane do faktury) dodaje się jako kolejne pozycje `items` w `SettingsLayout` — przykłady są tam zakomentowane. |
+| Ustawienia `/ustawienia` | 18, 18b | `AppHeader`, `SettingsLayout active="konto"` z menu: Konto i hasło · Usuń konto · Wyloguj się. Karty `.set-card`: **Konto** (e-mail tylko do odczytu), **Zmień hasło** (obecne, nowe, powtórz; `Notice tone="success"` po zapisie; link „Nie pamiętasz obecnego hasła?” → `/reset-hasla`), **Usuń konto** (`.set-card--danger`, przycisk otwiera `DeleteAccountDialog`). Nowe sekcje (Moje płatności, Dane do faktury) dodaje się jako kolejne pozycje `items` w `SettingsLayout` — przykłady są tam zakomentowane. |
 
 Linki: „Nie pamiętasz hasła?” na logowaniu → `/reset-hasla` (`TextField labelAside`). Stopka `SiteFooter` na wszystkich stronach publicznych, łącznie ze stroną główną.
 
@@ -171,7 +171,7 @@ import ProposalCard from '../components/plan/ProposalCard.astro';
 import RemovedProposal from '../components/plan/RemovedProposal.astro';
 const proposals = /* z bazy / LLM */ [];
 ---
-<AppHeader active="generate" />
+<AppHeader active="generate" email={user.email} />
 <main class="list">
   {proposals.map((p) =>
     p.status === 'removed'
@@ -199,6 +199,10 @@ const proposals = /* z bazy / LLM */ [];
 ```
 
 Zasady: okno pojawia się dopiero przy próbie generowania kolejnego tygodnia (nie przy logowaniu). Zawsze da się je zamknąć („Nie teraz”, ×, Esc), a zatwierdzony pierwszy tydzień zostaje dostępny.
+
+### Nagłówek aplikacji i menu konta
+
+`AppHeader` wymaga `email` zalogowanego użytkownika: `<AppHeader active="plan" email={user.email} />`. Po prawej jest `AccountMenu`: kółko z inicjałem i strzałką. **Nie pokazujemy adresu e-mail w samym nagłówku** — jest dopiero w menu („Zalogowano jako …”). Pozycje menu: Ustawienia konta, Pomoc, Kontakt, a pod kreską Wyloguj się (formularz POST na `logoutAction`, domyślnie `/api/auth/logout` — dopasuj). Menu zamyka się kliknięciem obok, klawiszem Esc albo po wyborze pozycji; obsługuje strzałki ↑/↓. Wzór: `design/screens/19-menu-konta.png`.
 
 ## 5. Responsywność
 

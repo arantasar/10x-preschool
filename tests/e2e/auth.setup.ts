@@ -30,8 +30,12 @@ async function signIn(page: import("@playwright/test").Page, teacher: Teacher): 
   // Czekamy na docelowy URL, nie na czas: sesja jedzie w ciasteczkach
   // ustawianych po drodze przez przekierowanie z `/api/auth/signin`, wiec
   // zapis stanu przed dojsciem na miejsce zapisalby stan bez ciasteczek.
+  // Menu konta w naglowku jest dowodem, ze to strona zalogowanego konta, i to
+  // konta wlasciwego - jego nazwa dostepna niesie adres. To wyspa, wiec po
+  // hydracji, jak kazdy test, ktory potem w nie kliknie.
   await page.waitForURL("**/plan/month");
-  await expect(page.getByRole("button", { name: "Wyloguj się" })).toBeVisible();
+  await waitForIslands(page);
+  await expect(page.getByRole("button", { name: `Menu konta: ${teacher.email}` })).toBeVisible();
 
   await page.context().storageState({ path: teacher.storageState });
 }
