@@ -203,11 +203,11 @@ One more `client:load` island on every planner page; React is already shipped th
 
 #### Manual
 
-- [ ] 1.8 Header matches mock-up 19 at 1440 px
-- [ ] 1.9 Keyboard behaviour and outside click
-- [ ] 1.10 Sign-out from the menu works
-- [ ] 1.11 Current marking on /ustawienia
-- [ ] 1.12 Menu fits at 390 px and 768 px
+- [x] 1.8 Header matches mock-up 19 at 1440 px — confirmed on production 2026-10-14
+- [x] 1.9 Keyboard behaviour and outside click — confirmed on production 2026-10-14
+- [x] 1.10 Sign-out from the menu works — confirmed on production 2026-10-14
+- [x] 1.11 Current marking on /ustawienia — confirmed on production 2026-10-14
+- [x] 1.12 Menu fits at 390 px and 768 px — confirmed on production 2026-10-14
 
 ### Phase 2: E2E
 
