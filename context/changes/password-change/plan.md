@@ -336,7 +336,7 @@ Recorded after `/10x-impl-review` (`reviews/impl-review.md`). The phase blocks a
 
 #### Manual
 
-- [ ] 1.4 Polish wording of the new messages reads correctly
+- [x] 1.4 Polish wording of the new messages reads correctly
 
 ### Phase 2: Route `POST /api/auth/change-password`
 
@@ -349,7 +349,7 @@ Recorded after `/10x-impl-review` (`reviews/impl-review.md`). The phase blocks a
 
 #### Manual
 
-- [ ] 2.5 POST without a session redirects to `/auth/signin`
+- [x] 2.5 POST without a session redirects to `/auth/signin`
 
 ### Phase 3: The `/ustawienia` screen
 
@@ -362,11 +362,11 @@ Recorded after `/10x-impl-review` (`reviews/impl-review.md`). The phase blocks a
 
 #### Manual
 
-- [ ] 3.5 `/ustawienia` matches mock-up 18 at 1440/768/390 px
-- [ ] 3.6 Avatar link, focus, `aria-current`; signed-out redirect
-- [ ] 3.7 Wrong current password and client validation messages
-- [ ] 3.8 Success notice once, reload removes it, fields empty
-- [ ] 3.9 „Wyloguj się” in the settings menu signs out
+- [x] 3.5 `/ustawienia` matches mock-up 18 at 1440/768/390 px
+- [x] 3.6 Avatar link, focus, `aria-current`; signed-out redirect
+- [x] 3.7 Wrong current password and client validation messages
+- [x] 3.8 Success notice once, reload removes it, fields empty
+- [x] 3.9 „Wyloguj się” in the settings menu signs out
 
 ### Phase 4: E2E, docs and rollout
 
