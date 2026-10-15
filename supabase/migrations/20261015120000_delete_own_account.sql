@@ -21,6 +21,14 @@
 --   * a null auth.uid() raises instead of running `where id = null`. that
 --     statement deletes nothing today, but a definer function must not rely on
 --     null semantics that a later edit could turn into something broader.
+--   * the caller's session must be fresh: the auth.sessions row named by the
+--     jwt's session_id belongs to the caller and was created in the last five
+--     minutes. the route proves the password with signInWithPassword right
+--     before the rpc, so its session is always seconds old. without this, any
+--     holder of a stolen access token plus the api key could call
+--     /rest/v1/rpc/delete_own_account directly and skip the password - the
+--     password proof would live only in the route. a refresh does not create a
+--     new session row, so a long-lived tab cannot pass by refreshing.
 --   * nothing else is deleted explicitly. the existing foreign keys do the rest:
 --     day_plans (on delete cascade, 20260718211452), activities through
 --     day_plans (id, user_id), and gotrue's own identities, sessions, refresh
@@ -39,9 +47,21 @@ set search_path = ''
 as $$
 declare
   v_user_id uuid := (select auth.uid());
+  v_session_id uuid := nullif((select auth.jwt()) ->> 'session_id', '')::uuid;
 begin
   if v_user_id is null then
     raise exception 'delete_own_account requires a signed-in caller'
+      using errcode = '42501';
+  end if;
+
+  if not exists (
+    select 1
+    from auth.sessions
+    where id = v_session_id
+      and user_id = v_user_id
+      and created_at > now() - interval '5 minutes'
+  ) then
+    raise exception 'delete_own_account requires a fresh sign-in'
       using errcode = '42501';
   end if;
 
@@ -52,8 +72,9 @@ $$;
 comment on function public.delete_own_account() is
   'deletes the calling teacher''s own auth.users row (security definer, the only '
   'operation above rls). the target id is auth.uid(), never an argument, so no '
-  'input can name another account. plans, activities and sessions go with it '
-  'through existing cascades.';
+  'input can name another account, and only a session created in the last five '
+  'minutes may call it (the route signs in again first). plans, activities and '
+  'sessions go with it through existing cascades.';
 
 -- the same two revokes as save_day_plan_generation (20260823095136): postgres
 -- grants execute to public on every new function, and supabase's default

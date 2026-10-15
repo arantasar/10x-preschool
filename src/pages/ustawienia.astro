@@ -80,7 +80,7 @@ const card = "bg-mleko rounded-card flex flex-col px-5 py-6 min-[901px]:px-9 min
             Razem z kontem usuniemy wszystkie Twoje plany i propozycje. Tej operacji nie można cofnąć.
           </p>
         </div>
-        <DeleteAccountForm client:load serverError={deleteServerError} email={user?.email} />
+        {user?.email && <DeleteAccountForm client:load serverError={deleteServerError} email={user.email} />}
       </section>
     </SettingsLayout>
   </main>

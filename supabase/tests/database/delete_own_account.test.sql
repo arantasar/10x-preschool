@@ -14,14 +14,19 @@
 --     `reset role`, not as a or b, so rls cannot hide a row that was wrongly
 --     deleted. a `where true` in the function goes red here.
 --   * refusals - anon is stopped at the grant layer; an authenticated caller
---     with no `sub` claim is stopped by the null-uid raise.
+--     with no `sub` claim is stopped by the null-uid raise; a caller whose jwt
+--     names no session, a stale session, or someone else's session is stopped
+--     by the fresh-session check. that check is what keeps a stolen access
+--     token from deleting the account without the password the route asks for.
+--   * contact messages - kept with user_id set to null, as the migration and
+--     CLAUDE.md say. asserted here so the sentence stays a fact.
 --   * metadata - definer, empty search_path, and no execute for anon. the anon
 --     behavioural assertion would stay green on the null-uid raise alone if the
 --     anon revoke went missing, so the privilege is asserted directly too.
 
 begin;
 
-select plan(14);
+select plan(19);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (seeded as the owner, so rls is out of the picture here by design)
@@ -44,10 +49,17 @@ values
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', 1, 1, 'b-one', 'opis b1'),
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', 1, 2, 'b-two', 'opis b2');
 
+-- a's fresh session (what the route's sign-in creates), a's stale one (a tab
+-- left open for an hour), and b's fresh one.
 insert into auth.sessions (id, user_id, created_at, updated_at)
 values
   ('5e551011-aaaa-aaaa-aaaa-000000000001', '11111111-1111-1111-1111-111111111111', now(), now()),
+  ('5e551011-aaaa-aaaa-aaaa-000000000002', '11111111-1111-1111-1111-111111111111', now() - interval '1 hour', now()),
   ('5e551011-bbbb-bbbb-bbbb-000000000001', '22222222-2222-2222-2222-222222222222', now(), now());
+
+insert into public.contact_messages (id, user_id, email, topic, message)
+values
+  ('c0c0c0c0-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'teacher-a@test.local', 'account', 'pytanie o konto przed usunieciem');
 
 -- ---------------------------------------------------------------------------
 -- 1-3. function metadata
@@ -100,7 +112,41 @@ select throws_ok(
 
 reset role;
 
--- both refusals deleted nothing - the positive control for what follows.
+-- ---------------------------------------------------------------------------
+-- 6-8. a's own token, but not a fresh session of her own, is refused
+-- ---------------------------------------------------------------------------
+
+set local role authenticated;
+set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+
+select throws_ok(
+  'select public.delete_own_account()',
+  '42501',
+  null,
+  'a token that names no session is refused'
+);
+
+set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated","session_id":"5e551011-aaaa-aaaa-aaaa-000000000002"}';
+
+select throws_ok(
+  'select public.delete_own_account()',
+  '42501',
+  null,
+  'a session older than five minutes is refused - the password has to be proved again'
+);
+
+set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated","session_id":"5e551011-bbbb-bbbb-bbbb-000000000001"}';
+
+select throws_ok(
+  'select public.delete_own_account()',
+  '42501',
+  null,
+  'someone else''s fresh session does not count as the caller''s'
+);
+
+reset role;
+
+-- every refusal deleted nothing - the positive control for what follows.
 select is(
   (select count(*)::int from auth.users
     where id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')),
@@ -109,11 +155,11 @@ select is(
 );
 
 -- ---------------------------------------------------------------------------
--- 7-14. teacher a deletes her own account
+-- 10-19. teacher a deletes her own account, from a fresh session
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated","session_id":"5e551011-aaaa-aaaa-aaaa-000000000001"}';
 
 select lives_ok(
   'select public.delete_own_account()',
@@ -166,6 +212,18 @@ select is(
     where plan_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),
   array['b-one', 'b-two'],
   'teacher b''s proposals are untouched'
+);
+
+select is(
+  (select count(*)::int from auth.sessions where user_id = '22222222-2222-2222-2222-222222222222'),
+  1,
+  'teacher b''s session is untouched'
+);
+
+select results_eq(
+  $$select user_id from public.contact_messages where id = 'c0c0c0c0-0000-0000-0000-000000000001'$$,
+  $$values (null::uuid)$$,
+  'teacher a''s contact message is kept, detached from the deleted account'
 );
 
 select * from finish();

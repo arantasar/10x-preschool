@@ -122,17 +122,20 @@ test.describe("FR-024 — usunięcie konta w ustawieniach", () => {
     await expect(dialog).toHaveCount(0);
 
     await expect(page).toHaveURL(/\/ustawienia#usun-konto$/);
-    expect(deletionRequests).toEqual([]);
     await page.goto("/plan/month");
     await expect(page).toHaveURL(/\/plan\/month$/);
+    // Read only after a later navigation, so a submission that started a moment
+    // after the window closed would still be counted.
+    expect(deletionRequests).toEqual([]);
   });
 
   test("FR-024: usunięcie zabiera konto i plany, odcina drugie urządzenie i nie dotyka cudzego konta", async ({
     browser,
   }) => {
     const a = await createAccount("a");
+    userIds.push(a.id);
     const b = await createAccount("b");
-    userIds.push(a.id, b.id);
+    userIds.push(b.id);
 
     const stamp = uniqueStamp();
     await seedDayPlan({
@@ -173,7 +176,11 @@ test.describe("FR-024 — usunięcie konta w ustawieniach", () => {
       await expect(page1.getByRole("link", { name: "Zaloguj się" }).first()).toBeVisible();
       await expect(notice).toBeHidden();
 
-      // Ta przeglądarka nie ma już sesji.
+      // Ta przeglądarka nie ma już sesji. Sprawdzane na ciasteczkach, bo samo
+      // przekierowanie przeszłoby i z martwymi `sb-*`: middleware pyta GoTrue
+      // (`getUser`), a ten nie zna już konta.
+      const cookieNames = (await context1.cookies()).map((cookie) => cookie.name);
+      expect(cookieNames.filter((name) => name.startsWith("sb-"))).toEqual([]);
       await page1.goto("/plan/month");
       await expect(page1).toHaveURL(/\/auth\/signin$/);
 

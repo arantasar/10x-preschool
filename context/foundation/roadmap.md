@@ -179,6 +179,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** Treść prawna — zależność zewnętrzna (PRD §Constraints „Zależności zewnętrzne"; Open Roadmap Questions #6).
 - **Unknowns:**
   - Treść regulaminu i polityki — Owner: Janusz + doradca. Block: tak.
+  - Co zostaje po usunięciu konta (`S-18`): polityka nie może obiecywać pełnego wymazania. Zostają wiadomości z formularza kontaktowego (`user_id` → `null`, usuwane po 12 miesiącach przez `contact-messages-retention`) oraz wpisy GoTrue w `auth.audit_log_entries` (adres e-mail w `payload`) i `auth.flow_state` — bez klucza obcego do `auth.users`, bez retencji po naszej stronie. Owner: `S-20`. Block: nie.
 - **Risk:** Najmniejsza technicznie i jedyna pozycja rdzenia trzymana przez kogoś spoza projektu — dlatego to główne ryzyko kamienia (`top_blocker: external`): stoi w prerekwizytach gwiazdy przewodniej. Regulamin zostanie przepisany przy płatnościach (`S-25`, `S-26`); ta wersja opisuje usługę darmową i nie może obiecywać tego, czego jeszcze nie ma.
 - **Status:** blocked
 

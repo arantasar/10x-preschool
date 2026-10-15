@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { deleteAccountConfirmation } from "@/lib/confirmations";
 
 interface Props {
-  email?: string;
+  /** Named in the confirmation window, so required: the window must say whose account goes. */
+  email: string;
   serverError?: string | null;
 }
 
@@ -40,7 +41,7 @@ export default function DeleteAccountForm({ email, serverError }: Props) {
     }
 
     if (isLocked()) return;
-    if (!(await confirm(deleteAccountConfirmation(email ?? "")))) {
+    if (!(await confirm(deleteAccountConfirmation(email)))) {
       return;
     }
     if (isLocked()) return;
@@ -61,7 +62,7 @@ export default function DeleteAccountForm({ email, serverError }: Props) {
       >
         {/* Tells a password manager which saved account this is. No `name`: the
           route never reads an address from the form, only from the session. */}
-        {email && <input type="email" autoComplete="username" value={email} readOnly hidden />}
+        <input type="email" autoComplete="username" value={email} readOnly hidden />
 
         <div className="min-[600px]:max-w-[360px]">
           <FormField

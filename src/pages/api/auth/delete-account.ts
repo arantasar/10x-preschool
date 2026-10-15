@@ -31,18 +31,24 @@ function fail(code: string) {
  *
  * 1. `signInWithPassword` with the **session's** e-mail proves the current
  *    password - the proof of intent that an open session on a shared preschool
- *    computer does not give. An address from the request would make this route a
- *    credential oracle for any account. A failure writes no cookies and deletes
+ *    computer does not give - though a password manager that autofills the field
+ *    shrinks it to the danger window, which names the address. An address from
+ *    the request would make this route a credential oracle for any account. A failure writes no cookies and deletes
  *    nothing.
  * 2. `rpc("delete_own_account")` removes the caller's `auth.users` row; plans,
  *    proposals and every session go with it through the foreign keys. The
  *    function takes no id - it deletes `auth.uid()` - so nothing in this request
- *    can name another account. A failure deletes nothing; the fresh session from
- *    step 1 is harmless.
+ *    can name another account. The function also refuses any session older than
+ *    five minutes, so the password proof holds even for a direct call to
+ *    `/rest/v1/rpc` with a stolen token; step 1's session is always fresh. A
+ *    failure deletes nothing; the fresh session from step 1 is harmless.
  * 3. `signOut({ scope: "local" })` clears this browser's `sb-*` cookies. The
  *    server-side session is already gone with the user row, so GoTrue may answer
  *    with an error; the SDK still drops the local session on 401/403/404, and
- *    any other error is only logged - the account is deleted either way.
+ *    any other error is only logged - the account is deleted either way. On a
+ *    5xx or network error the dead `sb-*` cookies stay until they expire; the
+ *    middleware's `getUser` treats them as signed out, at the cost of one
+ *    GoTrue round trip per request.
  * 4. The one-shot `account_deleted` cookie, and home.
  *
  * No per-account attempt limit, by decision (lessons.md, "Logowanie z Workera
