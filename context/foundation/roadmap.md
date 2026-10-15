@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 3
 status: draft
 created: 2026-10-01
-updated: 2026-10-14
+updated: 2026-10-15
 prd_version: 3
 main_goal: quality
 top_blocker: external
@@ -361,3 +361,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-16: Nauczycielka, która nie pamięta hasła, prosi o reset ze strony logowania, ustawia nowe hasło przez link z wiadomości e-mail, loguje się i zastaje wszystkie swoje plany; strona resetu mówi, gdzie szukać wiadomości i co zrobić, gdy nie przyjdzie.** — Archived 2026-10-07 → `context/archive/2026-10-03-password-reset/`. Lesson: —.
 - **S-19: Odwiedzający, z kontem lub bez, czyta FAQ (czym jest usługa, jak działa) i — gdy nie znajdzie odpowiedzi — wysyła wiadomość do właściciela przez formularz; wiadomość automatu do właściciela nie dociera, prawdziwa nie ginie.** — Archived 2026-10-13 → `context/archive/2026-10-08-help-and-contact/`. Lesson: —.
 - **S-17: Zalogowana nauczycielka zmienia hasło, a pozostałe urządzenia z otwartą sesją tego konta (np. komputer w przedszkolu) tracą dostęp.** — Archived 2026-10-14 → `context/archive/2026-10-13-password-change/`. Lesson: „Logowanie z Workera nie niesie IP klienta”.
+- **S-18: Nauczycielka usuwa swoje konto po potwierdzeniu, które mówi wprost, że zniknie konto i wszystkie plany; po usunięciu nie da się zalogować, a jej plany nie istnieją.** — Archived 2026-10-15 → `context/archive/2026-10-15-account-deletion/`. Lesson: —.
