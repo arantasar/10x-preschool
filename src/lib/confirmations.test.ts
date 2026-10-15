@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  deleteAccountConfirmation,
   deleteDayPlanConfirmation,
   editApprovedDayConfirmation,
   IRREVERSIBLE_SENTENCE,
@@ -78,11 +79,33 @@ describe("deleteDayPlanConfirmation", () => {
   });
 });
 
+describe("deleteAccountConfirmation", () => {
+  const email = "nauczycielka@example.test";
+  const request = deleteAccountConfirmation(email);
+
+  it("names the account by its e-mail and says the plans go with it", () => {
+    expect(request.title).toBe("Usunąć konto?");
+    expect(text(request)).toContain(email);
+    expect(text(request)).toContain("wszystkimi planami i propozycjami");
+  });
+
+  it("ends by saying the operation cannot be undone", () => {
+    expect(request.body[request.body.length - 1]).toBe(IRREVERSIBLE_SENTENCE);
+  });
+
+  it("names both buttons after their outcome and is dangerous", () => {
+    expect(request.confirmLabel).toBe("Usuń konto");
+    expect(request.cancelLabel).toBe("Zostaw");
+    expect(request.tone).toBe("danger");
+  });
+});
+
 describe("every confirmation", () => {
   it.each([
     ["regenerate", regenerateApprovedDayConfirmation()],
     ["edit", editApprovedDayConfirmation()],
     ["delete", deleteDayPlanConfirmation()],
+    ["delete account", deleteAccountConfirmation("nauczycielka@example.test")],
   ])("%s has a title that is a question, a body and two different buttons", (_name, request) => {
     expect(request.title.endsWith("?")).toBe(true);
     expect(request.body.length).toBeGreaterThan(0);

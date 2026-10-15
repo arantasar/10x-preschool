@@ -101,3 +101,26 @@ export function deleteDayPlanConfirmation(): ConfirmationRequest {
     tone: "danger",
   };
 }
+
+/**
+ * Deleting the teacher's own account (`DeleteAccountForm`, FR-024).
+ *
+ * Asked after the form already holds the current password, which the route
+ * re-checks; the window is the second half of the proof of intent. It names the
+ * address, so a teacher on a shared computer sees whose account goes, and it
+ * promises the account and plans only - contact messages are kept on their own
+ * retention (S-20 describes it).
+ */
+export function deleteAccountConfirmation(email: string): ConfirmationRequest {
+  return {
+    title: "Usunąć konto?",
+    body: [
+      `Usuniemy konto ${email} razem ze wszystkimi planami i propozycjami.`,
+      "Nie będzie można się na nie zalogować.",
+      IRREVERSIBLE_SENTENCE,
+    ],
+    confirmLabel: "Usuń konto",
+    cancelLabel: DELETE_CANCEL_LABEL,
+    tone: "danger",
+  };
+}
