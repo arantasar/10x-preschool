@@ -327,5 +327,5 @@ Additive migration (one function, grants, comment). Rollback: `drop function pub
 
 - [x] 3.6 Desktop and ≤ 900 px match the design; menu item scrolls to the card
 - [x] 3.7 Keyboard only: focus on „Zostaw”, Escape deletes nothing
-- [ ] 3.8 Production check with a throwaway account on `temio.pl`
+- [x] 3.8 Production check with a throwaway account on `temio.pl`
 - [x] 3.9 CLAUDE.md and roadmap read correctly
