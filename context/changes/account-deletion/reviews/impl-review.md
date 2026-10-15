@@ -4,7 +4,7 @@
 - **Plan**: context/changes/account-deletion/plan.md
 - **Scope**: Phases 1–3 of 3
 - **Date**: 2026-10-15
-- **Verdict**: NEEDS ATTENTION (before triage) → all findings resolved except F2, which is an owner action before merge
+- **Verdict**: NEEDS ATTENTION (before triage) → all findings resolved (F2 verified by the owner on the hosted project)
 - **Findings**: 0 critical, 3 warnings, 5 observations
 
 ## Verdicts
@@ -46,7 +46,7 @@ Manual rows 1.6, 2.5, 3.6–3.9 pending; none checked without evidence.
 - **Location**: plan.md Progress 3.8; migration header
 - **Detail**: The only proof that the hosted `postgres` owner may delete from `auth.users` is the post-merge manual check, and a merge to `master` is a production release.
 - **Fix**: before merging, push the migration and test the function on the hosted project with a throwaway account.
-- **Decision**: DEFERRED TO OWNER. Pushing to the production database is the owner's action. The steps are in `follow-ups/review-fixes.md`.
+- **Decision**: FIXED (owner, 2026-10-15). The migration was pushed to the hosted project. As `authenticated`, with the claims of a throwaway account's session (2.5 min old), `select public.delete_own_account()` returned without error inside `begin … rollback`, and the account was still present afterwards. The hosted `postgres` owner can delete from `auth.users`, and the fresh-session check passes on hosted GoTrue claims.
 
 ### F3 — E2E couldn't fail if the local sign-out stopped clearing cookies
 

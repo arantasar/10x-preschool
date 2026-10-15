@@ -2,7 +2,9 @@
 
 From `reviews/impl-review.md` (2026-10-15).
 
-## F2 — prove the hosted DELETE privilege before merging (owner: Janusz)
+## F2 — prove the hosted DELETE privilege before merging (owner: Janusz) — DONE 2026-10-15
+
+Result: steps 1–2 passed on the hosted project (no error, rollback left the account in place). Safe to merge; Progress 3.8 remains the post-merge end-to-end check.
 
 Not applied during triage: it is a change to the production database, which only the owner runs.
 
