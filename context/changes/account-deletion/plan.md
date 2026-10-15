@@ -317,11 +317,11 @@ Additive migration (one function, grants, comment). Rollback: `drop function pub
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `npm test`
-- [x] 3.2 E2E spec passes: `npx playwright test tests/e2e/account-deletion.spec.ts`
-- [x] 3.3 Full e2e suite has no regressions: `npm run test:e2e`
-- [x] 3.4 The e2e can fail (route skips `rpc` → red, then revert)
-- [x] 3.5 Lint and build pass: `npm run lint && npm run build`
+- [x] 3.1 Unit tests pass: `npm test` — 82d30bd
+- [x] 3.2 E2E spec passes: `npx playwright test tests/e2e/account-deletion.spec.ts` — 82d30bd
+- [x] 3.3 Full e2e suite has no regressions: `npm run test:e2e` — 82d30bd
+- [x] 3.4 The e2e can fail (route skips `rpc` → red, then revert) — 82d30bd
+- [x] 3.5 Lint and build pass: `npm run lint && npm run build` — 82d30bd
 
 #### Manual
 
