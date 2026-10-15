@@ -1,12 +1,13 @@
 /**
  * The entire user-facing error vocabulary of the auth flows - sign-in, sign-up
- * (with its e-mail confirmation), password reset and password change - in one
- * place.
+ * (with its e-mail confirmation), password reset, password change and account
+ * deletion - in one place.
  *
  * `?error=` in the auth redirects carries a **code**, never a sentence. The
- * routes (`src/pages/api/auth/{signin,signup,forgot-password,confirm,update-password,change-password}.ts`)
+ * routes (`src/pages/api/auth/{signin,signup,forgot-password,confirm,update-password,change-password,delete-account}.ts`)
  * choose the code; the pages (`src/pages/auth/{signin,signup,forgot-password,new-password}.astro`,
- * `src/pages/ustawienia.astro`) look it up here at render time.
+ * `src/pages/ustawienia.astro`, which also reads the deletion card's
+ * `?delete_error=`) look it up here at render time.
  *
  * Two things follow from that split, and both are the point of this module:
  *
@@ -70,6 +71,15 @@ export const SIGNUP_LINK_EXPIRED = "signup_link_expired";
  */
 export const CURRENT_PASSWORD_INVALID = "current_password_invalid";
 export const PASSWORD_CHANGE_FAILED = "password_change_failed";
+
+/**
+ * Also ours, minted by the account deletion on `/ustawienia`.
+ *
+ * `ACCOUNT_DELETE_FAILED`: the password was right, but `delete_own_account()`
+ * answered an error - so nothing was deleted, and the sentence has to say so
+ * before anything else. A wrong password reuses `CURRENT_PASSWORD_INVALID`.
+ */
+export const ACCOUNT_DELETE_FAILED = "account_delete_failed";
 
 /**
  * Shown for anything the map does not know: an unmapped Supabase code, a code
@@ -143,6 +153,12 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // session's own, so there is nothing to enumerate.
   [CURRENT_PASSWORD_INVALID]: "Obecne hasło jest nieprawidłowe. Sprawdź je i spróbuj ponownie.",
   [PASSWORD_CHANGE_FAILED]: "Nie udało się zmienić hasła. Spróbuj ponownie za chwilę.",
+
+  // --- account deletion (/ustawienia) ---------------------------------------
+  // The teacher has just confirmed an irreversible step, so the first thing to
+  // tell her is that it did not happen.
+  [ACCOUNT_DELETE_FAILED]:
+    "Konto nie zostało usunięte — Twoje plany są na miejscu. Spróbuj ponownie za chwilę, a jeśli problem się powtórzy, napisz do nas przez formularz kontaktowy.",
 
   // --- any screen -------------------------------------------------------
   // From the plan's coverage table; kept, but note that local Supabase answers a

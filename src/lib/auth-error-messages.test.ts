@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ACCOUNT_DELETE_FAILED,
   AUTH_ERROR_MESSAGES,
   CURRENT_PASSWORD_INVALID,
   GENERIC_AUTH_ERROR_MESSAGE,
@@ -33,8 +34,8 @@ describe("authErrorMessage", () => {
     expect(message).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
   });
 
-  it("covers the twenty-six codes the auth flows can reach", () => {
-    expect(MAPPED_CODES).toHaveLength(26);
+  it("covers the twenty-seven codes the auth flows can reach", () => {
+    expect(MAPPED_CODES).toHaveLength(27);
   });
 
   it.each(["signup_link_invalid", "signup_link_expired", "email_address_not_authorized"])(
@@ -81,6 +82,14 @@ describe("authErrorMessage", () => {
   it("words a wrong current password differently from a failed sign-in", () => {
     expect(authErrorMessage(CURRENT_PASSWORD_INVALID)).not.toBe(authErrorMessage("invalid_credentials"));
     expect(authErrorMessage(PASSWORD_CHANGE_FAILED)).not.toBe(authErrorMessage("reauthentication_needed"));
+  });
+
+  // The teacher has just confirmed an irreversible step; the failure has to say
+  // first that nothing was deleted, and must never be the generic sentence.
+  it("maps account_delete_failed to a sentence saying the account was not deleted", () => {
+    expect(ACCOUNT_DELETE_FAILED).toBe("account_delete_failed");
+    expect(authErrorMessage(ACCOUNT_DELETE_FAILED)).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
+    expect(authErrorMessage(ACCOUNT_DELETE_FAILED)).toMatch(/^Konto nie zostało usunięte/);
   });
 
   it("falls back for a real Supabase code from a flow we did not map", () => {

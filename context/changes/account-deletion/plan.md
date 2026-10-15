@@ -290,11 +290,11 @@ Additive migration (one function, grants, comment). Rollback: `drop function pub
 
 #### Automated
 
-- [x] 1.1 Migration applies on a clean local stack: `npx supabase db reset`
-- [x] 1.2 pgTAP suite passes, including the new file: `npm run test:db`
-- [x] 1.3 The new suite can fail (broken `where` or missing `anon` revoke → red, then revert)
-- [x] 1.4 Types include the function: `grep -c "delete_own_account: {" src/db/database.types.ts` returns `1`
-- [x] 1.5 Lint passes: `npm run lint`
+- [x] 1.1 Migration applies on a clean local stack: `npx supabase db reset` — 912646b
+- [x] 1.2 pgTAP suite passes, including the new file: `npm run test:db` — 912646b
+- [x] 1.3 The new suite can fail (broken `where` or missing `anon` revoke → red, then revert) — 912646b
+- [x] 1.4 Types include the function: `grep -c "delete_own_account: {" src/db/database.types.ts` returns `1` — 912646b
+- [x] 1.5 Lint passes: `npm run lint` — 912646b
 
 #### Manual
 
@@ -304,10 +304,10 @@ Additive migration (one function, grants, comment). Rollback: `drop function pub
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm test`
-- [ ] 2.2 The route's ordering test can fail (swap `rpc` and sign-in → red, then revert)
-- [ ] 2.3 Lint and types pass: `npm run lint`
-- [ ] 2.4 Build passes: `npm run build`
+- [x] 2.1 Unit tests pass: `npm test`
+- [x] 2.2 The route's ordering test can fail (swap `rpc` and sign-in → red, then revert)
+- [x] 2.3 Lint and types pass: `npm run lint`
+- [x] 2.4 Build passes: `npm run build`
 
 #### Manual
 
