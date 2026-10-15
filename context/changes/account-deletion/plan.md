@@ -298,7 +298,7 @@ Additive migration (one function, grants, comment). Rollback: `drop function pub
 
 #### Manual
 
-- [ ] 1.6 Migration read against the Critical Implementation Details checklist
+- [x] 1.6 Migration read against the Critical Implementation Details checklist
 
 ### Phase 2: Route and wording
 
@@ -311,7 +311,7 @@ Additive migration (one function, grants, comment). Rollback: `drop function pub
 
 #### Manual
 
-- [ ] 2.5 Polish sentences read aloud once
+- [x] 2.5 Polish sentences read aloud once
 
 ### Phase 3: UI, end-to-end proof and docs
 
@@ -325,7 +325,7 @@ Additive migration (one function, grants, comment). Rollback: `drop function pub
 
 #### Manual
 
-- [ ] 3.6 Desktop and ≤ 900 px match the design; menu item scrolls to the card
-- [ ] 3.7 Keyboard only: focus on „Zostaw”, Escape deletes nothing
+- [x] 3.6 Desktop and ≤ 900 px match the design; menu item scrolls to the card
+- [x] 3.7 Keyboard only: focus on „Zostaw”, Escape deletes nothing
 - [ ] 3.8 Production check with a throwaway account on `temio.pl`
-- [ ] 3.9 CLAUDE.md and roadmap read correctly
+- [x] 3.9 CLAUDE.md and roadmap read correctly
