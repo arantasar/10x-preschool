@@ -146,6 +146,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_own_account: { Args: never; Returns: undefined }
       save_day_plan_generation: {
         Args: {
           p_activities: Json
