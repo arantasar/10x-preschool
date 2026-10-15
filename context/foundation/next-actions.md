@@ -1,35 +1,35 @@
-# Next Actions — ustalenia z 2026-08-30, stan na 2026-09-30
+# Next Actions — ustalenia z 2026-08-30, stan na 2026-10-15
 
 > Runbook kolejności prac i komend 10x. Dokument roboczy, edytowany w miejscu:
 > odhaczaj kroki i dopisuj nowe zgłoszenia. Decyzje produktowe mieszkają w
 > `roadmap.md` — tutaj jest **kolejność i to, co uruchomić**, nie druga kopia tamtych decyzji.
 
-## Stan (2026-09-30)
+## Stan (2026-10-15)
 
-- **`M-02` zamknięty 2026-09-29 w pełnym zakresie** — osiem pozycji `done` (`S-07`, `S-09`…`S-15`),
-  łącznie z nice-to-have `S-10` (`accepted-day-replacement`, PR #35) i dopisanym w trakcie
-  `S-15` (`follow-up-questions`). Wszystko jest na produkcji. Wpis: `roadmap.md` §Milestone History.
-- **Kroki 1–5 zamknięte.** **Kolejność dalszych prac przestawiona 2026-09-29** — patrz
-  §Kolejka po `M-02`. **Krok 10 (design z Claude Design) zamknięty 2026-09-30** — obie zmiany
-  (`design-foundation` PR #37, `design-planner` PR #38) są na produkcji, przejście po produkcji
-  zrobione, obie zarchiwizowane. **Krok 6 (faza 3 test-planu) zamknięty 2026-09-30** —
-  PR #39 (`testing-write-ownership`) na produkcji, zarchiwizowany. **Następny jest Krok 12.**
+- **`M-03` „Gotowi do sprzedaży” jest otwarty od 2026-10-01** (Krok 12 zamknięty): `prd-v3.md`,
+  `roadmap.md` v3, `milestone_id: ready-to-sell`, `milestone_status: active`. Poprzednia roadmapa
+  (`M-02`) leży w `context/foundation/archive/2026-10-01-roadmap.md`.
+- **Krok 13 (slice'y `M-03` bez pieniędzy) w toku.** Wydane i zarchiwizowane:
+  - `F-02` `content-safety-gate-resume` (PR #40, 2026-10-03) — bramka bezpieczeństwa treści
+    odwieszona, w CI jako job `content-safety-gate`;
+  - `S-16` `password-reset` (PR #41, 2026-10-07);
+  - `S-19` `help-and-contact` (PR #46 + #47, 2026-10-13) — FAQ `/pomoc`, formularz `/kontakt`
+    z Turnstile, `verifyHumanToken` do ponownego użycia w `S-22`;
+  - `S-17` `password-change` (PR #48, 2026-10-14) — ekran `/ustawienia` i `SettingsLayout`.
+- **Zmiany spoza roadmapy, wydane:** `temio-launch` (PR #42–#43, 2026-10-08 — rebrand na Temio,
+  domena `temio.pl`, przekierowanie starego hosta), `seo-meta` (PR #44), szablony e-maili (PR #45),
+  `header-update` (PR #49, 2026-10-14 — menu konta w nagłówku według makiety 19; ryzyko #17 w
+  `test-plan.md`).
+- **Następny jest `S-18` `account-deletion`** — jedyna pozycja `ready`. `S-20` (strony prawne)
+  czeka na treść od księgowego/prawnika, `S-21` (fair use) na próg z danych produkcji, `S-22`–`S-27`
+  na nie oraz na Kroki 9 i 11.
 - **Monetyzacja ma decyzje** (2026-09-29): Free + Basic 19,99 zł teraz, Pro 39,99 zł później
   zaczynając od materiałów, B2C, JDG. Pełny zapis: `monetization.md` §Decyzje.
-- Żadna zmiana nie jest w locie (`context/changes/` pusty). Żaden kamień nie jest otwarty
-  (`milestone_status: done`).
-- `test-plan.md` §3: fazy 1–3 `complete`, faza 4 `not started`. Testy bazy (pgTAP i trasa +
-  prawdziwy klient) stoją w CI jako doradczy job `db`. Warstwa e2e (Playwright, ryzyka #3, #4
-  i #7) stoi na `master` poza rolloutem i poza CI.
-- **Bramka bezpieczeństwa treści odwieszona 2026-10-03** (`F-02`, `content-safety-gate-resume`).
-  Była zawieszona od 2026-09-19 z powodu kosztu, a mechanizm zawieszenia zniknął z repozytorium.
-  `npm run test:gate` ocenia bez flag: 2 modele × 4 tryby produkcyjne. Sędzia jest dwustopniowy:
-  Haiku 4.5, a jego alarmy rozstrzyga Sonnet 5.5. Pełna macierz kosztuje około 0,40 USD. Job CI `content-safety-gate` uruchamia ją na PR-ach z dopasowaną
-  ścieżką. Tryb `activity` (`refine-activity.pl.md` z `S-15`) przeszedł czysto przy pierwszym
-  przebiegu. Przebiegi i koszt: `context/changes/content-safety-gate-resume/gate-runs.md`.
-- Otwarte pytania roadmapy bez właściciela w kolejce: #4 reset hasła, #5 limit regeneracji,
-  #9 generator bez tekstów piosenek i wierszyków; #3 (dług PRD za `S-04`, `S-05`, `S-08`)
-  zostaje otwarte z wyboru.
+- `test-plan.md` §3: fazy 1–3 `complete`, faza 4 (Krok 9) `not started`. Testy bazy w CI jako
+  doradczy job `db`; e2e (Playwright, 34 testy, ryzyka #3, #4, #7–#17) chodzi lokalnie,
+  poza CI.
+- Otwarte pytania roadmapy: #5 limit regeneracji (właściciel: `S-21`), #9 generator bez tekstów
+  piosenek i wierszyków (`M-04`); #3 (dług PRD za `S-04`, `S-05`, `S-08`) zostaje otwarte z wyboru.
 
 ## Triage dziesięciu zgłoszeń
 
@@ -60,8 +60,8 @@ tabela, nie numer**.
 | 1 | ✅ **Krok 10** | Design z Claude Design na istniejących ekranach — zamknięty 2026-09-30 | zmiana (bez PRD) |
 | równolegle | **Krok 11** | Walidacja i sprawy formalne (rozmowy, dane z produkcji, JDG, Stripe, księgowa) | poza kodem |
 | 2 | ✅ Krok 6 | Faza 3 test-planu (ochrona zapisu i własności) — zaimplementowana 2026-09-30, PR #39 | test-plan |
-| 3 | **Krok 12** | PRD v3 i roadmapa kamienia `M-03` „Gotowi do sprzedaży" | shape → prd → roadmap |
-| 4 | **Krok 13** | Slice'y `M-03` bez pieniędzy: reset hasła, strony prawne i FAQ, kontakt, limity | slice'y |
+| 3 | ✅ Krok 12 | PRD v3 i roadmapa kamienia `M-03` „Gotowi do sprzedaży" — zamknięty 2026-10-01 | shape → prd → roadmap |
+| 4 | **Krok 13** | Slice'y `M-03` bez pieniędzy: ~~reset hasła~~ ✅, ~~FAQ i kontakt~~ ✅, ~~zmiana hasła~~ ✅, **usunięcie konta (następne)**, strony prawne, limity | slice'y |
 | 5 | Krok 9 | Faza 4 test-planu: e2e w CI **przed** pierwszym slice'em płatności | test-plan |
 | 6 | **Krok 14** | Slice'y `M-03` z pieniędzmi: Stripe, cennik i paywall; ~~odwieszenie bramki~~ ✅ 2026-10-03 (`F-02`); start sprzedaży | slice'y + wydanie |
 | 7 | **Krok 15** | Kamień `M-04` „Lepsza treść": kalendarz świąt, rodzaje aktywności, materiały → start Pro | shape → prd → roadmap |
@@ -339,7 +339,8 @@ także na wydrukach — „zatwierdzony / do przejrzenia”, a sześć potwierdz
 
 - **Podgląd dnia na dotyk** — nie było go i nadal nie ma (na telefonie kafelek od razu otwiera
   dzień). Bez właściciela w kolejce; wraca, jeśli zgłosi to nauczyciel.
-- **Strona `/konto`** — awatar w pasku jest dekoracją, nie linkiem. Właściciel: `M-03`.
+- ~~**Strona `/konto`** — awatar w pasku jest dekoracją, nie linkiem. Właściciel: `M-03`.~~ ✅ Domknięte:
+  ekran `/ustawienia` (`S-17`, 2026-10-14) i menu konta w nagłówku (`header-update`, 2026-10-14).
 - Kategorie, czas trwania i miejsce aktywności (N2) — właściciel: `M-04`.
 
 **Bez PRD.** Design nie zmienia żadnego FR: wszystko z `prd-v2.md` §Zachowania chronione obowiązuje
@@ -406,7 +407,9 @@ Nie otwiera folderu zmiany, więc nie łamie reguły „jeden folder w locie".
 
 Wynik rozmów i danych zapisz przed Krokiem 12 — to wejście do `/10x-shape`, obok `monetization.md`.
 
-### Krok 12 — PRD v3 i otwarcie `M-03` „Gotowi do sprzedaży"
+### ✅ Krok 12 — PRD v3 i otwarcie `M-03` „Gotowi do sprzedaży" — ZROBIONE 2026-10-01
+
+Wynik: `prd-v3.md`, `roadmap.md` v3 z pozycjami `F-02`, `S-16`…`S-27`. Opis niżej zostaje dla historii.
 
 ```
 /10x-shape           # "Restart from scratch" — jak w Kroku 3; wejście: monetization.md,
@@ -441,6 +444,25 @@ przedszkole (decyzja B2C), role i współdzielenie planów.
 Każdy standardowym łańcuchem (`git checkout -b feat/<id>` → `/10x-new` → `/10x-research` →
 `/10x-plan` → `/10x-plan-review` → `/10x-implement` → `/10x-impl-review` → `/10x-archive`).
 Kolejność z roadmapy; naturalna to reset hasła → strony prawne i FAQ → kontakt → limity.
+
+**Stan 2026-10-15:** `S-16`, `S-19`, `S-17` wydane i zarchiwizowane. Następne:
+
+```
+git checkout -b feat/account-deletion
+/10x-new account-deletion
+/10x-research        # klucz serwisowy: gdzie żyje jedyna operacja ponad RLS i jak jest odgrodzona;
+                     # co kasuje się kaskadą (day_plans, activities), a co trzeba skasować jawnie
+/10x-plan
+/10x-plan-review
+/10x-implement account-deletion phase <N>
+/10x-impl-review
+/10x-archive account-deletion
+```
+
+Na co uważać (`roadmap.md` §S-18): izolacja kont udowodniona testem na dwóch kontach;
+potwierdzenie przez `useConfirmDialog` z `tone: "danger"`; trasa przyjmująca hasło podlega
+lekcji „Logowanie z Workera nie niesie IP klienta”; warunek FR-024 o aktywnej subskrypcji
+należy do `S-25`, nie tutaj. Potem `S-20` i `S-21`, gdy zdejmą się ich blokery zewnętrzne.
 
 Każdy z nich może wejść na produkcję sam: nic tu nie pobiera pieniędzy, a limity działają dla
 wszystkich według reguły z §4.2.
