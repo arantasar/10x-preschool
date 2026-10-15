@@ -304,10 +304,10 @@ Additive migration (one function, grants, comment). Rollback: `drop function pub
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 The route's ordering test can fail (swap `rpc` and sign-in → red, then revert)
-- [x] 2.3 Lint and types pass: `npm run lint`
-- [x] 2.4 Build passes: `npm run build`
+- [x] 2.1 Unit tests pass: `npm test` — df7c251
+- [x] 2.2 The route's ordering test can fail (swap `rpc` and sign-in → red, then revert) — df7c251
+- [x] 2.3 Lint and types pass: `npm run lint` — df7c251
+- [x] 2.4 Build passes: `npm run build` — df7c251
 
 #### Manual
 
@@ -317,11 +317,11 @@ Additive migration (one function, grants, comment). Rollback: `drop function pub
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `npm test`
-- [ ] 3.2 E2E spec passes: `npx playwright test tests/e2e/account-deletion.spec.ts`
-- [ ] 3.3 Full e2e suite has no regressions: `npm run test:e2e`
-- [ ] 3.4 The e2e can fail (route skips `rpc` → red, then revert)
-- [ ] 3.5 Lint and build pass: `npm run lint && npm run build`
+- [x] 3.1 Unit tests pass: `npm test`
+- [x] 3.2 E2E spec passes: `npx playwright test tests/e2e/account-deletion.spec.ts`
+- [x] 3.3 Full e2e suite has no regressions: `npm run test:e2e`
+- [x] 3.4 The e2e can fail (route skips `rpc` → red, then revert)
+- [x] 3.5 Lint and build pass: `npm run lint && npm run build`
 
 #### Manual
 

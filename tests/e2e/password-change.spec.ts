@@ -32,10 +32,12 @@ async function signIn(page: Page, email: string, password: string): Promise<void
 
 async function fillPasswordChange(page: Page, current: string, next: string): Promise<void> {
   await waitForIslands(page);
-  await page.getByLabel("Obecne hasło", { exact: true }).fill(current);
-  await page.getByLabel("Nowe hasło", { exact: true }).fill(next);
-  await page.getByLabel("Powtórz nowe hasło", { exact: true }).fill(next);
-  await page.getByRole("button", { name: "Zapisz nowe hasło" }).click();
+  // Scoped to the card: the deletion card (S-18) has its own „Obecne hasło”.
+  const card = page.getByRole("region", { name: "Zmień hasło" });
+  await card.getByLabel("Obecne hasło", { exact: true }).fill(current);
+  await card.getByLabel("Nowe hasło", { exact: true }).fill(next);
+  await card.getByLabel("Powtórz nowe hasło", { exact: true }).fill(next);
+  await card.getByRole("button", { name: "Zapisz nowe hasło" }).click();
 }
 
 test.describe("FR-023 — zmiana hasła w ustawieniach konta", () => {

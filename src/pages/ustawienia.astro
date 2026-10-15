@@ -2,7 +2,13 @@
 import PlannerLayout from "@/layouts/PlannerLayout.astro";
 import SettingsLayout from "@/components/account/SettingsLayout.astro";
 import PasswordChangeForm from "@/components/account/PasswordChangeForm";
-import { PASSWORD_CHANGED_COOKIE, PASSWORD_CHANGED_COOKIE_OPTIONS } from "@/lib/account-settings";
+import DeleteAccountForm from "@/components/account/DeleteAccountForm";
+import {
+  DELETE_ACCOUNT_ANCHOR,
+  DELETE_ERROR_PARAM,
+  PASSWORD_CHANGED_COOKIE,
+  PASSWORD_CHANGED_COOKIE_OPTIONS,
+} from "@/lib/account-settings";
 import { authErrorMessage } from "@/lib/auth-error-messages";
 
 // Protected by the middleware (`PROTECTED_ROUTES`), so a user is always here.
@@ -19,6 +25,10 @@ if (passwordChanged) {
 // box hides itself only on a falsy message.
 const errorCode = Astro.url.searchParams.get("error");
 const serverError = errorCode ? authErrorMessage(errorCode) : null;
+
+// The deletion card's own slot: `?error=` stays the password form's.
+const deleteErrorCode = Astro.url.searchParams.get(DELETE_ERROR_PARAM);
+const deleteServerError = deleteErrorCode ? authErrorMessage(deleteErrorCode) : null;
 
 const card = "bg-mleko rounded-card flex flex-col px-5 py-6 min-[901px]:px-9 min-[901px]:py-8";
 ---
@@ -57,6 +67,20 @@ const card = "bg-mleko rounded-card flex flex-col px-5 py-6 min-[901px]:px-9 min
           )
         }
         <PasswordChangeForm client:load serverError={serverError} email={user?.email} />
+      </section>
+
+      <section
+        id={DELETE_ACCOUNT_ANCHOR}
+        aria-labelledby="usun-konto-heading"
+        class:list={[card, "border-blad-ramka scroll-mt-6 gap-5 border-[1.5px]"]}
+      >
+        <div class="flex flex-col gap-1.5">
+          <h2 id="usun-konto-heading" class="font-display text-display-sm text-blad">Usuń konto</h2>
+          <p class="text-las-szary text-base">
+            Razem z kontem usuniemy wszystkie Twoje plany i propozycje. Tej operacji nie można cofnąć.
+          </p>
+        </div>
+        <DeleteAccountForm client:load serverError={deleteServerError} email={user?.email} />
       </section>
     </SettingsLayout>
   </main>

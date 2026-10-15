@@ -150,7 +150,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** F-02, S-16, S-17, S-19, S-20, S-21
 - **Blockers:** —
 - **Unknowns:**
-  - Usunięcie użytkownika auth wymaga uprawnień, których aplikacja dziś nie ma (brak klucza serwisowego) — gdzie przebiega ta jedna operacja uprzywilejowana i jak jest odgrodzona? Owner: `/10x-plan`. Block: nie.
+  - ~~Usunięcie użytkownika auth wymaga uprawnień, których aplikacja dziś nie ma (brak klucza serwisowego) — gdzie przebiega ta jedna operacja uprzywilejowana i jak jest odgrodzona? Owner: `/10x-plan`. Block: nie.~~ **Rozstrzygnięte 2026-10-15:** funkcja SQL `public.delete_own_account()` — `security definer`, bez argumentów, usuwa wyłącznie `auth.users where id = auth.uid()`; plany, propozycje i sesje znikają kaskadą. Granica udowodniona pgTAP-em na dwóch kontach (`delete_own_account.test.sql`) i e2e (`account-deletion.spec.ts`); klucz serwisowy nie trafia do Workera.
 - **Risk:** Operacja nieodwracalna — potwierdzenie przez `useConfirmDialog` z `tone: "danger"`, przyciski nazwane skutkiem. Pierwsza ścieżka z uprawnieniami ponad RLS w całym produkcie, więc izolacja kont musi być udowodniona testem na dwóch kontach, nie założona. Warunek z FR-024 o aktywnej subskrypcji **nie** należy do tej pozycji — dokłada go `S-25`.
 - **Status:** ready
 

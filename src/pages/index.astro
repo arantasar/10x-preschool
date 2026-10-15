@@ -1,6 +1,7 @@
 ---
 import Welcome from "@/components/Welcome.astro";
 import Layout from "@/layouts/Layout.astro";
+import { ACCOUNT_DELETED_COOKIE, ACCOUNT_DELETED_COOKIE_OPTIONS } from "@/lib/account-settings";
 
 // The signed-in app starts at the month, not here. The decision lives in the
 // page that makes it rather than in the middleware: the middleware answers one
@@ -13,8 +14,24 @@ const { user } = Astro.locals;
 if (user) {
   return Astro.redirect("/plan/month");
 }
+
+// One-shot: set by `/api/auth/delete-account` after the account is gone,
+// consumed by the render that shows it, so a reload removes the notice.
+const accountDeleted = Astro.cookies.has(ACCOUNT_DELETED_COOKIE);
+if (accountDeleted) {
+  Astro.cookies.delete(ACCOUNT_DELETED_COOKIE, { path: ACCOUNT_DELETED_COOKIE_OPTIONS.path });
+}
 ---
 
 <Layout>
+  {
+    accountDeleted && (
+      <div class="px-app-gutter relative z-20 mx-auto w-full max-w-[1100px] pt-4">
+        <p class="rounded-input bg-szalwia-soft text-mech-ciemny px-4 py-3 text-[15px] font-semibold" role="status">
+          Konto zostało usunięte razem ze wszystkimi planami.
+        </p>
+      </div>
+    )
+  }
   <Welcome />
 </Layout>

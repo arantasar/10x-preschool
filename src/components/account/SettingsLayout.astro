@@ -4,14 +4,14 @@
 // `SettingsLayout` (`context/foundation/design/src/components/account/`) to the
 // project's Tailwind tokens.
 //
-// New sections go into the menu below. S-18 (`account-deletion`) adds „Usuń
-// konto” as the last regular item, in the danger colour; „Wyloguj się” stays
-// below the divider. At ≤ 900 px the menu becomes a horizontal pill row above
+// New sections go into the menu below. „Usuń konto” (S-18) is the last regular
+// item, in the danger colour, and scrolls to the deletion card; „Wyloguj się”
+// stays below the divider. At ≤ 900 px the menu becomes a horizontal pill row above
 // the content.
 //
 // The cards in the slot carry the design's `set-card` look themselves:
 // `bg-mleko rounded-card flex flex-col px-5 py-6 min-[901px]:px-9 min-[901px]:py-8`.
-import { SETTINGS_PATH } from "@/lib/account-settings";
+import { DELETE_ACCOUNT_ANCHOR, SETTINGS_PATH } from "@/lib/account-settings";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -53,6 +53,20 @@ const activeClass = "bg-szalwia-soft hover:bg-szalwia-soft font-extrabold";
           ><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg
         >
         Konto i hasło
+      </a>
+      <a href={`${SETTINGS_PATH}#${DELETE_ACCOUNT_ANCHOR}`} class:list={cn(itemClass, "text-blad hover:text-blad")}>
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg
+        >
+        Usuń konto
       </a>
       <hr class="bg-linia mx-1.5 my-2 hidden h-[1.5px] border-0 min-[901px]:block" />
       {/* The design's `/wyloguj` link does not exist: signing out is a POST. */}
