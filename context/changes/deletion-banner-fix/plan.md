@@ -134,12 +134,12 @@ The island's JS (React + a few lines) loads only on the one render that shows th
 
 #### Automated
 
-- [x] 1.1 Extended e2e position assertion fails against the unchanged `index.astro`
-- [x] 1.2 Extended e2e scenario passes after the fix
-- [x] 1.3 The in-flow notice is gone from the landing (grep checks)
-- [x] 1.4 Lint passes
-- [x] 1.5 Unit tests still pass
-- [x] 1.6 Build passes
+- [x] 1.1 Extended e2e position assertion fails against the unchanged `index.astro` — f83d15f
+- [x] 1.2 Extended e2e scenario passes after the fix — f83d15f
+- [x] 1.3 The in-flow notice is gone from the landing (grep checks) — f83d15f
+- [x] 1.4 Lint passes — f83d15f
+- [x] 1.5 Unit tests still pass — f83d15f
+- [x] 1.6 Build passes — f83d15f
 
 #### Manual
 
