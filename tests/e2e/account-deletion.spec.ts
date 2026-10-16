@@ -58,6 +58,14 @@ async function submitDeletion(page: Page, password: string): Promise<void> {
   await card.getByRole("button", { name: "Usuń konto…", exact: true }).click();
 }
 
+/** Pionowe położenie nagłówka strony głównej i tytułu, przy tej samej szerokości okna. */
+async function landingPositions(page: Page): Promise<{ banner: number; heading: number }> {
+  const banner = await page.getByRole("banner").boundingBox();
+  const heading = await page.getByRole("heading", { level: 1 }).boundingBox();
+  if (!banner || !heading) throw new Error("Nagłówek albo tytuł strony głównej nie jest widoczny.");
+  return { banner: banner.y, heading: heading.y };
+}
+
 test.describe("FR-024 — usunięcie konta w ustawieniach", () => {
   const userIds: string[] = [];
 
@@ -168,12 +176,22 @@ test.describe("FR-024 — usunięcie konta w ustawieniach", () => {
       await expect(dialog).toContainText(a.email);
       await dialog.getByRole("button", { name: "Usuń konto", exact: true }).click();
 
-      // Strona główna z jednorazowym komunikatem.
+      // Strona główna z jednorazowym komunikatem. Komunikat unosi się nad
+      // stroną: nagłówek i tytuł stoją dokładnie tam, gdzie bez niego.
       await page1.waitForURL((url) => url.pathname === "/");
       const notice = page1.getByRole("status").filter({ hasText: NOTICE });
       await expect(notice).toBeVisible();
+      const withNotice = await landingPositions(page1);
+
+      await waitForIslands(page1);
+      await page1.getByRole("button", { name: "Zamknij komunikat" }).click();
+      await expect(notice).toBeHidden();
+
+      // Przeładowanie dowodzi, że ciasteczko zostało zużyte, a nie tylko
+      // element zdjęty po stronie przeglądarki.
       await page1.reload();
       await expect(page1.getByRole("link", { name: "Zaloguj się" }).first()).toBeVisible();
+      expect(await landingPositions(page1)).toEqual(withNotice);
       await expect(notice).toBeHidden();
 
       // Ta przeglądarka nie ma już sesji. Sprawdzane na ciasteczkach, bo samo

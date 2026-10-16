@@ -1,4 +1,5 @@
 ---
+import { AccountDeletedNotice } from "@/components/AccountDeletedNotice";
 import Welcome from "@/components/Welcome.astro";
 import Layout from "@/layouts/Layout.astro";
 import { ACCOUNT_DELETED_COOKIE, ACCOUNT_DELETED_COOKIE_OPTIONS } from "@/lib/account-settings";
@@ -24,14 +25,7 @@ if (accountDeleted) {
 ---
 
 <Layout>
-  {
-    accountDeleted && (
-      <div class="px-app-gutter relative z-20 mx-auto w-full max-w-[1100px] pt-4">
-        <p class="rounded-input bg-szalwia-soft text-mech-ciemny px-4 py-3 text-[15px] font-semibold" role="status">
-          Konto zostało usunięte razem ze wszystkimi planami.
-        </p>
-      </div>
-    )
-  }
   <Welcome />
+  {/* Fixed, so its place in the DOM does not move the layout; last, so the close button comes last in tab order. */}
+  {accountDeleted && <AccountDeletedNotice client:load />}
 </Layout>
