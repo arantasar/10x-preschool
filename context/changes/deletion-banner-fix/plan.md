@@ -143,7 +143,7 @@ The island's JS (React + a few lines) loads only on the one render that shows th
 
 #### Manual
 
-- [ ] 1.7 Desktop: toast floats bottom-centre, header and hero unshifted
-- [ ] 1.8 Phone (~375 px): toast fits gutters, hero form uncovered, text wraps cleanly
-- [ ] 1.9 Keyboard: close button reachable, closes with visible focus ring
-- [ ] 1.10 Reload after deletion shows no toast
+- [x] 1.7 Desktop: toast floats bottom-centre, header and hero unshifted
+- [x] 1.8 Phone (~375 px): toast fits gutters, hero form uncovered, text wraps cleanly
+- [x] 1.9 Keyboard: close button reachable, closes with visible focus ring
+- [x] 1.10 Reload after deletion shows no toast
