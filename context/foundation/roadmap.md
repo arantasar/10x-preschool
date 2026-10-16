@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 3
 status: draft
 created: 2026-10-01
-updated: 2026-10-14
+updated: 2026-10-15
 prd_version: 3
 main_goal: quality
 top_blocker: external
@@ -62,7 +62,7 @@ nowy fundament to `F-02`, a pierwszy nowy slice `S-16`. Pozycje `S-23`…`S-27` 
 | F-02 | content-safety-gate-resume | (foundation) bramka bezpieczeństwa treści znów pracuje na każdym dopuszczonym modelu i w każdym trybie   | —                                                | Guardrail 2, Success Primary #5 | done     |
 | S-16 | password-reset             | wrócić do konta przez e-mail po zapomnieniu hasła i zastać swoje plany                                   | —                                                | FR-022, US-04                  | done     |
 | S-17 | password-change            | zmienić hasło po zalogowaniu, wylogowując pozostałe sesje konta                                          | —                                                | FR-023                         | done     |
-| S-18 | account-deletion           | usunąć swoje konto razem ze wszystkimi planami                                                           | —                                                | FR-024                         | ready    |
+| S-18 | account-deletion           | usunąć swoje konto razem ze wszystkimi planami                                                           | —                                                | FR-024                         | done     |
 | S-19 | help-and-contact           | przeczytać FAQ i napisać do właściciela przez formularz, z kontem lub bez                                | —                                                | FR-025, FR-026                 | done     |
 | S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | treść od księgowego/prawnika                     | FR-025                         | blocked  |
 | S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | blocked  |
@@ -152,7 +152,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - ~~Usunięcie użytkownika auth wymaga uprawnień, których aplikacja dziś nie ma (brak klucza serwisowego) — gdzie przebiega ta jedna operacja uprzywilejowana i jak jest odgrodzona? Owner: `/10x-plan`. Block: nie.~~ **Rozstrzygnięte 2026-10-15:** funkcja SQL `public.delete_own_account()` — `security definer`, bez argumentów, usuwa wyłącznie `auth.users where id = auth.uid()`; plany, propozycje i sesje znikają kaskadą. Granica udowodniona pgTAP-em na dwóch kontach (`delete_own_account.test.sql`) i e2e (`account-deletion.spec.ts`); klucz serwisowy nie trafia do Workera.
 - **Risk:** Operacja nieodwracalna — potwierdzenie przez `useConfirmDialog` z `tone: "danger"`, przyciski nazwane skutkiem. Pierwsza ścieżka z uprawnieniami ponad RLS w całym produkcie, więc izolacja kont musi być udowodniona testem na dwóch kontach, nie założona. Warunek z FR-024 o aktywnej subskrypcji **nie** należy do tej pozycji — dokłada go `S-25`.
-- **Status:** ready
+- **Status:** done
 
 ### S-19: FAQ i formularz kontaktowy
 
@@ -361,3 +361,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-16: Nauczycielka, która nie pamięta hasła, prosi o reset ze strony logowania, ustawia nowe hasło przez link z wiadomości e-mail, loguje się i zastaje wszystkie swoje plany; strona resetu mówi, gdzie szukać wiadomości i co zrobić, gdy nie przyjdzie.** — Archived 2026-10-07 → `context/archive/2026-10-03-password-reset/`. Lesson: —.
 - **S-19: Odwiedzający, z kontem lub bez, czyta FAQ (czym jest usługa, jak działa) i — gdy nie znajdzie odpowiedzi — wysyła wiadomość do właściciela przez formularz; wiadomość automatu do właściciela nie dociera, prawdziwa nie ginie.** — Archived 2026-10-13 → `context/archive/2026-10-08-help-and-contact/`. Lesson: —.
 - **S-17: Zalogowana nauczycielka zmienia hasło, a pozostałe urządzenia z otwartą sesją tego konta (np. komputer w przedszkolu) tracą dostęp.** — Archived 2026-10-14 → `context/archive/2026-10-13-password-change/`. Lesson: „Logowanie z Workera nie niesie IP klienta”.
+- **S-18: Nauczycielka usuwa swoje konto po potwierdzeniu, które mówi wprost, że zniknie konto i wszystkie plany; po usunięciu nie da się zalogować, a jej plany nie istnieją.** — Archived 2026-10-15 → `context/archive/2026-10-15-account-deletion/`. Lesson: —.

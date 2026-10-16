@@ -15,19 +15,24 @@
   - `S-16` `password-reset` (PR #41, 2026-10-07);
   - `S-19` `help-and-contact` (PR #46 + #47, 2026-10-13) — FAQ `/pomoc`, formularz `/kontakt`
     z Turnstile, `verifyHumanToken` do ponownego użycia w `S-22`;
-  - `S-17` `password-change` (PR #48, 2026-10-14) — ekran `/ustawienia` i `SettingsLayout`.
+  - `S-17` `password-change` (PR #48, 2026-10-14) — ekran `/ustawienia` i `SettingsLayout`;
+  - `S-18` `account-deletion` (PR #50, 2026-10-15) — usunięcie konta z `/ustawienia` po haśle i
+    oknie `danger`. Pierwsza i jedyna operacja ponad RLS: `public.delete_own_account()`
+    (`security definer`, bez argumentów, tylko sesja młodsza niż 5 minut). Uprawnienie właściciela
+    do kasowania z `auth.users` sprawdzone na hostowanym projekcie przed merge'em.
 - **Zmiany spoza roadmapy, wydane:** `temio-launch` (PR #42–#43, 2026-10-08 — rebrand na Temio,
   domena `temio.pl`, przekierowanie starego hosta), `seo-meta` (PR #44), szablony e-maili (PR #45),
   `header-update` (PR #49, 2026-10-14 — menu konta w nagłówku według makiety 19; ryzyko #17 w
   `test-plan.md`).
-- **Następny jest `S-18` `account-deletion`** — jedyna pozycja `ready`. `S-20` (strony prawne)
-  czeka na treść od księgowego/prawnika, `S-21` (fair use) na próg z danych produkcji, `S-22`–`S-27`
-  na nie oraz na Kroki 9 i 11.
+- **Żadna pozycja roadmapy nie jest `ready`.** Z Kroku 13 zostały `S-20` (strony prawne — czeka na
+  treść od księgowego/prawnika) i `S-21` (fair use — czeka na próg z danych produkcji); `S-22`–`S-27`
+  czekają na nie oraz na Kroki 9 i 11. **Najbliższy krok w kodzie bez blokera zewnętrznego to
+  Krok 9** (e2e w CI) — i tak warunek wejścia Kroku 14.
 - **Monetyzacja ma decyzje** (2026-09-29): Free + Basic 19,99 zł teraz, Pro 39,99 zł później
   zaczynając od materiałów, B2C, JDG. Pełny zapis: `monetization.md` §Decyzje.
 - `test-plan.md` §3: fazy 1–3 `complete`, faza 4 (Krok 9) `not started`. Testy bazy w CI jako
-  doradczy job `db`; e2e (Playwright, 34 testy, ryzyka #3, #4, #7–#17) chodzi lokalnie,
-  poza CI.
+  doradczy job `db`; e2e (Playwright, 37 testów, ryzyka #3, #4, #7–#17 oraz FR-024 z `S-18`)
+  chodzi lokalnie, poza CI.
 - Otwarte pytania roadmapy: #5 limit regeneracji (właściciel: `S-21`), #9 generator bez tekstów
   piosenek i wierszyków (`M-04`); #3 (dług PRD za `S-04`, `S-05`, `S-08`) zostaje otwarte z wyboru.
 
@@ -61,7 +66,7 @@ tabela, nie numer**.
 | równolegle | **Krok 11** | Walidacja i sprawy formalne (rozmowy, dane z produkcji, JDG, Stripe, księgowa) | poza kodem |
 | 2 | ✅ Krok 6 | Faza 3 test-planu (ochrona zapisu i własności) — zaimplementowana 2026-09-30, PR #39 | test-plan |
 | 3 | ✅ Krok 12 | PRD v3 i roadmapa kamienia `M-03` „Gotowi do sprzedaży" — zamknięty 2026-10-01 | shape → prd → roadmap |
-| 4 | **Krok 13** | Slice'y `M-03` bez pieniędzy: ~~reset hasła~~ ✅, ~~FAQ i kontakt~~ ✅, ~~zmiana hasła~~ ✅, **usunięcie konta (następne)**, strony prawne, limity | slice'y |
+| 4 | **Krok 13** | Slice'y `M-03` bez pieniędzy: ~~reset hasła~~ ✅, ~~FAQ i kontakt~~ ✅, ~~zmiana hasła~~ ✅, ~~usunięcie konta~~ ✅, strony prawne (blokada zewnętrzna), limity (blokada zewnętrzna) | slice'y |
 | 5 | Krok 9 | Faza 4 test-planu: e2e w CI **przed** pierwszym slice'em płatności | test-plan |
 | 6 | **Krok 14** | Slice'y `M-03` z pieniędzmi: Stripe, cennik i paywall; ~~odwieszenie bramki~~ ✅ 2026-10-03 (`F-02`); start sprzedaży | slice'y + wydanie |
 | 7 | **Krok 15** | Kamień `M-04` „Lepsza treść": kalendarz świąt, rodzaje aktywności, materiały → start Pro | shape → prd → roadmap |
@@ -445,24 +450,14 @@ Każdy standardowym łańcuchem (`git checkout -b feat/<id>` → `/10x-new` → 
 `/10x-plan` → `/10x-plan-review` → `/10x-implement` → `/10x-impl-review` → `/10x-archive`).
 Kolejność z roadmapy; naturalna to reset hasła → strony prawne i FAQ → kontakt → limity.
 
-**Stan 2026-10-15:** `S-16`, `S-19`, `S-17` wydane i zarchiwizowane. Następne:
+**Stan 2026-10-15:** `S-16`, `S-19`, `S-17`, `S-18` wydane i zarchiwizowane. Zostały `S-20` i `S-21`,
+obie z blokerem spoza kodu (treść prawna; próg fair use z danych produkcji), więc Krok 13 stoi do
+ich zdjęcia. W międzyczasie — Krok 9.
 
-```
-git checkout -b feat/account-deletion
-/10x-new account-deletion
-/10x-research        # klucz serwisowy: gdzie żyje jedyna operacja ponad RLS i jak jest odgrodzona;
-                     # co kasuje się kaskadą (day_plans, activities), a co trzeba skasować jawnie
-/10x-plan
-/10x-plan-review
-/10x-implement account-deletion phase <N>
-/10x-impl-review
-/10x-archive account-deletion
-```
-
-Na co uważać (`roadmap.md` §S-18): izolacja kont udowodniona testem na dwóch kontach;
-potwierdzenie przez `useConfirmDialog` z `tone: "danger"`; trasa przyjmująca hasło podlega
-lekcji „Logowanie z Workera nie niesie IP klienta”; warunek FR-024 o aktywnej subskrypcji
-należy do `S-25`, nie tutaj. Potem `S-20` i `S-21`, gdy zdejmą się ich blokery zewnętrzne.
+Ślad `S-18` dla `S-20`: polityka prywatności nie może obiecywać pełnego wymazania konta. Zostają
+wiadomości z formularza (`user_id` → `null`, 12 miesięcy) i wpisy GoTrue w `auth.audit_log_entries`
+— pełny zapis w `roadmap.md` §S-20 Unknowns. Dla `S-25`: usunięcie konta ma dziś brak limitu prób
+hasła z decyzji (trasa wymaga sesji) i nie kończy subskrypcji — oba wracają tam jako zakres.
 
 Każdy z nich może wejść na produkcję sam: nic tu nie pobiera pieniędzy, a limity działają dla
 wszystkich według reguły z §4.2.
