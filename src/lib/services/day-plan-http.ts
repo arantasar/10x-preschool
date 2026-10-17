@@ -43,6 +43,13 @@ export type DayPlanSuccessBody = DayPlanWithCurrentActivities & {
 export interface DayPlanErrorBody {
   readonly error: string;
   readonly retryable: boolean;
+  /**
+   * Set only by {@link fairUseExceeded}. Optional and additive, like
+   * `acceptance_cleared`: `isErrorBody` does not reject extra fields, so every
+   * island keeps showing `error` as before, and the ones that know the field
+   * (`isLimitBody`) add the contact link next to it.
+   */
+  readonly limit?: { readonly resets_on: string };
 }
 
 /**
@@ -234,6 +241,41 @@ export function generationFailure(error: unknown, invalidMessage?: string): Resp
 
   const body: DayPlanErrorBody = { error: message, retryable: failure.retryable };
   return json(body, GENERATION_STATUS_BY_CATEGORY[failure.category]);
+}
+
+// ---------------------------------------------------------------------------
+// Fair use
+// ---------------------------------------------------------------------------
+
+// Genitive month ("1 listopada") is what `pl-PL` gives for day + long month.
+const RESETS_ON_FORMAT = new Intl.DateTimeFormat("pl-PL", {
+  day: "numeric",
+  month: "long",
+  timeZone: "Europe/Warsaw",
+});
+
+/**
+ * The monthly limit is spent (FR-027, `src/lib/services/fair-use.ts`).
+ *
+ * 429 and `retryable: false`: trying again today changes nothing, so the island
+ * must not offer "Spróbuj ponownie". The sentence names the day generation comes
+ * back and nothing else - "Napisz do nas" is a link the island adds from
+ * `limit`, because a link inside `error` would be text, not something to click.
+ *
+ * `resetsOn` is the database's `resets_on` (`YYYY-MM-DD`). It is read at noon
+ * UTC so no time zone can move it to the neighbouring day; a value that is not
+ * a date still yields a true sentence rather than a thrown `RangeError`.
+ */
+export function fairUseExceeded(resetsOn: string): Response {
+  const date = new Date(`${resetsOn}T12:00:00Z`);
+  const when = Number.isNaN(date.getTime()) ? "początku następnego miesiąca" : RESETS_ON_FORMAT.format(date);
+
+  const body: DayPlanErrorBody = {
+    error: `Wykorzystano miesięczny limit generowania. Generowanie znów będzie możliwe od ${when}.`,
+    retryable: false,
+    limit: { resets_on: resetsOn },
+  };
+  return json(body, 429);
 }
 
 /**

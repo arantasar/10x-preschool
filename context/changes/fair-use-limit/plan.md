@@ -449,10 +449,10 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Automated
 
-- [x] 1.1 Migracja aplikuje się na czysto: `npx supabase db reset`
-- [x] 1.2 Testy pgTAP przechodzą: `npm run test:db`
-- [x] 1.3 Typy regenerują się, a `git diff --stat src/db/database.types.ts` pokazuje zmianę
-- [x] 1.4 Lint przechodzi: `npm run lint`
+- [x] 1.1 Migracja aplikuje się na czysto: `npx supabase db reset` — 595a9ca
+- [x] 1.2 Testy pgTAP przechodzą: `npm run test:db` — 595a9ca
+- [x] 1.3 Typy regenerują się, a `git diff --stat src/db/database.types.ts` pokazuje zmianę — 595a9ca
+- [x] 1.4 Lint przechodzi: `npm run lint` — 595a9ca
 
 #### Manual
 
@@ -462,9 +462,9 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Automated
 
-- [ ] 2.1 Testy jednostkowe przechodzą: `npm test`
-- [ ] 2.2 Lint i typy przechodzą: `npm run lint`
-- [ ] 2.3 Build przechodzi: `npm run build`
+- [x] 2.1 Testy jednostkowe przechodzą: `npm test`
+- [x] 2.2 Lint i typy przechodzą: `npm run lint`
+- [x] 2.3 Build przechodzi: `npm run build`
 
 #### Manual
 

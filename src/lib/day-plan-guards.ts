@@ -186,3 +186,20 @@ export function readAcceptanceCleared(body: unknown): boolean {
 export function isErrorBody(body: unknown): body is { error: string; retryable: boolean } {
   return isRecord(body) && typeof body.error === "string" && typeof body.retryable === "boolean";
 }
+
+/**
+ * The fair-use refusal (`fairUseExceeded` in `day-plan-http.ts`): an error body
+ * that also carries `limit.resets_on`.
+ *
+ * A separate predicate rather than a branch of {@link isErrorBody}, because the
+ * field is additive - every other error body must keep narrowing exactly as
+ * before. The island shows `error` as usual and, only when this matches, puts
+ * the contact link where the retry button would be.
+ */
+export function isLimitBody(body: unknown): body is { error: string; retryable: false; limit: { resets_on: string } } {
+  if (!isRecord(body) || typeof body.error !== "string" || body.retryable !== false) {
+    return false;
+  }
+  const limit = body.limit;
+  return isRecord(limit) && typeof limit.resets_on === "string";
+}
