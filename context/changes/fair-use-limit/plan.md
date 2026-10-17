@@ -509,4 +509,4 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 #### Manual
 
 - [x] 5.4 `/polityka-prywatnosci` pokazuje 1.1 i nowy punkt z poprawnymi odsyłaczami
-- [ ] 5.5 Po scaleniu `db push` wykonany, a generowanie na produkcji zostawia wiersz w księdze
+- [x] 5.5 Po scaleniu `db push` wykonany, a generowanie na produkcji zostawia wiersz w księdze

@@ -24,7 +24,7 @@ milestone_status: active
 
 - **Intent:** Nauczycielka posługuje się kontem i usługą bez pomocy właściciela — odzyskuje i zmienia hasło, usuwa konto, czyta regulamin, politykę prywatności i FAQ, pisze przez formularz — generowanie ma limit, który zatrzymuje wyłącznie nadużycie, bramka bezpieczeństwa treści znów pracuje, a nauczycielka **może zapłacić za Basic** (subskrypcja albo dostęp jednorazowy, z gwarancją zwrotu 14 dni) albo zostać na planie darmowym. _(Do 2026-10-17 płatności wchodziły dopiero po bramie zapisów — zdjęta, patrz §Open Roadmap Questions #1.)_
 - **Source materials:** `context/foundation/prd-v3.md` (v3), poprzedzone `shape-notes.md` (2026-10-01, runda Sokratejska przy każdym z 17 FR) i `monetization.md` (§Decyzje 2026-09-29).
-- **Done when:** wszystkie pozycje `F-02`, `S-16`…`S-27` są `done`, z płatnościami wydanymi kompletem (Guardrail 3). **Termin: płatności na produkcji do 2027-01-20** — testerzy (do 5 osób z zaproszenia, Basic gratis do 31.01.2027) muszą móc zapłacić w oknie planowania lutego (PRD v3 `hard_deadline`, aktualizacja 2026-10-17).
+- **Done when:** wszystkie pozycje `F-02`, `S-16`…`S-29` są `done`, z płatnościami wydanymi kompletem (Guardrail 3). **Termin: płatności na produkcji do 2027-01-20** — testerzy (do 5 osób z zaproszenia, Basic gratis do 31.01.2027) muszą móc zapłacić w oknie planowania lutego (PRD v3 `hard_deadline`, aktualizacja 2026-10-17).
 - **Scope anchors:** FR-022…FR-039; US-04, US-05; Guardraile 1–3 z PRD v3 §Success Criteria; cztery niezmienniki `M-02`.
 - **Czego ten kamień nie robi:** nie spłaca długu PRD za `S-04`, `S-05` i `S-08` (Open Roadmap Questions #10 — ślad kontrolny: obietnica spłaty nie może tu wrócić); nie zmienia wytycznych generowania ani promptu (to `M-04`); nie buduje Pro.
 
@@ -69,8 +69,10 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-19 | help-and-contact           | przeczytać FAQ i napisać do właściciela przez formularz, z kontem lub bez                                | —                                                | FR-025, FR-026                 | done     |
 | S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | —                                                | FR-025                         | done     |
 | S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | in progress |
-| S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic i zapisać się na cenę założycielską z uczciwym potwierdzeniem              | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
-| S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21                                             | FR-030                         | blocked  |
+| S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic z tabelą porównania planów i zapisać się na cenę założycielską z uczciwym potwierdzeniem | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
+| S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | ready    |
+| S-29 | print-redesign             | drukować plan tygodnia i miesiąca w układzie i barwach aplikacji, nie w czerni i bieli                   | —                                                | —                              | ready    |
+| S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21, S-28                                       | FR-030                         | blocked  |
 | S-24 | existing-accounts-gift     | jako konto sprzed płatności (także testerka) dowiedzieć się o nowych zasadach i dostać prezent, zanim limit mnie dotknie | S-23                                | FR-036                         | blocked  |
 | S-25 | basic-subscription         | wykupić Basic jako subskrypcję kartą, zarządzać nią, anulować ją i w 14 dni dostać zwrot                 | F-02, S-18, S-22, S-23, Krok 9, konto operatora  | FR-032, FR-034, FR-035, FR-039, FR-024 | blocked  |
 | S-26 | one-time-access            | wykupić Basic jednorazowo (miesiąc albo rok szkolny) BLIK-iem albo przelewem, z gwarancją zwrotu         | F-02, S-23, Krok 9, konto operatora              | FR-033, FR-039                 | blocked  |
@@ -85,7 +87,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | A      | Bezpieczeństwo treści              | `F-02`                                                       | Pierwszy przy celu `quality` — dług `S-15` i warunek sprzedaży. Dołącza do strumienia D w `S-22`, `S-25`, `S-26`.                           |
 | B      | Konto                              | `S-16` / `S-17` / `S-18` (równolegle)                        | Trzy niezależne pozycje bez prerekwizytów; `S-18` wraca w strumieniu D jako prerekwizyt `S-25` (usunięcie konta kończy subskrypcję).       |
 | C      | Informacja, kontakt i limit        | `S-19` → `S-21`; `S-20` równolegle                           | `S-19` stawia ochronę przed automatami, z której korzysta `S-22`; `S-20` czeka na zewnętrzną treść prawną — główne ryzyko kamienia.        |
-| D      | Cennik i płatności                 | `S-21` → `S-23` → `S-24` / `S-25` / `S-26` → `S-27`; `S-22` przed `S-25` | Od 2026-10-17 bez bramy, termin 2027-01-20. Ścieżka krytyczna: Krok 11 (formalności, poza kodem) i Krok 9 (e2e w CI) → `S-25`. Płatności kompletem (Guardrail 3). |
+| D      | Cennik i płatności                 | `S-21` → `S-28` → `S-23` → `S-24` / `S-25` / `S-26` → `S-27`; `S-22` przed `S-25`; `S-29` (wydruki) niezależnie, przed `S-23` | Od 2026-10-17 bez bramy, termin 2027-01-20. Ścieżka krytyczna: Krok 11 (formalności, poza kodem) i Krok 9 (e2e w CI) → `S-25`. Płatności kompletem (Guardrail 3). |
 
 ## Baseline
 
@@ -215,15 +217,44 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - ~~Definicja „konta aktywnego”~~ i ~~okno 4 tygodni~~ — **nieaktualne 2026-10-17:** brama zdjęta, zapis niczego nie liczy (Open Roadmap Questions #1, #2).
   - Cena dostępu jednorazowego na cenniku (Open Roadmap Questions #14). Owner: Janusz. Block: tak dla treści cennika.
   - Treść cennika: tabela Darmowy/Basic w PRD v3 §Business Logic Changes „Plany — co widzi nauczycielka na cenniku". Cennik publikowany przed `S-25` mówi wprost, że płatności ruszą wkrótce, i nie może obiecywać niczego, czego `S-23`…`S-27` nie dowiozą.
+  - **Tabela porównania planów idzie z cennikiem (decyzja 2026-10-17, Janusz)**, żeby było wiadomo, za co nauczycielka płaci. Wzór z pakietu `temio-design-astro/`: `src/components/billing/PlanComparison` (Darmowy vs Basic z przypisami), `PricingCard`, `BillingToggle`; `design/screens/07-cennik.png`, `07b-cennik-miesiecznie.png`. Przypis o limicie rozsądnego użycia opisuje `S-21`; cennik nigdy nie mówi „bez limitu”. Teksty w [NAWIASACH] uzupełnia właściciel. Owner: Janusz (treść), `/10x-plan` (komponent). Block: tak dla treści tabeli.
 - **Risk:** _(2026-10-17: przestaje być gwiazdą przewodnią i bramą — zostaje cennikiem i listą „daj znać, gdy ruszy” dla obcych osób; zapisani dostają cenę założycielską, FR-035.)_ Pierwotnie: gwiazda przewodnia stoi ostatnia w rdzeniu z wyboru, nie z grafu — ryzyko polega na tym, że zablokowany prawnikiem `S-20` przesuwa pomiar o tyle samo, ile trwa zależność zewnętrzna. Zapis anonimowy jest dostępny, ale do progu się nie wlicza (FR-029, runda Sokratejska: „zapis jest tani, zapłata droga"). Żadna płatność nie jest symulowana. Cennik nie pokazuje Pro (FR-028). Zapis to zgoda na kontakt e-mailowy — polityka prywatności musi go obejmować (`S-20`).
 - **Status:** blocked
+
+### S-28: Indywidualne limity fair use dla wybranych kont
+
+- **Outcome:** Właściciel wpisuje w dashboardzie Supabase, że wybrane konto (np. własne albo testerki) ma limit generowania bez sufitu albo podwyższony — zmiana działa od następnego wywołania, bez deployu i bez kasowania wierszy księgi. Nauczycielka nie ma żadnej drogi, żeby nadać to sobie sama.
+- **Change ID:** fair-use-overrides
+- **PRD refs:** FR-027, FR-038 (limit chroni przed nadużyciem, nie przed właścicielem i zaproszonymi osobami)
+- **Prerequisites:** S-21 (księga i `claim_generation`)
+- **Parallel with:** S-29
+- **Blockers:** —
+- **Unknowns:**
+  - Kształt danych: osobna tabela nadpisań per konto (limit dni, limit poprawek; `null` = bez sufitu) czy kolumny przy przyszłym stanie planu z `S-23`. Rekomendacja z 2026-10-17: jedna funkcja „jaki limit ma to konto” z kolejnością źródeł nadpisanie konta → plan konta (`S-23`, `S-27`) → domyślny z konfiguracji, żeby `S-23` dokładał źródło, a nie przerabiał funkcję. Owner: `/10x-plan`. Block: nie.
+  - Słowo „unlimited” istnieje tylko w bazie i w rozmowie z właścicielem — cennik i komunikaty nigdy nie mówią „bez limitu” (`temio-design-astro/design/README.md`, `/cennik`). Owner: `/10x-plan`. Block: nie.
+- **Risk:** Nadpisanie jest odczytywane przez `claim_generation`, która musi zostać `security invoker` (niezmiennik: jedyny definer to `delete_own_account`) — więc nauczycielka może czytać własny wiersz nadpisania, ale nie może go wstawić ani zmienić; pgTAP musi to dowieść. Nowe dane per konto: jedno zdanie w Polityce prywatności pkt 2.7 i w sekcji „Fair use” CLAUDE.md. Do czasu tej pozycji właściciel zeruje własne zużycie, kasując swoje wiersze `generation_ledger` w SQL Editorze.
+- **Status:** ready
+
+### S-29: Wydruki w barwach aplikacji
+
+- **Outcome:** Nauczycielka drukuje plan tygodnia i miesiąca w układzie i kolorystyce aplikacji — nie w czerni i bieli — z tą samą treścią co dziś: daty, tematy i aktywności.
+- **Change ID:** print-redesign
+- **PRD refs:** — (zmiana wyglądu istniejącego wydruku tygodnia i miesiąca z `M-02`; zachowanie bez zmian)
+- **Prerequisites:** —
+- **Parallel with:** S-28
+- **Blockers:** —
+- **Source materials:** pakiet dizajnu `temio-design-astro/` (2026-10-17): `src/components/print/PrintMonth`, `PrintWeek`, `src/styles/print.css`, `tokens.css`; wzory `design/screens/20-druk-miesiac.png`, `21-druk-tydzien.png` i odpowiadające im `design/reference/*.html`. Tabela porównania planów z tego pakietu należy do `S-22` (cennik).
+- **Unknowns:**
+  - Pakiet dizajnu obejmuje dużo więcej (zmiana nazwy na Temio, nowe ekrany, `PaywallDialog` „od drugiego tygodnia”, który trzeba zestawić z regułą planu darmowego z `S-27`). Ta pozycja bierze wyłącznie wydruki; tabela porównania jest w `S-22`, a reszty pakietu nie ma jeszcze w roadmapie. Owner: Janusz. Block: nie.
+- **Risk:** Wydruk w kolorze musi pozostać czytelny na drukarce czarno-białej (przedszkola drukują głównie w szarości) i mieścić się na A4 poziomo jak dziś — zmiana wyglądu nie może zgubić treści aktywności ani dat. Obecne wydruki PDF mają swoje testy i e2e; nowe komponenty zastępują je, a nie stoją obok.
+- **Status:** ready
 
 ### S-23: Okres próbny i stan planu konta (krok 7)
 
 - **Outcome:** Nowe konto dostaje pierwszy miesiąc od rejestracji z pełnym zakresem Basic, bez podawania karty, a nauczycielka widzi stan swojego planu i datę, do której trwa — tylko do odczytu.
 - **Change ID:** trial-entitlement
 - **PRD refs:** FR-030; §Business Logic Changes „Druga reguła" („plan + dostęp do daty"); §Access Control Changes „Stan planu konta — kto go zmienia"
-- **Prerequisites:** S-21 (licznik i pula, którą stan planu będzie sterował). Do 2026-10-17: S-22 i wynik bramy — zdjęte.
+- **Prerequisites:** S-21 (licznik i pula, którą stan planu będzie sterował), S-28 (funkcja „jaki limit ma to konto”, do której stan planu dołoży kolejne źródło). Do 2026-10-17: S-22 i wynik bramy — zdjęte.
 - **Parallel with:** S-22
 - **Blockers:** —
 - **Unknowns:**
