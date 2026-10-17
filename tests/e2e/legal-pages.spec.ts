@@ -1,4 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { e2eEnv } from "./support/env";
+import { waitForIslands } from "./support/hydration";
+import { admin } from "./support/supabase-admin";
+import { uniqueStamp } from "./support/test-data";
 
 /**
  * FR-025 (S-20, `legal-pages`): regulamin i polityka prywatności są publiczne i
@@ -7,8 +11,8 @@ import { test, expect } from "@playwright/test";
  * — `/plan` to prefiks, a `/polityka-prywatnosci` zaczyna się na tę samą literę),
  * render Markdownu z kotwicami nagłówków i stopkę publiczną.
  *
- * Testy wyłącznie czytające: treść jest w SSR, więc `waitForIslands` nie jest
- * potrzebne.
+ * Testy stron wyłącznie czytają: treść jest w SSR, więc `waitForIslands` nie
+ * jest potrzebne. Testy rejestracji klikają w wyspę formularza i go potrzebują.
  */
 
 // Odwiedzający bez konta: pusta sesja zamiast domyślnej nauczyciela A.
@@ -50,5 +54,67 @@ test.describe("FR-025 — dokumenty prawne są publiczne i podlinkowane", () => 
       .click();
     await page.waitForURL("**/polityka-prywatnosci");
     await expect(page.getByRole("heading", { level: 1, name: "Polityka prywatności", exact: true })).toBeVisible();
+  });
+});
+
+/**
+ * Regulamin § 5 ust. 1: konto nie powstaje bez akceptacji Regulaminu. Dwie drogi,
+ * bo walidacja wyspy i odmowa trasy to dwie niezależne bramki — przeglądarka bez
+ * JavaScriptu omija pierwszą.
+ *
+ * Brak konta sprawdzamy **kluczem serwisowym**, świadomie wbrew E2E-RULES (jak
+ * `help-and-contact.spec.ts`): żaden klient aplikacji nie odróżni „konta nie ma”
+ * od „hasło złe”. Ten odczyt mówi wyłącznie „rejestracja nie doszła do bazy”.
+ */
+async function accountExists(email: string): Promise<boolean> {
+  const { data, error } = await admin().auth.admin.listUsers({ perPage: 1000 });
+  if (error) throw new Error(`Odczyt kont nie powiódł się: ${error.message}`);
+  return data.users.some((user) => user.email === email);
+}
+
+test.describe("FR-025 — rejestracja wymaga akceptacji Regulaminu", () => {
+  let email = "";
+
+  test.afterEach(async () => {
+    // Sprzątanie na wypadek czerwonego przebiegu, w którym konto jednak powstało.
+    if (!email) return;
+    const { data } = await admin().auth.admin.listUsers({ perPage: 1000 });
+    const user = data.users.find((candidate) => candidate.email === email);
+    if (user) await admin().auth.admin.deleteUser(user.id);
+    email = "";
+  });
+
+  test("FR-025: formularz bez zaznaczonej akceptacji pokazuje błąd i zostaje na rejestracji", async ({ page }) => {
+    email = `bez-regulaminu-${uniqueStamp()}@example.test`;
+
+    await page.goto("/auth/signup");
+    await waitForIslands(page);
+    await page.getByLabel("Adres e-mail").fill(email);
+    await page.getByLabel("Hasło", { exact: true }).fill(e2eEnv.password);
+    await page.getByLabel("Powtórz hasło").fill(e2eEnv.password);
+    await expect(page.getByRole("checkbox", { name: /Akceptuję Regulamin/ })).not.toBeChecked();
+    await page.getByRole("button", { name: "Załóż konto" }).click();
+
+    await expect(page.getByText("Zaakceptuj Regulamin, aby założyć konto")).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe("/auth/signup");
+    expect(await accountExists(email)).toBe(false);
+  });
+
+  test.describe("bez JavaScriptu", () => {
+    test.use({ javaScriptEnabled: false });
+
+    test("FR-025: trasa odrzuca rejestrację bez akceptacji po polsku i nie zakłada konta", async ({ page }) => {
+      email = `bez-js-${uniqueStamp()}@example.test`;
+
+      await page.goto("/auth/signup");
+      await page.getByLabel("Adres e-mail").fill(email);
+      await page.getByLabel("Hasło", { exact: true }).fill(e2eEnv.password);
+      await page.getByLabel("Powtórz hasło").fill(e2eEnv.password);
+      await page.getByRole("button", { name: "Załóż konto" }).click();
+
+      await page.waitForURL("**/auth/signup?error=terms_not_accepted");
+      await expect(page.getByText("Zaakceptuj Regulamin, aby założyć konto.")).toBeVisible();
+      expect(await accountExists(email)).toBe(false);
+    });
   });
 });

@@ -342,12 +342,12 @@ Brak migracji schematu. Jedyna zmiana danych to usunięcie `auth.audit_log_entri
 
 #### Automated
 
-- [x] 1.1 Build przechodzi
-- [x] 1.2 Lint przechodzi
-- [x] 1.3 Testy jednostkowe przechodzą
-- [x] 1.4 E2E legal-pages: strony, spis treści, stopka
-- [x] 1.5 Szkice usunięte z drafts/
-- [x] 1.6 Brak placeholderów w treści
+- [x] 1.1 Build przechodzi — 5e5a2fe
+- [x] 1.2 Lint przechodzi — 5e5a2fe
+- [x] 1.3 Testy jednostkowe przechodzą — 5e5a2fe
+- [x] 1.4 E2E legal-pages: strony, spis treści, stopka — 5e5a2fe
+- [x] 1.5 Szkice usunięte z drafts/ — 5e5a2fe
+- [x] 1.6 Brak placeholderów w treści — 5e5a2fe
 
 #### Manual
 
@@ -359,10 +359,10 @@ Brak migracji schematu. Jedyna zmiana danych to usunięcie `auth.audit_log_entri
 
 #### Automated
 
-- [ ] 2.1 Testy jednostkowe z signup.test.ts przechodzą
-- [ ] 2.2 Test „bez terms nie woła signUp” widziany na czerwono
-- [ ] 2.3 E2E legal-pages i landing-topic-carry przechodzą
-- [ ] 2.4 Lint i build przechodzą
+- [x] 2.1 Testy jednostkowe z signup.test.ts przechodzą
+- [x] 2.2 Test „bez terms nie woła signUp” widziany na czerwono
+- [x] 2.3 E2E legal-pages i landing-topic-carry przechodzą
+- [x] 2.4 Lint i build przechodzą
 
 #### Manual
 
