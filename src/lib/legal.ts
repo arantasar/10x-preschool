@@ -18,7 +18,7 @@ export const TERMS_ACCEPTED_VALUE = "accepted";
 /** Day of publication (ISO `YYYY-MM-DD`): binds accounts created from this day on. */
 export const TERMS_PUBLISHED_ON = "2026-10-17";
 
-export const PRIVACY_VERSION = "1.0";
+export const PRIVACY_VERSION = "1.1";
 export const PRIVACY_PUBLISHED_ON = "2026-10-17";
 
 /**

@@ -68,7 +68,7 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-18 | account-deletion           | usunąć swoje konto razem ze wszystkimi planami                                                           | —                                                | FR-024                         | done     |
 | S-19 | help-and-contact           | przeczytać FAQ i napisać do właściciela przez formularz, z kontem lub bez                                | —                                                | FR-025, FR-026                 | done     |
 | S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | —                                                | FR-025                         | done     |
-| S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | ready    |
+| S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | in progress |
 | S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic i zapisać się na cenę założycielską z uczciwym potwierdzeniem              | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
 | S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21                                             | FR-030                         | blocked  |
 | S-24 | existing-accounts-gift     | jako konto sprzed płatności (także testerka) dowiedzieć się o nowych zasadach i dostać prezent, zanim limit mnie dotknie | S-23                                | FR-036                         | blocked  |
@@ -199,9 +199,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - ~~Próg fair use~~ — **rozstrzygnięte 2026-10-17 (Janusz): 150 dni-generacji na konto w miesiącu kalendarzowym, w konfiguracji.** Pierwotnie: `monetization.md` §4.3 szacuje ~150 dni-generacji, bez danych z produkcji. **2026-10-17:** tych danych nie ma i nie przybędzie (regeneracja nadpisuje `day_plans`, poprawka nie zostawia śladu) — próg musi być decyzją, hojną i w konfiguracji, a licznik tej pozycji ma zbierać dane do kalibracji.
   - ~~Jednostka poprawki aktywności w puli~~ — **rozstrzygnięte 2026-10-17:** poprawka nie zużywa dni (FR-037), ale fair use obejmuje ją osobnym, hojnym sufitem (`refine.ts` to bezstanowe wywołanie modelu). Licznik zapisuje każde wywołanie modelu, także poprawki.
   - **Pula zależna od stanu planu** — `S-23` i `S-27` dołożą wielkość puli zależną od planu; model danych licznika projektuj od razu pod to. Owner: `/10x-plan`. Block: nie.
-- **Sufit poprawek aktywności** (fair use, nie pula dni) — wielkość ustala `/10x-plan`. Owner: `/10x-plan`. Block: nie.
+- ~~**Sufit poprawek aktywności**~~ (fair use, nie pula dni) — **rozstrzygnięte 2026-10-17 (`/10x-plan`): 300 poprawek na konto w miesiącu kalendarzowym, w konfiguracji (`FAIR_USE_REFINES_PER_MONTH`).**
 - **Risk:** Największy zasięg awarii w kamieniu, wskazany przez użytkownika: licznik jest wspólny dla czterech tras wołających model, więc jego błąd zatrzymuje generowanie wszędzie naraz — a Guardrail 1 mówi, że błąd licznika **nie może** zatrzymać generowania. Tydzień to pięć niezależnych wywołań `week/day.ts` z klienta, więc zliczanie musi być atomowe w bazie, inaczej równoległe wywołania przejdą przez limit razem. Obecne konta: licznik startuje od zera w miesiącu wejścia, nic nie liczy się wstecz. Nowe dane per konto — izolacja kont i świadome uprawnienia zapisu (przypomnienie z `M-02`).
-- **Status:** ready
+- **Status:** in progress
 
 ### S-22: Cennik i zapis na cenę założycielską (gwiazda przewodnia)
 

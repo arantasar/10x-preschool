@@ -488,8 +488,8 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Automated
 
-- [x] 4.1 Lint, typy, build: `npm run lint && npm run build`
-- [x] 4.2 Testy jednostkowe nadal przechodzą: `npm test`
+- [x] 4.1 Lint, typy, build: `npm run lint && npm run build` — 248ba39
+- [x] 4.2 Testy jednostkowe nadal przechodzą: `npm test` — 248ba39
 
 #### Manual
 
@@ -502,9 +502,9 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Automated
 
-- [ ] 5.1 Testy stron prawnych przechodzą: `npm test -- legal`
-- [ ] 5.2 Build: `npm run build`
-- [ ] 5.3 Zmiana roadmapy nie wyszła poza `S-21` (`git diff -w master..HEAD`)
+- [x] 5.1 Testy stron prawnych przechodzą: `npm test -- legal`
+- [x] 5.2 Build: `npm run build`
+- [x] 5.3 Zmiana roadmapy nie wyszła poza `S-21` (`git diff -w master..HEAD`)
 
 #### Manual
 
