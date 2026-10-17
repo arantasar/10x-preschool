@@ -2,7 +2,8 @@
 project: 10xPreschool
 researched_at: 2026-09-29
 decided_at: 2026-09-29
-status: decyzje podjęte — wejście do /10x-shape dla M-03
+updated_at: 2026-10-17
+status: decyzje podjęte — wejście do /10x-shape dla M-03; uzupełnione 2026-10-17 (§Decyzje #7–#12)
 feeds: next-actions.md Krok 8 i §Kolejka po M-02, roadmap.md §Parked „Monetyzacja", Open Roadmap Questions #5
 proposed_by_user: Basic 14,99 zł / Pro 49,99 zł (miesięcznie)
 decision: Free + Basic 19,99 zł/mies. (159 zł/rok, założycielska 14,99 zł / 119 zł) teraz; Pro 39,99 zł/mies. (299 zł/rok) później, zaczynając od materiałów; B2C; JDG
@@ -27,6 +28,13 @@ się z tą listą rozjeżdżają, **wiąże ta lista**.
 | 4 | Kto płaci | **B2C** — płaci nauczyciel. Faktura na przedszkole i plan „Placówka" wypadają z zakresu |
 | 5 | Forma prawna | **JDG.** Limit działalności nierejestrowanej (§5) przestaje dotyczyć |
 | 6 | Pierwsza funkcja Pro | **Materiały** — teksty piosenek, wierszyków i zagadek do aktywności (Open Roadmap Questions #9) |
+| 7 | Walidacja (2026-10-17) | **Testerzy zamiast bramy zapisów.** Do 5 nauczycielek zaproszonych osobiście: Basic gratis do 31.01.2027 i cena założycielska na zawsze, ustawiane ręcznie. Brama „≥ 10 zapisów kont aktywnych” z PRD v3 zdjęta; konwersja testerów po prezencie to metryka |
+| 8 | Rejestracja (2026-10-17) | **Otwarta dla wszystkich.** Obce osoby idą zwykłą drogą: pierwszy miesiąc pełny, potem Darmowy albo Basic |
+| 9 | Płatności (2026-10-17) | **Pełny Stripe** (Checkout, webhook, Customer Portal), bez wersji „concierge”; Guardrail 3 bez wyjątków. Termin: na produkcji do 2027-01-20 |
+| 10 | Poprawka aktywności (2026-10-17) | **Nie zużywa puli dni planu darmowego** — pięć dni to i tak mało, a poprawka nie dodaje dnia. Zostaje pod fair use (sufit wspólny dla wszystkich planów) |
+| 11 | Cena założycielska (2026-10-17) | **119 zł/rok albo 14,99 zł/mies., na zawsze, dopóki subskrypcja trwa bez przerwy** — dotyczy subskrypcji, nie dostępu jednorazowego |
+| 12 | Zwrot (2026-10-17) | **Gwarancja 14 dni bez podawania przyczyny** (PRD v3 FR-039), dla subskrypcji i dostępu jednorazowego |
+| 13 | Fair use (2026-10-17) | **150 dni-generacji na konto w miesiącu kalendarzowym**, w konfiguracji — decyzja zamiast pomiaru, bo historii generowań na produkcji nie ma; kalibracja na danych z licznika `S-21` |
 
 **Ad 3 — dlaczego oba, a nie jeden.** Sam reverse trial odbiera wszystko po pierwszym miesiącu: kto
 nie zapłaci od razu, odchodzi i nie wraca, a znika też stopka na wydruku, czyli jedyny darmowy kanał
@@ -39,6 +47,13 @@ użytkownika to grosze (§5), więc stały darmowy plan nic nie kosztuje.
 Do ustalenia z księgowym przed pierwszą sprzedażą: status VAT, zwolnienie z kasy fiskalnej dla usług
 elektronicznych opłacanych przez bank lub instytucję płatniczą, faktury B2C na żądanie (poza KSeF?),
 ewidencja sprzedaży ze Stripe.
+
+**Ad 7–12 — co się zmieniło względem raportu (2026-10-17).** Podział funkcji z §4.2 nie obowiązuje
+w całości: PRD v3 §Non-Goals wycięło różnicowanie planu darmowego (limit poprawek 5/50, druk
+miesiąca tylko w Basic, stopka na darmowym wydruku) — Darmowy różni się od Basic wyłącznie pulą
+dni. Aktualna tabela planów do cennika: PRD v3 §Business Logic Changes „Plany — co widzi
+nauczycielka na cenniku”. Faza 0 z §7 (fake door jako pomiar) ustąpiła testerom; rozmowy
+z Mom Test nie odbyły się. Otwarte: cena dostępu jednorazowego (PRD v3 §Open Questions #10).
 
 **Ad 6 — próg startu Pro.** Raport zakładał „co najmniej dwie funkcje Pro". Z samymi materiałami Pro
 ma: materiały, nielimitowane poprawki aktywności i nagłówek placówki na wydruku. Czy to wystarczy do

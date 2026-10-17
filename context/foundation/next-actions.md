@@ -1,10 +1,20 @@
-# Next Actions — ustalenia z 2026-08-30, stan na 2026-10-15
+# Next Actions — ustalenia z 2026-08-30, stan na 2026-10-17
 
 > Runbook kolejności prac i komend 10x. Dokument roboczy, edytowany w miejscu:
 > odhaczaj kroki i dopisuj nowe zgłoszenia. Decyzje produktowe mieszkają w
 > `roadmap.md` — tutaj jest **kolejność i to, co uruchomić**, nie druga kopia tamtych decyzji.
 
-## Stan (2026-10-15)
+## Stan (2026-10-17)
+
+- **Monetyzacja przestawiona 2026-10-17** (`monetization.md` §Decyzje #7–#12, PRD v3 i roadmapa
+  zaktualizowane): brama „≥ 10 zapisów” zdjęta, płatności (`S-23`…`S-27`) w zakresie bez warunku;
+  do 5 testerów z zaproszenia z Basic gratis do **31.01.2027** i ceną założycielską; pełny Stripe;
+  poprawka aktywności nie zużywa puli planu darmowego; gwarancja zwrotu 14 dni (FR-039).
+  **Termin: płatności na produkcji do 2027-01-20.** Ścieżka krytyczna: Krok 11 (formalności,
+  poza kodem) i Krok 9 (e2e w CI) → `S-25`. Gwiazda przewodnia przeszła z `S-22` na `S-25`.
+- **Zaproszenia testerów mogą wyjść od razu**, najlepiej w oknie planowania (ok. 20.–25.10):
+  do `S-27` wszyscy i tak mają pełny zakres, a `S-23` da miejsce, w którym właściciel zapisze im
+  datę prezentu. Testerom mówimy od pierwszego dnia, co będzie po 31.01.2027.
 
 - **`M-03` „Gotowi do sprzedaży” jest otwarty od 2026-10-01** (Krok 12 zamknięty): `prd-v3.md`,
   `roadmap.md` v3, `milestone_id: ready-to-sell`, `milestone_status: active`. Poprzednia roadmapa
@@ -24,12 +34,15 @@
   domena `temio.pl`, przekierowanie starego hosta), `seo-meta` (PR #44), szablony e-maili (PR #45),
   `header-update` (PR #49, 2026-10-14 — menu konta w nagłówku według makiety 19; ryzyko #17 w
   `test-plan.md`).
-- **Żadna pozycja roadmapy nie jest `ready`.** Z Kroku 13 został `S-21` (fair use — czeka na próg
-  z danych produkcji); `S-20` (strony prawne) wydane w wersji bez prawnika (decyzja 2026-10-17).
-  `S-22`–`S-27` czekają na `S-21` oraz na Kroki 9 i 11. **Najbliższy krok w kodzie bez blokera zewnętrznego to
+- **`S-21` jest `ready`** (fair use — próg **150 dni-generacji na konto w miesiącu**, w
+  konfiguracji, decyzja 2026-10-17; danych o generowaniach na produkcji nie było i nie przybędzie,
+  bo regeneracja nadpisuje `day_plans`). Następny ruch: `git checkout -b feat/fair-use-limit` →
+  `/10x-new fair-use-limit`; `S-20` (strony prawne) wydane w wersji bez
+  prawnika (decyzja 2026-10-17). `S-22`–`S-27` czekają na `S-21` oraz na Kroki 9 i 11. **Najbliższy krok w kodzie bez blokera zewnętrznego to
   Krok 9** (e2e w CI) — i tak warunek wejścia Kroku 14.
-- **Monetyzacja ma decyzje** (2026-09-29): Free + Basic 19,99 zł teraz, Pro 39,99 zł później
-  zaczynając od materiałów, B2C, JDG. Pełny zapis: `monetization.md` §Decyzje.
+- **Monetyzacja ma decyzje** (2026-09-29, uzupełnione 2026-10-17): Free + Basic 19,99 zł teraz,
+  Pro 39,99 zł później zaczynając od materiałów, B2C, JDG; testerzy, pełny Stripe, zwrot 14 dni.
+  Pełny zapis: `monetization.md` §Decyzje.
 - `test-plan.md` §3: fazy 1–3 `complete`, faza 4 (Krok 9) `not started`. Testy bazy w CI jako
   doradczy job `db`; e2e (Playwright, 37 testów, ryzyka #3, #4, #7–#17 oraz FR-024 z `S-18`)
   chodzi lokalnie, poza CI.
@@ -63,12 +76,12 @@ tabela, nie numer**.
 | Kolejność | Krok | Co | Rodzaj |
 | --- | --- | --- | --- |
 | 1 | ✅ **Krok 10** | Design z Claude Design na istniejących ekranach — zamknięty 2026-09-30 | zmiana (bez PRD) |
-| równolegle | **Krok 11** | Walidacja i sprawy formalne (rozmowy, dane z produkcji, JDG, Stripe, księgowa) | poza kodem |
+| równolegle | **Krok 11** | Sprawy formalne (JDG, Stripe, księgowa, przegląd regulaminu) — **ścieżka krytyczna terminu 2027-01-20** | poza kodem |
 | 2 | ✅ Krok 6 | Faza 3 test-planu (ochrona zapisu i własności) — zaimplementowana 2026-09-30, PR #39 | test-plan |
 | 3 | ✅ Krok 12 | PRD v3 i roadmapa kamienia `M-03` „Gotowi do sprzedaży" — zamknięty 2026-10-01 | shape → prd → roadmap |
 | 4 | **Krok 13** | Slice'y `M-03` bez pieniędzy: ~~reset hasła~~ ✅, ~~FAQ i kontakt~~ ✅, ~~zmiana hasła~~ ✅, ~~usunięcie konta~~ ✅, strony prawne (blokada zewnętrzna), limity (blokada zewnętrzna) | slice'y |
 | 5 | Krok 9 | Faza 4 test-planu: e2e w CI **przed** pierwszym slice'em płatności | test-plan |
-| 6 | **Krok 14** | Slice'y `M-03` z pieniędzmi: Stripe, cennik i paywall; ~~odwieszenie bramki~~ ✅ 2026-10-03 (`F-02`); start sprzedaży | slice'y + wydanie |
+| 6 | **Krok 14** | Slice'y `M-03` z pieniędzmi (`S-23`…`S-27`, bez warunku od 2026-10-17): stan planu, Stripe, cennik, plan darmowy; ~~odwieszenie bramki~~ ✅ 2026-10-03 (`F-02`); **termin 2027-01-20** | slice'y + wydanie |
 | 7 | **Krok 15** | Kamień `M-04` „Lepsza treść": kalendarz świąt, rodzaje aktywności, materiały → start Pro | shape → prd → roadmap |
 
 Dlaczego tak:
@@ -412,6 +425,12 @@ Nie otwiera folderu zmiany, więc nie łamie reguły „jeden folder w locie".
 
 Wynik rozmów i danych zapisz przed Krokiem 12 — to wejście do `/10x-shape`, obok `monetization.md`.
 
+**Aktualizacja 2026-10-17:** rozmowy zastępują testerzy (do 5 osób, `monetization.md` §Decyzje #7),
+a dane z produkcji o generowaniach nie istnieją (regeneracja nadpisuje wiersz) — zbierze je licznik
+`S-21`. Zostają **formalności**, i to one są teraz ścieżką krytyczną: JDG, konto Stripe z BLIK-iem
+i Przelewy24, narzędzie do faktur, księgowa, przegląd regulaminu przez prawnika (z gwarancją zwrotu
+14 dni). Muszą być gotowe tak, żeby `S-25`/`S-26` wyszły do **2027-01-20**.
+
 ### ✅ Krok 12 — PRD v3 i otwarcie `M-03` „Gotowi do sprzedaży" — ZROBIONE 2026-10-01
 
 Wynik: `prd-v3.md`, `roadmap.md` v3 z pozycjami `F-02`, `S-16`…`S-27`. Opis niżej zostaje dla historii.
@@ -463,15 +482,27 @@ wiadomości z formularza (`user_id` → `null`, 12 miesięcy) i wpisy GoTrue w `
 — pełny zapis w `roadmap.md` §S-20 Unknowns. Dla `S-25`: usunięcie konta ma dziś brak limitu prób
 hasła z decyzji (trasa wymaga sesji) i nie kończy subskrypcji — oba wracają tam jako zakres.
 
-Każdy z nich może wejść na produkcję sam: nic tu nie pobiera pieniędzy, a limity działają dla
-wszystkich według reguły z §4.2.
+Każdy z nich może wejść na produkcję sam: nic tu nie pobiera pieniędzy, a limit fair use działa
+dla wszystkich jednakowo (PRD v3 §Business Logic Changes).
+
+**`S-21` po 2026-10-17:** próg fair use to decyzja, nie pomiar (Open Roadmap Questions #3) —
+rekomendacja: hojny, w konfiguracji, licznik zapisujący każde wywołanie modelu (także poprawki,
+które mają osobny sufit, ale nie zużywają dni), model danych gotowy na pulę zależną od planu
+(`S-23`, `S-27`).
 
 ### Krok 14 — slice'y `M-03` z pieniędzmi i start sprzedaży
 
 **Warunki wejścia:** Krok 9 zrobiony (e2e w CI), Krok 11 zamknięty (JDG, Stripe, księgowy),
-bramka bezpieczeństwa odwieszona i przepuszczona na żywo (✅ 2026-10-03, `F-02`).
+bramka bezpieczeństwa odwieszona i przepuszczona na żywo (✅ 2026-10-03, `F-02`). ~~Wynik bramy
+zapisów~~ — zdjęty 2026-10-17.
 
-Kolejność: płatności (Stripe w trybie testowym, webhook, uprawnienia) → cennik i paywall.
+**Termin: 2027-01-20** — testerzy kończą prezent 31.01.2027 i muszą móc zapłacić w oknie
+planowania lutego. Kolejność z roadmapy: `S-23` (stan planu, okres próbny; od razu po `S-21`, bez
+Kroku 9) → `S-22` (cennik) → `S-24` (uprzedzenie i prezent, także zapis daty testerów) → `S-25`
+(subskrypcja ze zwrotem — gwiazda przewodnia) / `S-26` (dostęp jednorazowy) → `S-27` (plan
+darmowy — przed 31.01.2027).
+
+Kolejność techniczna płatności: Stripe w trybie testowym, webhook, uprawnienia → cennik i paywall.
 **Klucze produkcyjne Stripe'a dopiero po** przejściu całej ścieżki zakupu i rezygnacji w trybie
 testowym na produkcji. Po starcie: metryki z `monetization.md` §8.
 
