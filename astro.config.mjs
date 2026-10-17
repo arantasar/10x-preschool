@@ -66,6 +66,19 @@ export default defineConfig({
       TURNSTILE_SITE_KEY: envField.string({ context: "server", access: "secret", optional: true }),
       TURNSTILE_SECRET_KEY: envField.string({ context: "server", access: "secret", optional: true }),
       CONTACT_TO: envField.string({ context: "server", access: "secret", optional: true }),
+      // The monthly fair-use limit (S-21, `src/lib/services/fair-use.ts`): days
+      // generated (default 150), activity refines (300), refunded failures per
+      // family (30), and the mode - `enforce` (default) or `observe`, which
+      // reserves and logs but never refuses. `secret` so a dashboard edit takes
+      // effect without a deploy, for the reason given above LEGACY_HOST.
+      // Strings, not `envField.number`: a number is validated when it is read at
+      // runtime and throws on a typo, which would stop generation over a
+      // dashboard slip. `fair-use.ts` parses them, falls back to the default and
+      // logs `fair_use.config_invalid` instead.
+      FAIR_USE_DAYS_PER_MONTH: envField.string({ context: "server", access: "secret", optional: true }),
+      FAIR_USE_REFINES_PER_MONTH: envField.string({ context: "server", access: "secret", optional: true }),
+      FAIR_USE_REFUNDS_PER_MONTH: envField.string({ context: "server", access: "secret", optional: true }),
+      FAIR_USE_MODE: envField.string({ context: "server", access: "secret", optional: true }),
     },
   },
 });

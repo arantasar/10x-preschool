@@ -20,6 +20,13 @@ import type { DayPlanClient } from "@/lib/services/day-plan-store";
  * for `setAcceptance`, `from("day_plans").delete().eq().select().maybeSingle()`
  * for `deleteDayPlan`, and `rpc()`. Nothing more.
  *
+ * The fair-use ledger (`fair-use.ts`) is answered on its own spies: `rpc` is
+ * dispatched by function name, so `claim_generation` lands on `claim` and
+ * `save_day_plan_generation` stays on `rpc`; `from("generation_ledger")` lands
+ * on `ledgerUpdate` and never on `from`. That keeps every existing assertion -
+ * "rpc called once", "from never called" - a claim about the plan tables, as
+ * it was written, while the ledger gets assertions of its own.
+ *
  * What it cannot do is prove ownership. The routes never filter on `user_id` -
  * RLS does, behind the session in the client - so a stub "of another account"
  * returns whatever it was told to. Route tests here pin how a route *answers*
@@ -88,12 +95,32 @@ export interface SupabaseStubOptions {
   deletedPlan?: { id: string } | null;
   /** Makes that delete fail instead. */
   deleteError?: StubPostgrestError;
+  /**
+   * What `claim_generation` answers. Allowed with {@link STUB_LEDGER_ID} by
+   * default, so a route test that does not care about the limit never meets it.
+   */
+  claim?: StubClaim;
 }
+
+export const STUB_LEDGER_ID = "44444444-4444-4444-8444-444444444444";
+
+export type StubClaim =
+  | { outcome: "allowed"; ledgerId?: string }
+  | { outcome: "refused"; resetsOn: string }
+  | { outcome: "error"; error: StubPostgrestError };
 
 export interface SupabaseStub {
   client: DayPlanClient;
-  /** Every `save_day_plan_generation` call, in order. Assertions run on this. */
+  /** Every `rpc()` call other than `claim_generation`, in order. Assertions run on this. */
   rpc: ReturnType<typeof vi.fn>;
+  /** Every `claim_generation` call, with its arguments. */
+  claim: ReturnType<typeof vi.fn>;
+  /**
+   * Every `from("generation_ledger").update(values)` call, and the `.eq` it was
+   * addressed by - how a route marked its reservation.
+   */
+  ledgerUpdate: ReturnType<typeof vi.fn>;
+  ledgerUpdateEq: ReturnType<typeof vi.fn>;
   /**
    * Every `from("activities").update(…)` call. "The route did not write" is a
    * claim about this spy, not about the response body.
@@ -154,7 +181,28 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
     updatedPlanError,
     deletedPlan = null,
     deleteError,
+    claim: claimAnswer = { outcome: "allowed" },
   } = options;
+
+  const claim = vi.fn((_name: string, _args: Record<string, unknown>) => {
+    switch (claimAnswer.outcome) {
+      case "allowed":
+        return Promise.resolve({
+          data: [{ ledger_id: claimAnswer.ledgerId ?? STUB_LEDGER_ID, allowed: true, resets_on: "2026-11-01" }],
+          error: null,
+        });
+      case "refused":
+        return Promise.resolve({
+          data: [{ ledger_id: null, allowed: false, resets_on: claimAnswer.resetsOn }],
+          error: null,
+        });
+      case "error":
+        return Promise.resolve({ data: null, error: claimAnswer.error });
+    }
+  });
+
+  const ledgerUpdateEq = vi.fn((_column: string, _value: string) => Promise.resolve({ data: null, error: null }));
+  const ledgerUpdate = vi.fn((_values: Record<string, unknown>) => ({ eq: ledgerUpdateEq }));
 
   const rpc = vi.fn(() =>
     Promise.resolve(
@@ -236,11 +284,18 @@ export function supabaseStub(options: SupabaseStubOptions = {}): SupabaseStub {
         },
   );
 
-  const client = { rpc, from };
+  const client = {
+    rpc: (name: string, args: Record<string, unknown>) =>
+      name === "claim_generation" ? claim(name, args) : (rpc as (...a: unknown[]) => unknown)(name, args),
+    from: (table: string) => (table === "generation_ledger" ? { update: ledgerUpdate } : from(table)),
+  };
 
   return {
     client: client as unknown as DayPlanClient,
     rpc,
+    claim,
+    ledgerUpdate,
+    ledgerUpdateEq,
     update,
     from,
     dayPlansIn,

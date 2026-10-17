@@ -1,7 +1,15 @@
 import type { APIRoute } from "astro";
 import { GenerationError, refineActivity } from "@/lib/services/activity-generator";
 import { refineActivityRequestSchema } from "@/lib/services/day-plan-contract";
-import { badRequest, generationFailure, json, unauthorized, unconfigured } from "@/lib/services/day-plan-http";
+import {
+  badRequest,
+  fairUseExceeded,
+  generationFailure,
+  json,
+  unauthorized,
+  unconfigured,
+} from "@/lib/services/day-plan-http";
+import { claimGeneration, finishGeneration } from "@/lib/services/fair-use";
 import type { ActivityDraft } from "@/types";
 
 export const prerender = false;
@@ -23,6 +31,9 @@ export const prerender = false;
  * it to two verses"). Reading the stored row would refine text they have moved
  * past, and nothing here is written, so there is no row whose ownership needs
  * checking. The save route checks it under RLS when the teacher clicks "Zapisz".
+ *
+ * Each refine is one call of the `refine` family in the fair-use ledger
+ * (`fair-use.ts`) - a separate monthly ceiling, because a refine uses no day.
  *
  * Session is checked here rather than in `src/middleware.ts` for the reason
  * `day-plan-http.ts` records: this route is called with `fetch`.
@@ -51,11 +62,18 @@ export const POST: APIRoute = async (context) => {
     return badRequest("Polecenie to jedna linia tekstu, do 500 znaków; tytuł do 200, opis do 4000 znaków.");
   }
 
-  // Nothing here touches Supabase, and the check stays anyway, for the reason
-  // `week/day.ts` gives: the proposal only matters if it can be saved, and a
-  // teacher whose database is unreachable should not pay for it first.
-  if (!context.locals.supabase) {
+  // The only database call here is the fair-use claim, and the check would stay
+  // without it, for the reason `week/day.ts` gives: the proposal only matters if
+  // it can be saved, and a teacher whose database is unreachable should not pay
+  // for it first.
+  const supabase = context.locals.supabase;
+  if (!supabase) {
     return unconfigured();
+  }
+
+  const claim = await claimGeneration(supabase, "refine");
+  if (!claim.allowed) {
+    return fairUseExceeded(claim.resetsOn);
   }
 
   try {
@@ -63,12 +81,14 @@ export const POST: APIRoute = async (context) => {
       { title: parsed.data.title, description: parsed.data.description },
       parsed.data.instruction,
     );
+    await finishGeneration(supabase, claim.ledgerId, "succeeded");
 
     const body: RefinedActivityResponse = refined.activity;
     return json({ ...body }, 200);
   } catch (error) {
     // Already logged by `refineActivity` with its status and errorType. The one
     // invalid answer with a cause the teacher can act on gets its own sentence.
+    await finishGeneration(supabase, claim.ledgerId, "failed");
     const tooLong = error instanceof GenerationError && error.errorType === "description_too_long";
     return generationFailure(error, tooLong ? TOO_LONG_MESSAGE : undefined);
   }

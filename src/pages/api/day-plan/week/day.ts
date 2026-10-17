@@ -1,7 +1,15 @@
 import type { APIRoute } from "astro";
 import { generateDayActivities } from "@/lib/services/activity-generator";
 import { generateWeekDayRequestSchema } from "@/lib/services/day-plan-contract";
-import { badRequest, generationFailure, json, unauthorized, unconfigured } from "@/lib/services/day-plan-http";
+import {
+  badRequest,
+  fairUseExceeded,
+  generationFailure,
+  json,
+  unauthorized,
+  unconfigured,
+} from "@/lib/services/day-plan-http";
+import { claimGeneration, finishGeneration } from "@/lib/services/fair-use";
 import type { ActivityDraft } from "@/types";
 
 export const prerender = false;
@@ -31,6 +39,11 @@ export const prerender = false;
  * there is nothing to refuse, because nothing is written. The accepted-day
  * refusal belongs to `week/save.ts` and to `save_week_plan_generation` beneath
  * it, which is where the teacher's acceptance is actually at risk.
+ *
+ * Every call is one day of the monthly fair-use limit (`fair-use.ts`): the
+ * ledger row is claimed before the model and finished after it. The board fires
+ * five of these at once, which is why the claim is one locked operation in the
+ * database rather than a read here followed by a write.
  *
  * Session is checked here rather than in `src/middleware.ts` for the reason
  * `day-plan-http.ts` records: this route is called with `fetch`, and a redirect
@@ -62,12 +75,18 @@ export const POST: APIRoute = async (context) => {
     return badRequest("Podaj poprawną datę oraz hasło — jedna linia tekstu, od 1 do 2000 znaków.");
   }
 
-  // Nothing here touches Supabase, and the check stays anyway, for the reason
-  // `week/outline.ts` gives: a teacher whose database is unreachable cannot
-  // store what this generation leads to, and letting them pay for up to five
-  // generations first would be the expensive way to find that out.
-  if (!context.locals.supabase) {
+  // The only database call here is the fair-use claim, and the check would stay
+  // without it, for the reason `week/outline.ts` gives: a teacher whose database
+  // is unreachable cannot store what this generation leads to, and letting them
+  // pay for up to five generations first would be the expensive way to find that out.
+  const supabase = context.locals.supabase;
+  if (!supabase) {
     return unconfigured();
+  }
+
+  const claim = await claimGeneration(supabase, "day", parsed.data.plan_date);
+  if (!claim.allowed) {
+    return fairUseExceeded(claim.resetsOn);
   }
 
   try {
@@ -75,6 +94,7 @@ export const POST: APIRoute = async (context) => {
       planDate: parsed.data.plan_date,
       theme: parsed.data.theme,
     });
+    await finishGeneration(supabase, claim.ledgerId, "succeeded");
 
     const body: GeneratedDayResponse = {
       plan_date: parsed.data.plan_date,
@@ -84,6 +104,7 @@ export const POST: APIRoute = async (context) => {
     return json({ ...body }, 200);
   } catch (error) {
     // Already logged by `generateDayActivities` with its status and errorType.
+    await finishGeneration(supabase, claim.ledgerId, "failed");
     return generationFailure(error);
   }
 };

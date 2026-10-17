@@ -64,6 +64,13 @@ export interface DayState {
   readonly error: string | null;
   readonly retryable: boolean;
   /**
+   * The generation was refused by the monthly fair-use limit: the card puts
+   * "Napisz do nas" where "Ponów ten dzień" would be. Per day, because five
+   * parallel days near the limit can split - some generated, some refused - and
+   * each card speaks only for itself.
+   */
+  readonly contactSuggested: boolean;
+  /**
    * What the last day operation that succeeded here did, naming the day.
    *
    * The toggle asks nothing before it acts - it is reversible - so this is
@@ -160,6 +167,20 @@ export function WeekDayCard({
                 retry runs on the hasło alone. Said out loud rather than letting the
                 day quietly drop out of the week's arc. */}
             {!theme && <p className="text-sm">Ten dzień pójdzie z samego hasła — temat tygodnia dla niego przepadł.</p>}
+            {/* A week is saved only whole, so days that did generate before the
+                limit stopped it are held in memory and cannot be committed - the
+                teacher must hear that rather than find it out on refresh. */}
+            {day.contactSuggested && (
+              <p className="text-sm">
+                Dni tego tygodnia, które zdążyły się wygenerować, nie zostały zapisane — tydzień zapisuje się tylko w
+                całości.
+              </p>
+            )}
+            {day.contactSuggested && (
+              <a href="/kontakt" className="text-blad inline-flex min-h-11 items-center font-extrabold underline">
+                Napisz do nas
+              </a>
+            )}
             {day.retryable && (
               <Button
                 type="button"

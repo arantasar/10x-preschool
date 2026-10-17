@@ -287,3 +287,28 @@ export async function deleteContactMessages(ids: readonly string[]): Promise<voi
     throw new Error(`Sprzątanie wiadomości nie powiodło się: ${error.message}`);
   }
 }
+
+/**
+ * Writes `count` fair-use ledger rows for this account, stamped now, as the
+ * service client - the month's usage a test starts from.
+ */
+export async function seedLedger(userId: string, count: number, kind: "day" | "outline" | "refine"): Promise<void> {
+  if (count === 0) return;
+  const { error } = await service
+    .from("generation_ledger")
+    .insert(Array.from({ length: count }, () => ({ user_id: userId, kind, status: "succeeded" })));
+  if (error) {
+    throw new Error(`Nie udało się zasiać księgi: ${error.message}`);
+  }
+}
+
+/**
+ * Deletes every ledger row of this account. By account, unlike `cleanup`: the
+ * ledger is per account by construction, and a test owns its teacher's month.
+ */
+export async function deleteLedgerRows(userId: string): Promise<void> {
+  const { error } = await service.from("generation_ledger").delete().eq("user_id", userId);
+  if (error) {
+    throw new Error(`Sprzątanie księgi nie powiodło się: ${error.message}`);
+  }
+}

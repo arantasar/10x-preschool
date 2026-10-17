@@ -11,12 +11,15 @@ target_scale:
   data_volume: small
 timeline_budget:
   delivery_weeks: null       # świadomie bez bramki czasowej — patrz ## Open Questions #9
-  hard_deadline: null
+  hard_deadline: 2027-01-20  # płatności na produkcji przed końcem prezentu testerów (31.01.2027) — aktualizacja 2026-10-17
   after_hours_only: true
 ---
 
 <!-- Kamień M-03 „Gotowi do sprzedaży”. Źródło: context/foundation/shape-notes.md (2026-10-01),
-     wejście sesji: monetization.md (decyzje 2026-09-29), next-actions.md Krok 12. -->
+     wejście sesji: monetization.md (decyzje 2026-09-29), next-actions.md Krok 12.
+     Aktualizacja 2026-10-17 (decyzje Janusza, monetization.md §Decyzje #7–#12): płatności przestają
+     być warunkowe — brama „≥ 10 zapisów” zdjęta; testerzy z zaproszenia; poprawka aktywności nie
+     zużywa puli planu darmowego; gwarancja zwrotu 14 dni (FR-039); termin 2027-01-20. -->
 
 ## Current System Overview
 
@@ -67,6 +70,13 @@ cennik z zapisem na cenę założycielską (fake door) idzie przed integracją p
 ma bramę wejścia w postaci wyniku zapisów. Gdy wynik jest słaby, kamień zamyka się bez płatności,
 a decyzja wraca do właściciela.
 
+> **Aktualizacja 2026-10-17 — brama zdjęta.** Walidację niosą testerzy: do 5 nauczycielek
+> zaproszonych osobiście dostaje Basic gratis do 31.01.2027 i cenę założycielską na zawsze
+> (FR-036). Zapisy znajomych nie mierzą chęci płacenia, a ich płatność wymaga działającego
+> Stripe'a przed końcem prezentu — więc płatności są w zakresie kamienia bez warunku, z terminem
+> 2027-01-20. Uczciwym sygnałem jest to, ilu testerów zapłaci po prezencie (§Success Criteria
+> Secondary), a przy pięciu osobach to sygnał jakościowy: rozmowa z każdą, która nie zapłaciła.
+
 **Rdzeń kamienia nie zależy od wyniku fake door.** Reset hasła, regulamin i polityka prywatności,
 FAQ, kontakt, limity i odwieszona bramka są warte zrobienia także wtedy, gdy nikt nie zechce
 płacić — to braki same w sobie. Idą przed fake door. (Ustalenie użytkownika 2026-10-01, odpowiedź
@@ -92,8 +102,13 @@ nie o dostępie do istniejących danych.
 zasady bez własnego wyboru; `monetization.md` §4.4 przewiduje dla nich prezent (cena założycielska
 plus okres Basic gratis). Szczegóły: FR-035, FR-036.
 
-**Nowi użytkownicy:** kamień ma ich przyciągać (cennik, stopka na darmowym wydruku jako kanał), ale
-nie wprowadza nowej roli — placówka i dyrektor zostają poza zakresem.
+**Testerzy (aktualizacja 2026-10-17):** do 5 nauczycielek zaproszonych osobiście przez właściciela.
+Rejestrują się zwykłą drogą; właściciel ręcznie ustawia im Basic do 31.01.2027 i cenę założycielską
+(FR-036). Nie są nową rolą — to konta sprzed płatności z prezentem o znanej dacie końca.
+
+**Nowi użytkownicy:** rejestracja zostaje otwarta; obce osoby idą zwykłą drogą — pierwszy miesiąc
+pełny (FR-030), potem plan darmowy albo Basic. Kamień nie wprowadza nowej roli — placówka i dyrektor
+zostają poza zakresem.
 
 ## Success Criteria
 
@@ -109,17 +124,24 @@ mierzy, czy ktoś zapłaci — przepływ zatwierdzony przez użytkownika 2026-10
 4. Generuje jak dziś; niewidoczny limit fair use zatrzymuje dopiero nadużycie, z jasnym komunikatem.
 5. Zmiana promptu albo modelu znów przechodzi przez bramkę bezpieczeństwa treści.
 6. Cennik → „Zarezerwuj cenę założycielską” → uczciwe potwierdzenie zapisu.
+7. Nowe konto dostaje pierwszy miesiąc pełnego Basic; potem wybiera plan darmowy albo Basic
+   (subskrypcja kartą albo dostęp jednorazowy), zarządza subskrypcją i może w ciągu 14 dni dostać
+   zwrot. Na planie darmowym planuje tydzień w miesiącu, a plany po wygaśnięciu zostają.
 
-**Rozszerzenie warunkowe (krok 7):** gdy w ciągu 4 tygodni od uruchomienia zapisu jest **≥ 10
-zapisów kont aktywnych** (kont, które faktycznie planowały w aplikacji — zapisy anonimowe się nie
-wliczają; ustalenie z rundy Sokratejskiej przy FR-029), kamień obejmuje płatności — Free/Basic,
-okres próbny, paywall przy drugim tygodniu, prezent dla obecnych kont. Gdy próg nie pada, kamień
-zamyka się na kroku 6, a decyzja o płatnościach wraca do właściciela z danymi w ręku.
+~~**Rozszerzenie warunkowe (krok 7):** ≥ 10 zapisów kont aktywnych w 4 tygodnie.~~ **Zdjęte
+2026-10-17** — przy co najwyżej 5 testerach próg jest nieosiągalny bez obcych osób, a testerzy
+potrzebują działających płatności przed końcem prezentu (31.01.2027). Krok 7 jest w zakresie bez
+warunku.
 
 ### Secondary
 
 **Obecni użytkownicy zostają.** Po wejściu fair use i nowych stron żadne aktywne konto nie odchodzi
 z powodu zmian kamienia — mierzone aktywnością miesięczną przed i po. (Ustalenie 2026-10-01.)
+
+**Testerzy płacą po prezencie** (aktualizacja 2026-10-17). Ilu z co najwyżej 5 testerów wykupi
+Basic po 31.01.2027 — metryka, nie brama. Przy tej liczbie osób liczy się powód: z każdą, która nie
+zapłaciła, właściciel rozmawia o tym, co musiałoby się zmienić (wejście do `M-04`). Sygnał
+wcześniejszy: czy testerka wraca do planowania w drugim cyklu miesiąca bez przypominania.
 
 ### Guardrails
 
@@ -177,9 +199,9 @@ Kategorie per schemat brownfieldowy: `[new]` — zdolność nieosiągalna dziś 
 `[modified]` — istniejące zachowanie, które się zmienia; `[preserved]` — zachowanie, które musi
 przetrwać nietknięte.
 
-**„Warunkowe”** = must-have, który wchodzi wyłącznie po przejściu bramy: ≥ 10 zapisów kont
-aktywnych na cenę założycielską w ciągu 4 tygodni od uruchomienia zapisu (§Success Criteria). Bez
-bramy kamień domyka się bez nich.
+~~**„Warunkowe”** = must-have, który wchodzi wyłącznie po przejściu bramy.~~ **Od 2026-10-17
+żadne FR nie jest warunkowe** — brama zdjęta (§Success Criteria). FR-030…FR-037 i FR-039 są
+zwykłymi must-have z terminem 2027-01-20.
 
 ### Konto
 
@@ -228,44 +250,65 @@ bramy kamień domyka się bez nich.
   > 10 płacących”. Rozstrzygnięcie: FR utrzymany, ale **zmienia się brama płatności** — liczą się
   > wyłącznie zapisy kont, które faktycznie planowały w aplikacji. Zapis anonimowy zostaje dostępny,
   > ale do progu się nie wlicza. Definicja „konta aktywnego” — §Open Questions #2.
+  > **Aktualizacja 2026-10-17:** brama zdjęta, więc zapis przestaje być pomiarem. Zostaje jako
+  > lista osób, które dostaną wiadomość, gdy płatności ruszą, i gwarancja ceny (FR-035). Definicja
+  > „konta aktywnego” nie jest już potrzebna.
 
-### Płatności (warunkowe)
+### Płatności
 
-- [new] FR-030: Nowe konto dostaje pierwszy miesiąc od rejestracji z pełnym zakresem Basic, bez podawania karty. Priority: must-have (warunkowe)
+- [new] FR-030: Nowe konto dostaje pierwszy miesiąc od rejestracji z pełnym zakresem Basic, bez podawania karty. Priority: must-have
   > Socrates: Kontrargument uznany za trafny, **ryzyko przyjęte**: „bez karty nic nie powstrzymuje
   > nowego konta na nowy adres co miesiąc”. FR bez zmian — nadużycie kosztuje grosze LLM
   > (`monetization.md` §5), a wymaga nowej skrzynki co miesiąc i porzucenia zbudowanych planów.
   > Zapisane jako znane ograniczenie.
-- [new] FR-031: Nauczyciel na planie darmowym może zaplanować pięć dni roboczych w miesiącu kalendarzowym (dzień liczy się do swojego miesiąca); próba zaplanowania kolejnego pokazuje cennik zamiast generowania. Priority: must-have (warunkowe)
+- [new] FR-031: Nauczyciel na planie darmowym może zaplanować pięć dni roboczych w miesiącu kalendarzowym (dzień liczy się do swojego miesiąca); próba zaplanowania kolejnego pokazuje cennik zamiast generowania. Priority: must-have
   > Socrates: Kontrargument uznany za trafny i **FR przepisany**: „tydzień przecinający dwa miesiące —
   > do którego się liczy?”. Limit liczy dni, nie tygodnie (jednostka z `monetization.md` §4.3);
   > nauczycielce komunikujemy go jako „tydzień”.
-- [new] FR-032: Nauczyciel może wykupić Basic jako subskrypcję kartą, roczną albo miesięczną; domyślnym wyborem przy zakupie jest roczna. Priority: must-have (warunkowe)
+- [new] FR-032: Nauczyciel może wykupić Basic jako subskrypcję kartą, roczną albo miesięczną; domyślnym wyborem przy zakupie jest roczna. Priority: must-have
   > Socrates: Kontrargument uznany za trafny: „planowanie jest skokowe — subskrypcja miesięczna będzie
   > anulowana zaraz po zaplanowaniu”. Rozstrzygnięcie: FR utrzymany z **warunkiem** — roczna jest
   > domyślna, miesięczna jest alternatywą (`monetization.md` §4.4).
-- [new] FR-033: Nauczyciel może wykupić Basic jako dostęp jednorazowy (miesiąc albo rok szkolny) BLIK-iem albo przelewem, bez automatycznego odnowienia. Priority: must-have (warunkowe)
+- [new] FR-033: Nauczyciel może wykupić Basic jako dostęp jednorazowy (miesiąc albo rok szkolny) BLIK-iem albo przelewem, bez automatycznego odnowienia. Priority: must-have
   > Socrates: Kontrargument uznany za trafny: „subskrypcja i dostęp jednorazowy podwajają przypadki
   > brzegowe”. Rozstrzygnięcie: FR utrzymany z **warunkiem** — jeden model uprawnienia, „plan + dostęp
   > do daty” (`monetization.md` §4.5): oba źródła płatności przesuwają tę samą datę, a zakup przy
   > aktywnym dostępie ją wydłuża, nie dubluje.
-- [new] FR-034: Nauczyciel z subskrypcją może nią zarządzać — anulować ją i zmienić metodę płatności; anulowanie zatrzymuje odnowienie, a dostęp trwa do końca opłaconego okresu. Priority: must-have (warunkowe)
+- [new] FR-034: Nauczyciel z subskrypcją może nią zarządzać — anulować ją i zmienić metodę płatności; anulowanie zatrzymuje odnowienie, a dostęp trwa do końca opłaconego okresu. Priority: must-have
   > Socrates: Kontrargument uznany za trafny i **FR doprecyzowany**: „nie wiadomo, czy anulowanie kończy
   > dostęp od razu — zła odpowiedź to reklamacja albo chargeback”. Dostęp trwa do daty, za którą
   > zapłacono — zgodnie z modelem „plan + dostęp do daty”, bez proracji.
-- [new] FR-035: Cenę założycielską Basic dostaje każda osoba zapisana przez fake door (FR-029) oraz kolejni kupujący do łącznie ok. 100 osób; cena jest zachowana, dopóki subskrypcja trwa bez przerwy. Priority: must-have (warunkowe)
+- [new] FR-035: Cenę założycielską Basic dostaje każda osoba zapisana przez fake door (FR-029) oraz kolejni kupujący do łącznie ok. 100 osób; cena jest zachowana, dopóki subskrypcja trwa bez przerwy. Priority: must-have
   > Socrates: Kontrargument uznany za trafny i **FR przepisany**: „ktoś zapisany przez fake door kupuje
   > jako 101. — a zapis obiecywał cenę”. Zapis gwarantuje cenę; limit ~100 dotyczy tylko osób spoza
   > listy zapisanych.
-- [new] FR-036: Konto założone przed wejściem płatności dostaje cenę założycielską i okres Basic gratis, a o nowych zasadach i prezencie dowiaduje się, zanim limit planu darmowego go dotknie. Priority: must-have (warunkowe)
+  > **Aktualizacja 2026-10-17:** cena założycielska to **119 zł za rok albo 14,99 zł miesięcznie**,
+  > na zawsze, dopóki subskrypcja trwa bez przerwy — dotyczy subskrypcji (FR-032). Dostęp
+  > jednorazowy (FR-033) jest po cenie cennikowej (§Open Questions #10). Testerzy mają cenę
+  > założycielską z urzędu (FR-036).
+- [new] FR-036: Konto założone przed wejściem płatności dostaje cenę założycielską i okres Basic gratis, a o nowych zasadach i prezencie dowiaduje się, zanim limit planu darmowego go dotknie. Priority: must-have
   > Socrates: Kontrargument uznany za trafny: „prezent bez wcześniejszej wiadomości to wciąż zmiana
   > zasad — obecni dowiadują się przy pierwszym limicie”. Rozstrzygnięcie: FR utrzymany z **warunkiem**
   > uprzedzenia przed wejściem limitów. Długość okresu gratis — §Open Questions #5.
-- [preserved] FR-037: Po wygaśnięciu planu nauczyciel zachowuje odczyt, ręczną edycję i druk tygodnia wszystkich zaplanowanych dni; poprawka aktywności poleceniem dla modelu liczy się do limitu planu darmowego. Priority: must-have (warunkowe)
+  > **Aktualizacja 2026-10-17:** testerzy z zaproszenia (do 5 osób) dostają Basic do 31.01.2027;
+  > ustawia go ręcznie właściciel. Długość prezentu pozostałych kont sprzed płatności — dalej #5.
+- [preserved] FR-037: Po wygaśnięciu planu nauczyciel zachowuje odczyt, ręczną edycję i druk tygodnia wszystkich zaplanowanych dni, a także poprawkę aktywności poleceniem dla modelu — poprawka nie zużywa puli dni planu darmowego. Priority: must-have
   > Socrates: Kontrargument uznany za trafny i **FR zawężony**: „edycja i poprawka poleceniem po
   > wygaśnięciu pozwalają budować plan bez generowania”. Edycja ręczna zostaje (to praca, nie koszt);
   > poprawka poleceniem, która woła model, podlega limitowi planu darmowego. Jednostka liczenia
   > poprawki — §Open Questions #4.
+  > **Zmienione 2026-10-17 (Janusz):** poprawka **nie** zużywa puli dni — pięć dni w miesiącu to i tak
+  > mało, a poprawka nie dodaje dnia: działa tylko na aktywności dnia, który już istnieje. Obejście
+  > limitu przez interfejs jest niemożliwe (nowy dzień powstaje wyłącznie z generowania). Furtka
+  > przez API — `refine.ts` jest bezstanowy, a `week/save.ts` przyjmuje partie od klienta — wymaga
+  > pisania skryptów; ryzyko przyjęte. Poprawka zostaje pod fair use (§Business Logic Changes),
+  > więc koszt nadużycia ma sufit.
+
+- [new] FR-039: Nauczyciel może w ciągu 14 dni od płatności zażądać zwrotu bez podawania przyczyny; zwrot kończy okres opłacony tą płatnością i konto wraca do planu, który miało przed nią. Priority: must-have
+  > Dopisany 2026-10-17 (decyzja Janusza, gwarancja z `monetization.md` §4.4). Zamyka Open Roadmap
+  > Questions #12: Guardrail 3 wymieniał zwrot wśród warunków bezpiecznej płatności, a żadne FR go
+  > nie nazywało. Dotyczy subskrypcji i dostępu jednorazowego. Szczegóły ścieżki (samoobsługa czy
+  > prośba przez formularz kontaktowy) rozstrzyga `/10x-plan` slice'u płatności.
 
 ### Zachowania chronione
 
@@ -303,17 +346,22 @@ uprawnień zapisu.
 **Dane osób bez konta.** Formularz kontaktowy i zapis anonimowy przechowują e-maile osób, które nie
 mają konta — polityka prywatności musi to obejmować (§Access Control Changes).
 
-**Zależności zewnętrzne** (ustalenie 2026-10-01):
+**Zależności zewnętrzne** (ustalenie 2026-10-01, aktualizacja 2026-10-17):
 
-- **Treść regulaminu i polityki prywatności** — od księgowego/prawnika; blokuje FR-025.
-- **Konto operatora płatności z BLIK-iem i przelewem online** — przed krokiem 7 (FR-032, FR-033).
+- ~~**Treść regulaminu i polityki prywatności** — od księgowego/prawnika; blokuje FR-025.~~
+  Wydane 2026-10-17 w wersji bez prawnika; przegląd prawnika i przepisanie regulaminu pod płatności
+  (w tym gwarancja zwrotu, FR-039) przed slice'ami płatności.
+- **Konto operatora płatności z BLIK-iem i przelewem online** oraz JDG, narzędzie do faktur
+  i konsultacja z księgowym — przed slice'ami płatności (FR-032, FR-033). **To ścieżka krytyczna
+  terminu 2027-01-20**, bo nie zależy od kodu.
 
 **Odwieszenie bramki bezpieczeństwa treści** obejmuje każdy dopuszczony model i każdy tryb
 generowania (Guardrail 2; reguła z `lessons.md`). Bramka zawieszona z powodu kosztu wraca do pracy
 w tym kamieniu.
 
-**Ramy (ustalenie 2026-10-01):** produkt pozostaje aplikacją webową; skala mała, bez zmian;
-brak twardego terminu; praca po godzinach. Ograniczenia istniejącego systemu obowiązują dalej:
+**Ramy (ustalenie 2026-10-01, aktualizacja 2026-10-17):** produkt pozostaje aplikacją webową; skala
+mała, bez zmian; praca po godzinach. **Termin: płatności na produkcji do 2027-01-20** — tak, żeby
+testerzy mogli zapłacić w oknie planowania lutego, przed końcem prezentu 31.01.2027. Ograniczenia istniejącego systemu obowiązują dalej:
 każde scalenie zmian jest od razu wydaniem na produkcję, bez kroku zatwierdzenia, a automatyczne
 kontrole jakości są doradcze — nie mogą zatrzymać wydania.
 
@@ -348,17 +396,41 @@ odbierane.** (Ustalenie użytkownika 2026-10-01.)
 
 - **Wejście:** stan planu konta i liczba dni wygenerowanych w bieżącym miesiącu kalendarzowym.
   Jednostką jest dzień — wygenerowanie tygodnia zużywa pięć, regeneracja dnia jeden
-  (`monetization.md` §4.3); dzień liczy się do swojego miesiąca (FR-031).
+  (`monetization.md` §4.3); dzień liczy się do swojego miesiąca (FR-031). **Poprawka aktywności
+  nie zużywa dni** (FR-037, 2026-10-17); fair use obejmuje ją osobnym, hojnym sufitem wspólnym dla
+  wszystkich planów — to ochrona przed nadużyciem, nie różnica między planami (wielkość ustala
+  slice limitu).
 - **Wyjście:** generowanie dochodzi do skutku albo nauczycielka dostaje komunikat, kiedy będzie
   znów możliwe (FR-027) — a po wejściu płatności, na planie darmowym, cennik (FR-031).
 - **Pula przed płatnościami:** wszyscy mają niewidoczny limit fair use, który zatrzymuje wyłącznie
-  nadużycie. **Po bramie płatności:** okres próbny i Basic — fair use; Darmowy — pięć dni roboczych
+  nadużycie. **Po wejściu płatności:** okres próbny i Basic — fair use; Darmowy — pięć dni roboczych
   w miesiącu.
 - **Czego reguła nie robi:** nie odbiera ani nie ukrywa zaplanowanych dni, nie blokuje ręcznej
   edycji, zatwierdzania, usuwania ani druku tygodnia (FR-037, FR-038).
 
-**Druga reguła (warunkowa, krok 7):** uprawnienie konta to **„plan + dostęp do daty”** — każde
+**Druga reguła (krok 7):** uprawnienie konta to **„plan + dostęp do daty”** — każde
 źródło płatności przesuwa tę samą datę; po niej konto wraca do planu darmowego (FR-033, FR-034).
+Zwrot (FR-039) cofa datę o okres opłacony zwracaną płatnością.
+
+**Plany — co widzi nauczycielka na cenniku** (FR-028; ustalenie 2026-10-17). Każdy wiersz musi być
+prawdziwy w dniu publikacji cennika:
+
+| | Darmowy | Basic |
+|---|---|---|
+| Cena | 0 zł | 159 zł za rok (domyślnie) albo 19,99 zł miesięcznie |
+| Cena założycielska | — | 119 zł za rok albo 14,99 zł miesięcznie, na zawsze, dopóki subskrypcja trwa bez przerwy (FR-035) |
+| Pierwszy miesiąc od rejestracji | pełny Basic, bez karty (FR-030) | — |
+| Planowanie z hasła (dzień, tydzień, ponowne generowanie) | 5 dni roboczych w miesiącu („tydzień”, FR-031) | cały miesiąc, w granicach fair use |
+| Poprawka aktywności poleceniem | ✔ (nie zużywa dni, FR-037) | ✔ |
+| Edycja, zatwierdzanie, usuwanie dni | ✔ | ✔ |
+| Podgląd aktywności w kalendarzu miesiąca | ✔ | ✔ |
+| Druk tygodnia i miesiąca | ✔ | ✔ |
+| Plany po zakończeniu Basic | zostają: odczyt, edycja, druk (FR-037) | — |
+| Płatność | — | karta (subskrypcja, anulowanie w każdej chwili, FR-032, FR-034) albo BLIK / przelew (miesiąc lub rok szkolny, bez odnowienia, FR-033) |
+| Gwarancja | — | zwrot w 14 dni bez podawania przyczyny (FR-039) |
+
+Na cenniku nie wolno napisać „bez limitu” — Basic ma fair use. Jedyną różnicą funkcji jest pula
+dni, więc wiersz „Planowanie z hasła” niesie całą ofertę i musi być wizualnie najmocniejszy.
 
 ## Access Control Changes
 
@@ -375,8 +447,9 @@ zalogowania. Nie ma resetu ani zmiany hasła, nie ma usunięcia konta.
 - **Zmiana hasła po zalogowaniu.**
 - **Usunięcie konta przez użytkownika** — konto i jego plany znikają na żądanie właściciela konta.
 
-**Stan planu konta — kto go zmienia:** system (okres próbny, płatność) oraz właściciel produktu
-ręcznie, poza aplikacją (prezenty dla obecnych użytkowników, wyjątki, reklamacje). Użytkownik stan
+**Stan planu konta — kto go zmienia:** system (okres próbny, płatność, zwrot) oraz właściciel
+produktu ręcznie, poza aplikacją (prezenty dla obecnych użytkowników i testerów, wyjątki,
+reklamacje). Użytkownik stan
 swojego planu **tylko czyta**; nie ma ścieżki, którą sam by go podniósł inaczej niż płacąc.
 Odczyt stanu planu podlega tej samej izolacji kont co plany — nikt nie widzi stanu cudzego konta.
 
@@ -402,7 +475,7 @@ Wybrane przez użytkownika 2026-10-01:
   roli operatora i dyrektora.
 - **Różnicowanie funkcji planu darmowego** — bez osobnego limitu poprawek (5/50), bez druku miesiąca
   tylko w Basic, bez stopki na darmowym wydruku. Plan darmowy różni się od Basic wyłącznie pulą dni.
-  (Napięcie z FR-037 — §Open Questions #4.)
+  (Napięcie z FR-037 rozstrzygnięte 2026-10-17: poprawka nie zużywa puli — §Open Questions #4.)
 - **Panel operatora w aplikacji** — stan planu, prezenty i wyjątki właściciel ustawia ręcznie poza
   aplikacją.
 - **Upgrade'y, proracja i wiele planów płatnych** — jeden plan płatny w modelu „plan + dostęp do
@@ -413,21 +486,30 @@ Wybrane przez użytkownika 2026-10-01:
 1. **Brak wyniku walidacji (Krok 11).** Chęć płacenia i rzeczywista intensywność użycia są
    niezweryfikowane — decyzja użytkownika 2026-10-01, żeby iść bez nich. Kamień niesie walidację
    sam (fake door z bramą); limity stoją na szacunkach z `monetization.md`. _(Przyjęte ryzyko
-   z quality cross-check.)_ Właściciel: Janusz. Blokuje: nie.
+   z quality cross-check.)_ Właściciel: Janusz. Blokuje: nie. **Aktualizacja 2026-10-17:** brama
+   zdjęta; walidację niosą testerzy (§Success Criteria Secondary).
 2. **Definicja „konta aktywnego” dla bramy płatności** (FR-029) — co znaczy „faktycznie planowało”:
    jeden wygenerowany dzień, tydzień, aktywność w ostatnim miesiącu? Właściciel: Janusz. Blokuje:
-   slice fake door (musi wiedzieć, co liczy).
+   slice fake door (musi wiedzieć, co liczy). **Nieaktualne 2026-10-17** — brama zdjęta, zapis
+   niczego nie liczy.
 3. **Próg fair use** — liczby z `monetization.md` §4.3 (~150 dni-generacji) są szacunkiem bez danych
    z produkcji. Guardrail 1 wymaga, żeby typowy miesiąc nigdy go nie dotknął. Właściciel: Janusz,
-   na danych z produkcji przed slice'em limitu. Blokuje: slice limitu.
+   na danych z produkcji przed slice'em limitu. Blokuje: slice limitu. **Ustalenie 2026-10-17:**
+   danych o liczbie generowań na produkcji nie ma i nie przybędzie — regeneracja nadpisuje wiersz
+   `day_plans` (upsert po `user_id, plan_date`), a poprawka nie zostawia śladu. Baza daje tylko
+   dolną granicę (różne zaplanowane dni). Próg musi więc być decyzją: hojny, w konfiguracji, a
+   kalibrowany na danych z licznika, który zbuduje sam slice limitu. **Rozstrzygnięte 2026-10-17
+   (Janusz): 150 dni-generacji na konto w miesiącu kalendarzowym**, wartość w konfiguracji, nie
+   w kodzie. Sufit poprawek aktywności ustala `/10x-plan` slice'u limitu.
 4. **Jednostka liczenia poprawki poleceniem** (FR-037) — poprawka liczy się do limitu planu
    darmowego, a jednocześnie Non-Goals wykluczają osobny limit poprawek. Czy poprawka zużywa dzień
-   z puli, ułamek dnia, czy coś innego? Właściciel: Janusz. Blokuje: krok 7.
+   z puli, ułamek dnia, czy coś innego? Właściciel: Janusz. Blokuje: krok 7. **Rozstrzygnięte
+   2026-10-17:** nie zużywa puli dni (FR-037); podlega fair use.
 5. **Długość okresu Basic gratis dla obecnych kont** (FR-036) — `monetization.md` §4.4 mówi „np. 3
    miesiące”. Właściciel: Janusz. Blokuje: krok 7.
 6. **Treść regulaminu i polityki prywatności** — zależność zewnętrzna (księgowy/prawnik). Polityka
    musi objąć e-maile osób bez konta (formularz, zapis anonimowy). Właściciel: Janusz + doradca.
-   Blokuje: FR-025.
+   Blokuje: FR-025. **Rozstrzygnięte 2026-10-17:** wydane bez prawnika; przegląd przed płatnościami.
 7. **Ryzyko zakładania kont na nowo (FR-030) przy wzroście skali** — przyjęte przy małej skali;
    do ponownej oceny, gdy skala przestanie być mała (Sokrates ×100). Właściciel: Janusz. Blokuje: nie.
 8. **Zamykane przez ten kamień:** Open Roadmap Questions #4 (reset hasła — FR-022) i #5 (limit
@@ -438,4 +520,10 @@ Wybrane przez użytkownika 2026-10-01:
    długo; nazwana pułapka to system zostawiony w połowie przerobiony, a w wypadku płatności —
    integracja wpięta w połowie. Obroną jest dyscyplina slice'ów (każdy osobnym wydaniem) i zasada
    „płatności kompletem albo wcale” (Guardrail 3). _(Przyjęte ryzyko z quality cross-check.)_
-   Właściciel: Janusz. Blokuje: nie.
+   Właściciel: Janusz. Blokuje: nie. **Aktualizacja 2026-10-17:** kamień ma termin
+   (`hard_deadline: 2027-01-20`) wymuszony końcem prezentu testerów; `delivery_weeks` zostaje
+   puste.
+10. **Cena dostępu jednorazowego** (FR-033) — cennik podaje ceny subskrypcji; czy miesiąc i rok
+    szkolny jednorazowo kosztują tyle samo (19,99 zł / 159 zł), czy więcej? Cena założycielska go
+    nie obejmuje (FR-035, 2026-10-17). Właściciel: Janusz. Blokuje: slice dostępu jednorazowego
+    i treść cennika.

@@ -64,7 +64,14 @@ Formularz chroni Cloudflare Turnstile, który sprawdza, czy wiadomość wysyła 
 - **Podstawa prawna:** nasz prawnie uzasadniony interes, czyli bezpieczeństwo i poprawne działanie Serwisu (art. 6 ust. 1 lit. f RODO).
 - **Jak długo:** nie dłużej niż 7 dni — dotyczy to logów serwera, bazy danych, historii zdarzeń logowania i zapisów obsługi linków z e-maili.
 
-### 2.7. Ustalenie, dochodzenie i obrona roszczeń
+### 2.7. Limit generowania
+
+- **Dane:** identyfikator Konta, rodzaj generowania (dzień, plan tematów na tydzień albo poprawka aktywności), data dnia, którego dotyczy, czas i wynik (udane albo nieudane). Nie zapisujemy tu Tematu, polecenia poprawki ani treści propozycji.
+- **Cel:** stosowanie limitu liczby generowań, który chroni Serwis przed nadużyciami ([Regulamin](/regulamin), § 7 ust. 4), i ustalenie jego wysokości tak, żeby nie dotykał zwykłego korzystania z Serwisu.
+- **Podstawa prawna:** nasz prawnie uzasadniony interes, czyli ochrona Serwisu przed nadużyciami (art. 6 ust. 1 lit. f RODO).
+- **Jak długo:** 13 miesięcy od generowania — usuwamy je automatycznie. Jeśli usuniesz Konto, znikają od razu razem z nim.
+
+### 2.8. Ustalenie, dochodzenie i obrona roszczeń
 
 Jeśli dojdzie do sporu, możemy przechowywać dane potrzebne do jego rozstrzygnięcia — do czasu jego zakończenia lub przedawnienia roszczeń. Podstawą jest nasz prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).
 

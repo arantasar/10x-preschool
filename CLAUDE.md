@@ -67,6 +67,14 @@ Full server-side rendering `output: "server"` in astro.config.mjs). All pages ar
 - The `send_email` binding (`EMAIL` in `wrangler.jsonc`) is read only in `src/lib/services/email-binding.ts`, which route tests mock — Vitest cannot resolve `cloudflare:workers`.
 - Secrets: `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `CONTACT_TO` (all `access: "secret"`, read at runtime). Locally: Turnstile's always-pass test keys and no `CONTACT_TO`, so no mail leaves the machine.
 
+### Fair use
+
+- **Every route that calls a model goes through `claimGeneration` / `finishGeneration`** (`src/lib/services/fair-use.ts`): claim before the model (`allowed: false` → `fairUseExceeded(resetsOn)`, a 429 with `limit.resets_on`; islands add „Napisz do nas” via `isLimitBody`), then `"succeeded"` or `"failed"` after. Today: `generate.ts` (claim after both conflict refusals; a failed save is `failed`), `week/day.ts`, `week/outline.ts` (`outline` counts no day, is refused at 0 days left and counts against the `refine` ceiling), `refine.ts` (its own `refine` family). A new model-calling route without the claim is a hole in the limit.
+- The ledger is `public.generation_ledger`, counted by `public.claim_generation()` under a per-account advisory lock, monthly in Europe/Warsaw. It is **insert + `update (status)` only**, with a trigger admitting just `reserved → succeeded | failed`, and the function is **`security invoker`, not definer**: anything the route does with the teacher's token she can do herself via `/rest/v1/rpc`, so a definer would close nothing and would break the „only definer is `delete_own_account`” invariant. Failed calls are refunded only up to `FAIR_USE_REFUNDS_PER_MONTH`; the limits are RPC arguments because an inflated limit sent directly calls no model.
+- **Fail-open, in `fair-use.ts` only**: any ledger or config failure means „allowed, no reservation” plus a log (`fair_use.claim_failed`, `fair_use.finish_failed`, `fair_use.config_invalid`). Routes carry no ledger error handling of their own (Guardrail 1).
+- Config: `FAIR_USE_DAYS_PER_MONTH` (150), `FAIR_USE_REFINES_PER_MONTH` (300), `FAIR_USE_REFUNDS_PER_MONTH` (30), `FAIR_USE_MODE` (`enforce` | `observe`) — `envField.string`, `access: "secret"`, parsed in the service, changeable without a deploy.
+- Rows are kept 13 months (`generation-ledger-retention` pg_cron job) and go by cascade with the account (Polityka prywatności pkt 2.7). The migration must reach the hosted project (`npx supabase db push`) with the merge — without it the limit falls silent (fail-open, `fair_use.claim_failed` on every generation) rather than breaking generation.
+
 ### Key conventions
 
 - **Path alias**: `@/*` maps to `./src/*` (tsconfig paths).

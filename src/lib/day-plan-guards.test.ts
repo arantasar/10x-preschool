@@ -4,6 +4,7 @@ import {
   isDayPlanBody,
   isErrorBody,
   isGeneratedDayBody,
+  isLimitBody,
   isOutlineBody,
   isRecord,
   isRefinedActivityBody,
@@ -224,5 +225,32 @@ describe("isRefinedActivityBody", () => {
     ["null", null],
   ])("rejects %s", (_name, body) => {
     expect(isRefinedActivityBody(body)).toBe(false);
+  });
+});
+
+describe("isLimitBody", () => {
+  // The fair-use refusal is an ordinary error body plus `limit`; the predicate
+  // must pick it out without matching any other refusal, or the contact link
+  // would appear next to "Twoja sesja wygasła".
+  const limitBody = {
+    error: "Wykorzystano miesięczny limit generowania. Generowanie znów będzie możliwe od 1 listopada.",
+    retryable: false,
+    limit: { resets_on: "2026-11-01" },
+  };
+
+  it("accepts the fair-use refusal", () => {
+    expect(isLimitBody(limitBody)).toBe(true);
+  });
+
+  it.each([
+    ["an ordinary error body", { error: "Coś poszło nie tak.", retryable: false }],
+    ["a body without limit", { error: limitBody.error, retryable: false }],
+    ["limit without resets_on", { ...limitBody, limit: {} }],
+    ["limit that is not an object", { ...limitBody, limit: "2026-11-01" }],
+    ["a retryable body carrying limit", { ...limitBody, retryable: true }],
+    ["a body without error", { retryable: false, limit: limitBody.limit }],
+    ["null", null],
+  ])("rejects %s", (_name, body) => {
+    expect(isLimitBody(body)).toBe(false);
   });
 });

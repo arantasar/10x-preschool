@@ -9,7 +9,14 @@ import { Button } from "@/components/ui/button";
 import { AI_PROPOSALS_NOTICE } from "@/lib/legal";
 import { PROMPT_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
 import { cn } from "@/lib/utils";
-import { isDayPlanBody, isErrorBody, isGeneratedDayBody, isOutlineBody, isSaveWeekBody } from "@/lib/day-plan-guards";
+import {
+  isDayPlanBody,
+  isErrorBody,
+  isGeneratedDayBody,
+  isLimitBody,
+  isOutlineBody,
+  isSaveWeekBody,
+} from "@/lib/day-plan-guards";
 import {
   isWeekEmpty,
   partitionWeek,
@@ -84,6 +91,8 @@ type Busy = "idle" | "outlining" | "generating" | "saving" | "accepting" | "mana
 interface Failure {
   readonly message: string;
   readonly signInRequired: boolean;
+  /** Only the outline sets it: the monthly fair-use limit stopped the week at its first step. */
+  readonly contactSuggested?: boolean;
 }
 
 /**
@@ -204,6 +213,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
       batch: null,
       error: null,
       retryable: false,
+      contactSuggested: false,
       theme,
       notice: null,
       actionError: null,
@@ -237,7 +247,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
 
       if (response.status === 401) {
         setFailure({ message: "Twoja sesja wygasła. Zaloguj się ponownie.", signInRequired: true });
-        patchDay(planDate, { status: "failed", error: "Sesja wygasła.", retryable: false });
+        patchDay(planDate, { status: "failed", error: "Sesja wygasła.", retryable: false, contactSuggested: false });
         return;
       }
 
@@ -245,12 +255,14 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
         status: "failed",
         error: isErrorBody(body) ? body.error : "Nie udało się wygenerować tego dnia.",
         retryable: isErrorBody(body) ? body.retryable : true,
+        contactSuggested: isLimitBody(body),
       });
     } catch {
       patchDay(planDate, {
         status: "failed",
         error: "Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.",
         retryable: true,
+        contactSuggested: false,
       });
     } finally {
       inFlight.current.delete(planDate);
@@ -361,6 +373,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
                   status: "failed",
                   error: "Ten dzień nie wrócił z zapisu. Odśwież stronę.",
                   retryable: false,
+                  contactSuggested: false,
                 };
           }
           return next;
@@ -497,6 +510,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
           setFailure({
             message: isErrorBody(body) ? body.error : "Nie udało się ułożyć planu tygodnia.",
             signInRequired: response.status === 401,
+            contactSuggested: isLimitBody(body),
           });
           return;
         }
@@ -679,12 +693,14 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
                 status: "failed",
                 error: isErrorBody(body) ? body.error : "Nie udało się zatwierdzić tego dnia.",
                 retryable: false,
+                contactSuggested: false,
               });
             } catch {
               patchDay(day.planDate, {
                 status: "failed",
                 error: "Brak połączenia z serwerem.",
                 retryable: false,
+                contactSuggested: false,
               });
             }
           }),
@@ -1002,6 +1018,11 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
                 Zaloguj się ponownie
               </a>
             )}
+            {failure.contactSuggested && (
+              <a href="/kontakt" className="text-blad inline-flex min-h-11 items-center font-extrabold underline">
+                Napisz do nas
+              </a>
+            )}
           </div>
         )}
 
@@ -1131,7 +1152,7 @@ function initialDays(week: WeekPlanView): Record<string, DayState> {
  */
 function planFields(
   plan: DayPlanView | null,
-): Pick<DayState, "status" | "plan" | "batch" | "theme" | "error" | "retryable"> {
+): Pick<DayState, "status" | "plan" | "batch" | "theme" | "error" | "retryable" | "contactSuggested"> {
   return {
     status: plan ? "done" : "empty",
     plan,
@@ -1142,6 +1163,7 @@ function planFields(
     theme: plan?.plan.theme ?? null,
     error: null,
     retryable: false,
+    contactSuggested: false,
   };
 }
 

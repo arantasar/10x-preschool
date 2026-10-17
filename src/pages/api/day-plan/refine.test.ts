@@ -2,7 +2,7 @@ import type { APIContext } from "astro";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { errorStatusResponse, proposalResponse } from "@/lib/services/__fixtures__/openrouter";
-import { type SupabaseStub, supabaseStub } from "@/lib/services/__fixtures__/supabase";
+import { STUB_LEDGER_ID, type SupabaseStub, supabaseStub } from "@/lib/services/__fixtures__/supabase";
 import { DESCRIPTION_MAX, INSTRUCTION_MAX } from "@/lib/day-plan-limits";
 
 // Mirrors `week/day.test.ts`: the route's `POST` is an exported function, the
@@ -27,6 +27,11 @@ vi.mock("astro:env/server", () => ({
   get OPENROUTER_MODEL() {
     return env.model;
   },
+  // `fair-use.ts` reads these; unset means its defaults.
+  FAIR_USE_DAYS_PER_MONTH: undefined,
+  FAIR_USE_REFINES_PER_MONTH: undefined,
+  FAIR_USE_REFUNDS_PER_MONTH: undefined,
+  FAIR_USE_MODE: undefined,
 }));
 
 const { POST } = await import("./refine");
@@ -222,5 +227,56 @@ describe("POST /api/day-plan/refine — model failures", () => {
     expect(body.retryable).toBe(true);
     expect(fetchStub).toHaveBeenCalledTimes(2);
     expectNoDatabaseCall(supabase);
+  });
+});
+
+// The fair-use limit (S-21): a refine is one call of its own family.
+describe("POST /api/day-plan/refine — fair use", () => {
+  it("over the limit answers 429 with the reset day, before paying the model", async () => {
+    const supabase = supabaseStub({ claim: { outcome: "refused", resetsOn: "2026-11-01" } });
+    const fetchStub = stubFetch(() => proposalResponse({ tytul: "Piosenka", opis: "Opis." }));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+    const body = (await response.json()) as { retryable: boolean; limit: { resets_on: string } };
+
+    expect(response.status).toBe(429);
+    expect(body.retryable).toBe(false);
+    expect(body.limit).toEqual({ resets_on: "2026-11-01" });
+    expect(fetchStub).not.toHaveBeenCalled();
+  });
+
+  it("claims a refine and marks it succeeded", async () => {
+    const supabase = supabaseStub();
+    stubFetch(() => proposalResponse({ tytul: "Piosenka", opis: "Opis." }));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(200);
+    expect(supabase.claim.mock.calls[0][1]).toMatchObject({ p_kind: "refine" });
+    expect(supabase.ledgerUpdate.mock.calls).toEqual([[{ status: "succeeded" }]]);
+    expect(supabase.ledgerUpdateEq).toHaveBeenCalledWith("id", STUB_LEDGER_ID);
+  });
+
+  it("refines anyway when the claim fails", async () => {
+    const supabase = supabaseStub({
+      claim: { outcome: "error", error: { code: "PGRST202", message: "not found", details: "", hint: "" } },
+    });
+    const fetchStub = stubFetch(() => proposalResponse({ tytul: "Piosenka", opis: "Opis." }));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(200);
+    expect(fetchStub).toHaveBeenCalledTimes(1);
+    expect(supabase.ledgerUpdate).not.toHaveBeenCalled();
+  });
+
+  it("marks the reservation failed when the model fails", async () => {
+    const supabase = supabaseStub();
+    stubFetch(() => errorStatusResponse(503));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(503);
+    expect(supabase.ledgerUpdate.mock.calls).toEqual([[{ status: "failed" }]]);
   });
 });

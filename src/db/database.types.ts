@@ -141,11 +141,56 @@ export type Database = {
         }
         Relationships: []
       }
+      generation_ledger: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          kind: string
+          plan_date: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          kind: string
+          plan_date?: string | null
+          status?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          kind?: string
+          plan_date?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      claim_generation: {
+        Args: {
+          p_day_limit: number
+          p_enforce?: boolean
+          p_kind: string
+          p_plan_date?: string
+          p_refine_limit: number
+          p_refund_allowance: number
+        }
+        Returns: {
+          allowed: boolean
+          ledger_id: string
+          resets_on: string
+        }[]
+      }
       delete_own_account: { Args: never; Returns: undefined }
       save_day_plan_generation: {
         Args: {
