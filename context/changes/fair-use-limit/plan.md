@@ -502,9 +502,9 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Automated
 
-- [x] 5.1 Testy stron prawnych przechodzą: `npm test -- legal`
-- [x] 5.2 Build: `npm run build`
-- [x] 5.3 Zmiana roadmapy nie wyszła poza `S-21` (`git diff -w master..HEAD`)
+- [x] 5.1 Testy stron prawnych przechodzą: `npm test -- legal` — bda86e7
+- [x] 5.2 Build: `npm run build` — bda86e7
+- [x] 5.3 Zmiana roadmapy nie wyszła poza `S-21` (`git diff -w master..HEAD`) — bda86e7
 
 #### Manual
 
