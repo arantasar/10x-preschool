@@ -68,7 +68,7 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-18 | account-deletion           | usunąć swoje konto razem ze wszystkimi planami                                                           | —                                                | FR-024                         | done     |
 | S-19 | help-and-contact           | przeczytać FAQ i napisać do właściciela przez formularz, z kontem lub bez                                | —                                                | FR-025, FR-026                 | done     |
 | S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | —                                                | FR-025                         | done     |
-| S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | in progress |
+| S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | done     |
 | S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic z tabelą porównania planów i zapisać się na cenę założycielską z uczciwym potwierdzeniem | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
 | S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | ready    |
 | S-29 | print-redesign             | drukować plan tygodnia i miesiąca w układzie i barwach aplikacji, nie w czerni i bieli                   | —                                                | —                              | ready    |
@@ -203,7 +203,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - **Pula zależna od stanu planu** — `S-23` i `S-27` dołożą wielkość puli zależną od planu; model danych licznika projektuj od razu pod to. Owner: `/10x-plan`. Block: nie.
 - ~~**Sufit poprawek aktywności**~~ (fair use, nie pula dni) — **rozstrzygnięte 2026-10-17 (`/10x-plan`): 300 poprawek na konto w miesiącu kalendarzowym, w konfiguracji (`FAIR_USE_REFINES_PER_MONTH`).**
 - **Risk:** Największy zasięg awarii w kamieniu, wskazany przez użytkownika: licznik jest wspólny dla czterech tras wołających model, więc jego błąd zatrzymuje generowanie wszędzie naraz — a Guardrail 1 mówi, że błąd licznika **nie może** zatrzymać generowania. Tydzień to pięć niezależnych wywołań `week/day.ts` z klienta, więc zliczanie musi być atomowe w bazie, inaczej równoległe wywołania przejdą przez limit razem. Obecne konta: licznik startuje od zera w miesiącu wejścia, nic nie liczy się wstecz. Nowe dane per konto — izolacja kont i świadome uprawnienia zapisu (przypomnienie z `M-02`).
-- **Status:** in progress
+- **Status:** done
 
 ### S-22: Cennik i zapis na cenę założycielską (gwiazda przewodnia)
 
@@ -402,3 +402,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-17: Zalogowana nauczycielka zmienia hasło, a pozostałe urządzenia z otwartą sesją tego konta (np. komputer w przedszkolu) tracą dostęp.** — Archived 2026-10-14 → `context/archive/2026-10-13-password-change/`. Lesson: „Logowanie z Workera nie niesie IP klienta”.
 - **S-18: Nauczycielka usuwa swoje konto po potwierdzeniu, które mówi wprost, że zniknie konto i wszystkie plany; po usunięciu nie da się zalogować, a jej plany nie istnieją.** — Archived 2026-10-15 → `context/archive/2026-10-15-account-deletion/`. Lesson: —.
 - **S-20: Odwiedzający bez konta czyta regulamin i politykę prywatności, a polityka obejmuje przechowywanie e-maili osób, które nie mają konta (formularz kontaktowy, zapis na cenę).** — Archived 2026-10-17 → `context/archive/2026-10-17-legal-pages/`. Lesson: —.
+- **S-21: Nauczycielka generuje, edytuje, zatwierdza, usuwa i drukuje plany jak dziś; dopiero nadużycie zatrzymuje generowanie komunikatem, który mówi, kiedy generowanie znów będzie możliwe, i wskazuje kontakt na wypadek pomyłki.** — Archived 2026-10-17 → `context/archive/2026-10-17-fair-use-limit/`. Lesson: —.

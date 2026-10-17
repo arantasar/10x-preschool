@@ -1,10 +1,10 @@
 ---
 change_id: fair-use-limit
 title: Fair use limit
-status: impl_reviewed
+status: archived
 created: 2026-10-17
 updated: 2026-10-17
-archived_at: null
+archived_at: 2026-10-17T19:10:28Z
 ---
 
 ## Notes
