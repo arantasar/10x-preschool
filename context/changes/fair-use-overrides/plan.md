@@ -257,11 +257,11 @@ Jeden odczyt po kluczu głównym w transakcji, która już trzyma blokadę konta
 
 #### Automated
 
-- [x] 1.1 Migracja aplikuje się na czysto: `npx supabase db reset`
-- [x] 1.2 Testy pgTAP przechodzą: `npm run test:db`
-- [x] 1.3 Typy regenerują się, a `git diff --stat src/db/database.types.ts` pokazuje zmianę
-- [x] 1.4 Testy na prawdziwej bazie przechodzą bez zmian: `npm run test:db:api`
-- [x] 1.5 Testy jednostkowe, lint i build: `npm test && npm run lint && npm run build`
+- [x] 1.1 Migracja aplikuje się na czysto: `npx supabase db reset` — 9e249aa
+- [x] 1.2 Testy pgTAP przechodzą: `npm run test:db` — 9e249aa
+- [x] 1.3 Typy regenerują się, a `git diff --stat src/db/database.types.ts` pokazuje zmianę — 9e249aa
+- [x] 1.4 Testy na prawdziwej bazie przechodzą bez zmian: `npm run test:db:api` — 9e249aa
+- [x] 1.5 Testy jednostkowe, lint i build: `npm test && npm run lint && npm run build` — 9e249aa
 
 #### Manual
 
@@ -271,10 +271,10 @@ Jeden odczyt po kluczu głównym w transakcji, która już trzyma blokadę konta
 
 #### Automated
 
-- [ ] 2.1 Testy stron prawnych przechodzą: `npm test -- legal`
-- [ ] 2.2 Build: `npm run build`
-- [ ] 2.3 W tabeli roadmapy zmienił się wyłącznie wiersz `S-28` (`git diff -w master..HEAD`)
-- [ ] 2.4 Żaden adres e-mail nie trafił do zmian tej gałęzi
+- [x] 2.1 Testy stron prawnych przechodzą: `npm test -- legal`
+- [x] 2.2 Build: `npm run build`
+- [x] 2.3 W tabeli roadmapy zmienił się wyłącznie wiersz `S-28` (`git diff -w master..HEAD`)
+- [x] 2.4 Żaden adres e-mail nie trafił do zmian tej gałęzi
 
 #### Manual
 
