@@ -52,7 +52,7 @@ Automated gates re-run at review time: `npm test` 843 passed, `npm run test:db:a
 - **Location**: src/content/legal/polityka-prywatnosci.md (pkt 2.7, 11), plan.md 5.5
 - **Detail**: Polityka (pkt 11) obiecuje e-mail o istotnych zmianach; księga zaczyna się w chwili scalenia, a plan nie ma pozycji o powiadomieniu istniejących kont.
 - **Fix**: Decyzja właściciela przed scaleniem — zapisana w follow-ups/review-fixes.md.
-- **Decision**: ACCEPTED as follow-up (decyzja należy do właściciela, bez zmian w kodzie)
+- **Decision**: ACCEPTED — właściciel 2026-10-17: brak użytkowników produkcyjnych, więc e-mail o zmianie Polityki nie jest potrzebny. Wersja 1.1 na stronie wystarcza.
 
 ### F4 — Rzutowanie `null as unknown as string` dla `p_plan_date`
 
