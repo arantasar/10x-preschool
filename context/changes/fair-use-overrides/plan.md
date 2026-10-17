@@ -271,10 +271,10 @@ Jeden odczyt po kluczu głównym w transakcji, która już trzyma blokadę konta
 
 #### Automated
 
-- [x] 2.1 Testy stron prawnych przechodzą: `npm test -- legal`
-- [x] 2.2 Build: `npm run build`
-- [x] 2.3 W tabeli roadmapy zmienił się wyłącznie wiersz `S-28` (`git diff -w master..HEAD`)
-- [x] 2.4 Żaden adres e-mail nie trafił do zmian tej gałęzi
+- [x] 2.1 Testy stron prawnych przechodzą: `npm test -- legal` — b28033b
+- [x] 2.2 Build: `npm run build` — b28033b
+- [x] 2.3 W tabeli roadmapy zmienił się wyłącznie wiersz `S-28` (`git diff -w master..HEAD`) — b28033b
+- [x] 2.4 Żaden adres e-mail nie trafił do zmian tej gałęzi — b28033b
 
 #### Manual
 
