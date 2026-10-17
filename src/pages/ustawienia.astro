@@ -10,6 +10,7 @@ import {
   PASSWORD_CHANGED_COOKIE_OPTIONS,
 } from "@/lib/account-settings";
 import { authErrorMessage } from "@/lib/auth-error-messages";
+import { PRIVACY_PATH, TERMS_PATH } from "@/lib/legal";
 
 // Protected by the middleware (`PROTECTED_ROUTES`), so a user is always here.
 const { user } = Astro.locals;
@@ -49,6 +50,21 @@ const card = "bg-mleko rounded-card flex flex-col px-5 py-6 min-[901px]:px-9 min
             Na ten adres wysyłamy linki do aktywacji i resetu hasła.
           </p>
         </div>
+        {/* A signed-in teacher never sees the public footer, so the documents are linked here. */}
+        <nav aria-label="Dokumenty" class="flex flex-wrap gap-x-5 gap-y-1">
+          <a
+            href={TERMS_PATH}
+            class="text-las hover:text-mech inline-flex min-h-11 items-center text-[15px] font-bold underline underline-offset-4"
+          >
+            Regulamin
+          </a>
+          <a
+            href={PRIVACY_PATH}
+            class="text-las hover:text-mech inline-flex min-h-11 items-center text-[15px] font-bold underline underline-offset-4"
+          >
+            Polityka prywatności
+          </a>
+        </nav>
       </section>
 
       <section id="haslo" aria-labelledby="haslo-heading" class:list={[card, "scroll-mt-6 gap-5"]}>

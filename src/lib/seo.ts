@@ -20,7 +20,15 @@ export const SITE_DESCRIPTION =
 
 // An allow-list: a new page stays `noindex` and out of the sitemap until it is
 // added here. Most of the app sits behind a login or a one-shot token.
-export const INDEXABLE_PATHS: readonly string[] = ["/", "/auth/signin", "/auth/signup", "/pomoc", "/kontakt"];
+export const INDEXABLE_PATHS: readonly string[] = [
+  "/",
+  "/auth/signin",
+  "/auth/signup",
+  "/pomoc",
+  "/kontakt",
+  "/regulamin",
+  "/polityka-prywatnosci",
+];
 
 /** Strips one trailing `/`, except from the root. */
 export function normalizePath(pathname: string): string {

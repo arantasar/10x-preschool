@@ -10,6 +10,7 @@ import {
   editApprovedDayConfirmation,
   regenerateApprovedDayConfirmation,
 } from "@/lib/confirmations";
+import { AI_PROPOSALS_NOTICE } from "@/lib/legal";
 import { DESCRIPTION_MAX, INSTRUCTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
 import { formatAcceptedAt, formatPlanDate } from "@/lib/day-plan-dates";
 import { cn } from "@/lib/utils";
@@ -613,6 +614,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
             {hasActivities ? <RotateCcw className="size-4" /> : <Sparkles className="size-4" />}
             {busy === "generating" ? "Generuję…" : hasActivities ? "Generuj ponownie" : "Generuj"}
           </Button>
+          <p className="text-las-szary text-sm">{AI_PROPOSALS_NOTICE}</p>
         </form>
 
         {busy === "generating" && <GenerationProgress />}

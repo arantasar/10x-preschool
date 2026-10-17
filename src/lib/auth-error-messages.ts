@@ -82,6 +82,13 @@ export const PASSWORD_CHANGE_FAILED = "password_change_failed";
 export const ACCOUNT_DELETE_FAILED = "account_delete_failed";
 
 /**
+ * Also ours, minted by the sign-up route when the form arrives without the
+ * accepted terms (Regulamin § 5 ust. 1) - a browser without JavaScript, or a
+ * request built by hand. Supabase is never asked, so no account exists.
+ */
+export const TERMS_NOT_ACCEPTED = "terms_not_accepted";
+
+/**
  * Shown for anything the map does not know: an unmapped Supabase code, a code
  * from a flow we deliberately did not cover (MFA, SSO, OAuth), or a value
  * someone put in the URL by hand.
@@ -128,6 +135,7 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // Only reachable if custom SMTP is ever switched off. Shown by sign-up; the
   // reset request swallows it (see SILENT_RESET_REQUEST_ERRORS below).
   email_address_not_authorized: `Nie możemy teraz wysłać wiadomości na ten adres. Spróbuj ponownie później albo napisz do nas: ${SUPPORT_EMAIL}.`,
+  [TERMS_NOT_ACCEPTED]: "Zaakceptuj Regulamin, aby założyć konto.",
   // Re-signing up with an unconfirmed address makes Supabase send a fresh link,
   // so that is the advice for both - there is no separate "resend" screen.
   [SIGNUP_LINK_INVALID]:

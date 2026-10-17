@@ -6,6 +6,7 @@ import {
   CURRENT_PASSWORD_INVALID,
   GENERIC_AUTH_ERROR_MESSAGE,
   PASSWORD_CHANGE_FAILED,
+  TERMS_NOT_ACCEPTED,
   authErrorMessage,
   isSilentResetRequestError,
 } from "./auth-error-messages";
@@ -34,8 +35,13 @@ describe("authErrorMessage", () => {
     expect(message).not.toBe(GENERIC_AUTH_ERROR_MESSAGE);
   });
 
-  it("covers the twenty-seven codes the auth flows can reach", () => {
-    expect(MAPPED_CODES).toHaveLength(27);
+  it("covers the twenty-eight codes the auth flows can reach", () => {
+    expect(MAPPED_CODES).toHaveLength(28);
+  });
+
+  it("maps the missing terms acceptance to its own sentence", () => {
+    expect(TERMS_NOT_ACCEPTED).toBe("terms_not_accepted");
+    expect(authErrorMessage(TERMS_NOT_ACCEPTED)).toBe("Zaakceptuj Regulamin, aby założyć konto.");
   });
 
   it.each(["signup_link_invalid", "signup_link_expired", "email_address_not_authorized"])(

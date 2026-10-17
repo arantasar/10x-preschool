@@ -24,9 +24,9 @@
   domena `temio.pl`, przekierowanie starego hosta), `seo-meta` (PR #44), szablony e-maili (PR #45),
   `header-update` (PR #49, 2026-10-14 — menu konta w nagłówku według makiety 19; ryzyko #17 w
   `test-plan.md`).
-- **Żadna pozycja roadmapy nie jest `ready`.** Z Kroku 13 zostały `S-20` (strony prawne — czeka na
-  treść od księgowego/prawnika) i `S-21` (fair use — czeka na próg z danych produkcji); `S-22`–`S-27`
-  czekają na nie oraz na Kroki 9 i 11. **Najbliższy krok w kodzie bez blokera zewnętrznego to
+- **Żadna pozycja roadmapy nie jest `ready`.** Z Kroku 13 został `S-21` (fair use — czeka na próg
+  z danych produkcji); `S-20` (strony prawne) wydane w wersji bez prawnika (decyzja 2026-10-17).
+  `S-22`–`S-27` czekają na `S-21` oraz na Kroki 9 i 11. **Najbliższy krok w kodzie bez blokera zewnętrznego to
   Krok 9** (e2e w CI) — i tak warunek wejścia Kroku 14.
 - **Monetyzacja ma decyzje** (2026-09-29): Free + Basic 19,99 zł teraz, Pro 39,99 zł później
   zaczynając od materiałów, B2C, JDG. Pełny zapis: `monetization.md` §Decyzje.
@@ -454,7 +454,11 @@ Kolejność z roadmapy; naturalna to reset hasła → strony prawne i FAQ → ko
 obie z blokerem spoza kodu (treść prawna; próg fair use z danych produkcji), więc Krok 13 stoi do
 ich zdjęcia. W międzyczasie — Krok 9.
 
-Ślad `S-18` dla `S-20`: polityka prywatności nie może obiecywać pełnego wymazania konta. Zostają
+**Stan 2026-10-17:** `S-20` wydane — regulamin i polityka prywatności w wersji bez prawnika (brak
+budżetu, decyzja Janusza), z akceptacją przy rejestracji. Przegląd prawnika przy `S-25`/`S-26`.
+Ślad dla `S-22`: polityka dostaje sekcję o zapisie na cenę (dane, zgoda na kontakt, retencja).
+
+Ślad `S-18` dla `S-20` (uwzględniony w polityce, pkt 8): polityka prywatności nie może obiecywać pełnego wymazania konta. Zostają
 wiadomości z formularza (`user_id` → `null`, 12 miesięcy) i wpisy GoTrue w `auth.audit_log_entries`
 — pełny zapis w `roadmap.md` §S-20 Unknowns. Dla `S-25`: usunięcie konta ma dziś brak limitu prób
 hasła z decyzji (trasa wymaga sesji) i nie kończy subskrypcji — oba wracają tam jako zakres.

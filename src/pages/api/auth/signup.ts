@@ -1,11 +1,20 @@
 import type { APIRoute } from "astro";
-import { CONFIG_MISSING, CONNECTION_FAILED } from "@/lib/auth-error-messages";
+import { CONFIG_MISSING, CONNECTION_FAILED, TERMS_NOT_ACCEPTED } from "@/lib/auth-error-messages";
+import { TERMS_ACCEPTED_VALUE, TERMS_VERSION } from "@/lib/legal";
 import { createClient } from "@/lib/supabase";
 
 export const POST: APIRoute = async (context) => {
   const form = await context.request.formData();
   const email = form.get("email") as string;
   const password = form.get("password") as string;
+
+  // Regulamin § 5 ust. 1: no account without accepted terms. Checked here, not
+  // only in the island - a form sent without JavaScript skips its validation.
+  // Before the client is built, so a refused request never reaches Supabase.
+  // The exact value is the checkbox's own `value`, so the contract is explicit.
+  if (form.get("terms") !== TERMS_ACCEPTED_VALUE) {
+    return context.redirect(`/auth/signup?error=${encodeURIComponent(TERMS_NOT_ACCEPTED)}`);
+  }
 
   // Structurally parallel to `signin.ts` on purpose - a future reader will diff
   // the two. See that file for why `?error=` carries a code and not a sentence.
@@ -18,7 +27,11 @@ export const POST: APIRoute = async (context) => {
   // must be in the project's redirect allow-list, or Supabase silently swaps in
   // Site URL.
   const emailRedirectTo = `${new URL(context.request.url).origin}/auth/confirm`;
-  const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo } });
+  // A trace of which terms the teacher accepted and when, kept with the account.
+  // Not proof: `user_metadata` is writable by its owner's own session
+  // (`updateUser({ data })`), so nothing may rest on it for access decisions.
+  const data = { terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString() };
+  const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo, data } });
 
   if (error) {
     /* eslint-disable-next-line no-console */

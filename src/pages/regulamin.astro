@@ -1,0 +1,37 @@
+---
+// Mock-up 10, FR-025. Public and indexable. The text is Markdown
+// (`src/content/legal/regulamin.md`); the title, version and dates come from
+// `src/lib/legal.ts`, which the sign-up route also reads.
+import LegalLayout from "@/components/layout/LegalLayout.astro";
+import MarketingHeader from "@/components/layout/MarketingHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import { Content, getHeadings } from "@/content/legal/regulamin.md";
+import Layout from "@/layouts/Layout.astro";
+import { TERMS_BINDS_EXISTING_ON, TERMS_PUBLISHED_ON, TERMS_VERSION, formatLegalDate } from "@/lib/legal";
+
+const toc = getHeadings()
+  .filter((heading) => heading.depth === 2)
+  .map((heading) => ({ id: heading.slug, label: heading.text }));
+---
+
+<Layout
+  title="Regulamin"
+  description="Regulamin serwisu Temio: zasady korzystania, konto, propozycje tworzone przez sztuczną inteligencję, reklamacje i usunięcie konta."
+>
+  <div class="flex min-h-screen flex-col">
+    <MarketingHeader />
+    <main class="flex flex-col">
+      <LegalLayout
+        title="Regulamin"
+        toc={toc}
+        effectiveDate={formatLegalDate(TERMS_PUBLISHED_ON)}
+        version={TERMS_VERSION}
+        existingAccountsDate={formatLegalDate(TERMS_BINDS_EXISTING_ON)}
+        question="Masz pytanie do regulaminu?"
+      >
+        <Content />
+      </LegalLayout>
+    </main>
+    <SiteFooter />
+  </div>
+</Layout>

@@ -1,0 +1,36 @@
+---
+// FR-025, the privacy half; laid out like the Regulamin (mock-up 10). Public and
+// indexable. The text is Markdown (`src/content/legal/polityka-prywatnosci.md`);
+// the version and date come from `src/lib/legal.ts`.
+import LegalLayout from "@/components/layout/LegalLayout.astro";
+import MarketingHeader from "@/components/layout/MarketingHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import { Content, getHeadings } from "@/content/legal/polityka-prywatnosci.md";
+import Layout from "@/layouts/Layout.astro";
+import { PRIVACY_PUBLISHED_ON, PRIVACY_VERSION, formatLegalDate } from "@/lib/legal";
+
+const toc = getHeadings()
+  .filter((heading) => heading.depth === 2)
+  .map((heading) => ({ id: heading.slug, label: heading.text }));
+---
+
+<Layout
+  title="Polityka prywatności"
+  description="Jakie dane przetwarza Temio, w jakim celu i jak długo, komu je przekazujemy, jakie masz prawa i jakich plików cookies używamy."
+>
+  <div class="flex min-h-screen flex-col">
+    <MarketingHeader />
+    <main class="flex flex-col">
+      <LegalLayout
+        title="Polityka prywatności"
+        toc={toc}
+        effectiveDate={formatLegalDate(PRIVACY_PUBLISHED_ON)}
+        version={PRIVACY_VERSION}
+        question="Masz pytanie o swoje dane?"
+      >
+        <Content />
+      </LegalLayout>
+    </main>
+    <SiteFooter />
+  </div>
+</Layout>
