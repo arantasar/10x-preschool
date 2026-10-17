@@ -217,7 +217,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - ~~Definicja „konta aktywnego”~~ i ~~okno 4 tygodni~~ — **nieaktualne 2026-10-17:** brama zdjęta, zapis niczego nie liczy (Open Roadmap Questions #1, #2).
   - Cena dostępu jednorazowego na cenniku (Open Roadmap Questions #14). Owner: Janusz. Block: tak dla treści cennika.
   - Treść cennika: tabela Darmowy/Basic w PRD v3 §Business Logic Changes „Plany — co widzi nauczycielka na cenniku". Cennik publikowany przed `S-25` mówi wprost, że płatności ruszą wkrótce, i nie może obiecywać niczego, czego `S-23`…`S-27` nie dowiozą.
-  - **Tabela porównania planów idzie z cennikiem (decyzja 2026-10-17, Janusz)**, żeby było wiadomo, za co nauczycielka płaci. Wzór z pakietu `temio-design-astro/`: `src/components/billing/PlanComparison` (Darmowy vs Basic z przypisami), `PricingCard`, `BillingToggle`; `design/screens/07-cennik.png`, `07b-cennik-miesiecznie.png`. Przypis o limicie rozsądnego użycia opisuje `S-21`; cennik nigdy nie mówi „bez limitu”. Teksty w [NAWIASACH] uzupełnia właściciel. Owner: Janusz (treść), `/10x-plan` (komponent). Block: tak dla treści tabeli.
+  - **Tabela porównania planów idzie z cennikiem (decyzja 2026-10-17, Janusz)**, żeby było wiadomo, za co nauczycielka płaci. Wzór z pakietu `context/foundation/design/`: `src/components/billing/PlanComparison` (Darmowy vs Basic z przypisami), `PricingCard`, `BillingToggle`; `design/screens/07-cennik.png`, `07b-cennik-miesiecznie.png`. Przypis o limicie rozsądnego użycia opisuje `S-21`; cennik nigdy nie mówi „bez limitu”. Teksty w [NAWIASACH] uzupełnia właściciel. Owner: Janusz (treść), `/10x-plan` (komponent). Block: tak dla treści tabeli.
 - **Risk:** _(2026-10-17: przestaje być gwiazdą przewodnią i bramą — zostaje cennikiem i listą „daj znać, gdy ruszy” dla obcych osób; zapisani dostają cenę założycielską, FR-035.)_ Pierwotnie: gwiazda przewodnia stoi ostatnia w rdzeniu z wyboru, nie z grafu — ryzyko polega na tym, że zablokowany prawnikiem `S-20` przesuwa pomiar o tyle samo, ile trwa zależność zewnętrzna. Zapis anonimowy jest dostępny, ale do progu się nie wlicza (FR-029, runda Sokratejska: „zapis jest tani, zapłata droga"). Żadna płatność nie jest symulowana. Cennik nie pokazuje Pro (FR-028). Zapis to zgoda na kontakt e-mailowy — polityka prywatności musi go obejmować (`S-20`).
 - **Status:** blocked
 
@@ -231,7 +231,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:**
   - Kształt danych: osobna tabela nadpisań per konto (limit dni, limit poprawek; `null` = bez sufitu) czy kolumny przy przyszłym stanie planu z `S-23`. Rekomendacja z 2026-10-17: jedna funkcja „jaki limit ma to konto” z kolejnością źródeł nadpisanie konta → plan konta (`S-23`, `S-27`) → domyślny z konfiguracji, żeby `S-23` dokładał źródło, a nie przerabiał funkcję. Owner: `/10x-plan`. Block: nie.
-  - Słowo „unlimited” istnieje tylko w bazie i w rozmowie z właścicielem — cennik i komunikaty nigdy nie mówią „bez limitu” (`temio-design-astro/design/README.md`, `/cennik`). Owner: `/10x-plan`. Block: nie.
+  - Słowo „unlimited” istnieje tylko w bazie i w rozmowie z właścicielem — cennik i komunikaty nigdy nie mówią „bez limitu” (`context/foundation/design/design/README.md`, `/cennik`). Owner: `/10x-plan`. Block: nie.
 - **Risk:** Nadpisanie jest odczytywane przez `claim_generation`, która musi zostać `security invoker` (niezmiennik: jedyny definer to `delete_own_account`) — więc nauczycielka może czytać własny wiersz nadpisania, ale nie może go wstawić ani zmienić; pgTAP musi to dowieść. Nowe dane per konto: jedno zdanie w Polityce prywatności pkt 2.7 i w sekcji „Fair use” CLAUDE.md. Do czasu tej pozycji właściciel zeruje własne zużycie, kasując swoje wiersze `generation_ledger` w SQL Editorze.
 - **Status:** ready
 
@@ -243,7 +243,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** —
 - **Parallel with:** S-28
 - **Blockers:** —
-- **Source materials:** pakiet dizajnu `temio-design-astro/` (2026-10-17): `src/components/print/PrintMonth`, `PrintWeek`, `src/styles/print.css`, `tokens.css`; wzory `design/screens/20-druk-miesiac.png`, `21-druk-tydzien.png` i odpowiadające im `design/reference/*.html`. Tabela porównania planów z tego pakietu należy do `S-22` (cennik).
+- **Source materials:** pakiet dizajnu `context/foundation/design/` (2026-10-17): `src/components/print/PrintMonth`, `PrintWeek`, `src/styles/print.css`, `tokens.css`; wzory `design/screens/20-druk-miesiac.png`, `21-druk-tydzien.png` i odpowiadające im `design/reference/*.html`. Tabela porównania planów z tego pakietu należy do `S-22` (cennik).
 - **Unknowns:**
   - Pakiet dizajnu obejmuje dużo więcej (zmiana nazwy na Temio, nowe ekrany, `PaywallDialog` „od drugiego tygodnia”, który trzeba zestawić z regułą planu darmowego z `S-27`). Ta pozycja bierze wyłącznie wydruki; tabela porównania jest w `S-22`, a reszty pakietu nie ma jeszcze w roadmapie. Owner: Janusz. Block: nie.
 - **Risk:** Wydruk w kolorze musi pozostać czytelny na drukarce czarno-białej (przedszkola drukują głównie w szarości) i mieścić się na A4 poziomo jak dziś — zmiana wyglądu nie może zgubić treści aktywności ani dat. Obecne wydruki PDF mają swoje testy i e2e; nowe komponenty zastępują je, a nie stoją obok.

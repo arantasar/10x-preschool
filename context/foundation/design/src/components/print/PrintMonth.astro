@@ -1,0 +1,69 @@
+---
+/**
+ * Month print sheet (1 page, A4 landscape). Use with src/styles/print.css.
+ * cells: Mon–Fri, row by row (5 or 6 rows × 5). null = day outside the month (hatched).
+ * A day without a plan prints two rules for handwritten notes. draft → dashed frame + „SZKIC”.
+ */
+import '../../styles/print.css';
+interface Day { date: number; keyword?: string; topic?: string; draft?: boolean; }
+interface Props { title: string; cells: (Day | null)[]; printedAt?: string; group?: string; }
+const { title, cells, printedAt, group } = Astro.props;
+const rows = Math.ceil(cells.length / 5);
+const days = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek'];
+---
+<section class="sheet pm" aria-label={`Plan miesiąca — ${title}`}>
+  <header class="sheet__head pm__head">
+    <div><div class="sheet__eyebrow">Plan miesiąca</div><h1 class="sheet__title pm__title">{title}</h1></div>
+    <div class="pm__side">
+      <span class="sheet__logo"><svg width="20" height="20" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 2C48.6 2 62 15.4 62 32S48.6 62 32 62H12C6.5 62 2 57.5 2 52V32C2 15.4 15.4 2 32 2Z" fill="#1F3B2D"/></svg>temio</span>
+      <span class="sheet__group">Grupa: {group ?? '____________________'}</span>
+    </div>
+  </header>
+  <div class="pm__days" aria-hidden="true">{days.map((d) => <div>{d}</div>)}</div>
+  <div class="pm__grid" style={`grid-template-rows: repeat(${rows}, minmax(0, 1fr))`}>
+    {cells.map((c) => c === null ? <div class="pm__out" /> : (
+      <div class:list={['pm__cell', c.topic ? (c.draft ? 'is-draft' : 'is-set') : 'is-empty']}>
+        <div class="pm__top">
+          <span class="pm__num">{c.date}</span>
+          {c.keyword && <span class="sheet__chip">{c.keyword}</span>}
+          {c.draft && <span class="pm__draft">SZKIC</span>}
+        </div>
+        {c.topic ? <p class="pm__topic">{c.topic}</p> : <div class="pm__lines"><i /><i /></div>}
+      </div>
+    ))}
+  </div>
+  <footer class="sheet__foot pm__foot">
+    <div class="pm__legend">
+      <span><i class="is-set" />zatwierdzony</span>
+      <span><i class="is-draft" />SZKIC — plan niezatwierdzony</span>
+      <span><i class="is-empty" />bez planu — miejsce na notatki</span>
+    </div>
+    <div>temio.pl{printedAt && ` · wydrukowano ${printedAt}`}</div>
+  </footer>
+</section>
+
+<style>
+  .pm__head { align-items: flex-end; padding-bottom: 14px; }
+  .pm__title { margin-top: 2px; font-size: 32px; }
+  .pm__side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .pm__days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); column-gap: 10px; padding: 10px 0 6px; }
+  .pm__days div { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: #3E5347; padding-left: 10px; }
+  .pm__grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px 10px; }
+  .pm__out { border-radius: 10px; background: repeating-linear-gradient(135deg, #fff 0 6px, #F4F1E8 6px 7px); }
+  .pm__cell { border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; overflow: hidden; }
+  .pm__cell.is-set { border: 1px solid #B9C7B1; }
+  .pm__cell.is-draft { border: 1.2px dashed #6B7A70; }
+  .pm__cell.is-empty { border: 1px solid #E2DBC8; }
+  .pm__top { display: flex; align-items: center; gap: 8px; }
+  .pm__num { font-family: var(--font-display, 'Young Serif', Georgia, serif); font-size: 20px; line-height: 1; }
+  .is-empty .pm__num { color: #8A968E; }
+  .pm__draft { margin-left: auto; font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; border: 1px dashed #3E5347; border-radius: 4px; padding: 1px 5px; color: #3E5347; }
+  .pm__topic { margin: 0; font-size: 10.5px; line-height: 1.28; overflow: hidden; }
+  .pm__lines { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 9px; padding-bottom: 4px; }
+  .pm__lines i { height: 1px; background: #E2DBC8; }
+  .pm__foot { padding-top: 12px; }
+  .pm__legend { display: flex; gap: 18px; }
+  .pm__legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .pm__legend i { width: 18px; height: 11px; border-radius: 3px; }
+  .pm__legend .is-set { border: 1px solid #B9C7B1; } .pm__legend .is-draft { border: 1.2px dashed #6B7A70; } .pm__legend .is-empty { border: 1px solid #E2DBC8; }
+</style>

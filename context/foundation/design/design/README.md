@@ -5,12 +5,14 @@ Przekazanie projektu graficznego do implementacji. Pakiet zawiera:
 ```
 src/
   styles/tokens.css              ← wszystkie kolory, fonty, promienie, cienie, odstępy (CSS custom properties)
+  styles/print.css               ← arkusze wydruku A4 poziomo (@page, .sheet)
   components/
     ui/        Button, Icon, Logo, CategoryTag, StatusBadge, ScopeToggle, TopicForm, Blob,
                TextField, Notice, FaqItem
     account/   SettingsLayout, DeleteAccountDialog
     plan/      ProposalCard, RemovedProposal, MonthGrid
-    billing/   PricingCard, BillingToggle, PaywallDialog
+    billing/   PricingCard, BillingToggle, PlanComparison, PaywallDialog
+    print/     PrintMonth, PrintWeek (wydruk miesiąca i tygodnia)
     layout/    SocialMeta, AccountMenu, MarketingHeader, SiteFooter, AppHeader, AuthSplit, AuthCard, LegalLayout
 emails/        szablony e-maili Supabase: potwierdzenie-konta.html, reset-hasla.html
 public/        og-image.png (podgląd linku 1200×630), email/temio-logo.png (logo do e-maili), favicon.svg, favicon-32.png, apple-touch-icon.png (180), icon-512.png
@@ -30,6 +32,7 @@ design/
 > 4. Zachowaj istniejącą logikę (auth, wywołania LLM, zapis planu). Podepnij przyciski z `data-action` do tego, czego aplikacja już używa.
 > 5. Nowe strony (cennik, FAQ, regulamin, kontakt, reset hasła) i okno płatności zbuduj z komponentów wymienionych w sekcji 4. Teksty w [NAWIASACH] zostaw jako placeholdery — uzupełni je właściciel.
 > 6. Sprawdź widoki przy 390 px, 768 px i 1440 px.
+> 7. Zastąp obecny wydruk PDF (miesiąc i tydzień) komponentami `PrintMonth` / `PrintWeek` — patrz sekcja „Wydruki”.
 
 ## Logo Temio
 
@@ -140,7 +143,7 @@ Trasy są propozycją, więc dopasuj je do istniejących.
 | Rejestracja `/rejestracja` | 06 | Układ jak logowanie: e-mail, hasło (+ podpowiedź z wymaganiami — wpisz własne), powtórz hasło, `Button block`, link „Masz już konto? Zaloguj się”. Ciemny panel pokazuje 3 kroki „Jak to działa”. |
 | Nowe propozycje `/generuj` | 03 | `AppHeader active="generate"`, panel formularza (temat, `ScopeToggle`, wybór tygodnia, „Wygeneruj ponownie”), lista `ProposalCard layout="row"` + `RemovedProposal`, licznik „X z 5 zatwierdzone”, „Zatwierdź wszystkie” (`secondary`), „Zapisz w planie (X)” (`accent`) |
 | Plan miesiąca `/plan` | 04 | `AppHeader active="plan"`, nagłówek miesiąca ze strzałkami, legenda, `MonthGrid` |
-| Cennik `/cennik` | 07 | `MarketingHeader active="cennik"`, `BillingToggle`, 2× `PricingCard` (`default` „Na start”, `featured` „Pełny dostęp” z cenami `{monthly, yearly}`), `FaqItem` (pytania o płatności), `SiteFooter` |
+| Cennik `/cennik` | 07, 07b | `MarketingHeader active="cennik"`, `BillingToggle` (**domyślnie Rocznie**), `PricingCard` „Darmowy” (0 zł, `period="na zawsze"`) + `PricingCard variant="featured"` „Basic” z `price={{monthly:'19,99 zł',yearly:'159 zł'}}` i `founder={{monthly:'14,99 zł / miesiąc',yearly:'119 zł / rok'}}`, potem `PlanComparison` (tabela Darmowy vs Basic z przypisami ¹²³), `FaqItem` (pytania o płatności), `SiteFooter`. **Nigdy nie pisz „bez limitu”** — Basic ma limit rozsądnego użycia (przypis 1). |
 | Prośba o płatność (start 2. tygodnia) | 08 | `PaywallDialog` — natywny `<dialog>`, otwierany `showModal()` gdy nauczyciel chce generować tydzień 2+ bez aktywnego planu. Tło = zwykły ekran `/generuj`. |
 | FAQ `/faq` | 09 | `MarketingHeader active="faq"`, lewa kolumna kotwic kategorii (Jak to działa / Płatności / Konto i dane), `FaqItem` w sekcjach z `id`, ciemny pas z linkiem do kontaktu, `SiteFooter` |
 | Regulamin `/regulamin` | 10 | `LegalLayout` (spis treści + tekst; najlepiej treść z Markdown / content collection), `Notice tone="info"` w § 5 (treści AI) |
@@ -183,6 +186,8 @@ const proposals = /* z bazy / LLM */ [];
 
 ### Okno płatności — użycie
 
+> ⚠️ Teksty okna („Pierwszy tydzień planowania był bezpłatny”, ceny 29/290 zł) pochodzą ze starego modelu. Nowy model to pierwszy miesiąc Basic za darmo, potem 5 dni roboczych w miesiącu na planie Darmowym. Okno ma się pokazywać przy próbie planowania ponad pulę dni, z cenami Basic: 159 zł / rok albo 19,99 zł / mies.
+
 ```astro
 <PaywallDialog
   weekLabel="Tydzień 12–16 października"
@@ -199,6 +204,27 @@ const proposals = /* z bazy / LLM */ [];
 ```
 
 Zasady: okno pojawia się dopiero przy próbie generowania kolejnego tygodnia (nie przy logowaniu). Zawsze da się je zamknąć („Nie teraz”, ×, Esc), a zatwierdzony pierwszy tydzień zostaje dostępny.
+
+### Wydruki (miesiąc i tydzień)
+
+Wzory: `design/screens/20-druk-miesiac.png`, `21-druk-tydzien.png`. Jeden arkusz = jedna strona A4 poziomo (1123×794 px = 297×210 mm). Biały papier, same obrysy, bez wypełnień — czytelne w czerni i bieli i oszczędne w tuszu.
+
+```astro
+---
+import PrintMonth from '../components/print/PrintMonth.astro';
+import PrintWeek from '../components/print/PrintWeek.astro';
+// cells: pon–pt wiersz po wierszu; null = dzień spoza miesiąca
+---
+<body class="print-preview">
+  <PrintMonth title="Październik 2026" cells={cells} printedAt="17.10.2026" />
+  {weeks.map((w, i) => <PrintWeek range={w.range} days={w.days} page={i + 1} pages={weeks.length} note={w.note} />)}
+</body>
+```
+
+- **Miesiąc:** 5 kolumn (pon–pt). Dzień zatwierdzony ma cienką ramkę, a szkic ma ramkę przerywaną i znaczek „SZKIC”. Dzień bez planu dostaje dwie linie na notatki odręczne, a dni spoza miesiąca są lekko zakreskowane. Legenda jest w stopce.
+- **Tydzień:** jeden arkusz na tydzień, numeracja „strona N z M”. W kolumnie dnia są: data, dzień tygodnia, hasło (chip), temat (kursywa) i trzy numerowane aktywności. Opis ma 10 px, co mieści ok. 1300 znaków na dzień. Sprawdzone na prawdziwym tygodniu 5–9 października. Dłuższy tekst zostanie ucięty, więc trzeba go skrócić po stronie serwera (np. limit długości opisu w prompcie) albo podzielić tydzień na 2 arkusze.
+- Strona `/plan/druk` może od razu wywołać druk: `await document.fonts.ready; window.print();`. Bez załadowanych fontów zastępczy font jest szerszy i tekst się nie zmieści.
+- W `print.css` jest `@page { size: A4 landscape; margin: 0 }`. W oknie druku wybierz „Marginesy: brak” (Chrome robi to sam).
 
 ### Nagłówek aplikacji i menu konta
 
@@ -220,7 +246,7 @@ Zasady: okno pojawia się dopiero przy próbie generowania kolejnego tygodnia (n
 
 ## 7. Treści
 
-Placeholdery w [NAWIASACH] do uzupełnienia przez właściciela: ceny planów, operator płatności, adres e-mail, czas odpowiedzi, czas ważności linku resetu, wymagania hasła, odpowiedzi w FAQ o rezygnacji / fakturach / danych / usuwaniu konta. **Regulamin zawiera tylko strukturę — treść prawną musi przygotować lub sprawdzić prawnik.**
+Placeholdery w [NAWIASACH] do uzupełnienia przez właściciela: operator płatności, adres e-mail, czas odpowiedzi, czas ważności linku resetu, wymagania hasła, odpowiedzi w FAQ o rezygnacji / fakturach / danych / usuwaniu konta. **Regulamin zawiera tylko strukturę — treść prawną musi przygotować lub sprawdzić prawnik.**
 
 
 Nazwy aktywności i tematy tygodni na ekranach to przykłady. W aplikacji pochodzą z LLM i danych użytkownika.

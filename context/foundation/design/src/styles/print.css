@@ -1,0 +1,27 @@
+/* Temio — print sheets (A4 landscape). Import on print routes: /plan/druk?miesiac=… and /plan/druk?tydzien=…
+   One .sheet = one page. 1123×794 px = 297×210 mm at 96 dpi, so the px layout maps 1:1 to paper.
+   White paper, outlines instead of fills — readable in black & white, low ink. */
+@page { size: A4 landscape; margin: 0; }
+html, body { margin: 0; background: #fff; }
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.sheet {
+  width: 297mm; height: 210mm; box-sizing: border-box; overflow: hidden;
+  padding: 36px 38px 30px; display: flex; flex-direction: column;
+  background: #fff; color: #1F3B2D; font-family: var(--font-body, 'Nunito Sans', system-ui, sans-serif);
+  break-after: page;
+}
+.sheet:last-child { break-after: auto; }
+@media screen {
+  body.print-preview { background: #E9E4D6; padding: 24px 0; }
+  body.print-preview .sheet { margin: 0 auto 24px; box-shadow: 0 10px 30px -12px rgba(31, 59, 45, .35); }
+  .print-bar { position: sticky; top: 0; display: flex; justify-content: center; gap: 12px; padding: 12px; }
+}
+@media print { .print-bar { display: none; } }
+
+.sheet__head { display: flex; justify-content: space-between; border-bottom: 1.5px solid #1F3B2D; }
+.sheet__eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1.7px; text-transform: uppercase; color: #4F6E4B; }
+.sheet__title { margin: 0; font-family: var(--font-display, 'Young Serif', Georgia, serif); font-weight: 400; line-height: 1.05; }
+.sheet__group { font-size: 11px; color: #3E5347; }
+.sheet__logo { display: flex; align-items: center; gap: 7px; font-family: var(--font-display, 'Young Serif', Georgia, serif); font-size: 18px; }
+.sheet__foot { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #3E5347; }
+.sheet__chip { display: inline-block; border: 1px solid #8FA487; border-radius: 999px; padding: 1px 8px; font-size: 10.5px; font-weight: 800; letter-spacing: .2px; white-space: nowrap; }

@@ -5,12 +5,12 @@
  * (see PricingCard) gets its text swapped — tiny inline script, no framework.
  */
 interface Props { name?: string; value?: 'monthly' | 'yearly'; }
-const { name = 'billing', value = 'monthly' } = Astro.props;
+const { name = 'billing', value = 'yearly' } = Astro.props; // yearly is the default
 ---
 <fieldset class="bt" data-billing-toggle>
   <legend class="visually-hidden">Okres rozliczenia</legend>
-  <label class="bt__opt"><input type="radio" name={name} value="monthly" checked={value === 'monthly'} /><span>Miesięcznie</span></label>
   <label class="bt__opt"><input type="radio" name={name} value="yearly" checked={value === 'yearly'} /><span>Rocznie</span></label>
+  <label class="bt__opt"><input type="radio" name={name} value="monthly" checked={value === 'monthly'} /><span>Miesięcznie</span></label>
 </fieldset>
 
 <script>

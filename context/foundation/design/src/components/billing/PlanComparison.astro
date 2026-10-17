@@ -1,0 +1,116 @@
+---
+/**
+ * „Porównanie planów” — Darmowy vs Basic. Semantic <table> with row headers, grouped by <th scope="colgroup">.
+ * Cell values: true → ✓ (aria-label "tak"), null → — ("nie dotyczy"), string → text (may contain <strong>, <sup>).
+ * Never write „bez limitu” — Basic planning has a fair-use limit (footnote 1).
+ * ≤ 640px rows turn into small cards: feature name on top, Darmowy | Basic side by side (labels from data-label).
+ */
+type Cell = true | null | string | { text: string; sub?: string; check?: boolean };
+interface Row { label: string; hint?: string; free: Cell; basic: Cell; }
+interface Group { title: string; rows: Row[]; }
+interface Props { groups?: Group[]; notes?: string[]; heading?: string; }
+const sup = (n: number) => `<sup>${n}</sup>`;
+const {
+  heading = 'Porównanie planów',
+  groups = [
+    { title: 'Cena i start', rows: [
+      { label: 'Cena', free: '0 zł', basic: '<strong>159 zł za rok</strong> (domyślnie) albo 19,99 zł miesięcznie' },
+      { label: 'Cena założycielska', free: null, basic: '<strong>119 zł za rok</strong> albo 14,99 zł miesięcznie, na zawsze, dopóki subskrypcja trwa bez przerwy' },
+      { label: 'Pierwszy miesiąc od rejestracji', free: 'pełny Basic, bez karty', basic: null },
+    ]},
+    { title: 'Planowanie', rows: [
+      { label: 'Planowanie z hasła', hint: 'dzień, tydzień, ponowne generowanie', free: { text: '<strong>5 dni roboczych w miesiącu</strong>', sub: 'jeden tydzień' }, basic: `<strong>cały miesiąc</strong>${sup(1)}` },
+      { label: 'Poprawka aktywności poleceniem', free: { check: true, text: `liczy się do puli dni${sup(2)}` }, basic: true },
+      { label: 'Edycja, zatwierdzanie, usuwanie dni', free: true, basic: true },
+      { label: 'Podgląd aktywności w kalendarzu miesiąca', free: true, basic: true },
+    ]},
+    { title: 'Druk i Twoje plany', rows: [
+      { label: 'Druk tygodnia', free: true, basic: true },
+      { label: 'Druk miesiąca', free: true, basic: true },
+      { label: 'Twoje plany po zakończeniu Basic', free: 'zostają: odczyt, edycja, druk', basic: null },
+    ]},
+    { title: 'Płatność', rows: [
+      { label: 'Płatność', free: null, basic: { text: `karta (subskrypcja, anulujesz w każdej chwili) albo BLIK / przelew${sup(3)}`, sub: 'miesiąc lub rok szkolny, bez odnowienia' } },
+    ]},
+  ],
+  notes = [
+    'Z limitem rozsądnego użycia — przy zwykłym planowaniu go nie odczujesz.',
+    'Na planie Darmowym poprawki aktywności poleceniem liczą się do miesięcznej puli dni planowania.',
+    'BLIK i przelew opłacają wybrany okres z góry i nie odnawiają się automatycznie.',
+  ],
+} = Astro.props;
+const check = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="tak"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const render = (c: Cell) => {
+  if (c === true) return check;
+  if (c === null) return '<span aria-hidden="true">—</span><span class="visually-hidden">nie dotyczy</span>';
+  if (typeof c === 'string') return c;
+  const main = c.check ? `<span class="pc__inline">${check}<span class="pc__sub">${c.text}</span></span>` : c.text;
+  return main + (c.sub ? `<div class="pc__sub">${c.sub}</div>` : '');
+};
+---
+<section class="pc" aria-labelledby="pc-title">
+  <h2 id="pc-title">{heading}</h2>
+  <div class="pc__scroll">
+    <table class="pc__table">
+      <thead>
+        <tr>
+          <th scope="col" class="pc__fcol"><span class="visually-hidden">Funkcja</span></th>
+          <th scope="col"><span class="pc__plan">Darmowy</span><span class="pc__price">0 zł</span></th>
+          <th scope="col" class="pc__basic-head"><span class="pc__plan">Basic</span><span class="pc__price">159 zł / rok · 19,99 zł / mies.</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {groups.map((g) => (
+          <Fragment>
+            <tr class="pc__group"><th colspan="2" scope="colgroup">{g.title}</th><td class="pc__basic"></td></tr>
+            {g.rows.map((r) => (
+              <tr>
+                <th scope="row">{r.label}{r.hint && <div class="pc__sub">{r.hint}</div>}</th>
+                <td data-label="Darmowy" class:list={[r.free === null && 'pc__none']} set:html={render(r.free)} />
+                <td data-label="Basic" class:list={['pc__basic', r.basic === null && 'pc__none']} set:html={render(r.basic)} />
+              </tr>
+            ))}
+          </Fragment>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  {notes.length > 0 && <ol class="pc__notes">{notes.map((n) => <li>{n}</li>)}</ol>}
+</section>
+
+<style is:global>
+  /* global because cell HTML comes from set:html; every selector is prefixed with .pc */
+  .pc { display: flex; flex-direction: column; gap: 24px; }
+  .pc h2 { font-size: clamp(30px, 3vw, 40px); }
+  .pc .pc__scroll { overflow-x: auto; border-radius: 28px; background: var(--color-surface); }
+  .pc .pc__table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 16px; line-height: 1.45; }
+  .pc .pc__table th, .pc__table td { text-align: left; vertical-align: middle; padding: 14px 24px; border-top: 1px solid #EDE8DA; }
+  .pc .pc__table tbody th[scope='row'] { padding-left: 28px; font-weight: 700; width: 38%; }
+  .pc .pc__table thead th { border-top: 0; padding-block: 22px; border-bottom: 1.5px solid #E2DBC8; width: 31%; }
+  .pc .pc__fcol { width: 38%; }
+  .pc .pc__plan { display: block; font-family: var(--font-display); font-size: 24px; font-weight: 400; }
+  .pc .pc__price { display: block; font-size: 14px; font-weight: 700; color: var(--color-text-accent); }
+  .pc .pc__basic-head { background: var(--color-primary); color: var(--color-on-primary); border-bottom-color: var(--color-primary) !important; }
+  .pc .pc__basic-head .pc__price { color: var(--color-sage); }
+  .pc .pc__basic { background: #F1F5EE; }
+  .pc .pc__group th, .pc__group td { border-top: 0; padding: 26px 28px 8px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-text-accent); }
+  .pc .pc__group:first-child th, .pc__group:first-child td { padding-top: 18px; }
+  .pc .pc__table svg { color: var(--color-text-accent); vertical-align: middle; }
+  .pc .pc__inline { display: inline-flex; align-items: center; gap: 8px; }
+  .pc .pc__sub { font-size: 14px; font-weight: 600; color: var(--color-text-muted); }
+  .pc .pc__none { color: #6B7A70; }
+  .pc .pc__table sup { font-size: 12px; font-weight: 800; color: var(--color-text-accent); }
+  .pc .pc__notes { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; color: var(--color-text-muted); }
+  @media (max-width: 640px) {
+    .pc .pc__table, .pc .pc__table tbody { display: block; }
+    .pc .pc__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .pc .pc__table tr { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #EDE8DA; }
+    .pc .pc__table tbody th[scope='row'] { grid-column: 1 / -1; width: auto; padding: 14px 18px 4px; border: 0; }
+    .pc .pc__table td { padding: 8px 18px 14px; border: 0; font-size: 15px; }
+    .pc .pc__table td::before { content: attr(data-label); display: block; margin-bottom: 4px; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--color-text-accent); }
+    .pc .pc__group { display: block !important; border-top: 0 !important; }
+    .pc .pc__group th { display: block; padding: 22px 18px 6px; }
+    .pc .pc__group td { display: none; }
+    .pc .pc__table td.pc__basic { background: #F1F5EE; border-radius: 12px; margin: 0 8px 10px 0; }
+  }
+</style>

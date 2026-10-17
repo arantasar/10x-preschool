@@ -1,0 +1,68 @@
+---
+/**
+ * Week print sheet (1 page per week, A4 landscape). Use with src/styles/print.css.
+ * 5 columns (Mon–Fri): date + weekday + keyword chip, topic (italic), numbered activities.
+ * Body text is 10px — fits ~1,300 characters of activity text per day (checked with real LLM output).
+ * If a day is longer, the column is clipped: shorten on the server or split the week across 2 sheets.
+ */
+import '../../styles/print.css';
+interface Activity { title: string; body: string; }
+interface Day { date: number; weekday: string; keyword?: string; topic?: string; activities: Activity[]; draft?: boolean; }
+interface Props { range: string; days: Day[]; page?: number; pages?: number; note?: string; group?: string; }
+const { range, days, page, pages, note, group } = Astro.props;
+---
+<section class="sheet pw2" aria-label={`Plan tygodnia — ${range}`}>
+  <header class="sheet__head pw2__head">
+    <div class="pw2__t"><h1 class="sheet__title pw2__title">{range}</h1><span class="sheet__eyebrow">Plan tygodnia</span></div>
+    <div class="pw2__side">
+      <span class="sheet__group">Grupa: {group ?? '____________________'}</span>
+      <span class="sheet__logo"><svg width="18" height="18" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 2C48.6 2 62 15.4 62 32S48.6 62 32 62H12C6.5 62 2 57.5 2 52V32C2 15.4 15.4 2 32 2Z" fill="#1F3B2D"/></svg>temio</span>
+    </div>
+  </header>
+  <div class="pw2__cols">
+    {days.map((d) => (
+      <section class:list={['pw2__day', d.draft && 'is-draft']}>
+        <div class="pw2__dh">
+          <span class="pw2__date">{d.date}</span><span class="pw2__wd">{d.weekday}</span>
+          {d.draft && <span class="pw2__draft">SZKIC</span>}
+          {d.keyword && <span class="sheet__chip pw2__chip">{d.keyword}</span>}
+        </div>
+        {d.topic && <p class="pw2__topic">{d.topic}</p>}
+        {d.activities.length === 0 && <p class="pw2__none">Brak planu na ten dzień</p>}
+        <ol class="pw2__acts">
+          {d.activities.map((a) => (
+            <li><h2>{a.title}</h2><p>{a.body}</p></li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+  <footer class="sheet__foot pw2__foot">
+    <span>{note}</span>
+    <span>temio.pl{page && pages && ` · strona ${page} z ${pages}`}</span>
+  </footer>
+</section>
+
+<style>
+  .pw2__head { align-items: baseline; padding-bottom: 9px; }
+  .pw2__t { display: flex; align-items: baseline; gap: 14px; }
+  .pw2__title { font-size: 24px; line-height: 1; }
+  .pw2__side { display: flex; align-items: center; gap: 22px; }
+  .pw2__cols { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); padding-top: 10px; }
+  .pw2__day { padding: 0 10px; display: flex; flex-direction: column; gap: 7px; min-width: 0; overflow: hidden; border-left: 1px solid #D5CDB8; }
+  .pw2__day:first-child { padding-left: 0; border-left: 0; }
+  .pw2__day:last-child { padding-right: 0; }
+  .pw2__dh { display: flex; align-items: baseline; gap: 6px; }
+  .pw2__date { font-family: var(--font-display, 'Young Serif', Georgia, serif); font-size: 22px; line-height: 1; }
+  .pw2__wd { font-size: 10.5px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: #3E5347; }
+  .pw2__chip { margin-left: auto; }
+  .pw2__draft { font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; border: 1px dashed #3E5347; border-radius: 4px; padding: 1px 5px; }
+  .pw2__topic { margin: 0; padding-bottom: 7px; border-bottom: 1px solid #E2DBC8; font-size: 10.5px; line-height: 1.3; font-weight: 700; font-style: italic; color: #3E5347; }
+  .pw2__none { margin: 0; font-size: 10.5px; color: #6B7A70; }
+  .pw2__acts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; counter-reset: a; }
+  .pw2__acts li { counter-increment: a; display: flex; flex-direction: column; gap: 2px; }
+  .pw2__acts h2 { margin: 0; display: flex; gap: 6px; align-items: baseline; font-family: inherit; font-size: 10.5px; font-weight: 800; line-height: 1.25; }
+  .pw2__acts h2::before { content: counter(a); flex-shrink: 0; font-family: var(--font-display, 'Young Serif', Georgia, serif); font-weight: 400; font-size: 12.5px; color: #4F6E4B; }
+  .pw2__acts p { margin: 0; font-size: 10px; line-height: 1.3; color: #22382C; hyphens: auto; }
+  .pw2__foot { padding-top: 10px; margin-top: 8px; border-top: 1px solid #D5CDB8; font-size: 10.5px; }
+</style>
