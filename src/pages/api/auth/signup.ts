@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { CONFIG_MISSING, CONNECTION_FAILED, TERMS_NOT_ACCEPTED } from "@/lib/auth-error-messages";
-import { TERMS_VERSION } from "@/lib/legal";
+import { TERMS_ACCEPTED_VALUE, TERMS_VERSION } from "@/lib/legal";
 import { createClient } from "@/lib/supabase";
 
 export const POST: APIRoute = async (context) => {
@@ -11,7 +11,8 @@ export const POST: APIRoute = async (context) => {
   // Regulamin § 5 ust. 1: no account without accepted terms. Checked here, not
   // only in the island - a form sent without JavaScript skips its validation.
   // Before the client is built, so a refused request never reaches Supabase.
-  if (!form.get("terms")) {
+  // The exact value is the checkbox's own `value`, so the contract is explicit.
+  if (form.get("terms") !== TERMS_ACCEPTED_VALUE) {
     return context.redirect(`/auth/signup?error=${encodeURIComponent(TERMS_NOT_ACCEPTED)}`);
   }
 

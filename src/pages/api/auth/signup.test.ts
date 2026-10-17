@@ -63,6 +63,13 @@ describe("POST /api/auth/signup — terms acceptance (Regulamin § 5 ust. 1)", (
     expect(signUp).not.toHaveBeenCalled();
   });
 
+  it("refuses any other value, e.g. a hand-built `terms=false`", async () => {
+    const { response, signUp } = call({ ...VALID, terms: "false" });
+
+    expect(await location(response)).toBe(`/auth/signup?error=${TERMS_NOT_ACCEPTED}`);
+    expect(signUp).not.toHaveBeenCalled();
+  });
+
   it("records the accepted version and the moment of acceptance with the account", async () => {
     const before = Date.now();
     const { response, signUp } = call({ ...VALID, terms: "accepted" });

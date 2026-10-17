@@ -13,6 +13,8 @@ export const TERMS_PATH = "/regulamin";
 export const PRIVACY_PATH = "/polityka-prywatnosci";
 
 export const TERMS_VERSION = "1.0";
+/** What the sign-up checkbox sends as `terms`; the route accepts nothing else. */
+export const TERMS_ACCEPTED_VALUE = "accepted";
 /** Day of publication (ISO `YYYY-MM-DD`): binds accounts created from this day on. */
 export const TERMS_PUBLISHED_ON = "2026-10-17";
 

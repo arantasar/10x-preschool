@@ -5,7 +5,7 @@ import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { ServerError } from "@/components/auth/ServerError";
-import { PRIVACY_PATH, TERMS_PATH } from "@/lib/legal";
+import { PRIVACY_PATH, TERMS_ACCEPTED_VALUE, TERMS_PATH } from "@/lib/legal";
 import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
 
 interface Props {
@@ -138,7 +138,7 @@ export default function SignUpForm({ serverError }: Props) {
             id="terms"
             name="terms"
             type="checkbox"
-            value="accepted"
+            value={TERMS_ACCEPTED_VALUE}
             checked={termsAccepted}
             onChange={(e) => {
               setTermsAccepted(e.target.checked);

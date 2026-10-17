@@ -67,7 +67,7 @@ export async function ensureTeacher(teacher: Teacher): Promise<string> {
   return data.user.id;
 }
 
-async function findUserIdByEmail(email: string): Promise<string | null> {
+export async function findUserIdByEmail(email: string): Promise<string | null> {
   // Admin API nie ma wyszukiwania po adresie, wiec strona po stronie. Lokalna
   // baza testowa ma kilku uzytkownikow, wiec limit stron jest bezpieczny.
   for (let page = 1; page <= 10; page++) {

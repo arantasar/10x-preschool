@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { e2eEnv } from "./support/env";
 import { waitForIslands } from "./support/hydration";
-import { admin } from "./support/supabase-admin";
+import { admin, findUserIdByEmail } from "./support/supabase-admin";
 import { uniqueStamp } from "./support/test-data";
 
 /**
@@ -67,9 +67,7 @@ test.describe("FR-025 — dokumenty prawne są publiczne i podlinkowane", () => 
  * od „hasło złe”. Ten odczyt mówi wyłącznie „rejestracja nie doszła do bazy”.
  */
 async function accountExists(email: string): Promise<boolean> {
-  const { data, error } = await admin().auth.admin.listUsers({ perPage: 1000 });
-  if (error) throw new Error(`Odczyt kont nie powiódł się: ${error.message}`);
-  return data.users.some((user) => user.email === email);
+  return (await findUserIdByEmail(email)) !== null;
 }
 
 test.describe("FR-025 — rejestracja wymaga akceptacji Regulaminu", () => {
@@ -78,9 +76,8 @@ test.describe("FR-025 — rejestracja wymaga akceptacji Regulaminu", () => {
   test.afterEach(async () => {
     // Sprzątanie na wypadek czerwonego przebiegu, w którym konto jednak powstało.
     if (!email) return;
-    const { data } = await admin().auth.admin.listUsers({ perPage: 1000 });
-    const user = data.users.find((candidate) => candidate.email === email);
-    if (user) await admin().auth.admin.deleteUser(user.id);
+    const userId = await findUserIdByEmail(email);
+    if (userId) await admin().auth.admin.deleteUser(userId);
     email = "";
   });
 

@@ -135,9 +135,9 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // Only reachable if custom SMTP is ever switched off. Shown by sign-up; the
   // reset request swallows it (see SILENT_RESET_REQUEST_ERRORS below).
   email_address_not_authorized: `Nie możemy teraz wysłać wiadomości na ten adres. Spróbuj ponownie później albo napisz do nas: ${SUPPORT_EMAIL}.`,
+  [TERMS_NOT_ACCEPTED]: "Zaakceptuj Regulamin, aby założyć konto.",
   // Re-signing up with an unconfirmed address makes Supabase send a fresh link,
   // so that is the advice for both - there is no separate "resend" screen.
-  [TERMS_NOT_ACCEPTED]: "Zaakceptuj Regulamin, aby założyć konto.",
   [SIGNUP_LINK_INVALID]:
     "Ten link aktywacyjny jest niepełny lub nieprawidłowy. Załóż konto ponownie na ten sam adres, a wyślemy nowy.",
   [SIGNUP_LINK_EXPIRED]:

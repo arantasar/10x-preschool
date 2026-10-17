@@ -91,7 +91,7 @@ export const FAQ_SECTIONS: readonly FaqSection[] = [
       {
         question: "Co dzieje się z moimi danymi?",
         answer: [
-          "Przechowujemy tylko adres e-mail, hasło (jako zaszyfrowany skrót) i Twoje plany. Temat i treść aktywności trafiają do dostawcy modelu językowego bez Twojego adresu e-mail i nie są używane do trenowania modeli. Wszystko opisuje Polityka prywatności.",
+          "Przechowujemy to, czego Temio potrzebuje do działania: adres e-mail, hasło (jako zaszyfrowany skrót) i Twoje plany. Temat i treść aktywności trafiają do dostawcy modelu językowego bez Twojego adresu e-mail i nie są używane do trenowania modeli. Wszystko opisuje Polityka prywatności.",
         ],
         link: { href: PRIVACY_PATH, label: "Polityka prywatności" },
       },

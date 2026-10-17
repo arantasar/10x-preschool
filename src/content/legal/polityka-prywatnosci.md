@@ -16,7 +16,7 @@ Pojęcia pisane wielką literą (np. Konto, Plan, Temat) mają znaczenie nadane 
 
 ### 2.1. Konto i logowanie
 
-- **Dane:** adres e-mail, hasło (przechowujemy wyłącznie jego zaszyfrowany skrót — nie znamy Twojego hasła), daty założenia Konta, potwierdzenia adresu i ostatniego logowania, a dla każdej aktywnej sesji logowania: adres IP, informacje o przeglądarce i czas logowania.
+- **Dane:** adres e-mail, hasło (przechowujemy wyłącznie jego zaszyfrowany skrót — nie znamy Twojego hasła), daty założenia Konta, potwierdzenia adresu i ostatniego logowania, wersja Regulaminu zaakceptowana przy rejestracji i data jej akceptacji, a dla każdej aktywnej sesji logowania: adres IP, informacje o przeglądarce i czas logowania.
 - **Cel:** założenie i prowadzenie Konta, logowanie, zmiana i odzyskanie hasła, usunięcie Konta.
 - **Podstawa prawna:** wykonanie umowy, czyli Regulaminu (art. 6 ust. 1 lit. b RODO).
 - **Jak długo:** do usunięcia Konta. Dane sesji — do wylogowania na danym urządzeniu, zmiany hasła albo usunięcia Konta.
@@ -59,10 +59,10 @@ Formularz chroni Cloudflare Turnstile, który sprawdza, czy wiadomość wysyła 
 
 ### 2.6. Bezpieczeństwo i ochrona przed nadużyciami
 
-- **Dane:** adres IP, data i godzina, adres odwiedzanej strony, informacje o przeglądarce i urządzeniu, identyfikator Konta, kody błędów; w formularzu kontaktowym — sygnały techniczne przeglądarki analizowane przez Cloudflare Turnstile; historia zdarzeń logowania (np. logowanie, zmiana hasła) z adresem IP.
+- **Dane:** adres IP, data i godzina, adres odwiedzanej strony, informacje o przeglądarce i urządzeniu, identyfikator Konta, kody błędów; w formularzu kontaktowym — sygnały techniczne przeglądarki analizowane przez Cloudflare Turnstile; historia zdarzeń logowania (np. logowanie, zmiana hasła) z adresem IP; techniczne zapisy obsługi linków z e-maili (identyfikator Konta, rodzaj i czas operacji — bez adresu e-mail i adresu IP).
 - **Cel:** zapewnienie bezpieczeństwa Serwisu, wykrywanie i usuwanie błędów, ochrona przed automatami i nadużyciami.
 - **Podstawa prawna:** nasz prawnie uzasadniony interes, czyli bezpieczeństwo i poprawne działanie Serwisu (art. 6 ust. 1 lit. f RODO).
-- **Jak długo:** nie dłużej niż 7 dni — dotyczy to logów serwera, bazy danych i historii zdarzeń logowania.
+- **Jak długo:** nie dłużej niż 7 dni — dotyczy to logów serwera, bazy danych, historii zdarzeń logowania i zapisów obsługi linków z e-maili.
 
 ### 2.7. Ustalenie, dochodzenie i obrona roszczeń
 
@@ -121,6 +121,7 @@ Używamy wyłącznie plików cookies niezbędnych do działania Serwisu. Nie sto
 | Plik                                                         | Do czego służy                                                                    | Jak długo                                        |
 | ------------------------------------------------------------ | --------------------------------------------------------------------------------- | ------------------------------------------------ |
 | `sb-…-auth-token`                                            | utrzymanie zalogowania                                                            | do wylogowania, najdłużej 400 dni                |
+| `sb-…-auth-token-code-verifier`                              | zabezpieczenie linku z e-maila przy zakładaniu Konta i ustawianiu nowego hasła    | najdłużej 400 dni                                |
 | `pending_topic`                                              | zapamiętanie Tematu wpisanego na stronie głównej przed zalogowaniem               | 7 dni albo do pierwszego otwarcia planu tygodnia |
 | `reset_email`                                                | wyświetlenie adresu, na który wysłaliśmy link do nowego hasła                     | 15 minut                                         |
 | `password_changed`, `password_reset_done`, `account_deleted` | jednorazowy komunikat po zmianie hasła, ustawieniu nowego hasła i usunięciu Konta | 1 minuta                                         |
@@ -134,7 +135,7 @@ Cookies możesz usunąć lub zablokować w ustawieniach przeglądarki — wtedy 
 Usunięcie Konta od razu i nieodwracalnie kasuje Konto, wszystkie Plany i sesje logowania. Przez ograniczony czas mogą zostać:
 
 - wiadomości wysłane przez formularz kontaktowy — bez powiązania z Kontem, najdłużej 12 miesięcy od wysłania (pkt 2.5);
-- logi techniczne i historia zdarzeń logowania — najdłużej 7 dni (pkt 2.6);
+- logi techniczne, historia zdarzeń logowania i zapisy obsługi linków z e-maili — najdłużej 7 dni (pkt 2.6);
 - techniczne kopie bazy danych, jeśli prowadzi je dostawca infrastruktury na wypadek awarii — do ich nadpisania, zgodnie z jego zasadami.
 
 ## 9. Dane dzieci
