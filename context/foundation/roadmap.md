@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 3
 status: draft
 created: 2026-10-01
-updated: 2026-10-15
+updated: 2026-10-17
 prd_version: 3
 main_goal: quality
 top_blocker: external
@@ -363,3 +363,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-19: Odwiedzający, z kontem lub bez, czyta FAQ (czym jest usługa, jak działa) i — gdy nie znajdzie odpowiedzi — wysyła wiadomość do właściciela przez formularz; wiadomość automatu do właściciela nie dociera, prawdziwa nie ginie.** — Archived 2026-10-13 → `context/archive/2026-10-08-help-and-contact/`. Lesson: —.
 - **S-17: Zalogowana nauczycielka zmienia hasło, a pozostałe urządzenia z otwartą sesją tego konta (np. komputer w przedszkolu) tracą dostęp.** — Archived 2026-10-14 → `context/archive/2026-10-13-password-change/`. Lesson: „Logowanie z Workera nie niesie IP klienta”.
 - **S-18: Nauczycielka usuwa swoje konto po potwierdzeniu, które mówi wprost, że zniknie konto i wszystkie plany; po usunięciu nie da się zalogować, a jej plany nie istnieją.** — Archived 2026-10-15 → `context/archive/2026-10-15-account-deletion/`. Lesson: —.
+- **S-20: Odwiedzający bez konta czyta regulamin i politykę prywatności, a polityka obejmuje przechowywanie e-maili osób, które nie mają konta (formularz kontaktowy, zapis na cenę).** — Archived 2026-10-17 → `context/archive/2026-10-17-legal-pages/`. Lesson: —.
