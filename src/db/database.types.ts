@@ -141,6 +141,30 @@ export type Database = {
         }
         Relationships: []
       }
+      fair_use_overrides: {
+        Row: {
+          created_at: string
+          days_per_month: number | null
+          refines_per_month: number | null
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string
+          days_per_month?: number | null
+          refines_per_month?: number | null
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string
+          days_per_month?: number | null
+          refines_per_month?: number | null
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       generation_ledger: {
         Row: {
           created_at: string

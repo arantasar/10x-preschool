@@ -70,7 +70,7 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | —                                                | FR-025                         | done     |
 | S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | done     |
 | S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic z tabelą porównania planów i zapisać się na cenę założycielską z uczciwym potwierdzeniem | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
-| S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | ready    |
+| S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | in progress |
 | S-29 | print-redesign             | drukować plan tygodnia i miesiąca w układzie i barwach aplikacji, nie w czerni i bieli                   | —                                                | —                              | ready    |
 | S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21, S-28                                       | FR-030                         | blocked  |
 | S-24 | existing-accounts-gift     | jako konto sprzed płatności (także testerka) dowiedzieć się o nowych zasadach i dostać prezent, zanim limit mnie dotknie | S-23                                | FR-036                         | blocked  |
@@ -230,10 +230,10 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-29
 - **Blockers:** —
 - **Unknowns:**
-  - Kształt danych: osobna tabela nadpisań per konto (limit dni, limit poprawek; `null` = bez sufitu) czy kolumny przy przyszłym stanie planu z `S-23`. Rekomendacja z 2026-10-17: jedna funkcja „jaki limit ma to konto” z kolejnością źródeł nadpisanie konta → plan konta (`S-23`, `S-27`) → domyślny z konfiguracji, żeby `S-23` dokładał źródło, a nie przerabiał funkcję. Owner: `/10x-plan`. Block: nie.
-  - Słowo „unlimited” istnieje tylko w bazie i w rozmowie z właścicielem — cennik i komunikaty nigdy nie mówią „bez limitu” (`context/foundation/design/design/README.md`, `/cennik`). Owner: `/10x-plan`. Block: nie.
+  - Kształt danych: osobna tabela nadpisań per konto (limit dni, limit poprawek; `null` = bez sufitu) czy kolumny przy przyszłym stanie planu z `S-23`. Rekomendacja z 2026-10-17: jedna funkcja „jaki limit ma to konto” z kolejnością źródeł nadpisanie konta → plan konta (`S-23`, `S-27`) → domyślny z konfiguracji, żeby `S-23` dokładał źródło, a nie przerabiał funkcję. Owner: `/10x-plan`. Block: nie. **Rozstrzygnięte (plan, 2026-10-17):** osobna tabela `public.fair_use_overrides` (`null` = bez sufitu, `valid_until`, cron `fair-use-overrides-expiry`), czytana przez `claim_generation` po blokadzie konta, z kolejnością źródeł zapisaną w migracji.
+  - Słowo „unlimited” istnieje tylko w bazie i w rozmowie z właścicielem — cennik i komunikaty nigdy nie mówią „bez limitu” (`context/foundation/design/design/README.md`, `/cennik`). Owner: `/10x-plan`. Block: nie. **Rozstrzygnięte:** S-28 nie dodaje żadnego tekstu w produkcie — wpisy powstają wyłącznie w SQL Editorze.
 - **Risk:** Nadpisanie jest odczytywane przez `claim_generation`, która musi zostać `security invoker` (niezmiennik: jedyny definer to `delete_own_account`) — więc nauczycielka może czytać własny wiersz nadpisania, ale nie może go wstawić ani zmienić; pgTAP musi to dowieść. Nowe dane per konto: jedno zdanie w Polityce prywatności pkt 2.7 i w sekcji „Fair use” CLAUDE.md. Do czasu tej pozycji właściciel zeruje własne zużycie, kasując swoje wiersze `generation_ledger` w SQL Editorze.
-- **Status:** ready
+- **Status:** in progress
 
 ### S-29: Wydruki w barwach aplikacji
 

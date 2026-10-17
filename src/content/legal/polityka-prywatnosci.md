@@ -66,10 +66,10 @@ Formularz chroni Cloudflare Turnstile, który sprawdza, czy wiadomość wysyła 
 
 ### 2.7. Limit generowania
 
-- **Dane:** identyfikator Konta, rodzaj generowania (dzień, plan tematów na tydzień albo poprawka aktywności), data dnia, którego dotyczy, czas i wynik (udane albo nieudane). Nie zapisujemy tu Tematu, polecenia poprawki ani treści propozycji.
+- **Dane:** identyfikator Konta, rodzaj generowania (dzień, plan tematów na tydzień albo poprawka aktywności), data dnia, którego dotyczy, czas i wynik (udane albo nieudane). Nie zapisujemy tu Tematu, polecenia poprawki ani treści propozycji. Jeśli ustalimy dla Konta indywidualny limit, zapisujemy też jego wysokość i datę, do której obowiązuje.
 - **Cel:** stosowanie limitu liczby generowań, który chroni Serwis przed nadużyciami ([Regulamin](/regulamin), § 7 ust. 4), i ustalenie jego wysokości tak, żeby nie dotykał zwykłego korzystania z Serwisu.
 - **Podstawa prawna:** nasz prawnie uzasadniony interes, czyli ochrona Serwisu przed nadużyciami (art. 6 ust. 1 lit. f RODO).
-- **Jak długo:** 13 miesięcy od generowania — usuwamy je automatycznie. Jeśli usuniesz Konto, znikają od razu razem z nim.
+- **Jak długo:** 13 miesięcy od generowania — usuwamy je automatycznie. Indywidualny limit — do końca jego obowiązywania. Jeśli usuniesz Konto, znikają od razu razem z nim.
 
 ### 2.8. Ustalenie, dochodzenie i obrona roszczeń
 
