@@ -252,7 +252,7 @@ describe("POST /api/day-plan/refine — fair use", () => {
     const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
 
     expect(response.status).toBe(200);
-    expect(supabase.claim.mock.calls[0][1]).toMatchObject({ p_kind: "refine", p_plan_date: null });
+    expect(supabase.claim.mock.calls[0][1]).toMatchObject({ p_kind: "refine" });
     expect(supabase.ledgerUpdate.mock.calls).toEqual([[{ status: "succeeded" }]]);
     expect(supabase.ledgerUpdateEq).toHaveBeenCalledWith("id", STUB_LEDGER_ID);
   });

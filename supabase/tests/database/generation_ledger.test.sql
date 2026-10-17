@@ -6,8 +6,8 @@
 --
 --   * counting - below the limit a claim reserves a row, at the limit it is
 --     refused and writes nothing; last month's rows do not count; `day` and
---     `refine` are separate families; an outline counts no day but is refused
---     when no day is left.
+--     `refine` are separate families; an outline counts no day, is refused when
+--     no day is left, and counts against the refine ceiling so it is never free.
 --   * refunds - failed rows do not count up to the allowance, and the excess
 --     over the allowance does. this is the bound on a script that marks its own
 --     reservations failed.
@@ -21,7 +21,7 @@
 
 begin;
 
-select plan(37);
+select plan(38);
 
 -- ---------------------------------------------------------------------------
 -- fixtures (as the owner, so rls is bypassed here by design)
@@ -55,12 +55,12 @@ values
 -- ---------------------------------------------------------------------------
 
 select ok(
-  not (select prosecdef from pg_proc where oid = 'public.claim_generation(text, date, int, int, int, boolean)'::regprocedure),
+  not (select prosecdef from pg_proc where oid = 'public.claim_generation(text, int, int, int, date, boolean)'::regprocedure),
   'claim_generation is security invoker - delete_own_account stays the only definer'
 );
 
 select ok(
-  not has_function_privilege('anon', 'public.claim_generation(text, date, int, int, int, boolean)', 'execute'),
+  not has_function_privilege('anon', 'public.claim_generation(text, int, int, int, date, boolean)', 'execute'),
   'anon holds no execute privilege on claim_generation'
 );
 
@@ -72,7 +72,7 @@ set local role anon;
 set local "request.jwt.claims" to '{"role":"anon"}';
 
 select throws_ok(
-  $$select * from public.claim_generation('day', null, 150, 300, 30)$$,
+  $$select * from public.claim_generation('day', 150, 300, 30)$$,
   '42501',
   null,
   'anon cannot claim a generation'
@@ -84,7 +84,7 @@ set local role authenticated;
 set local "request.jwt.claims" to '{"role":"authenticated"}';
 
 select throws_ok(
-  $$select * from public.claim_generation('day', null, 150, 300, 30)$$,
+  $$select * from public.claim_generation('day', 150, 300, 30)$$,
   '42501',
   null,
   'an authenticated caller with no sub claim is refused'
@@ -102,7 +102,7 @@ set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111"
 -- a has 2 days this month (+1 last month). with a limit of 3 the third fits
 -- only if last month's row is not counted.
 select results_eq(
-  $$select ledger_id is not null, allowed from public.claim_generation('day', date '2026-11-02', 3, 300, 30)$$,
+  $$select ledger_id is not null, allowed from public.claim_generation('day', 3, 300, 30, date '2026-11-02')$$,
   $$values (true, true)$$,
   'below the limit: allowed, with a reserved row - last month''s row is not counted'
 );
@@ -114,7 +114,7 @@ select is(
 );
 
 select results_eq(
-  $$select ledger_id, allowed from public.claim_generation('day', null, 3, 300, 30)$$,
+  $$select ledger_id, allowed from public.claim_generation('day', 3, 300, 30)$$,
   $$values (null::uuid, false)$$,
   'at the limit: refused, with no ledger id'
 );
@@ -126,46 +126,52 @@ select is(
 );
 
 select is(
-  (select resets_on from public.claim_generation('day', null, 3, 300, 30)),
+  (select resets_on from public.claim_generation('day', 3, 300, 30)),
   (select next_month from month_bounds),
   'resets_on is the first day of the next month in Europe/Warsaw'
 );
 
 select is(
-  (select extract(day from resets_on)::int from public.claim_generation('day', null, 3, 300, 30)),
+  (select extract(day from resets_on)::int from public.claim_generation('day', 3, 300, 30)),
   1,
   'resets_on falls on the 1st'
 );
 
 select results_eq(
-  $$select ledger_id, allowed from public.claim_generation('outline', null, 3, 300, 30)$$,
+  $$select ledger_id, allowed from public.claim_generation('outline', 3, 300, 30)$$,
   $$values (null::uuid, false)$$,
   'an outline is refused when no day is left'
 );
 
 select results_eq(
-  $$select ledger_id is not null, allowed from public.claim_generation('outline', null, 4, 300, 30)$$,
+  $$select ledger_id is not null, allowed from public.claim_generation('outline', 4, 300, 30)$$,
   $$values (true, true)$$,
   'an outline passes with one day left'
 );
 
 select results_eq(
-  $$select ledger_id is not null, allowed from public.claim_generation('day', null, 4, 300, 30)$$,
+  $$select ledger_id is not null, allowed from public.claim_generation('day', 4, 300, 30)$$,
   $$values (true, true)$$,
   'the outline used no day - the last day still fits'
 );
 
 -- refine family: 2 live + 1 failed (inside the allowance) this month.
 select results_eq(
-  $$select ledger_id is not null, allowed from public.claim_generation('refine', null, 1, 3, 30)$$,
+  $$select ledger_id is not null, allowed from public.claim_generation('refine', 1, 4, 30)$$,
   $$values (true, true)$$,
-  'refines are their own family: allowed while the day limit is spent, and the refunded failure does not count'
+  'refines are their own family: allowed while the day limit is spent, and the refunded failure does not count (2 refines + 1 outline + 0 over the allowance leaves one under 4)'
 );
 
 select results_eq(
-  $$select ledger_id, allowed from public.claim_generation('refine', null, 1, 4, 0)$$,
+  $$select ledger_id, allowed from public.claim_generation('refine', 1, 4, 0)$$,
   $$values (null::uuid, false)$$,
   'with no refund allowance the failed refine counts again'
+);
+
+select results_eq(
+  $$select ledger_id, allowed from public.claim_generation('outline', 150, 4, 30)$$,
+  $$values (null::uuid, false)$$,
+  'an outline counts against the refine ceiling: refused when it is spent, though days remain'
 );
 
 reset role;
@@ -180,19 +186,19 @@ set local role authenticated;
 set local "request.jwt.claims" to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
 
 select results_eq(
-  $$select ledger_id, allowed from public.claim_generation('day', null, 5, 300, 1)$$,
+  $$select ledger_id, allowed from public.claim_generation('day', 5, 300, 1)$$,
   $$values (null::uuid, false)$$,
   'failures over the refund allowance count: 4 live + (2 - 1) = 5 leaves no room under 5'
 );
 
 select results_eq(
-  $$select ledger_id is not null, allowed from public.claim_generation('day', null, 5, 300, 2)$$,
+  $$select ledger_id is not null, allowed from public.claim_generation('day', 5, 300, 2)$$,
   $$values (true, true)$$,
   'failures inside the refund allowance do not count: 4 live + 0 leaves one day under 5'
 );
 
 select results_eq(
-  $$select ledger_id is not null, allowed from public.claim_generation('day', null, 1, 300, 30, false)$$,
+  $$select ledger_id is not null, allowed from public.claim_generation('day', 1, 300, 30, null, false)$$,
   $$values (true, false)$$,
   'observe mode: over the limit the row is still reserved, and allowed is still false'
 );
@@ -294,7 +300,7 @@ select lives_ok(
 );
 
 select results_eq(
-  $$select ledger_id is not null, allowed from public.claim_generation('day', null, 1, 1, 0)$$,
+  $$select ledger_id is not null, allowed from public.claim_generation('day', 1, 1, 0)$$,
   $$values (true, true)$$,
   'teacher b''s count does not include a''s rows'
 );

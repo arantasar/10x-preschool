@@ -136,9 +136,9 @@ export async function claimGeneration(
     const config = readFairUseConfig();
     const { data, error } = await supabase.rpc("claim_generation", {
       p_kind: kind,
-      // The generated type says `string` because postgres arguments carry no
-      // nullability; the function takes a null `p_plan_date` by design.
-      p_plan_date: planDate ?? (null as unknown as string),
+      // Left out for an outline, which has no planned day: the function's
+      // `p_plan_date` defaults to null.
+      p_plan_date: planDate,
       p_day_limit: config.daysPerMonth,
       p_refine_limit: config.refinesPerMonth,
       p_refund_allowance: config.refundsPerMonth,

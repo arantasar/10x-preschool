@@ -181,7 +181,7 @@ export type Database = {
           p_day_limit: number
           p_enforce?: boolean
           p_kind: string
-          p_plan_date: string
+          p_plan_date?: string
           p_refine_limit: number
           p_refund_allowance: number
         }

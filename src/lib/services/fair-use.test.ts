@@ -88,12 +88,13 @@ describe("claimGeneration", () => {
     });
   });
 
-  it("sends a null planned day for an outline", async () => {
+  it("sends no planned day for an outline", async () => {
     const { supabase, rpc } = client(allowedRow());
 
     await claimGeneration(supabase, "outline");
 
-    expect(rpc).toHaveBeenCalledWith("claim_generation", expect.objectContaining({ p_plan_date: null }));
+    const args = rpc.mock.calls[0][1] as Record<string, unknown>;
+    expect(args.p_plan_date).toBeUndefined();
   });
 
   it("an allowed claim carries the reservation's id", async () => {

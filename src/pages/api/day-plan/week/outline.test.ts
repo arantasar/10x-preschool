@@ -90,7 +90,7 @@ describe("POST /api/day-plan/week/outline — fair use", () => {
     expect(response.status).toBe(200);
     expect(body.themes.map((item) => item.plan_date)).toEqual(DATES);
     expect(supabase.claim).toHaveBeenCalledTimes(1);
-    expect(supabase.claim.mock.calls[0][1]).toMatchObject({ p_kind: "outline", p_plan_date: null });
+    expect(supabase.claim.mock.calls[0][1]).toMatchObject({ p_kind: "outline" });
     expect(supabase.ledgerUpdate.mock.calls).toEqual([[{ status: "succeeded" }]]);
     expect(supabase.ledgerUpdateEq).toHaveBeenCalledWith("id", STUB_LEDGER_ID);
   });

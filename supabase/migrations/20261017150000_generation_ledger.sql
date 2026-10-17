@@ -37,7 +37,7 @@
 --   * retention is code, not a promise: the cron job below deletes rows older
 --     than 13 months; the account's rows go at once by cascade.
 --   * rollback: `select cron.unschedule('generation-ledger-retention');`, then
---     `drop function public.claim_generation(text, date, int, int, int, boolean);`
+--     `drop function public.claim_generation(text, int, int, int, date, boolean);`
 --     and `drop table public.generation_ledger;` (the trigger function after it).
 
 create table public.generation_ledger (
@@ -52,7 +52,7 @@ create table public.generation_ledger (
 );
 
 comment on table public.generation_ledger is 'one row per model call, for the monthly fair-use limit. insert + update(status) for the owner only; deleted after 13 months by the generation-ledger-retention cron job.';
-comment on column public.generation_ledger.kind is 'day (a day plan or a week day), outline (a week outline, counts no day) or refine (one activity).';
+comment on column public.generation_ledger.kind is 'day (a day plan or a week day), outline (a week outline: counts no day, counts against the refine ceiling) or refine (one activity).';
 comment on column public.generation_ledger.status is 'reserved before the model call, then succeeded or failed. reserved rows count like succeeded ones.';
 
 -- the counting query and the retention job's predicate
@@ -122,10 +122,10 @@ create trigger generation_ledger_guard_transition
 
 create or replace function public.claim_generation(
   p_kind text,
-  p_plan_date date,
   p_day_limit int,
   p_refine_limit int,
   p_refund_allowance int,
+  p_plan_date date default null,
   p_enforce boolean default true
 )
 returns table (ledger_id uuid, allowed boolean, resets_on date)
@@ -135,13 +135,14 @@ set search_path = ''
 as $$
 declare
   v_uid uuid := auth.uid();
-  v_family text;
-  v_limit int;
   v_month_local timestamp;
   v_month_start timestamptz;
-  v_live int;
-  v_failed int;
-  v_used int;
+  v_day_live int;
+  v_day_failed int;
+  v_light_live int;
+  v_light_failed int;
+  v_day_used int;
+  v_light_used int;
   v_allowed boolean;
   v_id uuid;
 begin
@@ -168,27 +169,29 @@ begin
   v_month_local := pg_catalog.date_trunc('month', now() at time zone 'Europe/Warsaw');
   v_month_start := v_month_local at time zone 'Europe/Warsaw';
 
-  -- an outline counts no day, but belongs to the day family: it is refused
-  -- when not a single day is left, so the teacher is stopped at the first click.
-  if p_kind = 'refine' then
-    v_family := 'refine';
-    v_limit := p_refine_limit;
-  else
-    v_family := 'day';
-    v_limit := p_day_limit;
-  end if;
-
+  -- two families. `day`: day plans and week days. `light`: activity refines and
+  -- week outlines - the cheap calls, under the refine ceiling. an outline uses
+  -- no day, but it is a model call, so it must not be free of any ceiling: it
+  -- counts against the light family, and is refused when no day is left either,
+  -- so a teacher over the limit is stopped at the first click of a week.
   select
-    count(*) filter (where gl.status <> 'failed'),
-    count(*) filter (where gl.status = 'failed')
-  into v_live, v_failed
+    count(*) filter (where gl.kind = 'day' and gl.status <> 'failed'),
+    count(*) filter (where gl.kind = 'day' and gl.status = 'failed'),
+    count(*) filter (where gl.kind in ('refine', 'outline') and gl.status <> 'failed'),
+    count(*) filter (where gl.kind in ('refine', 'outline') and gl.status = 'failed')
+  into v_day_live, v_day_failed, v_light_live, v_light_failed
   from public.generation_ledger gl
   where gl.user_id = v_uid
-    and gl.kind = v_family
     and gl.created_at >= v_month_start;
 
-  v_used := v_live + greatest(0, v_failed - p_refund_allowance);
-  v_allowed := v_used + 1 <= v_limit;
+  v_day_used := v_day_live + greatest(0, v_day_failed - p_refund_allowance);
+  v_light_used := v_light_live + greatest(0, v_light_failed - p_refund_allowance);
+
+  v_allowed := case p_kind
+    when 'day' then v_day_used + 1 <= p_day_limit
+    when 'refine' then v_light_used + 1 <= p_refine_limit
+    else v_day_used + 1 <= p_day_limit and v_light_used + 1 <= p_refine_limit
+  end;
 
   if v_allowed or not coalesce(p_enforce, true) then
     insert into public.generation_ledger (user_id, kind, plan_date)
@@ -205,8 +208,8 @@ $$;
 
 comment on function public.claim_generation is 'fair use: under a per-account advisory lock, counts this calendar month (Europe/Warsaw) and reserves a ledger row, or refuses. with p_enforce = false (observe mode) it reserves even over the limit and still reports allowed = false.';
 
-revoke all on function public.claim_generation(text, date, int, int, int, boolean) from public, anon;
-grant execute on function public.claim_generation(text, date, int, int, int, boolean) to authenticated;
+revoke all on function public.claim_generation(text, int, int, int, date, boolean) from public, anon;
+grant execute on function public.claim_generation(text, int, int, int, date, boolean) to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- retention
