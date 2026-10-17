@@ -30,12 +30,20 @@ describe("pageTitle", () => {
 });
 
 describe("isIndexable", () => {
-  it.each(["/", "/auth/signin", "/auth/signin/", "/auth/signup", "/auth/signup/", "/pomoc", "/kontakt", "/kontakt/"])(
-    "indexes %s",
-    (path) => {
-      expect(isIndexable(path)).toBe(true);
-    },
-  );
+  it.each([
+    "/",
+    "/auth/signin",
+    "/auth/signin/",
+    "/auth/signup",
+    "/auth/signup/",
+    "/pomoc",
+    "/kontakt",
+    "/kontakt/",
+    "/regulamin",
+    "/polityka-prywatnosci",
+  ])("indexes %s", (path) => {
+    expect(isIndexable(path)).toBe(true);
+  });
 
   it.each([
     "/plan/month",

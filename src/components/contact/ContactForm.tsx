@@ -14,6 +14,7 @@ import {
   type ContactTopic,
 } from "@/lib/contact-form";
 import { emailError } from "@/lib/email-check";
+import { PRIVACY_PATH } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 
 /** The slice of Turnstile's explicit-render API this form uses. */
@@ -303,7 +304,10 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
       {siteKey && <div ref={widgetContainer} />}
 
       <p className="text-las-szary text-[15px] leading-normal">
-        Twoje imię, adres e-mail i wiadomość zapisujemy, żeby odpowiedzieć; usuwamy je po 12 miesiącach.
+        Twoje imię, adres e-mail i wiadomość zapisujemy, żeby odpowiedzieć; usuwamy je po 12 miesiącach.{" "}
+        <a href={PRIVACY_PATH} className="text-las hover:text-mech font-bold underline underline-offset-4">
+          Polityka prywatności
+        </a>
       </p>
 
       <div role="alert">

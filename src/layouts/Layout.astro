@@ -14,6 +14,8 @@ import { isIndexable, pageTitle } from "@/lib/seo";
 
 interface Props {
   title?: string;
+  /** Search and link-preview description; the site's own when absent. */
+  description?: string;
 }
 
 // No title is the landing page; every other page gets „<title> · Temio”.
@@ -30,7 +32,7 @@ const title = pageTitle(Astro.props.title);
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#1F3B2D" />
     <title>{title}</title>
-    <SocialMeta title={title} />
+    <SocialMeta title={title} description={Astro.props.description} />
     {!isIndexable(Astro.url.pathname) && <meta name="robots" content="noindex" />}
   </head>
   <body>

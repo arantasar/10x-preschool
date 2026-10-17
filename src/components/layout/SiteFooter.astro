@@ -1,12 +1,13 @@
 ---
 // Public footer. The design package puts Cennik / FAQ / Regulamin / Kontakt
-// here; each link arrives with the page it points to - Pomoc and Kontakt with
-// S-19, Regulamin with S-20, Cennik with S-22. A dead link is worse than none.
+// here; each link arrives with the page it points to - Cennik with S-22. A dead
+// link is worse than none.
 //
 // `relative z-10` and the page background: a page's decorative blob can reach
 // down to the bottom edge (`/kontakt`), and the footer must cover it, as in the
 // mock-ups.
 import Logo from "@/components/brand/Logo.astro";
+import { PRIVACY_PATH, TERMS_PATH } from "@/lib/legal";
 
 // Read at render time: the page is server-rendered, so the year never goes stale.
 const year = new Date().getFullYear();
@@ -14,6 +15,8 @@ const year = new Date().getFullYear();
 const links = [
   { label: "Pomoc", href: "/pomoc" },
   { label: "Kontakt", href: "/kontakt" },
+  { label: "Regulamin", href: TERMS_PATH },
+  { label: "Polityka prywatności", href: PRIVACY_PATH },
 ];
 ---
 
