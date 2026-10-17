@@ -6,11 +6,13 @@ import {
   json,
   requireSaved,
   badRequest,
+  fairUseExceeded,
   generationFailure,
   storeFailure,
   unauthorized,
   unconfigured,
 } from "@/lib/services/day-plan-http";
+import { claimGeneration, finishGeneration } from "@/lib/services/fair-use";
 
 export const prerender = false;
 
@@ -46,6 +48,11 @@ export const prerender = false;
  * `fetch` would follow the redirect and try to parse the sign-in page as JSON,
  * turning "your session expired" into a parse error. `/plan` - the page - is the
  * one that belongs in `PROTECTED_ROUTES`.
+ *
+ * The day is claimed in the fair-use ledger (`fair-use.ts`) after both conflict
+ * refusals - a refused regeneration costs no day - and before the model; it is
+ * marked `failed` when either the model or the write fails, because either way
+ * the teacher did not get her day.
  */
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
@@ -107,6 +114,11 @@ export const POST: APIRoute = async (context) => {
     return storeFailure(error);
   }
 
+  const claim = await claimGeneration(supabase, "day", parsed.data.plan_date);
+  if (!claim.allowed) {
+    return fairUseExceeded(claim.resetsOn);
+  }
+
   let generated;
   try {
     // The date reaches the model now, which it did not in S-01 ("S-01 stores
@@ -119,6 +131,7 @@ export const POST: APIRoute = async (context) => {
       theme: parsed.data.theme,
     });
   } catch (error) {
+    await finishGeneration(supabase, claim.ledgerId, "failed");
     return generationFailure(error);
   }
 
@@ -128,8 +141,9 @@ export const POST: APIRoute = async (context) => {
   // row" is a state this slice deliberately has no representation for; offering
   // one would put the island back in the business of owning plan state, which is
   // exactly what S-02 takes away from it.
+  let planId: string;
   try {
-    const planId = await saveGeneration(supabase, {
+    planId = await saveGeneration(supabase, {
       plan_date: parsed.data.plan_date,
       prompt: parsed.data.prompt,
       activities: generated.activities,
@@ -137,7 +151,15 @@ export const POST: APIRoute = async (context) => {
       theme: parsed.data.theme,
       require_absent: parsed.data.only_if_absent,
     });
+  } catch (error) {
+    await finishGeneration(supabase, claim.ledgerId, "failed");
+    return storeFailure(error);
+  }
 
+  // The day is stored from here on, so it counts even if the read-back fails.
+  await finishGeneration(supabase, claim.ledgerId, "succeeded");
+
+  try {
     return json(requireSaved(await readDayPlan(supabase, parsed.data.plan_date), planId), 200);
   } catch (error) {
     return storeFailure(error);

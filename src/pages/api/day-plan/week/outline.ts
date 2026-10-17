@@ -1,7 +1,15 @@
 import type { APIRoute } from "astro";
 import { generateWeekOutline } from "@/lib/services/activity-generator";
 import { weekOutlineRequestSchema } from "@/lib/services/day-plan-contract";
-import { badRequest, generationFailure, json, unauthorized, unconfigured } from "@/lib/services/day-plan-http";
+import {
+  badRequest,
+  fairUseExceeded,
+  generationFailure,
+  json,
+  unauthorized,
+  unconfigured,
+} from "@/lib/services/day-plan-http";
+import { claimGeneration, finishGeneration } from "@/lib/services/fair-use";
 import type { DayTheme } from "@/types";
 
 export const prerender = false;
@@ -27,6 +35,10 @@ export const prerender = false;
  * row, so after a refresh its theme is gone and a retry runs on the hasło alone.
  * The week board says so on the card rather than quietly dropping the day out of
  * the week's arc.
+ *
+ * The outline is recorded in the fair-use ledger as `outline`: it counts no day,
+ * but it is refused when not a single day is left, so a teacher over the limit
+ * is stopped at the first click instead of after waiting for themes.
  *
  * Session is checked here rather than in `src/middleware.ts` for the reason
  * `day-plan-http.ts` records: this route is called with `fetch`, and a redirect
@@ -63,18 +75,27 @@ export const POST: APIRoute = async (context) => {
     return badRequest("Podaj hasło — jedna linia tekstu, od 1 do 2000 znaków — oraz od 1 do 5 dni roboczych.");
   }
 
-  // Nothing here touches Supabase, but the check stays: a teacher whose database
-  // is unreachable cannot store anything the outline leads to, and letting them
-  // pay for five generations first would be the expensive way to find out.
-  if (!context.locals.supabase) {
+  // The only database call here is the fair-use claim, but the check would stay
+  // without it: a teacher whose database is unreachable cannot store anything
+  // the outline leads to, and letting them pay for five generations first would
+  // be the expensive way to find out.
+  const supabase = context.locals.supabase;
+  if (!supabase) {
     return unconfigured();
+  }
+
+  const claim = await claimGeneration(supabase, "outline");
+  if (!claim.allowed) {
+    return fairUseExceeded(claim.resetsOn);
   }
 
   try {
     const outline = await generateWeekOutline(parsed.data.prompt, parsed.data.dates);
+    await finishGeneration(supabase, claim.ledgerId, "succeeded");
     return json({ themes: outline.themes }, 200);
   } catch (error) {
     // `generateWeekOutline` already logged this with its status and error_type.
+    await finishGeneration(supabase, claim.ledgerId, "failed");
     return generationFailure(error, OUTLINE_INVALID_MESSAGE);
   }
 };

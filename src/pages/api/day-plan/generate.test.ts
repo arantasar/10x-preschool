@@ -2,7 +2,7 @@ import type { APIContext } from "astro";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { errorStatusResponse, proposalResponse, unparsableBodyResponse } from "@/lib/services/__fixtures__/openrouter";
-import { activityRow, planRow, supabaseStub } from "@/lib/services/__fixtures__/supabase";
+import { activityRow, planRow, STUB_LEDGER_ID, supabaseStub } from "@/lib/services/__fixtures__/supabase";
 import { ACTIVITY_COUNT, DESCRIPTION_MAX } from "@/lib/day-plan-limits";
 
 // The route's `POST` is an exported function, so it runs without an HTTP server.
@@ -22,6 +22,11 @@ vi.mock("astro:env/server", () => ({
   get OPENROUTER_MODEL() {
     return env.model;
   },
+  // `fair-use.ts` reads these; unset means its defaults.
+  FAIR_USE_DAYS_PER_MONTH: undefined,
+  FAIR_USE_REFINES_PER_MONTH: undefined,
+  FAIR_USE_REFUNDS_PER_MONTH: undefined,
+  FAIR_USE_MODE: undefined,
 }));
 
 const { POST } = await import("./generate");
@@ -321,5 +326,105 @@ describe("POST /api/day-plan/generate — an accepted day", () => {
     expect(response.status).toBe(409);
     expect(body.retryable).toBe(false);
     expect(supabase.rpc).toHaveBeenCalledTimes(1);
+  });
+});
+
+// The fair-use limit (S-21), seen from the route. Three claims only this layer
+// can make: a refusal is answered before the model is paid; a broken ledger
+// never stops the day (Guardrail 1); and a conflict the route refuses anyway
+// costs the teacher no day, because the claim comes after both refusals.
+describe("POST /api/day-plan/generate — fair use", () => {
+  it("over the limit answers 429 with the reset day, before paying the model or writing", async () => {
+    const supabase = supabaseStub({ claim: { outcome: "refused", resetsOn: "2026-11-01" } });
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+    const body = (await response.json()) as { error: string; retryable: boolean; limit: { resets_on: string } };
+
+    expect(response.status).toBe(429);
+    expect(body.retryable).toBe(false);
+    expect(body.limit).toEqual({ resets_on: "2026-11-01" });
+    expect(body.error).toContain("od 1 listopada");
+    expect(fetchStub).not.toHaveBeenCalled();
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+
+  it("claims one day for the planned date and marks it succeeded after the write", async () => {
+    const plan = planRow();
+    const supabase = supabaseStub({ savedPlan: plan, savedActivities: [1, 2, 3].map((n) => activityRow(n, plan)) });
+    stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(200);
+    expect(supabase.claim).toHaveBeenCalledTimes(1);
+    expect(supabase.claim.mock.calls[0][1]).toMatchObject({ p_kind: "day", p_plan_date: PLAN_DATE });
+    expect(supabase.ledgerUpdate.mock.calls).toEqual([[{ status: "succeeded" }]]);
+    expect(supabase.ledgerUpdateEq).toHaveBeenCalledWith("id", STUB_LEDGER_ID);
+  });
+
+  it("generates anyway when the claim fails - the ledger never stops a day", async () => {
+    const plan = planRow();
+    const supabase = supabaseStub({
+      savedPlan: plan,
+      savedActivities: [1, 2, 3].map((n) => activityRow(n, plan)),
+      claim: { outcome: "error", error: { code: "PGRST202", message: "not found", details: "", hint: "" } },
+    });
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(200);
+    expect(fetchStub).toHaveBeenCalledTimes(1);
+    expect(supabase.rpc).toHaveBeenCalledTimes(1);
+    expect(supabase.ledgerUpdate).not.toHaveBeenCalled();
+  });
+
+  it("marks the reservation failed when the model fails", async () => {
+    const supabase = supabaseStub();
+    stubFetch(unparsableBodyResponse);
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(502);
+    expect(supabase.ledgerUpdate.mock.calls).toEqual([[{ status: "failed" }]]);
+  });
+
+  it("marks the reservation failed when the write fails - the teacher got no day", async () => {
+    const supabase = supabaseStub({
+      rpcError: { code: "U0003", message: "empty batch", details: "", hint: "" },
+    });
+    stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(500);
+    expect(supabase.ledgerUpdate.mock.calls).toEqual([[{ status: "failed" }]]);
+  });
+
+  it("does not claim a day for a week skip of an already planned day", async () => {
+    const supabase = supabaseStub({ existingPlan: planRow() });
+    stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({
+      request: request({ plan_date: PLAN_DATE, prompt: "jesień w lesie", only_if_absent: true }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+
+    expect(response.status).toBe(409);
+    expect(supabase.claim).not.toHaveBeenCalled();
+  });
+
+  it("does not claim a day for an unconfirmed replacement of a zatwierdzony day", async () => {
+    const supabase = supabaseStub({ existingPlan: planRow({ accepted_at: "2026-09-14T09:00:00.000Z" }) });
+    stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({
+      request: request({ plan_date: PLAN_DATE, prompt: "jesień w lesie", confirm_replace: false }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+
+    expect(response.status).toBe(409);
+    expect(supabase.claim).not.toHaveBeenCalled();
   });
 });

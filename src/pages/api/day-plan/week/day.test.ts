@@ -2,7 +2,7 @@ import type { APIContext } from "astro";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { errorStatusResponse, proposalResponse, unparsableBodyResponse } from "@/lib/services/__fixtures__/openrouter";
-import { supabaseStub } from "@/lib/services/__fixtures__/supabase";
+import { STUB_LEDGER_ID, supabaseStub } from "@/lib/services/__fixtures__/supabase";
 import { ACTIVITY_COUNT, PROMPT_MAX } from "@/lib/day-plan-limits";
 
 // Mirrors `generate.test.ts`: the route's `POST` is an exported function, the
@@ -28,6 +28,11 @@ vi.mock("astro:env/server", () => ({
   get OPENROUTER_MODEL() {
     return env.model;
   },
+  // `fair-use.ts` reads these; unset means its defaults.
+  FAIR_USE_DAYS_PER_MONTH: undefined,
+  FAIR_USE_REFINES_PER_MONTH: undefined,
+  FAIR_USE_REFUNDS_PER_MONTH: undefined,
+  FAIR_USE_MODE: undefined,
 }));
 
 const { POST } = await import("./day");
@@ -198,5 +203,58 @@ describe("POST /api/day-plan/week/day — generation failures map per category",
     const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
 
     expect(response.status).toBe(502);
+  });
+});
+
+// The fair-use limit (S-21), seen from the route. That five parallel days at
+// 148/150 admit exactly two is the database's claim (`day.db.test.ts`); here it
+// is how the route answers each outcome.
+describe("POST /api/day-plan/week/day — fair use", () => {
+  it("over the limit answers 429 with the reset day, before paying the model", async () => {
+    const supabase = supabaseStub({ claim: { outcome: "refused", resetsOn: "2026-11-01" } });
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+    const body = (await response.json()) as { retryable: boolean; limit: { resets_on: string } };
+
+    expect(response.status).toBe(429);
+    expect(body.retryable).toBe(false);
+    expect(body.limit).toEqual({ resets_on: "2026-11-01" });
+    expect(fetchStub).not.toHaveBeenCalled();
+  });
+
+  it("claims one day for the planned date and marks it succeeded", async () => {
+    const supabase = supabaseStub();
+    stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(200);
+    expect(supabase.claim.mock.calls[0][1]).toMatchObject({ p_kind: "day", p_plan_date: PLAN_DATE });
+    expect(supabase.ledgerUpdate.mock.calls).toEqual([[{ status: "succeeded" }]]);
+    expect(supabase.ledgerUpdateEq).toHaveBeenCalledWith("id", STUB_LEDGER_ID);
+  });
+
+  it("generates anyway when the claim fails", async () => {
+    const supabase = supabaseStub({
+      claim: { outcome: "error", error: { code: "PGRST202", message: "not found", details: "", hint: "" } },
+    });
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(200);
+    expect(fetchStub).toHaveBeenCalledTimes(1);
+    expect(supabase.ledgerUpdate).not.toHaveBeenCalled();
+  });
+
+  it("marks the reservation failed when the model fails", async () => {
+    const supabase = supabaseStub();
+    stubFetch(unparsableBodyResponse);
+
+    const response = await call({ request: request(), locals: { user: USER, supabase: supabase.client } });
+
+    expect(response.status).toBe(502);
+    expect(supabase.ledgerUpdate.mock.calls).toEqual([[{ status: "failed" }]]);
   });
 });
