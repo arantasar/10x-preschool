@@ -1,10 +1,10 @@
 ---
 change_id: fair-use-overrides
 title: Fair use overrides
-status: impl_reviewed
+status: archived
 created: 2026-10-17
 updated: 2026-10-17
-archived_at: null
+archived_at: 2026-10-17T20:10:03Z
 ---
 
 ## Notes
