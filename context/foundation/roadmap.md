@@ -64,7 +64,7 @@ nowy fundament to `F-02`, a pierwszy nowy slice `S-16`. Pozycje `S-23`…`S-27` 
 | S-17 | password-change            | zmienić hasło po zalogowaniu, wylogowując pozostałe sesje konta                                          | —                                                | FR-023                         | done     |
 | S-18 | account-deletion           | usunąć swoje konto razem ze wszystkimi planami                                                           | —                                                | FR-024                         | done     |
 | S-19 | help-and-contact           | przeczytać FAQ i napisać do właściciela przez formularz, z kontem lub bez                                | —                                                | FR-025, FR-026                 | done     |
-| S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | treść od księgowego/prawnika                     | FR-025                         | blocked  |
+| S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | —                                                | FR-025                         | done     |
 | S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | blocked  |
 | S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic i zapisać się na cenę założycielską z uczciwym potwierdzeniem              | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
 | S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-22, wynik bramy kroku 7                        | FR-030                         | blocked  |
@@ -174,14 +174,15 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Outcome:** Odwiedzający bez konta czyta regulamin i politykę prywatności, a polityka obejmuje przechowywanie e-maili osób, które nie mają konta (formularz kontaktowy, zapis na cenę).
 - **Change ID:** legal-pages
 - **PRD refs:** FR-025 (część: regulamin, polityka prywatności); §Constraints „Dane osób bez konta"
-- **Prerequisites:** treść regulaminu i polityki prywatności od księgowego/prawnika
+- **Prerequisites:** — (dawniej: treść od księgowego/prawnika; zdjęte decyzją z 2026-10-17, niżej)
 - **Parallel with:** F-02, S-16, S-17, S-18, S-19, S-21
-- **Blockers:** Treść prawna — zależność zewnętrzna (PRD §Constraints „Zależności zewnętrzne"; Open Roadmap Questions #6).
+- **Blockers:** — **Rozstrzygnięte 2026-10-17:** brak budżetu na prawnika, więc pierwszą wersję obu tekstów napisaliśmy sami, na podstawie przepisów i regulaminów konkurencji (`context/changes/legal-pages/drafts/README.md`). Przegląd prawnika przy płatnościach (`S-25`, `S-26`), kiedy regulamin i tak jest przepisywany, a ryzyko finansowe staje się realne.
 - **Unknowns:**
-  - Treść regulaminu i polityki — Owner: Janusz + doradca. Block: tak.
+  - Treść regulaminu i polityki — Owner: Janusz + doradca. Block: tak. **Rozstrzygnięte 2026-10-17:** wersja bez prawnika (wyżej).
   - Co zostaje po usunięciu konta (`S-18`): polityka nie może obiecywać pełnego wymazania. Zostają wiadomości z formularza kontaktowego (`user_id` → `null`, usuwane po 12 miesiącach przez `contact-messages-retention`) oraz wpisy GoTrue w `auth.audit_log_entries` (adres e-mail w `payload`) i `auth.flow_state` — bez klucza obcego do `auth.users`, bez retencji po naszej stronie. Owner: `S-20`. Block: nie.
 - **Risk:** Najmniejsza technicznie i jedyna pozycja rdzenia trzymana przez kogoś spoza projektu — dlatego to główne ryzyko kamienia (`top_blocker: external`): stoi w prerekwizytach gwiazdy przewodniej. Regulamin zostanie przepisany przy płatnościach (`S-25`, `S-26`); ta wersja opisuje usługę darmową i nie może obiecywać tego, czego jeszcze nie ma.
-- **Status:** blocked
+- **Ślad dla `S-22`:** polityka prywatności opisuje dziś tylko formularz kontaktowy jako drogę e-maili osób bez konta. Zapis na cenę założycielską dopisuje do niej własną sekcję — dane, zgoda na kontakt, retencja zapisu — przed wydaniem.
+- **Status:** done
 
 ### S-21: Limit fair use
 
@@ -289,7 +290,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-17       | password-change            | Zmiana hasła z wylogowaniem pozostałych sesji                      | yes                   | Otwiera ekran ustawień konta                                             |
 | S-18       | account-deletion           | Usunięcie konta wraz z planami                                     | yes                   | Pierwsza operacja ponad RLS — test izolacji na dwóch kontach             |
 | S-19       | help-and-contact           | FAQ i formularz kontaktowy chroniony przed automatami              | yes                   | Ochrona przed automatami do ponownego użycia w `S-22`                    |
-| S-20       | legal-pages                | Regulamin i polityka prywatności                                   | no                    | Czeka na treść od księgowego/prawnika                                    |
+| S-20       | legal-pages                | Regulamin i polityka prywatności                                   | yes                   | Wydane w wersji bez prawnika (decyzja 2026-10-17)                        |
 | S-21       | fair-use-limit             | Limit fair use z komunikatem o terminie powrotu                    | no                    | Czeka na próg z danych produkcji (Open Roadmap Questions #3)            |
 | S-22       | founder-price-signup       | Cennik i zapis na cenę założycielską (fake door)                   | no                    | Gwiazda przewodnia; czeka na definicję konta aktywnego i rdzeń           |
 | S-23       | trial-entitlement          | Okres próbny i stan planu konta                                    | no                    | Krok 7 — po bramie                                                       |
@@ -305,7 +306,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 3. **Próg fair use** — ~150 dni-generacji to szacunek bez danych z produkcji; Guardrail 1 wymaga, żeby typowy miesiąc nigdy go nie dotknął. Owner: Janusz, na danych z produkcji. Block: `S-21`.
 4. **Jednostka liczenia poprawki poleceniem** (FR-037 vs Non-Goals bez osobnego limitu poprawek) — dzień z puli, ułamek dnia, coś innego? Owner: Janusz. Block: `S-27`.
 5. **Długość okresu Basic gratis dla obecnych kont** (FR-036; `monetization.md` §4.4: „np. 3 miesiące"). Owner: Janusz. Block: `S-24`.
-6. **Treść regulaminu i polityki prywatności** — zależność zewnętrzna; polityka musi objąć e-maile osób bez konta. Owner: Janusz + doradca. Block: `S-20` (przechodnio `S-22`).
+6. **Treść regulaminu i polityki prywatności** — zależność zewnętrzna; polityka musi objąć e-maile osób bez konta. Owner: Janusz + doradca. Block: `S-20` (przechodnio `S-22`). **Rozstrzygnięte 2026-10-17:** wersja bez prawnika, przegląd prawnika przy `S-25`/`S-26`; sekcję o zapisie na cenę dopisuje `S-22`.
 7. **Ryzyko zakładania kont na nowo (FR-030) przy wzroście skali** — przyjęte przy małej skali, do ponownej oceny, gdy skala przestanie być mała. Owner: Janusz. Block: nie — roadmap-wide.
 8. **Zamykane przez ten kamień:** dawne Open Roadmap Questions #4 (reset hasła → `S-16`) i #5 (limit regeneracji → `S-21`). Owner: —. Block: nie.
 9. **Brak bramki czasowej** (`delivery_weeks: null`) — świadoma decyzja z 2026-10-01; nic nie powie, że `M-03` trwa za długo. Obroną jest dyscyplina slice'ów (każdy osobnym wydaniem) i Guardrail 3. Owner: Janusz. Block: nie — roadmap-wide.

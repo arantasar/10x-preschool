@@ -351,9 +351,9 @@ Brak migracji schematu. Jedyna zmiana danych to usunięcie `auth.audit_log_entri
 
 #### Manual
 
-- [ ] 1.7 Strony czytelne na telefonie i desktopie
-- [ ] 1.8 Tabele nie rozpychają strony
-- [ ] 1.9 Notka formularza linkuje do polityki
+- [x] 1.7 Strony czytelne na telefonie i desktopie
+- [x] 1.8 Tabele nie rozpychają strony
+- [x] 1.9 Notka formularza linkuje do polityki
 
 ### Phase 2: Akceptacja przy rejestracji
 
@@ -366,35 +366,35 @@ Brak migracji schematu. Jedyna zmiana danych to usunięcie `auth.audit_log_entri
 
 #### Manual
 
-- [ ] 2.5 Metadane akceptacji zapisane przy nowym koncie
-- [ ] 2.6 Rejestracja bez checkboxa odrzucona po polsku
+- [x] 2.5 Metadane akceptacji zapisane przy nowym koncie
+- [x] 2.6 Rejestracja bez checkboxa odrzucona po polsku
 
 ### Phase 3: Spójność produktu z tekstem
 
 #### Automated
 
-- [x] 3.1 Testy jednostkowe przechodzą
-- [x] 3.2 E2E help-and-contact i account-deletion przechodzą
-- [x] 3.3 Lint i build przechodzą
-- [x] 3.4 FAQ nie odsyła do formularza po usunięcie konta
+- [x] 3.1 Testy jednostkowe przechodzą — d2ad4ea
+- [x] 3.2 E2E help-and-contact i account-deletion przechodzą — d2ad4ea
+- [x] 3.3 Lint i build przechodzą — d2ad4ea
+- [x] 3.4 FAQ nie odsyła do formularza po usunięcie konta — d2ad4ea
 
 #### Manual
 
-- [ ] 3.5 Informacja o AI pod formularzami generowania
-- [ ] 3.6 Nowa odpowiedź FAQ o usuwaniu konta
-- [ ] 3.7 Linki do dokumentów w Ustawieniach
+- [x] 3.5 Informacja o AI pod formularzami generowania
+- [x] 3.6 Nowa odpowiedź FAQ o usuwaniu konta
+- [x] 3.7 Linki do dokumentów w Ustawieniach
 
 ### Phase 4: Wydanie
 
 #### Automated
 
-- [ ] 4.1 Daty ustawione na dzień merge'u
-- [ ] 4.2 Pełny zestaw zielony
-- [ ] 4.3 Roadmapa: S-20 done
+- [x] 4.1 Daty ustawione na dzień merge'u
+- [x] 4.2 Pełny zestaw zielony
+- [x] 4.3 Roadmapa: S-20 done
 
 #### Manual
 
-- [ ] 4.4 Audit logi wyłączone i wyczyszczone
-- [ ] 4.5 OpenRouter i DPA Resend potwierdzone
+- [x] 4.4 Audit logi wyłączone i wyczyszczone
+- [x] 4.5 OpenRouter i DPA Resend potwierdzone
 - [ ] 4.6 Strony i rejestracja działają na produkcji
 - [ ] 4.7 E-mail do obecnych kont wysłany
