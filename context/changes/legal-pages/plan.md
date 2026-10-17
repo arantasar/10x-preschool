@@ -396,5 +396,5 @@ Brak migracji schematu. Jedyna zmiana danych to usunięcie `auth.audit_log_entri
 
 - [x] 4.4 Audit logi wyłączone i wyczyszczone
 - [x] 4.5 OpenRouter i DPA Resend potwierdzone
-- [ ] 4.6 Strony i rejestracja działają na produkcji
+- [x] 4.6 Strony i rejestracja działają na produkcji
 - [ ] 4.7 E-mail do obecnych kont wysłany
