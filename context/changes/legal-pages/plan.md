@@ -388,9 +388,9 @@ Brak migracji schematu. Jedyna zmiana danych to usunięcie `auth.audit_log_entri
 
 #### Automated
 
-- [x] 4.1 Daty ustawione na dzień merge'u
-- [x] 4.2 Pełny zestaw zielony
-- [x] 4.3 Roadmapa: S-20 done
+- [x] 4.1 Daty ustawione na dzień merge'u — 679fd86
+- [x] 4.2 Pełny zestaw zielony — 679fd86
+- [x] 4.3 Roadmapa: S-20 done — 679fd86
 
 #### Manual
 

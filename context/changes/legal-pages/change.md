@@ -1,7 +1,7 @@
 ---
 change_id: legal-pages
 title: Regulamin i polityka prywatności — pierwsza wersja pisana bez prawnika
-status: implementing
+status: implemented
 created: 2026-10-17
 updated: 2026-10-17
 archived_at: null
