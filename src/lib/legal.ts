@@ -33,6 +33,13 @@ export function addDays(isoDate: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+/**
+ * Shown under both generation forms (week and day). Regulamin § 6 ust. 1 says
+ * the Serwis marks proposals as written by AI - this sentence is that marking.
+ * Information, not a link-out: the teacher needs the fact, not the document.
+ */
+export const AI_PROPOSALS_NOTICE = "Propozycje przygotowuje sztuczna inteligencja. Sprawdź je przed zajęciami.";
+
 /** Day from which the terms bind accounts created before `TERMS_PUBLISHED_ON`. */
 export const TERMS_BINDS_EXISTING_ON = addDays(TERMS_PUBLISHED_ON, EXISTING_ACCOUNTS_NOTICE_DAYS);
 

@@ -6,6 +6,7 @@ import { FIELD_BASE, FIELD_BORDER, FIELD_BORDER_ERROR, FIELD_ERROR, FIELD_LABEL 
 import { ScopeToggle } from "@/components/plan/ScopeToggle";
 import WeekPdfControls from "@/components/plan/WeekPdfControls";
 import { Button } from "@/components/ui/button";
+import { AI_PROPOSALS_NOTICE } from "@/lib/legal";
 import { PROMPT_MAX, WEEK_DAYS } from "@/lib/day-plan-limits";
 import { cn } from "@/lib/utils";
 import { isDayPlanBody, isErrorBody, isGeneratedDayBody, isOutlineBody, isSaveWeekBody } from "@/lib/day-plan-guards";
@@ -952,6 +953,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
                 ? "Zapisuję tydzień…"
                 : "Generuj tydzień"}
         </Button>
+        <p className="text-las-szary text-sm">{AI_PROPOSALS_NOTICE}</p>
         {/* In the panel, next to the other week-level action, so it stays in
             reach while the list scrolls. `type="button"` is load-bearing: inside
             this form a bare button submits, and approving would then run

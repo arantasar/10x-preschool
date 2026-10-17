@@ -359,10 +359,10 @@ Brak migracji schematu. Jedyna zmiana danych to usunięcie `auth.audit_log_entri
 
 #### Automated
 
-- [x] 2.1 Testy jednostkowe z signup.test.ts przechodzą
-- [x] 2.2 Test „bez terms nie woła signUp” widziany na czerwono
-- [x] 2.3 E2E legal-pages i landing-topic-carry przechodzą
-- [x] 2.4 Lint i build przechodzą
+- [x] 2.1 Testy jednostkowe z signup.test.ts przechodzą — 41c26ce
+- [x] 2.2 Test „bez terms nie woła signUp” widziany na czerwono — 41c26ce
+- [x] 2.3 E2E legal-pages i landing-topic-carry przechodzą — 41c26ce
+- [x] 2.4 Lint i build przechodzą — 41c26ce
 
 #### Manual
 
@@ -373,10 +373,10 @@ Brak migracji schematu. Jedyna zmiana danych to usunięcie `auth.audit_log_entri
 
 #### Automated
 
-- [ ] 3.1 Testy jednostkowe przechodzą
-- [ ] 3.2 E2E help-and-contact i account-deletion przechodzą
-- [ ] 3.3 Lint i build przechodzą
-- [ ] 3.4 FAQ nie odsyła do formularza po usunięcie konta
+- [x] 3.1 Testy jednostkowe przechodzą
+- [x] 3.2 E2E help-and-contact i account-deletion przechodzą
+- [x] 3.3 Lint i build przechodzą
+- [x] 3.4 FAQ nie odsyła do formularza po usunięcie konta
 
 #### Manual
 

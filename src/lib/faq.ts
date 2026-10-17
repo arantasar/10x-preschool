@@ -10,6 +10,9 @@
  * - the plan state is „zatwierdzony” / „do przejrzenia”, never „zaakceptowany”.
  */
 
+import { DELETE_ACCOUNT_ANCHOR, SETTINGS_PATH } from "@/lib/account-settings";
+import { PRIVACY_PATH } from "@/lib/legal";
+
 export interface FaqLink {
   href: string;
   label: string;
@@ -76,13 +79,21 @@ export const FAQ_SECTIONS: readonly FaqSection[] = [
           "Tylko Ty. Plany są przypisane do Twojego konta i nie widzi ich nikt inny, także inni nauczyciele korzystający z Temio.",
         ],
       },
-      // S-18 (account-deletion) rewrites this entry when deletion is self-service.
+      // Regulamin § 12 ust. 1 and Polityka prywatności pkt 8 say the same; the
+      // three change together.
       {
         question: "Jak usunąć konto?",
         answer: [
-          "Napisz do nas przez formularz kontaktowy z adresu e-mail, na który założone jest konto — usuniemy konto razem ze wszystkimi planami.",
+          "W Ustawieniach, w karcie „Usuń konto” — wystarczy podać hasło. Konto znika od razu, razem ze wszystkimi planami, i nie da się go przywrócić.",
         ],
-        link: { href: "/kontakt", label: "Formularz kontaktowy" },
+        link: { href: `${SETTINGS_PATH}#${DELETE_ACCOUNT_ANCHOR}`, label: "Przejdź do usuwania konta" },
+      },
+      {
+        question: "Co dzieje się z moimi danymi?",
+        answer: [
+          "Przechowujemy tylko adres e-mail, hasło (jako zaszyfrowany skrót) i Twoje plany. Temat i treść aktywności trafiają do dostawcy modelu językowego bez Twojego adresu e-mail i nie są używane do trenowania modeli. Wszystko opisuje Polityka prywatności.",
+        ],
+        link: { href: PRIVACY_PATH, label: "Polityka prywatności" },
       },
     ],
   },
