@@ -456,7 +456,7 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Manual
 
-- [ ] 1.5 W Studio tabela ma RLS i polityki per operacja, bez `delete`
+- [x] 1.5 W Studio tabela ma RLS i polityki per operacja, bez `delete`
 
 ### Phase 2: Serwis i konfiguracja
 
@@ -468,7 +468,7 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Manual
 
-- [ ] 2.4 Treść komunikatu brzmi naturalnie po polsku
+- [x] 2.4 Treść komunikatu brzmi naturalnie po polsku
 
 ### Phase 3: Cztery trasy
 
@@ -481,8 +481,8 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Manual
 
-- [ ] 3.5 Z `FAIR_USE_DAYS_PER_MONTH=2` trzeci dzień dostaje komunikat
-- [ ] 3.6 Bez funkcji `claim_generation` generowanie działa, log `fair_use.claim_failed`
+- [x] 3.5 Z `FAIR_USE_DAYS_PER_MONTH=2` trzeci dzień dostaje komunikat
+- [x] 3.6 Bez funkcji `claim_generation` generowanie działa, log `fair_use.claim_failed`
 
 ### Phase 4: Wyspy
 
@@ -493,10 +493,10 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Manual
 
-- [ ] 4.3 Tydzień przy limicie 3: 3 dni gotowe, 2 karty z komunikatem i linkiem
-- [ ] 4.4 Wyczerpany limit zatrzymuje generowanie tygodnia na szkicu z linkiem
-- [ ] 4.5 Druga poprawka przy `FAIR_USE_REFINES_PER_MONTH=1` dostaje komunikat z linkiem
-- [ ] 4.6 Link prowadzi na `/kontakt`; widok 390 px bez złamań
+- [x] 4.3 Tydzień przy limicie 3: 3 dni gotowe, 2 karty z komunikatem i linkiem
+- [x] 4.4 Wyczerpany limit zatrzymuje generowanie tygodnia na szkicu z linkiem
+- [x] 4.5 Druga poprawka przy `FAIR_USE_REFINES_PER_MONTH=1` dostaje komunikat z linkiem
+- [x] 4.6 Link prowadzi na `/kontakt`; widok 390 px bez złamań
 
 ### Phase 5: Dokumenty i prawo
 
@@ -508,5 +508,5 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Manual
 
-- [ ] 5.4 `/polityka-prywatnosci` pokazuje 1.1 i nowy punkt z poprawnymi odsyłaczami
+- [x] 5.4 `/polityka-prywatnosci` pokazuje 1.1 i nowy punkt z poprawnymi odsyłaczami
 - [ ] 5.5 Po scaleniu `db push` wykonany, a generowanie na produkcji zostawia wiersz w księdze
