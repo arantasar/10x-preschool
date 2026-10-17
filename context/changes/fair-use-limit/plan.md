@@ -474,10 +474,10 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Automated
 
-- [x] 3.1 Testy jednostkowe tras przechodzą: `npm test`
-- [x] 3.2 Testy na prawdziwej bazie przechodzą: `npm run test:db:api`
-- [x] 3.3 Każda z czterech tras woła `claimGeneration(supabase` dokładnie raz (bramka sprawdzona na stanie przed fazą)
-- [x] 3.4 Lint i build: `npm run lint && npm run build`
+- [x] 3.1 Testy jednostkowe tras przechodzą: `npm test` — 48afaad
+- [x] 3.2 Testy na prawdziwej bazie przechodzą: `npm run test:db:api` — 48afaad
+- [x] 3.3 Każda z czterech tras woła `claimGeneration(supabase` dokładnie raz (bramka sprawdzona na stanie przed fazą) — 48afaad
+- [x] 3.4 Lint i build: `npm run lint && npm run build` — 48afaad
 
 #### Manual
 
@@ -488,8 +488,8 @@ Jeden dodatkowy round-trip PostgREST przed modelem i jeden po — pomijalne wobe
 
 #### Automated
 
-- [ ] 4.1 Lint, typy, build: `npm run lint && npm run build`
-- [ ] 4.2 Testy jednostkowe nadal przechodzą: `npm test`
+- [x] 4.1 Lint, typy, build: `npm run lint && npm run build`
+- [x] 4.2 Testy jednostkowe nadal przechodzą: `npm test`
 
 #### Manual
 

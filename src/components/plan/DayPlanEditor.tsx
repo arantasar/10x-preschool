@@ -14,7 +14,13 @@ import { AI_PROPOSALS_NOTICE } from "@/lib/legal";
 import { DESCRIPTION_MAX, INSTRUCTION_MAX, PROMPT_MAX, TITLE_MAX } from "@/lib/day-plan-limits";
 import { formatAcceptedAt, formatPlanDate } from "@/lib/day-plan-dates";
 import { cn } from "@/lib/utils";
-import { isDayPlanBody, isErrorBody, isRefinedActivityBody, readAcceptanceCleared } from "@/lib/day-plan-guards";
+import {
+  isDayPlanBody,
+  isErrorBody,
+  isLimitBody,
+  isRefinedActivityBody,
+  readAcceptanceCleared,
+} from "@/lib/day-plan-guards";
 import type { Activity, DayPlanView } from "@/types";
 
 /**
@@ -46,6 +52,8 @@ interface Failure {
   readonly message: string;
   readonly retryable: boolean;
   readonly signInRequired: boolean;
+  /** The monthly fair-use limit is spent: "Napisz do nas" stands where the retry button would. */
+  readonly contactSuggested: boolean;
 }
 
 interface Draft {
@@ -263,6 +271,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
         message: isErrorBody(body) ? body.error : "Nie udało się zapisać zmiany. Spróbuj ponownie.",
         retryable: isErrorBody(body) ? body.retryable : true,
         signInRequired,
+        contactSuggested: isLimitBody(body),
       });
       if (!signInRequired) await reconcile();
     } catch {
@@ -271,6 +280,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
         message: "Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.",
         retryable: true,
         signInRequired: false,
+        contactSuggested: false,
       });
       await reconcile();
     } finally {
@@ -461,12 +471,14 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
         message: isErrorBody(body) ? body.error : "Nie udało się poprawić aktywności. Spróbuj ponownie.",
         retryable: isErrorBody(body) ? body.retryable : true,
         signInRequired,
+        contactSuggested: isLimitBody(body),
       });
     } catch {
       setFailure({
         message: "Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.",
         retryable: true,
         signInRequired: false,
+        contactSuggested: false,
       });
     } finally {
       inFlight.current = false;
@@ -638,6 +650,11 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
             {failure.signInRequired && (
               <a href="/auth/signin" className="text-blad inline-flex min-h-11 items-center font-extrabold underline">
                 Zaloguj się ponownie
+              </a>
+            )}
+            {failure.contactSuggested && (
+              <a href="/kontakt" className="text-blad inline-flex min-h-11 items-center font-extrabold underline">
+                Napisz do nas
               </a>
             )}
             {failure.retryable && !failure.signInRequired && (
