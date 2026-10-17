@@ -19,7 +19,7 @@ export const TERMS_ACCEPTED_VALUE = "accepted";
 export const TERMS_PUBLISHED_ON = "2026-10-17";
 
 export const PRIVACY_VERSION = "1.2";
-export const PRIVACY_PUBLISHED_ON = "2026-10-18";
+export const PRIVACY_PUBLISHED_ON = "2026-10-17";
 
 /**
  * Notice period for accounts that existed before a version was published: the

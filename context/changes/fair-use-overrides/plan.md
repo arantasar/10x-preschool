@@ -265,7 +265,7 @@ Jeden odczyt po kluczu głównym w transakcji, która już trzyma blokadę konta
 
 #### Manual
 
-- [ ] 1.6 W Studio tabela ma RLS i jedną politykę `select`, bez insert/update/delete
+- [x] 1.6 W Studio tabela ma RLS i jedną politykę `select`, bez insert/update/delete — dowód: pgTAP `fair_use_overrides.test.sql` (brak polityk poza SELECT, izolacja odczytu, 42501 na zapis)
 
 ### Phase 2: Dokumenty i uruchomienie
 
