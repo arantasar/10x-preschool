@@ -262,13 +262,13 @@ uruchomienie tego samego `update` w SQL Editorze (bez danych osób w repo).
 
 #### Automated
 
-- [x] 1.1 Wyrównanie na prawdziwych wierszach (przed > 0, po = 0, `owner` nietknięty)
-- [x] 1.2 Testy dat czerwone na starej funkcji
-- [x] 1.3 Testy pgTAP przechodzą
-- [x] 1.4 Test przez GoTrue przechodzi
-- [x] 1.5 Migracja stosuje się na czysto
-- [x] 1.6 Aplikacja nietknięta
-- [x] 1.7 Lint i build
+- [x] 1.1 Wyrównanie na prawdziwych wierszach (przed > 0, po = 0, `owner` nietknięty) — d34614a
+- [x] 1.2 Testy dat czerwone na starej funkcji — d34614a
+- [x] 1.3 Testy pgTAP przechodzą — d34614a
+- [x] 1.4 Test przez GoTrue przechodzi — d34614a
+- [x] 1.5 Migracja stosuje się na czysto — d34614a
+- [x] 1.6 Aplikacja nietknięta — d34614a
+- [x] 1.7 Lint i build — d34614a
 
 #### Manual
 
@@ -278,9 +278,9 @@ uruchomienie tego samego `update` w SQL Editorze (bez danych osób w repo).
 
 #### Automated
 
-- [ ] 2.1 CLAUDE.md zawiera nową regułę
-- [ ] 2.2 Stare brzmienie usunięte
-- [ ] 2.3 Lint i build
+- [x] 2.1 CLAUDE.md zawiera nową regułę
+- [x] 2.2 Stare brzmienie usunięte
+- [x] 2.3 Lint i build
 
 #### Manual
 
