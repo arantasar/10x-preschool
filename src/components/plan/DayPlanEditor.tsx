@@ -597,7 +597,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref, horizon
           </div>
 
           {horizonNotice !== null ? (
-            <HorizonNotice message={horizonNotice} />
+            <HorizonNotice message={horizonNotice} promptLabel="Hasło dnia" savedPrompt={prompt} />
           ) : (
             <div>
               <label htmlFor="prompt" className={FIELD_LABEL}>

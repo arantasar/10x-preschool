@@ -930,7 +930,7 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref, horizonNot
         <h2 className="font-display text-display-sm text-las">Nowe propozycje</h2>
 
         {horizonNotice !== null ? (
-          <HorizonNotice message={horizonNotice} />
+          <HorizonNotice message={horizonNotice} promptLabel="Hasło tygodnia" savedPrompt={firstPrompt(week)} />
         ) : (
           <div>
             {/* The label's text is what `landing-topic-carry.spec.ts` finds the field by. */}
