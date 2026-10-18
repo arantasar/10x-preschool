@@ -1,0 +1,58 @@
+---
+// „Rocznie / Miesięcznie” switch from the design package (`billing/BillingToggle.astro`):
+// real radio inputs, yearly by default (FR-028). Every element on the page with
+// `data-price-yearly` / `data-price-monthly` (see `PricingCard`) gets its text
+// swapped by the tiny script below - no island. The founder-price form reads
+// the checked `name="billing"` input when it sends.
+interface Props {
+  name?: string;
+  value?: "yearly" | "monthly";
+}
+
+const { name: inputName = "billing", value = "yearly" } = Astro.props;
+
+const options = [
+  { value: "yearly", label: "Rocznie" },
+  { value: "monthly", label: "Miesięcznie" },
+] as const;
+---
+
+<fieldset
+  class="bg-owies-ciemny m-0 grid w-[340px] max-w-full grid-cols-2 gap-1 rounded-full border-0 p-1"
+  data-billing-toggle
+>
+  <legend class="sr-only">Okres rozliczenia</legend>
+  {
+    options.map((option) => (
+      <label class="relative">
+        <input
+          type="radio"
+          name={inputName}
+          value={option.value}
+          checked={value === option.value}
+          class="peer absolute inset-0 m-0 cursor-pointer opacity-0"
+        />
+        <span class="text-las peer-checked:bg-mleko peer-focus-visible:outline-morela flex min-h-11 items-center justify-center rounded-full text-[15px] font-extrabold peer-checked:shadow-[0_1px_3px_rgba(31,59,45,0.2)] peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-solid">
+          {option.label}
+        </span>
+      </label>
+    ))
+  }
+</fieldset>
+
+<script>
+  document.querySelectorAll<HTMLFieldSetElement>("[data-billing-toggle]").forEach((fieldset) => {
+    const apply = (period: string) => {
+      document.querySelectorAll<HTMLElement>("[data-price-monthly]").forEach((element) => {
+        const text = period === "monthly" ? element.dataset.priceMonthly : element.dataset.priceYearly;
+        if (text !== undefined) element.textContent = text;
+      });
+    };
+    fieldset.addEventListener("change", (event) => {
+      apply((event.target as HTMLInputElement).value);
+    });
+    // A browser restoring the form after „back” may have Miesięcznie checked.
+    const checked = fieldset.querySelector<HTMLInputElement>("input:checked");
+    if (checked) apply(checked.value);
+  });
+</script>

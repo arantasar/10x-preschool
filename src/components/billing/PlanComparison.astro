@@ -1,0 +1,89 @@
+---
+// „Porównanie planów” from the design package (`billing/PlanComparison.astro`):
+// a real <table> with row headers, grouped by `scope="colgroup"`. Below 640 px
+// every row becomes a small card: the feature on top, Darmowy | Basic side by
+// side (labels from `data-label`). The data is `PLAN_COMPARISON` in
+// `src/lib/pricing.ts`; cells are rendered by `ComparisonCellView`, no HTML
+// strings.
+import ComparisonCellView from "@/components/billing/ComparisonCellView.astro";
+import { PLAN_COMPARISON } from "@/lib/pricing";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  heading?: string;
+}
+
+const { heading = "Porównanie planów" } = Astro.props;
+const { groups, notes } = PLAN_COMPARISON;
+
+const cellBase =
+  "border-t border-owies-ciemny px-[18px] pt-2 pb-3.5 text-left align-middle text-[15px] max-sm:border-0 max-sm:before:mb-1 max-sm:before:block max-sm:before:text-xs max-sm:before:font-extrabold max-sm:before:tracking-[1px] max-sm:before:text-mech max-sm:before:uppercase max-sm:before:content-[attr(data-label)] sm:px-6 sm:py-3.5 sm:text-base";
+---
+
+<section class="flex flex-col gap-6" aria-labelledby="porownanie-heading">
+  <h2 id="porownanie-heading" class="font-display text-display-md text-las font-normal">{heading}</h2>
+  <div class="bg-mleko text-las overflow-hidden rounded-[28px]">
+    <table class="w-full border-separate border-spacing-0 leading-normal max-sm:block">
+      <thead class="max-sm:sr-only">
+        <tr>
+          <th scope="col" class="border-linia w-[38%] border-b-[1.5px] px-6 py-[22px]">
+            <span class="sr-only">Funkcja</span>
+          </th>
+          <th scope="col" class="border-linia w-[31%] border-b-[1.5px] px-6 py-[22px] text-left">
+            <span class="font-display block text-2xl font-normal">Darmowy</span>
+            <span class="text-mech block text-sm font-bold">0 zł</span>
+          </th>
+          <th scope="col" class="bg-las text-owies w-[31%] px-6 py-[22px] text-left">
+            <span class="font-display block text-2xl font-normal">Basic</span>
+            <span class="text-szalwia block text-sm font-bold">159 zł / rok · 19,99 zł / mies.</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="max-sm:block">
+        {
+          groups.map((group) => (
+            <Fragment>
+              <tr class="max-sm:block">
+                <th
+                  colspan="2"
+                  scope="colgroup"
+                  class="text-mech px-[18px] pt-[22px] pb-1.5 text-left text-[13px] font-extrabold tracking-[1.5px] uppercase max-sm:block sm:px-7 sm:pt-[26px] sm:pb-2"
+                >
+                  {group.title}
+                </th>
+                <td class="bg-[#f1f5ee] max-sm:hidden" />
+              </tr>
+              {group.rows.map((row) => (
+                <tr class="border-owies-ciemny max-sm:grid max-sm:grid-cols-2 max-sm:border-t">
+                  <th
+                    scope="row"
+                    class="border-owies-ciemny w-[38%] border-t px-[18px] pt-3.5 pb-1 text-left align-middle font-bold max-sm:col-span-2 max-sm:w-auto max-sm:border-0 sm:py-3.5 sm:pl-7"
+                  >
+                    {row.label}
+                    {row.hint && <div class="text-las-szary text-sm font-semibold">{row.hint}</div>}
+                  </th>
+                  <td data-label="Darmowy" class:list={cn(cellBase, row.free === null && "text-[#6b7a70]")}>
+                    <ComparisonCellView cell={row.free} />
+                  </td>
+                  <td
+                    data-label="Basic"
+                    class:list={cn(
+                      cellBase,
+                      "bg-[#f1f5ee] max-sm:mr-2 max-sm:mb-2.5 max-sm:rounded-xl",
+                      row.basic === null && "text-[#6b7a70]",
+                    )}
+                  >
+                    <ComparisonCellView cell={row.basic} />
+                  </td>
+                </tr>
+              ))}
+            </Fragment>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <ol class="text-las-szary m-0 flex flex-col gap-1.5 pl-5 text-sm leading-normal">
+    {notes.map((note) => <li>{note}</li>)}
+  </ol>
+</section>

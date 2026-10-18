@@ -1,7 +1,7 @@
 ---
-// Header of the public pages. "Pomoc" and "Kontakt" (S-19) show from `sm` up;
-// on a phone they live in the footer instead - the design package's ☰ menu
-// would hold only these two, so it is not built. Cennik joins with S-22.
+// Header of the public pages. "Cennik" (S-22), "Pomoc" and "Kontakt" (S-19)
+// show from `sm` up; on a phone they live in the footer instead - the design
+// package's ☰ menu would hold only these three, so it is not built.
 //
 // A signed-in teacher can land here too (`/pomoc`, `/kontakt` are public): the
 // account links then make way for a single way back to the planner.
@@ -11,13 +11,14 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface Props {
-  active?: "pomoc" | "kontakt";
+  active?: "cennik" | "pomoc" | "kontakt";
 }
 
 const { active } = Astro.props;
 const { user } = Astro.locals;
 
 const pages = [
+  { key: "cennik", label: "Cennik", href: "/cennik" },
   { key: "pomoc", label: "Pomoc", href: "/pomoc" },
   { key: "kontakt", label: "Kontakt", href: "/kontakt" },
 ] as const;

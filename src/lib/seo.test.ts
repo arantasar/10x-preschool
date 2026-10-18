@@ -36,6 +36,7 @@ describe("isIndexable", () => {
     "/auth/signin/",
     "/auth/signup",
     "/auth/signup/",
+    "/cennik",
     "/pomoc",
     "/kontakt",
     "/kontakt/",

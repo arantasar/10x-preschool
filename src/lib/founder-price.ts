@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PRIVACY_PATH } from "@/lib/legal";
 import { SUPPORT_EMAIL } from "@/lib/support-contact";
 
 /**
@@ -71,3 +72,13 @@ export const FOUNDER_PRICE_WIDGET_FAILED_MESSAGE = `Nie udało się wczytać zab
 export function founderPriceErrorMessage(code: string): string {
   return Object.hasOwn(MESSAGES, code) ? MESSAGES[code as FounderPriceErrorCode] : FALLBACK;
 }
+
+/**
+ * The privacy-policy point the consent sentence links to (pkt 2.8). The anchor
+ * is the slug Astro gives the heading „2.8. Zapis na cenę założycielską”.
+ */
+export const FOUNDER_PRICE_PRIVACY_HREF = `${PRIVACY_PATH}#28-zapis-na-cenę-założycielską`;
+
+/** Said once the address is on the list - after a sign-up, or on entry when it already is. */
+export const FOUNDER_PRICE_LISTED_NOTE =
+  "Płatności jeszcze nie działają, więc nic dziś nie płacisz. Napiszemy, gdy ruszą — cena założycielska będzie na Ciebie czekać.";

@@ -420,10 +420,10 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 
 #### Automated
 
-- [x] 2.1 Unit and route tests pass: `npm test`
-- [x] 2.2 Lint and types: `npm run lint`
-- [x] 2.3 Build: `npm run build`
-- [x] 2.4 The contact form works as before: `npx playwright test tests/e2e/help-and-contact.spec.ts`
+- [x] 2.1 Unit and route tests pass: `npm test` — 5cb8efa
+- [x] 2.2 Lint and types: `npm run lint` — 5cb8efa
+- [x] 2.3 Build: `npm run build` — 5cb8efa
+- [x] 2.4 The contact form works as before: `npx playwright test tests/e2e/help-and-contact.spec.ts` — 5cb8efa
 
 #### Manual
 
@@ -433,10 +433,10 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 
 #### Automated
 
-- [ ] 3.1 Unit tests (including `pricing.test.ts`): `npm test`
-- [ ] 3.2 Lint and build: `npm run lint && npm run build`
-- [ ] 3.3 No "bez limitu" on the page or in the components (gate checked red)
-- [ ] 3.4 Specs from the inventory pass
+- [x] 3.1 Unit tests (including `pricing.test.ts`): `npm test`
+- [x] 3.2 Lint and build: `npm run lint && npm run build`
+- [x] 3.3 No "bez limitu" on the page or in the components (gate checked red)
+- [x] 3.4 Specs from the inventory pass
 
 #### Manual
 
