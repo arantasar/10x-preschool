@@ -14,22 +14,39 @@ import type { SeedActivity } from "./supabase-admin";
  * nie wypadl na dzien innego testu.
  */
 const WINDOW_START = Date.UTC(2100, 0, 1);
-const WINDOW_DAYS = 20000; // ~54 lata: kolizja miedzy testami jest pomijalna
+const WINDOW_DAYS = 20000; // ~54 lata
 const DAY_MS = 86_400_000;
 
-let sequence = 0;
+/**
+ * Okno jest podzielone na pasy, po jednym na rownolegly worker
+ * (`TEST_PARALLEL_INDEX`, ustawiany przez Playwrighta). Wczesniej kazde
+ * wywolanie losowalo dzien z calego okna od nowa, wiec dwa testy w jednym
+ * przebiegu potrafily trafic na ten sam dzien — `month-grid-fit.spec.ts`
+ * padal raz na kilkanascie przebiegow na `day_plans_user_id_plan_date_key`.
+ * Teraz rownolegle workery nie dziela dni, a w obrebie workera rezerwacje ida
+ * po kolei. Workerow wiecej niz pasow dzieli pasy modulo — dopiero wtedy
+ * kolizja wraca jako mozliwa.
+ */
+const LANES = 16;
+const LANE_DAYS = Math.floor(WINDOW_DAYS / LANES);
+const lane = Number(process.env.TEST_PARALLEL_INDEX ?? 0) % LANES;
+
+// Losowy start w pasie: kolejne przebiegi nie siegaja wciaz po te same dni.
+let laneOffset = Math.floor(Math.random() * LANE_DAYS);
 
 /**
  * Dzien przypisany jednemu testowi, wraz z zapasem na dni sasiednie.
  *
- * Kazde wywolanie odsuwa sie o `spacing` dni od poprzedniego w tym samym
- * procesie, a losowy start rozsuwa rownolegle procesy. Dzieki temu
- * `plusDays(date, 1)` w tescie kasowania jest naprawde wolny.
+ * Kolejne wywolanie w tym samym procesie zaczyna sie `spacing` dni dalej, w
+ * pasie tego workera. Dzieki temu `plusDays(date, 1)` w tescie kasowania jest
+ * naprawde wolny. Zawiniecie na poczatek pasu trafia w dni testow, ktore juz
+ * po sobie posprzataly (worker wykonuje testy po kolei).
  */
 export function uniquePlanDate(spacing = 10): string {
-  const offset = Math.floor(Math.random() * WINDOW_DAYS) + sequence * spacing;
-  sequence += 1;
-  return new Date(WINDOW_START + (offset % WINDOW_DAYS) * DAY_MS).toISOString().slice(0, 10);
+  if (laneOffset + spacing > LANE_DAYS) laneOffset = 0;
+  const offset = lane * LANE_DAYS + laneOffset;
+  laneOffset += spacing;
+  return new Date(WINDOW_START + offset * DAY_MS).toISOString().slice(0, 10);
 }
 
 /** Dzien sasiedni wzgledem podanego — do asercji "kasowanie nie zabralo za duzo". */

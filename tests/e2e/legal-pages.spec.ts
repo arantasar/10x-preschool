@@ -34,6 +34,10 @@ test.describe("FR-025 — dokumenty prawne są publiczne i podlinkowane", () => 
       await expect(page.getByRole("heading", { level: 1, name: doc.title, exact: true })).toBeVisible();
 
       const target = page.getByRole("heading", { level: 2, name: doc.section, exact: true });
+      // `not.toBeInViewport()` przechodzi też, gdy nagłówka nie ma wcale — bez
+      // tego warunku strona z uciętą treścią dochodziła aż do kliknięcia i padała
+      // mylącym „not in viewport”.
+      await expect(target).toBeAttached();
       await expect(target).not.toBeInViewport();
       await page.getByRole("navigation", { name: "Spis treści" }).getByRole("link", { name: doc.section }).click();
       await expect(target).toBeInViewport();
