@@ -391,9 +391,9 @@ merge'em a `db push` nie mają wiersza — uzupełnić w SQL Editorze z ich `cre
 
 #### Automated
 
-- [x] 2.1 Testy jednostkowe przechodzą
-- [x] 2.2 Słownik zakazany nie trafił do produktu
-- [x] 2.3 Lint i build
+- [x] 2.1 Testy jednostkowe przechodzą — 2e84f89
+- [x] 2.2 Słownik zakazany nie trafił do produktu — 2e84f89
+- [x] 2.3 Lint i build — 2e84f89
 
 #### Manual
 
@@ -406,9 +406,9 @@ merge'em a `db push` nie mają wiersza — uzupełnić w SQL Editorze z ich `cre
 
 #### Automated
 
-- [ ] 3.1 `PRIVACY_VERSION` = 1.3
-- [ ] 3.2 Dopisek w pkt 2.1 polityki
-- [ ] 3.3 Lint i build
+- [x] 3.1 `PRIVACY_VERSION` = 1.3
+- [x] 3.2 Dopisek w pkt 2.1 polityki
+- [x] 3.3 Lint i build
 
 #### Manual
 
