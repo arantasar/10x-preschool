@@ -278,9 +278,9 @@ uruchomienie tego samego `update` w SQL Editorze (bez danych osób w repo).
 
 #### Automated
 
-- [x] 2.1 CLAUDE.md zawiera nową regułę
-- [x] 2.2 Stare brzmienie usunięte
-- [x] 2.3 Lint i build
+- [x] 2.1 CLAUDE.md zawiera nową regułę — f34fc7f
+- [x] 2.2 Stare brzmienie usunięte — f34fc7f
+- [x] 2.3 Lint i build — f34fc7f
 
 #### Manual
 
