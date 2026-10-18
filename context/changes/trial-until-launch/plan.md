@@ -244,8 +244,8 @@ Jeden `update` po małej tabeli w migracji; wyzwalacz robi to samo jedno `insert
 
 Funkcja jest zastępowana w miejscu; wyzwalacz i granty zostają. Wyrównanie tylko wydłuża
 dostęp, więc rollback przywraca poprzednią definicję funkcji z `20261018140000` i nie cofa dat.
-Konta założone między merge'em a `db push` dostaną datę za miesiąc — wyrówna je ponowne
-uruchomienie tego samego `update` w SQL Editorze (bez danych osób w repo).
+Konta założone między merge'em a `db push` dostaną datę za miesiąc — wyrówna je sama migracja,
+bo jej `update` wykonuje się w chwili `db push` (impl-review F3: ręczny krok jest zbędny).
 
 ## References
 

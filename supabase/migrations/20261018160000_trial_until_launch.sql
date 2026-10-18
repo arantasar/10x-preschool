@@ -24,9 +24,10 @@
 --     2027-01-01 on, "+1 month" always falls after 2027-01-31, so the constant
 --     stops applying by itself.
 --   * moving the date (payments delayed) is a NEW migration that changes the
---     constant here and moves trial rows still carrying the old date - never
---     the sql editor, so the function in the repo and on production stay the
---     same.
+--     constant here and moves every trial row dated before the new constant
+--     (the update below, with the new date - a january sign-up carries its
+--     month, not the old constant) - never the sql editor, so the function in
+--     the repo and on production stay the same.
 --   * additive: the app does not change. without `npx supabase db push`, new
 --     accounts get a month and are aligned by this migration when it lands.
 --   * rollback: restore the function body from
