@@ -464,8 +464,8 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 
 #### Automated
 
-- [x] 5.1 The spec passes three times in a row: `npx playwright test tests/e2e/founder-price.spec.ts --repeat-each=3`
-- [x] 5.2 The whole E2E suite green before merging: `npm run test:e2e`
+- [x] 5.1 The spec passes three times in a row: `npx playwright test tests/e2e/founder-price.spec.ts --repeat-each=3` — 0c9d034
+- [x] 5.2 The whole E2E suite green before merging: `npm run test:e2e` — 0c9d034
 
 #### Manual
 

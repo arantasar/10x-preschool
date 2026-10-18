@@ -1,7 +1,7 @@
 ---
 change_id: founder-price-signup
 title: Founder price signup
-status: implementing
+status: implemented
 created: 2026-10-18
 updated: 2026-10-18
 archived_at: null
