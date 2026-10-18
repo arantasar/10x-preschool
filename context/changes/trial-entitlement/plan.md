@@ -163,6 +163,14 @@ próbny każdemu nowemu kontu, bez definera i bez ścieżki zapisu dla nauczycie
 - `check` odrzuca nieznany `plan` i `source`;
 - usunięcie konta usuwa wiersz (kaskada).
 
+> **Addendum (impl-review F3, 2026-10-18):** lokalny `postgres` nie jest członkiem
+> `supabase_auth_admin` i nie może zrobić `set local role` na tę rolę. Suite sprawdza więc wprost
+> `usage` na `public`, `insert` na tabeli, jedyną politykę zapisu (`INSERT to supabase_auth_admin`)
+> i brak `bypassrls`, a prawdziwe wstawienie pod tą rolą (łącznie z `with check` polityki) dowodzi
+> test przez GoTrue (§4). Break-check 1.3 (9785ae9): bez grantu `insert` pgTAP był czerwony (1/22),
+> a GoTrue odrzucał każde `createUser`. Doszedł też wyzwalacz `updated_at` na
+> `public.set_updated_at()` (impl-review F2) — wiersz będzie edytowany (SQL Editor, `S-25`/`S-26`).
+
 #### 4. Test przez GoTrue
 
 **File**: `src/lib/account-entitlement.db.test.ts`
@@ -262,7 +270,7 @@ PostgREST i zły kształt → `null` + log (stub klienta jak w istniejących tes
 #### Manual Verification:
 
 - Nowe konto lokalnie: `/ustawienia` pokazuje „Pełny dostęp — do …” z datą za miesiąc
-- Konto bez wiersza (jedna ze stałych nauczycielek z fikstur): `/ustawienia` wygląda jak przed zmianą
+- Konto bez wiersza (wiersz usunięty w Studio — stałe nauczycielki z fikstur powstają przez GoTrue, więc po resecie też mają wiersz): `/ustawienia` wygląda jak przed zmianą
 - Wiersz z `access_until` = wczoraj (zmiana w Studio): karta znika; = dziś: karta jest
 - Widok ≤ 600 px: blok układa się jak blok e-maila
 
@@ -385,7 +393,7 @@ merge'em a `db push` nie mają wiersza — uzupełnić w SQL Editorze z ich `cre
 
 #### Manual
 
-- [ ] 1.8 Lokalna rejestracja tworzy wiersz z poprawną datą
+- [x] 1.8 Lokalna rejestracja tworzy wiersz z poprawną datą
 
 ### Phase 2: Karta dostępu w ustawieniach
 
@@ -397,10 +405,10 @@ merge'em a `db push` nie mają wiersza — uzupełnić w SQL Editorze z ich `cre
 
 #### Manual
 
-- [ ] 2.4 Nowe konto widzi „Pełny dostęp — do …”
-- [ ] 2.5 Konto bez wiersza wygląda jak przed zmianą
-- [ ] 2.6 Granica daty: wczoraj bez karty, dziś z kartą
-- [ ] 2.7 Widok ≤ 600 px
+- [x] 2.4 Nowe konto widzi „Pełny dostęp — do …”
+- [x] 2.5 Konto bez wiersza wygląda jak przed zmianą
+- [x] 2.6 Granica daty: wczoraj bez karty, dziś z kartą
+- [x] 2.7 Widok ≤ 600 px
 
 ### Phase 3: Dokumenty i uruchomienie
 

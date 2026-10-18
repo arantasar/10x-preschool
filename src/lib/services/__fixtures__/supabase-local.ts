@@ -183,7 +183,13 @@ export async function newTeacher(email: string): Promise<Teacher> {
   if (error) {
     throw new Error(`Nie udało się założyć konta ${email}: ${error.message}`);
   }
-  return { client: await signedInClient(email), userId: data.user.id };
+  try {
+    return { client: await signedInClient(email), userId: data.user.id };
+  } catch (signInError) {
+    // The caller never learns the id, so it could not clean up after us.
+    await service.auth.admin.deleteUser(data.user.id);
+    throw signInError;
+  }
 }
 
 /** Deletes an account created by {@link newTeacher}; its rows go by cascade. */

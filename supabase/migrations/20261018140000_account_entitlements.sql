@@ -4,7 +4,8 @@
 --          from now on its first month: plan 'basic', access until the same day
 --          of the next month, source 'trial'. payments (S-25, S-26) will move the
 --          same date; S-27 will read the plan in the fair-use limit.
--- affected: creates public.account_entitlements, two rls policies, the trigger
+-- affected: creates public.account_entitlements (with an updated_at trigger on
+--           public.set_updated_at()), two rls policies, the trigger
 --           function public.start_trial_entitlement() and the trigger
 --           on_auth_user_created_start_trial on auth.users; grants
 --           supabase_auth_admin usage on schema public and insert on the table.
@@ -50,6 +51,13 @@ comment on table public.account_entitlements is 'plan state: one row per account
 comment on column public.account_entitlements.plan is 'the plan the account has access to until access_until.';
 comment on column public.account_entitlements.access_until is 'last day of access, inclusive, in Europe/Warsaw.';
 comment on column public.account_entitlements.source is 'where the current access_until came from: trial (sign-up trigger) or owner (sql editor).';
+
+-- the sql editor (testers) and, later, payments update the row; updated_at
+-- follows through the product's shared trigger function.
+create trigger account_entitlements_set_updated_at
+  before update on public.account_entitlements
+  for each row
+  execute function public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
 -- privileges and row level security

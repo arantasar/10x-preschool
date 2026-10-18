@@ -21,7 +21,7 @@
 
 begin;
 
-select plan(22);
+select plan(23);
 
 -- ---------------------------------------------------------------------------
 -- 1-4. metadata
@@ -98,7 +98,10 @@ select results_eq(
 );
 
 select is(
-  (select count(*)::int from public.account_entitlements),
+  (select count(*)::int from public.account_entitlements
+    where user_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222',
+                      '33333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444',
+                      '55555555-5555-5555-5555-555555555555')),
   5,
   'every new account gets exactly one row'
 );
@@ -201,7 +204,21 @@ select throws_ok(
 );
 
 -- ---------------------------------------------------------------------------
--- 21-22. the row goes with the account
+-- 21. an edit moves updated_at (as the owner, like the sql editor)
+-- ---------------------------------------------------------------------------
+
+update public.account_entitlements
+  set access_until = date '2027-01-31', source = 'owner', updated_at = timestamptz '2000-01-01 00:00:00+00'
+  where user_id = '22222222-2222-2222-2222-222222222222';
+
+select ok(
+  (select updated_at > timestamptz '2000-01-01 00:00:00+00' from public.account_entitlements
+    where user_id = '22222222-2222-2222-2222-222222222222'),
+  'an edit of the row sets updated_at'
+);
+
+-- ---------------------------------------------------------------------------
+-- 22-23. the row goes with the account
 -- ---------------------------------------------------------------------------
 
 delete from auth.users where id = '11111111-1111-1111-1111-111111111111';
