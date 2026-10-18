@@ -192,6 +192,30 @@ export type Database = {
         }
         Relationships: []
       }
+      founder_price_signups: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          period: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          period: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          period?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       generation_ledger: {
         Row: {
           created_at: string
