@@ -368,9 +368,9 @@ Bez migracji i bez `db push`. Plany zapisane wcześniej poza oknem zostają niet
 
 #### Automated
 
-- [x] 3.1 Testy, lint i build przechodzą: `npm test && npm run lint && npm run build`
-- [x] 3.2 Oba widoki przekazują `horizonNotice={` (grep zwraca `1` na plik)
-- [x] 3.3 `git diff -w master..HEAD -- context/foundation/roadmap.md` zmienia tylko wiersze `S-31`
+- [x] 3.1 Testy, lint i build przechodzą: `npm test && npm run lint && npm run build` — 74ee080
+- [x] 3.2 Oba widoki przekazują `horizonNotice={` (grep zwraca `1` na plik) — 74ee080
+- [x] 3.3 `git diff -w master..HEAD -- context/foundation/roadmap.md` zmienia tylko wiersze `S-31` — 74ee080
 
 #### Manual
 
