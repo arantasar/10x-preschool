@@ -7,10 +7,13 @@
 --     cannot become that role, so its usage, insert grant, insert policy and
 --     lack of bypassrls are asserted directly; the real insert through gotrue
 --     is src/lib/account-entitlement.db.test.ts.
---   * the date - the sign-up day in Warsaw plus one month, inclusive: an
---     ordinary day, the end of january (no 31st of february), and a sign-up
---     at 23:30 utc on the 31st of october, which is already the 1st of
---     november in Warsaw.
+--   * the date - the later of the sign-up day in Warsaw plus one month and
+--     2027-01-31, inclusive (S-30): an autumn sign-up and the last day before
+--     payments both get 31 january; a sign-up in mid january gets its month;
+--     the end of january (no 31st of february); and a sign-up at 23:30 utc on
+--     the 31st of december, which is already the 1st of january in Warsaw.
+--   * the alignment - the migration's update moves trial rows dated before
+--     2027-01-31 to that day and leaves owner rows and later dates alone.
 --   * the table - a teacher reads only her own row and writes none; anon reads
 --     nothing; an unknown plan or source is refused; the row goes with the
 --     account.
@@ -21,7 +24,7 @@
 
 begin;
 
-select plan(23);
+select plan(28);
 
 -- ---------------------------------------------------------------------------
 -- 1-4. metadata
@@ -78,7 +81,7 @@ select ok(
 );
 
 -- ---------------------------------------------------------------------------
--- 8-12. sign-up
+-- 8-14. sign-up
 -- ---------------------------------------------------------------------------
 
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
@@ -87,7 +90,9 @@ values
   ('00000000-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222', 'authenticated', 'authenticated', 'teacher-b@test.local', 'x', now(), now(), now()),
   ('00000000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 'authenticated', 'authenticated', 'teacher-c@test.local', 'x', now(), timestamptz '2027-01-31 10:00:00+00', now()),
   ('00000000-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'authenticated', 'authenticated', 'teacher-d@test.local', 'x', now(), timestamptz '2028-01-31 10:00:00+00', now()),
-  ('00000000-0000-0000-0000-000000000000', '55555555-5555-5555-5555-555555555555', 'authenticated', 'authenticated', 'teacher-e@test.local', 'x', now(), timestamptz '2026-10-31 23:30:00+00', now());
+  ('00000000-0000-0000-0000-000000000000', '55555555-5555-5555-5555-555555555555', 'authenticated', 'authenticated', 'teacher-e@test.local', 'x', now(), timestamptz '2026-12-31 23:30:00+00', now()),
+  ('00000000-0000-0000-0000-000000000000', '66666666-6666-6666-6666-666666666666', 'authenticated', 'authenticated', 'teacher-f@test.local', 'x', now(), timestamptz '2026-12-31 10:00:00+00', now()),
+  ('00000000-0000-0000-0000-000000000000', '77777777-7777-7777-7777-777777777777', 'authenticated', 'authenticated', 'teacher-g@test.local', 'x', now(), timestamptz '2027-01-15 10:00:00+00', now());
 
 -- counted as the owner, so rls cannot hide a missing row.
 
@@ -101,15 +106,28 @@ select is(
   (select count(*)::int from public.account_entitlements
     where user_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222',
                       '33333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444',
-                      '55555555-5555-5555-5555-555555555555')),
-  5,
+                      '55555555-5555-5555-5555-555555555555', '66666666-6666-6666-6666-666666666666',
+                      '77777777-7777-7777-7777-777777777777')),
+  7,
   'every new account gets exactly one row'
 );
 
 select is(
   (select access_until from public.account_entitlements where user_id = '11111111-1111-1111-1111-111111111111'),
-  date '2026-11-17',
-  'signed up on 17 october: access until 17 november, inclusive'
+  date '2027-01-31',
+  'signed up on 17 october, before payments: access until 31 january 2027'
+);
+
+select is(
+  (select access_until from public.account_entitlements where user_id = '66666666-6666-6666-6666-666666666666'),
+  date '2027-01-31',
+  'signed up on 31 december 2026, the last day before payments: access until 31 january 2027'
+);
+
+select is(
+  (select access_until from public.account_entitlements where user_id = '77777777-7777-7777-7777-777777777777'),
+  date '2027-02-15',
+  'signed up on 15 january 2027: the constant no longer applies, access until 15 february'
 );
 
 select is(
@@ -121,12 +139,12 @@ select is(
 
 select is(
   (select access_until from public.account_entitlements where user_id = '55555555-5555-5555-5555-555555555555'),
-  date '2026-12-01',
-  'signed up at 23:30 utc on 31 october - 1 november in Warsaw: access until 1 december'
+  date '2027-02-01',
+  'signed up at 23:30 utc on 31 december - 1 january in Warsaw: access until 1 february'
 );
 
 -- ---------------------------------------------------------------------------
--- 13-17. as teacher a: her own row to read, nothing to write
+-- 15-19. as teacher a: her own row to read, nothing to write
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
@@ -165,12 +183,12 @@ reset role;
 
 select results_eq(
   $$select access_until, source from public.account_entitlements where user_id = '11111111-1111-1111-1111-111111111111'$$,
-  $$values (date '2026-11-17', 'trial'::text)$$,
+  $$values (date '2027-01-31', 'trial'::text)$$,
   'teacher a''s row is unchanged after the refused writes'
 );
 
 -- ---------------------------------------------------------------------------
--- 18. anon reads nothing
+-- 20. anon reads nothing
 -- ---------------------------------------------------------------------------
 
 set local role anon;
@@ -186,7 +204,7 @@ select throws_ok(
 reset role;
 
 -- ---------------------------------------------------------------------------
--- 19-20. unknown plan and source are refused (as the owner, above rls)
+-- 21-22. unknown plan and source are refused (as the owner, above rls)
 -- ---------------------------------------------------------------------------
 
 select throws_ok(
@@ -204,7 +222,7 @@ select throws_ok(
 );
 
 -- ---------------------------------------------------------------------------
--- 21. an edit moves updated_at (as the owner, like the sql editor)
+-- 23. an edit moves updated_at (as the owner, like the sql editor)
 -- ---------------------------------------------------------------------------
 
 update public.account_entitlements
@@ -218,7 +236,43 @@ select ok(
 );
 
 -- ---------------------------------------------------------------------------
--- 22-23. the row goes with the account
+-- 24-26. the alignment (the migration's update, run again as the same statement)
+-- ---------------------------------------------------------------------------
+
+-- three rows as they may stand on production before the migration: a trial
+-- with its old month, an owner row, and a trial already past the constant.
+
+update public.account_entitlements set access_until = date '2026-11-17', source = 'trial'
+  where user_id = '33333333-3333-3333-3333-333333333333';
+update public.account_entitlements set access_until = date '2099-12-31', source = 'owner'
+  where user_id = '44444444-4444-4444-4444-444444444444';
+update public.account_entitlements set access_until = date '2027-02-15', source = 'trial'
+  where user_id = '77777777-7777-7777-7777-777777777777';
+
+update public.account_entitlements
+  set access_until = date '2027-01-31'
+  where source = 'trial' and access_until < date '2027-01-31';
+
+select is(
+  (select access_until from public.account_entitlements where user_id = '33333333-3333-3333-3333-333333333333'),
+  date '2027-01-31',
+  'alignment: a trial row dated 17 november moves to 31 january 2027'
+);
+
+select results_eq(
+  $$select access_until, source from public.account_entitlements where user_id = '44444444-4444-4444-4444-444444444444'$$,
+  $$values (date '2099-12-31', 'owner'::text)$$,
+  'alignment: an owner row is untouched'
+);
+
+select is(
+  (select access_until from public.account_entitlements where user_id = '77777777-7777-7777-7777-777777777777'),
+  date '2027-02-15',
+  'alignment: a trial row dated after 31 january 2027 is not moved back'
+);
+
+-- ---------------------------------------------------------------------------
+-- 27-28. the row goes with the account
 -- ---------------------------------------------------------------------------
 
 delete from auth.users where id = '11111111-1111-1111-1111-111111111111';

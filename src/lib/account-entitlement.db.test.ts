@@ -19,6 +19,14 @@ function plusOneMonth(isoDate: string): string {
   return target.toISOString().slice(0, 10);
 }
 
+/** Accounts created before payments start get access until this day (S-30). */
+const BEFORE_PAYMENTS_UNTIL = "2027-01-31";
+
+/** The later of two ISO dates - string order is date order. */
+function laterOf(a: string, b: string): string {
+  return a > b ? a : b;
+}
+
 const created: string[] = [];
 
 afterEach(async () => {
@@ -29,7 +37,7 @@ afterEach(async () => {
 });
 
 describe("account entitlement at sign-up", () => {
-  it("gives an account created through gotrue a month of access, readable by its owner", async () => {
+  it("gives an account created through gotrue access until the later of a month and 31.01.2027, readable by its owner", async () => {
     const teacher = await newTeacher(`api-trial-${uniqueStamp()}@example.test`);
     created.push(teacher.userId);
 
@@ -39,7 +47,12 @@ describe("account entitlement at sign-up", () => {
 
     expect(error).toBeNull();
     expect(data).toEqual([
-      { user_id: teacher.userId, plan: "basic", access_until: plusOneMonth(todayIsoDate()), source: "trial" },
+      {
+        user_id: teacher.userId,
+        plan: "basic",
+        access_until: laterOf(plusOneMonth(todayIsoDate()), BEFORE_PAYMENTS_UNTIL),
+        source: "trial",
+      },
     ]);
   });
 });
