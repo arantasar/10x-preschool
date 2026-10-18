@@ -371,7 +371,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-26       | one-time-access            | Dostęp jednorazowy BLIK-iem albo przelewem                         | no                    | Po Kroku 9 i Kroku 11; cena (#14)                                        |
 | S-27       | free-tier-limit            | Plan darmowy: pięć dni w miesiącu i plany po wygaśnięciu           | no                    | Ostatni — gotowy na 1.02.2027, kiedy konta sprzed płatności bez zakupu przechodzą na plan darmowy |
 | S-30       | trial-until-launch         | Basic do 31.01.2027 dla kont sprzed startu płatności               | yes                   | Mała migracja wyzwalacza; im wcześniej, tym mniej kont do poprawienia ręcznie |
-| S-31       | planning-horizon           | Limit horyzontu generowania (N tygodni naprzód)                    | yes                   | Okno: poprzedni → następny miesiąc, dopełnione do pełnych tygodni        |
+| S-31       | planning-horizon           | Limit horyzontu generowania (do końca następnego miesiąca)         | yes                   | Okno: poprzedni → następny miesiąc, dopełnione do pełnych tygodni        |
 
 ## Open Roadmap Questions
 

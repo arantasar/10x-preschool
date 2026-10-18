@@ -50,3 +50,10 @@
 - **Problem**: Limity Supabase Auth liczone „na IP” widzą adresy wyjściowe Cloudflare, wspólne dla wszystkich użytkowników, a nie konkretnej nauczycielki. Każda nowa trasa przyjmująca hasło jest więc kolejnymi drzwiami do zgadywania bez limitu na konto, a cudzy ruch potrafi zablokować uczciwą próbę błędem `over_request_rate_limit`. Wygląda to na ochronę, której w praktyce nie ma.
 - **Rule**: Nie traktuj limitów Supabase Auth jako ochrony przed zgadywaniem haseł w tej aplikacji. Plan każdej trasy przyjmującej hasło lub wysyłającej mail musi albo wnieść własny limit na konto/adres, albo zapisać jego brak jako jawną decyzję z właścicielem.
 - **Applies to**: plan, plan-review, implement, impl-review
+
+## Zmiana renderu strony wymaga inwentarza specs E2E
+
+- **Context**: Każda faza, która zmienia to, co strona renderuje warunkowo — ukrywa pole, przycisk albo tekst pustego stanu w zależności od daty, stanu konta czy uprawnień (`planning-horizon`, impl-review F1: `tests/e2e/support/test-data.ts`, daty z roku 2100+).
+- **Problem**: Plan S-31 schował formularz generowania poza oknem dat, ale nie sprawdził, które specs Playwright patrzą na te strony. Dane testowe E2E leżały w roku 2100, czyli poza oknem, więc 6 testów straciło elementy, na których stały ich asercje. CI uruchamia tylko lint i build, bez Playwrighta, a `npm test` i `test:db:api` były zielone. Wyszło to dopiero w przeglądzie implementacyjnym, tuż przed merge'em, który wdraża.
+- **Rule**: Gdy plan zmienia, kiedy strona pokazuje element, wypisz w planie specs E2E, które tę stronę odwiedzają: `grep` po ścieżce strony i po tekstach znikających elementów. Sprawdź też, czy dane testowe (daty, stany) spełniają nowy warunek. Uruchomienie tych specs dopisz do kryteriów automatycznych fazy, bo CI ich nie uruchamia.
+- **Applies to**: plan, plan-review, implement, impl-review
