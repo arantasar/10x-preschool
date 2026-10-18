@@ -6,7 +6,7 @@
 // `src/lib/pricing.ts`; cells are rendered by `ComparisonCellView`, no HTML
 // strings.
 import ComparisonCellView from "@/components/billing/ComparisonCellView.astro";
-import { PLAN_COMPARISON } from "@/lib/pricing";
+import { BASIC_PRICE_HEADER, FREE_PRICE, PLAN_COMPARISON } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -31,11 +31,11 @@ const cellBase =
           </th>
           <th scope="col" class="border-linia w-[31%] border-b-[1.5px] px-6 py-[22px] text-left">
             <span class="font-display block text-2xl font-normal">Darmowy</span>
-            <span class="text-mech block text-sm font-bold">0 zł</span>
+            <span class="text-mech block text-sm font-bold">{FREE_PRICE}</span>
           </th>
           <th scope="col" class="bg-las text-owies w-[31%] px-6 py-[22px] text-left">
             <span class="font-display block text-2xl font-normal">Basic</span>
-            <span class="text-szalwia block text-sm font-bold">159 zł / rok · 19,99 zł / mies.</span>
+            <span class="text-szalwia block text-sm font-bold">{BASIC_PRICE_HEADER}</span>
           </th>
         </tr>
       </thead>

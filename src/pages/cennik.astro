@@ -32,11 +32,13 @@ import {
   BEFORE_PAYMENTS_ACCESS_UNTIL,
   FOUNDER_NOTE,
   FOUNDER_PRICE,
+  FOUNDER_TERMS,
   FREE_NOTE,
   FREE_PERIOD,
   FREE_PLAN,
   FREE_PRICE,
   PAYMENTS_START_LABEL,
+  PRICING_DESCRIPTION,
 } from "@/lib/pricing";
 
 // Read at runtime and handed over as a prop, not a `PUBLIC_` variable: see the
@@ -68,10 +70,7 @@ const questions: FaqEntry[] = [
   },
   {
     question: "Co daje zapis na cenę założycielską?",
-    answer: [
-      "Cenę 119 zł za rok albo 14,99 zł miesięcznie przy subskrypcji — na zawsze, dopóki subskrypcja trwa bez przerwy.",
-      "Gdy ruszą płatności, wyślemy jedną wiadomość na podany adres.",
-    ],
+    answer: [`Cenę ${FOUNDER_TERMS}`, "Gdy ruszą płatności, wyślemy jedną wiadomość na podany adres."],
   },
   {
     question: "Czy cena założycielska obejmuje BLIK i przelew?",
@@ -82,10 +81,7 @@ const questions: FaqEntry[] = [
 ];
 ---
 
-<Layout
-  title="Cennik"
-  description={`Temio jest dziś bezpłatne. Od ${PAYMENTS_START_LABEL}: plan Darmowy albo Basic za 159 zł za rok. Zarezerwuj cenę założycielską.`}
->
+<Layout title="Cennik" description={PRICING_DESCRIPTION}>
   <div class="relative flex min-h-screen flex-col overflow-hidden">
     <Blob shape="a" color="sage" class="-top-40 -left-36 h-[300px] w-[340px] sm:h-[420px] sm:w-[480px]" />
     <Blob
@@ -156,8 +152,7 @@ const questions: FaqEntry[] = [
             Zarezerwuj cenę założycielską
           </h2>
           <p class="text-las-szary text-[17px] leading-relaxed">
-            119 zł za rok albo 14,99 zł miesięcznie przy subskrypcji — na zawsze, dopóki subskrypcja trwa bez przerwy.
-            Dziś nic nie płacisz: zapisujemy adres i piszemy, gdy ruszą płatności.
+            {FOUNDER_TERMS} Dziś nic nie płacisz: zapisujemy adres i piszemy, gdy ruszą płatności.
           </p>
         </div>
         <FounderPriceForm siteKey={siteKey} accountEmail={user?.email} alreadyListed={alreadyListed} client:load />

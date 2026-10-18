@@ -3,13 +3,14 @@
 // real radio inputs, yearly by default (FR-028). Every element on the page with
 // `data-price-yearly` / `data-price-monthly` (see `PricingCard`) gets its text
 // swapped by the tiny script below - no island. The founder-price form reads
-// the checked `name="billing"` input when it sends.
+// the checked input of the same group (`BILLING_INPUT_NAME`) when it sends.
+import { BILLING_INPUT_NAME } from "@/lib/pricing";
+
 interface Props {
-  name?: string;
   value?: "yearly" | "monthly";
 }
 
-const { name: inputName = "billing", value = "yearly" } = Astro.props;
+const { value = "yearly" } = Astro.props;
 
 const options = [
   { value: "yearly", label: "Rocznie" },
@@ -27,7 +28,7 @@ const options = [
       <label class="relative">
         <input
           type="radio"
-          name={inputName}
+          name={BILLING_INPUT_NAME}
           value={option.value}
           checked={value === option.value}
           class="peer absolute inset-0 m-0 cursor-pointer opacity-0"

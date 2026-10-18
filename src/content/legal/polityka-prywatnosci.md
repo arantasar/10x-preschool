@@ -5,7 +5,7 @@
 > - Temat i treści aktywności przekazujemy dostawcy modelu językowego, który przygotowuje propozycje. Nie dostaje on Twojego adresu e-mail. Nie wpisuj danych dzieci.
 > - Twoich planów nie przeglądamy, nikomu ich nie sprzedajemy i nie trenujemy na nich modeli.
 > - Usuwając konto, usuwasz od razu swoje plany. Wiadomości z formularza kontaktowego kasujemy po 12 miesiącach.
-> - Jeśli zapiszesz się na cenę założycielską, trzymamy Twój adres na liście do startu płatności i nie dłużej niż do 31 sierpnia 2027.
+> - Jeśli zapiszesz się na cenę założycielską, trzymamy Twój adres na liście do wycofania zgody, najdłużej do 31 sierpnia 2027.
 
 ## 1. Kto jest administratorem Twoich danych
 

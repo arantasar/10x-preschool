@@ -34,21 +34,44 @@ export const FOUNDER_LIST_RETENTION_UNTIL = "2027-08-31";
 /** „1 lutego 2027” - how the page names the start of payments. */
 export const PAYMENTS_START_LABEL = formatLegalDate(PAYMENTS_START_ON);
 
+/**
+ * The radio group of `BillingToggle`. `FounderPriceForm` reads the checked one
+ * when it sends, so both take the name from here: a renamed group would
+ * otherwise record every sign-up as yearly without a sound.
+ */
+export const BILLING_INPUT_NAME = "billing";
+
 /** A value the billing toggle swaps; yearly is the default (FR-028). */
 export interface Swap {
   readonly yearly: string;
   readonly monthly: string;
 }
 
-export const BASIC_PRICE: Swap = { yearly: "159 zł", monthly: "19,99 zł" };
+// The prices themselves. Every sentence below and on the page is built from
+// these, so a price changes in one line.
+const BASIC_YEARLY = "159 zł";
+const BASIC_MONTHLY = "19,99 zł";
+const FOUNDER_YEARLY = "119 zł";
+const FOUNDER_MONTHLY = "14,99 zł";
+
+export const BASIC_PRICE: Swap = { yearly: BASIC_YEARLY, monthly: BASIC_MONTHLY };
 export const BASIC_PERIOD: Swap = { yearly: "/ rok", monthly: "/ miesiąc" };
 // 159 / 12 = 13,25.
 export const BASIC_NOTE: Swap = {
   yearly: "Płatność raz w roku · ok. 13,25 zł miesięcznie",
   monthly: "Płatność co miesiąc",
 };
-export const FOUNDER_PRICE: Swap = { yearly: "119 zł / rok", monthly: "14,99 zł / miesiąc" };
+export const FOUNDER_PRICE: Swap = { yearly: `${FOUNDER_YEARLY} / rok`, monthly: `${FOUNDER_MONTHLY} / miesiąc` };
 export const FOUNDER_NOTE = "na zawsze, dopóki subskrypcja trwa bez przerwy.";
+
+/** The founder price in one sentence - the `#zapis` lead and the FAQ answer. */
+export const FOUNDER_TERMS = `${FOUNDER_YEARLY} za rok albo ${FOUNDER_MONTHLY} miesięcznie przy subskrypcji — ${FOUNDER_NOTE}`;
+
+/** The Basic column heading of the comparison table. */
+export const BASIC_PRICE_HEADER = `${BASIC_YEARLY} / rok · ${BASIC_MONTHLY} / mies.`;
+
+/** The page's meta description. */
+export const PRICING_DESCRIPTION = `Temio jest dziś bezpłatne. Od ${PAYMENTS_START_LABEL}: plan Darmowy albo Basic za ${BASIC_YEARLY} za rok. Zarezerwuj cenę założycielską.`;
 
 export interface PlanCardData {
   readonly name: string;
@@ -105,15 +128,15 @@ export const PLAN_COMPARISON: { groups: readonly ComparisonGroup[]; notes: reado
       rows: [
         {
           label: "Cena",
-          free: { text: "0 zł" },
-          basic: { strong: "159 zł za rok", text: " (domyślnie) albo 19,99 zł miesięcznie" },
+          free: { text: FREE_PRICE },
+          basic: { strong: `${BASIC_YEARLY} za rok`, text: ` (domyślnie) albo ${BASIC_MONTHLY} miesięcznie` },
         },
         {
           label: "Cena założycielska",
           free: null,
           basic: {
-            strong: "119 zł za rok",
-            text: " albo 14,99 zł miesięcznie, na zawsze, dopóki subskrypcja trwa bez przerwy",
+            strong: `${FOUNDER_YEARLY} za rok`,
+            text: ` albo ${FOUNDER_MONTHLY} miesięcznie, ${FOUNDER_NOTE.replace(/\.$/, "")}`,
           },
         },
         { label: "Pierwszy miesiąc od rejestracji", free: { text: "pełny Basic, bez karty" }, basic: null },

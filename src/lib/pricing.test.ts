@@ -7,13 +7,16 @@ import { formatLegalDate } from "@/lib/legal";
 import {
   BASIC_NOTE,
   BASIC_PLAN,
+  BASIC_PRICE_HEADER,
   BEFORE_PAYMENTS_ACCESS_UNTIL,
   FOUNDER_LIST_RETENTION_UNTIL,
+  FOUNDER_TERMS,
   FREE_NOTE,
   FREE_PLAN,
   PAYMENTS_START_LABEL,
   PAYMENTS_START_ON,
   PLAN_COMPARISON,
+  PRICING_DESCRIPTION,
   comparisonNoteMarks,
   comparisonTexts,
 } from "./pricing";
@@ -26,6 +29,9 @@ function everyText(): string[] {
     FREE_NOTE,
     BASIC_NOTE.yearly,
     BASIC_NOTE.monthly,
+    FOUNDER_TERMS,
+    BASIC_PRICE_HEADER,
+    PRICING_DESCRIPTION,
   ];
 }
 
@@ -72,6 +78,12 @@ describe("pricing — nothing false today", () => {
 
   it("states the yearly price per month as 159 / 12", () => {
     expect(BASIC_NOTE.yearly).toContain("13,25 zł");
+  });
+
+  it("leaves no price typed into the page or the table - they come from this module", () => {
+    for (const file of ["src/pages/cennik.astro", "src/components/billing/PlanComparison.astro"]) {
+      expect(readFileSync(file, "utf8")).not.toMatch(/\d+(,\d+)? zł/);
+    }
   });
 
   it("has one footnote for every footnote mark in the table", () => {

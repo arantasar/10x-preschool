@@ -13,6 +13,7 @@ import {
   founderPriceErrorMessage,
   type FounderPricePeriod,
 } from "@/lib/founder-price";
+import { BILLING_INPUT_NAME } from "@/lib/pricing";
 
 interface Props {
   /** `undefined` when the deployment has no Turnstile key: the form says it is unavailable. */
@@ -25,7 +26,7 @@ interface Props {
 
 /** The period the page's `BillingToggle` shows right now; yearly by default. */
 function currentPeriod(): FounderPricePeriod {
-  const checked = document.querySelector<HTMLInputElement>('input[name="billing"]:checked');
+  const checked = document.querySelector<HTMLInputElement>(`input[name="${BILLING_INPUT_NAME}"]:checked`);
   return checked?.value === "monthly" ? "monthly" : "yearly";
 }
 
@@ -43,6 +44,7 @@ export default function FounderPriceForm({ siteKey, accountEmail, alreadyListed 
     containerRef,
     tokenFor,
     reset: resetWidget,
+    remove: removeWidget,
     widgetFailed,
   } = useTurnstile({
     siteKey,
@@ -106,6 +108,8 @@ export default function FounderPriceForm({ siteKey, accountEmail, alreadyListed 
       });
       const body = (await response.json()) as { ok?: boolean; error?: string };
       if (response.ok && body.ok) {
+        // The confirmation replaces the form, container and all.
+        removeWidget();
         setListedAs(accountEmail ?? email.trim().toLowerCase());
         setPending(false);
         return;

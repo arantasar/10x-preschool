@@ -17,6 +17,7 @@ interface TurnstileApi {
     },
   ): string;
   reset(widgetId: string): void;
+  remove(widgetId: string): void;
 }
 
 declare global {
@@ -76,6 +77,12 @@ export interface Turnstile {
   tokenFor: () => Promise<string>;
   /** Spends the token: call after any refusal, so the retry earns a fresh one. */
   reset: () => void;
+  /**
+   * Takes the widget off the page. Call it before the form gives way to a
+   * confirmation in place: the container goes, but a widget left registered
+   * keeps refreshing its token. Unmounting removes it too.
+   */
+  remove: () => void;
   /** Turnstile cannot run in this browser at all: the form cannot succeed. */
   widgetFailed: boolean;
 }
@@ -94,11 +101,20 @@ export function useTurnstile({ siteKey, action }: Options): Turnstile {
   // Submits waiting for a token that has not arrived yet (see `tokenFor`).
   const tokenWaiters = useRef<((value: string) => void)[]>([]);
 
+  const remove = useCallback(() => {
+    token.current = null;
+    if (widgetId.current && window.turnstile) window.turnstile.remove(widgetId.current);
+    widgetId.current = null;
+  }, []);
+
   useEffect(() => {
     if (!siteKey || !containerRef.current || widgetId.current) return;
     const container = containerRef.current;
+    // Unmounted before the script arrived: render nothing into a dead container.
+    let cancelled = false;
     loadTurnstile()
       .then((turnstile) => {
+        if (cancelled) return;
         widgetId.current = turnstile.render(container, {
           sitekey: siteKey,
           action,
@@ -126,9 +142,13 @@ export function useTurnstile({ siteKey, action }: Options): Turnstile {
         });
       })
       .catch(() => {
-        setWidgetFailed(true);
+        if (!cancelled) setWidgetFailed(true);
       });
-  }, [siteKey, action]);
+    return () => {
+      cancelled = true;
+      remove();
+    };
+  }, [siteKey, action, remove]);
 
   // Turnstile tokens are single-use: after any refusal the next attempt needs a
   // fresh one, or the retry fails the same way.
@@ -154,5 +174,5 @@ export function useTurnstile({ siteKey, action }: Options): Turnstile {
     });
   }, []);
 
-  return { containerRef, tokenFor, reset, widgetFailed };
+  return { containerRef, tokenFor, reset, remove, widgetFailed };
 }
