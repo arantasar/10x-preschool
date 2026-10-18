@@ -1,12 +1,12 @@
 import type { APIContext } from "astro";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   activitiesFor,
   cleanup,
+  plusDays,
   seedDay,
   teacherClient,
-  uniquePlanDate,
   uniqueStamp,
   type Teacher,
 } from "@/lib/services/__fixtures__/supabase-local";
@@ -34,7 +34,27 @@ beforeAll(async () => {
   b = await teacherClient("b");
 });
 
+// The planning horizon (S-31) refuses `uniquePlanDate()`'s far-future days, so
+// the clock is pinned and the day is drawn from inside that window instead:
+// from 2026-09-15 the window is 2026-07-27 … 2026-11-01. Only `Date` is faked,
+// and only after sign-in - a clock in the past leaves the session valid, where
+// one in 2100 would make supabase-js treat it as expired.
+const NOW = new Date("2026-09-15T10:00:00+02:00");
+const WINDOW_FIRST = "2026-07-27";
+const WINDOW_DAYS = 98;
+
+/** A day inside the pinned window; random so a leftover row from an aborted run is unlikely to collide. */
+function planDateInWindow(): string {
+  return plusDays(WINDOW_FIRST, Math.floor(Math.random() * WINDOW_DAYS));
+}
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(NOW);
+});
+
 afterEach(async () => {
+  vi.useRealTimers();
   await cleanup(created);
   created = [];
 });
@@ -69,7 +89,7 @@ async function dayAsOwner(teacher: Teacher, date: string) {
 
 describe("POST /api/day-plan/week/save — a second teacher's week over an accepted day", () => {
   it("writes teacher b's day and leaves teacher a's accepted day exactly as it was", async () => {
-    const date = uniquePlanDate();
+    const date = planDateInWindow();
     const stampA = uniqueStamp();
     const stampB = uniqueStamp();
     const seeded = await seedDay(a.userId, date, {

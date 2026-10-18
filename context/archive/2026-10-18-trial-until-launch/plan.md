@@ -272,7 +272,7 @@ bo jej `update` wykonuje się w chwili `db push` (impl-review F3: ręczny krok j
 
 #### Manual
 
-- [ ] 1.8 Lokalna rejestracja pokazuje kartę do 31 stycznia 2027
+- [x] 1.8 Lokalna rejestracja pokazuje kartę do 31 stycznia 2027
 
 ### Phase 2: Dokumenty i wdrożenie
 
@@ -284,6 +284,6 @@ bo jej `update` wykonuje się w chwili `db push` (impl-review F3: ręczny krok j
 
 #### Manual
 
-- [ ] 2.4 `db push` na produkcję z merge'em
-- [ ] 2.5 Wiersze `trial` i `owner` na produkcji
-- [ ] 2.6 Próbna rejestracja na produkcji
+- [x] 2.4 `db push` na produkcję z merge'em
+- [x] 2.5 Wiersze `trial` i `owner` na produkcji
+- [x] 2.6 Próbna rejestracja na produkcji

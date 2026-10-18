@@ -57,6 +57,13 @@ export const FAQ_SECTIONS: readonly FaqSection[] = [
         ],
       },
       {
+        question: "Jak daleko naprzód mogę planować?",
+        answer: [
+          "Plany generujesz do końca następnego miesiąca — w październiku na przykład do końca listopada — a wstecz od początku poprzedniego miesiąca. Granice obejmują zawsze cały tydzień, więc tydzień na przełomie miesięcy możesz wygenerować w całości.",
+          "Zapisane plany możesz zawsze przeglądać, poprawiać, zatwierdzać i drukować, także te sprzed tego okresu.",
+        ],
+      },
+      {
         question: "Czy mogę wydrukować plan?",
         answer: ["Tak. Plan tygodnia i plan miesiąca pobierzesz jako PDF gotowy do druku."],
       },

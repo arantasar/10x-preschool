@@ -1,5 +1,6 @@
 import { GenerationError, type GenerationErrorCategory } from "./generation-error";
 import { StoreError, type StoreErrorCategory } from "./day-plan-store";
+import { horizonMessage, type HorizonRefusal, type HorizonScope } from "@/lib/planning-horizon";
 import type { DayPlanWithCurrentActivities } from "@/types";
 
 /**
@@ -50,6 +51,12 @@ export interface DayPlanErrorBody {
    * (`isLimitBody`) add the contact link next to it.
    */
   readonly limit?: { readonly resets_on: string };
+  /**
+   * Set only by {@link outsideHorizon}, additive in the same way as `limit`.
+   * `opens_on` is the first day the refused date can be generated, or `null`
+   * when the date is before the window and never will be.
+   */
+  readonly horizon?: { readonly opens_on: string | null };
 }
 
 /**
@@ -276,6 +283,27 @@ export function fairUseExceeded(resetsOn: string): Response {
     limit: { resets_on: resetsOn },
   };
   return json(body, 429);
+}
+
+// ---------------------------------------------------------------------------
+// Planning horizon
+// ---------------------------------------------------------------------------
+
+/**
+ * A date outside the generation window (S-31, `src/lib/planning-horizon.ts`).
+ *
+ * 422 and `retryable: false`: the request is well-formed, but trying again
+ * changes nothing until the window moves. No `limit`, so the island adds no
+ * contact link - there is nothing to ask us for. Routes answer with this before
+ * touching the database or the fair-use ledger, so a refusal costs nothing.
+ */
+export function outsideHorizon(refusal: HorizonRefusal, scope: HorizonScope): Response {
+  const body: DayPlanErrorBody = {
+    error: horizonMessage(refusal, scope),
+    retryable: false,
+    horizon: { opens_on: refusal.kind === "too_far" ? refusal.opensOn : null },
+  };
+  return json(body, 422);
 }
 
 /**

@@ -6,10 +6,12 @@ import {
   fairUseExceeded,
   generationFailure,
   json,
+  outsideHorizon,
   unauthorized,
   unconfigured,
 } from "@/lib/services/day-plan-http";
 import { claimGeneration, finishGeneration } from "@/lib/services/fair-use";
+import { checkGenerationDates } from "@/lib/planning-horizon";
 import type { DayTheme } from "@/types";
 
 export const prerender = false;
@@ -39,6 +41,9 @@ export const prerender = false;
  * The outline is recorded in the fair-use ledger as `outline`: it counts no day,
  * but it is refused when not a single day is left, so a teacher over the limit
  * is stopped at the first click instead of after waiting for themes.
+ *
+ * One day outside the planning horizon (`planning-horizon.ts`) refuses the
+ * whole request, before the claim.
  *
  * Session is checked here rather than in `src/middleware.ts` for the reason
  * `day-plan-http.ts` records: this route is called with `fetch`, and a redirect
@@ -73,6 +78,11 @@ export const POST: APIRoute = async (context) => {
   const parsed = weekOutlineRequestSchema.safeParse(payload);
   if (!parsed.success) {
     return badRequest("Podaj hasło — jedna linia tekstu, od 1 do 2000 znaków — oraz od 1 do 5 dni roboczych.");
+  }
+
+  const refusal = checkGenerationDates(parsed.data.dates);
+  if (refusal) {
+    return outsideHorizon(refusal, "week");
   }
 
   // The only database call here is the fair-use claim, but the check would stay

@@ -8,11 +8,13 @@ import {
   badRequest,
   fairUseExceeded,
   generationFailure,
+  outsideHorizon,
   storeFailure,
   unauthorized,
   unconfigured,
 } from "@/lib/services/day-plan-http";
 import { claimGeneration, finishGeneration } from "@/lib/services/fair-use";
+import { checkGenerationDates } from "@/lib/planning-horizon";
 
 export const prerender = false;
 
@@ -53,6 +55,10 @@ export const prerender = false;
  * refusals - a refused regeneration costs no day - and before the model; it is
  * marked `failed` when either the model or the write fails, because either way
  * the teacher did not get her day.
+ *
+ * A day outside the planning horizon (`planning-horizon.ts`) is refused right
+ * after validation, before the database and the claim - also when the day
+ * already has a plan, because regenerating is generating.
  */
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
@@ -78,6 +84,11 @@ export const POST: APIRoute = async (context) => {
   const parsed = generateDayPlanRequestSchema.safeParse(payload);
   if (!parsed.success) {
     return badRequest("Podaj poprawną datę oraz hasło — jedna linia tekstu, od 1 do 2000 znaków.");
+  }
+
+  const refusal = checkGenerationDates([parsed.data.plan_date]);
+  if (refusal) {
+    return outsideHorizon(refusal, "day");
   }
 
   const supabase = context.locals.supabase;

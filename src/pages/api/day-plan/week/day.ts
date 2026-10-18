@@ -6,10 +6,12 @@ import {
   fairUseExceeded,
   generationFailure,
   json,
+  outsideHorizon,
   unauthorized,
   unconfigured,
 } from "@/lib/services/day-plan-http";
 import { claimGeneration, finishGeneration } from "@/lib/services/fair-use";
+import { checkGenerationDates } from "@/lib/planning-horizon";
 import type { ActivityDraft } from "@/types";
 
 export const prerender = false;
@@ -45,6 +47,9 @@ export const prerender = false;
  * five of these at once, which is why the claim is one locked operation in the
  * database rather than a read here followed by a write.
  *
+ * A day outside the planning horizon (`planning-horizon.ts`) is refused before
+ * the claim, so the refusal costs no day.
+ *
  * Session is checked here rather than in `src/middleware.ts` for the reason
  * `day-plan-http.ts` records: this route is called with `fetch`, and a redirect
  * would arrive as a JSON parse error instead of "your session expired".
@@ -73,6 +78,11 @@ export const POST: APIRoute = async (context) => {
   const parsed = generateWeekDayRequestSchema.safeParse(payload);
   if (!parsed.success) {
     return badRequest("Podaj poprawną datę oraz hasło — jedna linia tekstu, od 1 do 2000 znaków.");
+  }
+
+  const refusal = checkGenerationDates([parsed.data.plan_date]);
+  if (refusal) {
+    return outsideHorizon(refusal, "day");
   }
 
   // The only database call here is the fair-use claim, and the check would stay

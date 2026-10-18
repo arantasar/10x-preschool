@@ -73,6 +73,35 @@ export function uniqueWeekStartWithinMonth(): string {
 }
 
 /**
+ * Tydzien wewnatrz horyzontu planowania (S-31) — dla testow, ktore potrzebuja
+ * formularza generowania albo pustego dnia z polem hasla. Na datach z
+ * `uniquePlanDate()` (rok 2100+) strona pokazuje zamiast nich notke horyzontu.
+ *
+ * Okno jest za krotkie na losowanie: kilkadziesiat dni przy `fullyParallel` i
+ * `unique (user_id, plan_date)` dawaloby zderzenia. Kazdy test dostaje wiec
+ * **wlasny, staly** tydzien — slot — i tylko on po nim siega:
+ *
+ * - `0`, `1`: `regenerate-confirmation.spec.ts`, testy tygodnia (po jednym)
+ * - `2`: testy dnia — pn `seed.spec.ts`, wt `regenerate-confirmation.spec.ts`,
+ *   sr `day-plan-ownership.spec.ts`, czw + pt `day-plan-delete-scope.spec.ts`
+ *
+ * Nowy test, ktory potrzebuje formularza, bierze nowy slot albo wolny dzien,
+ * i dopisuje sie do tej listy.
+ *
+ * Sloty leza w nastepnym miesiacu (Europe/Warsaw), ktory jest w oknie zawsze w
+ * calosci: pierwszy poniedzialek miesiaca wypada najpozniej 7., wiec piatek
+ * slotu `2` najpozniej 25. Liczone tu, nie importowane z aplikacji — jak
+ * `dayLabel` w specach.
+ */
+export function weekStartInHorizon(slot: 0 | 1 | 2): string {
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Warsaw" }).format(new Date());
+  const [year, month] = today.split("-").map(Number);
+  const firstOfNextMonth = new Date(Date.UTC(year, month, 1)).toISOString().slice(0, 10);
+  const daysUntilMonday = (8 - new Date(`${firstOfNextMonth}T00:00:00Z`).getUTCDay()) % 7;
+  return plusDays(firstOfNextMonth, daysUntilMonday + slot * 7);
+}
+
+/**
  * Znacznik wplatany w tytuly propozycji.
  *
  * Asercje celuja w niego, a nie w ogolne "jakis plan jest widoczny" — inaczej

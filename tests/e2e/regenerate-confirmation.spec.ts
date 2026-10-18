@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { deleteSeededPlans, ensureTeacher, seedDayPlan, TEACHER_A } from "./support/supabase-admin";
-import { activitiesFor, plusDays, uniquePlanDate, uniqueStamp, uniqueWeekStart } from "./support/test-data";
+import { activitiesFor, plusDays, uniqueStamp, weekStartInHorizon } from "./support/test-data";
 import { waitForIslands } from "./support/hydration";
 
 /**
@@ -70,7 +70,8 @@ test.describe("Ryzyko #3 — odmowa w oknach przed regeneracją dnia zatwierdzon
   });
 
   test("ryzyko #3: „Zostaw obecne” na ekranie dnia nie generuje i nie zdejmuje zatwierdzenia", async ({ page }) => {
-    const planDate = uniquePlanDate();
+    // W horyzoncie planowania: poza nim nie ma „Generuj ponownie” (S-31).
+    const planDate = plusDays(weekStartInHorizon(2), 1);
     const stamp = uniqueStamp();
     const title = `Powitanie ${stamp}`;
 
@@ -113,7 +114,8 @@ test.describe("Ryzyko #3 — odmowa w oknach przed regeneracją dnia zatwierdzon
   test("ryzyko #3: „Tylko do przejrzenia” zawęża przebieg tygodnia, a „Zostaw obecne” w drugim oknie go zatrzymuje", async ({
     page,
   }) => {
-    const weekStart = uniqueWeekStart();
+    // W horyzoncie planowania: poza nim nie ma formularza tygodnia (S-31).
+    const weekStart = weekStartInHorizon(0);
     const approvedDate = weekStart;
     const draftDate = plusDays(weekStart, 1);
     const stamp = uniqueStamp();
@@ -171,7 +173,7 @@ test.describe("Ryzyko #3 — odmowa w oknach przed regeneracją dnia zatwierdzon
   test("ryzyko #3: „Zastąp także zatwierdzone” nazywa cofane zatwierdzenie w drugim oknie, a odmowa tam nie generuje", async ({
     page,
   }) => {
-    const weekStart = uniqueWeekStart();
+    const weekStart = weekStartInHorizon(1);
     const approvedDate = weekStart;
     const draftDate = plusDays(weekStart, 1);
     const stamp = uniqueStamp();

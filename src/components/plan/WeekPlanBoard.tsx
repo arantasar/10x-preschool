@@ -3,6 +3,7 @@ import { Check, CircleAlert, Sparkles } from "lucide-react";
 import { useConfirmDialog } from "@/components/hooks/useConfirmDialog";
 import { WeekDayCard, type DayState } from "@/components/plan/WeekDayCard";
 import { FIELD_BASE, FIELD_BORDER, FIELD_BORDER_ERROR, FIELD_ERROR, FIELD_LABEL } from "@/components/plan/field-styles";
+import { HorizonNotice } from "@/components/plan/HorizonNotice";
 import { ScopeToggle } from "@/components/plan/ScopeToggle";
 import WeekPdfControls from "@/components/plan/WeekPdfControls";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,12 @@ interface WeekPlanBoardProps {
   readonly initialPrompt?: string;
   /** Where "Jeden dzień" leads: today when it lies in this week, its Monday otherwise. */
   readonly dayHref: string;
+  /**
+   * Set when this week is outside the planning horizon (`@/lib/planning-horizon`):
+   * the sentence that stands where the hasło and the generate button would.
+   * Saved days, their cards and "Zatwierdź wszystkie" are unaffected.
+   */
+  readonly horizonNotice: string | null;
 }
 
 // `managing` is a day operation from a card. The generate button does not name
@@ -117,7 +124,7 @@ interface WeekWriteDay {
   readonly activities: readonly ActivityDraft[];
 }
 
-export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlanBoardProps) {
+export default function WeekPlanBoard({ week, initialPrompt, dayHref, horizonNotice }: WeekPlanBoardProps) {
   const [days, setDays] = useState<Record<string, DayState>>(() => initialDays(week));
   const [prompt, setPrompt] = useState(() => initialPrompt ?? firstPrompt(week));
   const [promptError, setPromptError] = useState<string | undefined>(undefined);
@@ -915,61 +922,71 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          void generateWeek();
+          if (horizonNotice === null) {
+            void generateWeek();
+          }
         }}
       >
         <h2 className="font-display text-display-sm text-las">Nowe propozycje</h2>
 
-        <div>
-          {/* The label's text is what `landing-topic-carry.spec.ts` finds the field by. */}
-          <div className={FIELD_LABEL}>
-            <label htmlFor="week-prompt">Hasło tygodnia</label>
-          </div>
-          <textarea
-            id="week-prompt"
-            name="prompt"
-            rows={2}
-            value={prompt}
-            disabled={isBusy}
-            maxLength={PROMPT_MAX}
-            placeholder="np. Dinozaury"
-            onChange={(event) => {
-              setPrompt(event.target.value);
-              setPromptError(undefined);
-            }}
-            className={cn(FIELD_BASE, "resize-y", promptError ? FIELD_BORDER_ERROR : FIELD_BORDER)}
-          />
-          <div className="mt-1.5 flex items-start justify-between gap-2">
-            {promptError && (
-              <p className={FIELD_ERROR}>
-                <CircleAlert className="size-4 shrink-0" />
-                {promptError}
-              </p>
-            )}
-            <span
-              className={cn(
-                "ml-auto text-sm tabular-nums",
-                remaining < 100 ? "text-ostrzezenie font-bold" : "text-las-szary",
+        {horizonNotice !== null ? (
+          <HorizonNotice message={horizonNotice} promptLabel="Hasło tygodnia" savedPrompt={firstPrompt(week)} />
+        ) : (
+          <div>
+            {/* The label's text is what `landing-topic-carry.spec.ts` finds the field by. */}
+            <div className={FIELD_LABEL}>
+              <label htmlFor="week-prompt">Hasło tygodnia</label>
+            </div>
+            <textarea
+              id="week-prompt"
+              name="prompt"
+              rows={2}
+              value={prompt}
+              disabled={isBusy}
+              maxLength={PROMPT_MAX}
+              placeholder="np. Dinozaury"
+              onChange={(event) => {
+                setPrompt(event.target.value);
+                setPromptError(undefined);
+              }}
+              className={cn(FIELD_BASE, "resize-y", promptError ? FIELD_BORDER_ERROR : FIELD_BORDER)}
+            />
+            <div className="mt-1.5 flex items-start justify-between gap-2">
+              {promptError && (
+                <p className={FIELD_ERROR}>
+                  <CircleAlert className="size-4 shrink-0" />
+                  {promptError}
+                </p>
               )}
-            >
-              {prompt.length} / {PROMPT_MAX}
-            </span>
+              <span
+                className={cn(
+                  "ml-auto text-sm tabular-nums",
+                  remaining < 100 ? "text-ostrzezenie font-bold" : "text-las-szary",
+                )}
+              >
+                {prompt.length} / {PROMPT_MAX}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
 
         <ScopeToggle active="week" dayHref={dayHref} weekHref={`/plan/week?from=${week.weekStart}`} />
 
-        <Button type="submit" variant="primary" size="pill" disabled={isBusy} className="w-full cursor-pointer">
-          <Sparkles className="size-4" />
-          {busy === "outlining"
-            ? "Układam plan tygodnia…"
-            : busy === "generating"
-              ? "Generuję dni…"
-              : busy === "saving"
-                ? "Zapisuję tydzień…"
-                : "Generuj tydzień"}
-        </Button>
-        <p className="text-las-szary text-sm">{AI_PROPOSALS_NOTICE}</p>
+        {horizonNotice === null && (
+          <>
+            <Button type="submit" variant="primary" size="pill" disabled={isBusy} className="w-full cursor-pointer">
+              <Sparkles className="size-4" />
+              {busy === "outlining"
+                ? "Układam plan tygodnia…"
+                : busy === "generating"
+                  ? "Generuję dni…"
+                  : busy === "saving"
+                    ? "Zapisuję tydzień…"
+                    : "Generuj tydzień"}
+            </Button>
+            <p className="text-las-szary text-sm">{AI_PROPOSALS_NOTICE}</p>
+          </>
+        )}
         {/* In the panel, next to the other week-level action, so it stays in
             reach while the list scrolls. `type="button"` is load-bearing: inside
             this form a bare button submits, and approving would then run
@@ -987,20 +1004,24 @@ export default function WeekPlanBoard({ week, initialPrompt, dayHref }: WeekPlan
             {busy === "accepting" ? "Zatwierdzam…" : `Zatwierdź wszystkie (${String(acceptableCount)})`}
           </Button>
         )}
-        <p className="text-las-szary text-sm">
-          Wpisz jedno hasło na cały tydzień. Ułożymy z niego pięć różnych tematów — po jednym na dzień roboczy — i
-          wygenerujemy propozycje zajęć dla każdego dnia osobno.
-        </p>
+        {horizonNotice === null && (
+          <p className="text-las-szary text-sm">
+            Wpisz jedno hasło na cały tydzień. Ułożymy z niego pięć różnych tematów — po jednym na dzień roboczy — i
+            wygenerujemy propozycje zajęć dla każdego dnia osobno.
+          </p>
+        )}
         {/* The teacher is spending their own credits; the count is not a detail
             to bury. "Pusty dzień" stopped being the divisor at S-09 - every
             unaccepted day is regenerated, and since S-10 accepted days too when
             the teacher agrees, so the worst case is five. This is the only
             answer these slices give to the open question about a generation
             limit, and that is deliberate. */}
-        <p className="text-las-szary text-sm">
-          Generowanie tygodnia to jedno wywołanie na plan tygodnia i po jednym na każdy zastępowany dzień. Zatwierdzone
-          dni zastąpię tylko wtedy, gdy zgodzisz się na to w oknie potwierdzenia.
-        </p>
+        {horizonNotice === null && (
+          <p className="text-las-szary text-sm">
+            Generowanie tygodnia to jedno wywołanie na plan tygodnia i po jednym na każdy zastępowany dzień.
+            Zatwierdzone dni zastąpię tylko wtedy, gdy zgodzisz się na to w oknie potwierdzenia.
+          </p>
+        )}
       </form>
 
       <div className="min-w-0 space-y-4">
