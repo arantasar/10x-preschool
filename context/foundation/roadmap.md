@@ -24,7 +24,7 @@ milestone_status: active
 
 - **Intent:** Nauczycielka posługuje się kontem i usługą bez pomocy właściciela — odzyskuje i zmienia hasło, usuwa konto, czyta regulamin, politykę prywatności i FAQ, pisze przez formularz — generowanie ma limit, który zatrzymuje wyłącznie nadużycie, bramka bezpieczeństwa treści znów pracuje, a nauczycielka **może zapłacić za Basic** (subskrypcja albo dostęp jednorazowy, z gwarancją zwrotu 14 dni) albo zostać na planie darmowym. _(Do 2026-10-17 płatności wchodziły dopiero po bramie zapisów — zdjęta, patrz §Open Roadmap Questions #1.)_
 - **Source materials:** `context/foundation/prd-v3.md` (v3), poprzedzone `shape-notes.md` (2026-10-01, runda Sokratejska przy każdym z 17 FR) i `monetization.md` (§Decyzje 2026-09-29).
-- **Done when:** wszystkie pozycje `F-02`, `S-16`…`S-29` są `done`, z płatnościami wydanymi kompletem (Guardrail 3). **Termin: płatności na produkcji do 2027-01-20** — testerzy (do 5 osób z zaproszenia, Basic gratis do 31.01.2027) muszą móc zapłacić w oknie planowania lutego (PRD v3 `hard_deadline`, aktualizacja 2026-10-17).
+- **Done when:** wszystkie pozycje `F-02`, `S-16`…`S-29` są `done`, z płatnościami wydanymi kompletem (Guardrail 3). **Termin: płatności na produkcji do 2027-01-20** — testerzy (do 5 osób z zaproszenia, Basic gratis do 31.01.2027) muszą móc zapłacić w oknie planowania lutego (PRD v3 `hard_deadline`, aktualizacja 2026-10-17). **2026-10-18:** termin zostaje, zmienia się powód — testerzy mają dostęp bezterminowy, a do 31.01.2027 trwa Basic wszystkich kont założonych przed startem płatności (`S-30`); od lutego płatności działają i kamień sprawdza, czy aplikacja na siebie zarabia.
 - **Scope anchors:** FR-022…FR-039; US-04, US-05; Guardraile 1–3 z PRD v3 §Success Criteria; cztery niezmienniki `M-02`.
 - **Czego ten kamień nie robi:** nie spłaca długu PRD za `S-04`, `S-05` i `S-08` (Open Roadmap Questions #10 — ślad kontrolny: obietnica spłaty nie może tu wrócić); nie zmienia wytycznych generowania ani promptu (to `M-04`); nie buduje Pro.
 
@@ -38,11 +38,13 @@ dzieci — bramka bezpieczeństwa — jest wstrzymany od 2026-09-19. `M-03` domy
 na nich stawia cennik i płatności za Basic. **Aktualizacja 2026-10-17:** pomiar przez fake door
 ustąpił testerom — do 5 nauczycielek z zaproszenia dostaje Basic gratis do 31.01.2027 i cenę
 założycielską; to, ile z nich zapłaci po prezencie, jest sygnałem chęci płacenia (metryka, nie
-brama). Zapis na cenę założycielską zostaje dla obcych osób jako lista „daj znać, gdy ruszy”.
+brama). Zapis na cenę założycielską zostaje dla obcych osób jako lista „daj znać, gdy ruszy”. **Aktualizacja
+2026-10-18:** testerzy mają dostęp bezterminowy, więc sygnał chęci płacenia dają nowe konta: do
+startu płatności dostają Basic do 31.01.2027, potem cenę założycielską (`S-30`).
 
 ## North star
 
-**S-25: Nauczycielka wykupuje Basic jako subskrypcję kartą, zarządza nią i może dostać zwrot** — od 2026-10-17 (brama zdjęta, testerzy z terminem 31.01.2027) to ta pozycja dowodzi, że kamień ma sens: pierwsza prawdziwa złotówka od testerki po prezencie. Do 2026-10-17 gwiazdą przewodnią był `S-22` (zapis jako jedyny pomiar chęci płacenia).
+**S-25: Nauczycielka wykupuje Basic jako subskrypcję kartą, zarządza nią i może dostać zwrot** — od 2026-10-17 (brama zdjęta, testerzy z terminem 31.01.2027) to ta pozycja dowodzi, że kamień ma sens: pierwsza prawdziwa złotówka od testerki po prezencie. **2026-10-18:** od nauczycielki spoza grupy testerów, której Basic skończył się 31.01.2027 (`S-30`) — pytanie kamienia brzmi teraz „czy aplikacja na siebie zarabia”. Do 2026-10-17 gwiazdą przewodnią był `S-22` (zapis jako jedyny pomiar chęci płacenia).
 
 > **Gwiazda przewodnia** to najmniejsza pozycja dowożąca wartość od końca do końca, której
 > udane wdrożenie dowodzi, że cały kamień ma sens — dlatego planuje się ją tak wcześnie, jak
@@ -77,6 +79,8 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-25 | basic-subscription         | wykupić Basic jako subskrypcję kartą, zarządzać nią, anulować ją i w 14 dni dostać zwrot                 | F-02, S-18, S-22, S-23, Krok 9, konto operatora  | FR-032, FR-034, FR-035, FR-039, FR-024 | blocked  |
 | S-26 | one-time-access            | wykupić Basic jednorazowo (miesiąc albo rok szkolny) BLIK-iem albo przelewem, z gwarancją zwrotu         | F-02, S-23, Krok 9, konto operatora              | FR-033, FR-039                 | blocked  |
 | S-27 | free-tier-limit            | na planie darmowym zaplanować pięć dni roboczych w miesiącu, a po wygaśnięciu planu zachować swoje plany | S-21, S-24, S-25                                 | FR-031, FR-037                 | blocked  |
+| S-30 | trial-until-launch         | jako konto założone przed startem płatności mieć pełny Basic do 31.01.2027, a po starcie — przez miesiąc | S-23                                             | FR-030                         | ready    |
+| S-31 | planning-horizon           | generować plany najwyżej kilka tygodni naprzód, tak by nikt nie zrobił zapasu na lata w okresie próbnym | S-21                                             | FR-027                         | ready    |
 
 ## Streams
 
@@ -87,7 +91,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | A      | Bezpieczeństwo treści              | `F-02`                                                       | Pierwszy przy celu `quality` — dług `S-15` i warunek sprzedaży. Dołącza do strumienia D w `S-22`, `S-25`, `S-26`.                           |
 | B      | Konto                              | `S-16` / `S-17` / `S-18` (równolegle)                        | Trzy niezależne pozycje bez prerekwizytów; `S-18` wraca w strumieniu D jako prerekwizyt `S-25` (usunięcie konta kończy subskrypcję).       |
 | C      | Informacja, kontakt i limit        | `S-19` → `S-21`; `S-20` równolegle                           | `S-19` stawia ochronę przed automatami, z której korzysta `S-22`; `S-20` czeka na zewnętrzną treść prawną — główne ryzyko kamienia.        |
-| D      | Cennik i płatności                 | `S-21` → `S-28` → `S-23` → `S-24` / `S-25` / `S-26` → `S-27`; `S-22` przed `S-25`; `S-29` (wydruki) niezależnie, przed `S-23` | Od 2026-10-17 bez bramy, termin 2027-01-20. Ścieżka krytyczna: Krok 11 (formalności, poza kodem) i Krok 9 (e2e w CI) → `S-25`. Płatności kompletem (Guardrail 3). |
+| D      | Cennik i płatności                 | `S-21` → `S-28` → `S-23` → `S-30` → `S-24` / `S-25` / `S-26` → `S-27`; `S-22` przed `S-25`; `S-31` (horyzont) przed `S-30` albo razem z nim; `S-29` (wydruki) niezależnie | Od 2026-10-17 bez bramy, termin 2027-01-20. Ścieżka krytyczna: Krok 11 (formalności, poza kodem) i Krok 9 (e2e w CI) → `S-25`. Płatności kompletem (Guardrail 3). |
 
 ## Baseline
 
@@ -273,6 +277,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - ~~Długość okresu Basic gratis dla kont sprzed płatności spoza grupy testerów~~ — **nie dotyczy (2026-10-18, Janusz):** kontami sprzed płatności są wyłącznie konto właściciela i konta testerów (sprawdzone na produkcji: wszystkie inne mają wiersz okresu próbnego z `S-23`). Open Roadmap Questions #5 zamknięte. Owner: —. Block: nie.
   - ~~Testerzy~~ — **rozstrzygnięte 2026-10-18 (Janusz):** testerzy mają te same uprawnienia co właściciel — wiersz `account_entitlements` z `access_until = '2099-12-31'`, `source = 'owner'`, i nadpisanie `fair_use_overrides` bez sufitu i bez daty końca, wpisane w SQL Editorze. Nie wracają na plan darmowy po `S-27`, więc uprzedzenie i prezent ich nie dotyczą. Owner: —. Block: nie.
+  - **Zakres po decyzji 2026-10-18 (Janusz):** prezentem dla kont sprzed płatności jest sam Basic do 31.01.2027 (`S-30`), a cena założycielska przychodzi z `S-22`/`S-25`. Zostaje uprzedzenie: każde takie konto dowiaduje się przed 31.01.2027, co stanie się 1.02 (płatności, plan darmowy z `S-27`). Owner: `/10x-plan`. Block: nie.
 - **Risk:** Sednem jest kolejność, nie prezent: uprzedzenie musi wyprzedzić `S-27`, inaczej obecne nauczycielki poznają nowe zasady przy pierwszym limicie — dokładnie to, co runda Sokratejska uznała za zmianę zasad bez zgody. Kryterium Secondary („żadne aktywne konto nie odchodzi z powodu zmian kamienia") mierzy się właśnie tutaj.
 - **Status:** blocked
 
@@ -318,6 +323,36 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Ostatnia, bo jako jedyna **odbiera** coś użytkownikowi — przed nią musi istnieć uprzedzenie (`S-24`) i działający zakup (`S-25`), inaczej cennik w miejscu generowania jest ścianą bez drzwi. Reguła „to, co zaplanowane, nigdy nie jest odbierane" wiąże: tydzień przecinający dwa miesiące liczy dni do ich miesięcy (FR-031), a zatwierdzanie, usuwanie i druk tygodnia nie podlegają limitowi.
 - **Status:** blocked
 
+### S-30: Basic do 31.01.2027 dla kont sprzed startu płatności (krok 7)
+
+- **Outcome:** Konto założone przed startem płatności dostaje pełny Basic do 31.01.2027 włącznie, a nie tylko na miesiąc; konto założone po starcie płatności — na miesiąc, jak dziś. Karta w `/ustawienia` od pierwszego dnia pokazuje prawdziwą datę.
+- **Change ID:** trial-until-launch
+- **PRD refs:** FR-030 (okres próbny); §Business Logic „Druga reguła”
+- **Prerequisites:** S-23 (tabela i wyzwalacz)
+- **Parallel with:** S-31, S-22
+- **Blockers:** —
+- **Decision (2026-10-18, Janusz):** wariant mieszany. Przy 30 dniach konto założone w listopadzie miałoby w dniu startu `S-27` wygasły dostęp i trafiłoby na plan darmowy bez uprzedzenia; wspólna data daje jeden komunikat (`S-24`), jedną falę decyzji „płacę albo plan darmowy” i czytelny wynik konwersji.
+- **Unknowns:**
+  - Kształt: wyzwalacz liczy `greatest(dzień rejestracji w Warszawie + 1 miesiąc, '2027-01-31')`, a migracja przy starcie płatności (`S-25`/`S-26`) zdejmuje `greatest`. Konta `source = 'trial'` założone między wdrożeniem `S-23` a tą pozycją dostają datę jednym `update` w migracji (wiersze bez danych osób, więc wolno). Owner: `/10x-plan`. Block: nie.
+  - Jeśli płatności się opóźnią, datę przesuwa się dla wszystkich kont `source = 'trial'` z `access_until = '2027-01-31'` — jeden `update` w SQL Editorze. Owner: Janusz. Block: nie.
+- **Risk:** Zapas planów: do 31.01.2027 to do czterech miesięcy kalendarzowych po 150 dni-generacji, czyli kilka lat szkolnych na zapas, który `S-27` każe zachować na zawsze. Ochroną jest `S-31`, nie krótsza próba. Słownik bez zmian: karta mówi „Pełny dostęp — do 31 stycznia 2027”, bez „Basic”, „okresu próbnego” i ceny, dopóki `S-22`/`S-25` nie uczynią ich prawdą.
+- **Status:** ready
+
+### S-31: Horyzont planowania
+
+- **Outcome:** Nauczycielka generuje plany najwyżej N tygodni naprzód od dziś; próba wygenerowania dalszego dnia mówi po polsku, od kiedy będzie to możliwe. Plany już zapisane zostają bez zmian, a edycja, zatwierdzanie, usuwanie i druk nie podlegają limitowi.
+- **Change ID:** planning-horizon
+- **PRD refs:** FR-027 (fair use — limit zatrzymuje nadużycie, nie zwykłe planowanie)
+- **Prerequisites:** S-21
+- **Parallel with:** S-30
+- **Blockers:** —
+- **Decision (2026-10-18, Janusz):** zapas planów na lata w okresie próbnym blokuje horyzont, nie długość próby — dziś nic nie ogranicza daty generowania, a limit fair use (150 dni-generacji w miesiącu kalendarzowym) pozwala na kilka lat szkolnych w czterech miesiącach.
+- **Unknowns:**
+  - Wartość N (rekomendacja: 8 tygodni) i czy ma być w konfiguracji jak `FAIR_USE_*`. Owner: Janusz + `/10x-plan`. Block: nie.
+  - Wszystkie trasy wołające model (`generate.ts`, `week/day.ts`, `week/outline.ts`, `refine.ts`) muszą sprawdzać horyzont po stronie serwera — UI to tylko wygoda. Owner: `/10x-plan`. Block: nie.
+- **Risk:** Za krótki horyzont przeszkadza uczciwej nauczycielce, która planuje miesiąc z góry (ekran `/plan/month`); N musi obejmować cały następny miesiąc. Musi wejść przed falą nowych kont, najlepiej razem z `S-30`.
+- **Status:** ready
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                  | Suggested issue title                                              | Ready for `/10x-plan` | Notes                                                                    |
@@ -331,14 +366,16 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-21       | fair-use-limit             | Limit fair use z komunikatem o terminie powrotu                    | yes                   | Próg 150 dni-generacji/mies. w konfiguracji (2026-10-17); `/10x-plan fair-use-limit` |
 | S-22       | founder-price-signup       | Cennik i zapis na cenę założycielską                               | no                    | Bez roli bramy (2026-10-17); czeka na rdzeń i cenę dostępu jednorazowego (#14) |
 | S-23       | trial-entitlement          | Okres próbny i stan planu konta                                    | no                    | Po `S-21`; testerzy ustawiani ręcznie                                    |
-| S-24       | existing-accounts-gift     | Prezent i uprzedzenie dla kont sprzed płatności                    | no                    | Długość okresu gratis dla nie-testerów (#5)                              |
+| S-24       | existing-accounts-gift     | Prezent i uprzedzenie dla kont sprzed płatności                    | no                    | Po decyzji 2026-10-18 głównie uprzedzenie; prezentem jest Basic do 31.01.2027 (`S-30`) |
 | S-25       | basic-subscription         | Subskrypcja Basic kartą z zarządzaniem i zwrotem                   | no                    | Gwiazda przewodnia; po Kroku 9 i Kroku 11; termin 2027-01-20            |
 | S-26       | one-time-access            | Dostęp jednorazowy BLIK-iem albo przelewem                         | no                    | Po Kroku 9 i Kroku 11; cena (#14)                                        |
-| S-27       | free-tier-limit            | Plan darmowy: pięć dni w miesiącu i plany po wygaśnięciu           | no                    | Ostatni — przed 31.01.2027, kiedy testerzy bez płatności wracają na plan darmowy |
+| S-27       | free-tier-limit            | Plan darmowy: pięć dni w miesiącu i plany po wygaśnięciu           | no                    | Ostatni — gotowy na 1.02.2027, kiedy konta sprzed płatności bez zakupu przechodzą na plan darmowy |
+| S-30       | trial-until-launch         | Basic do 31.01.2027 dla kont sprzed startu płatności               | yes                   | Mała migracja wyzwalacza; im wcześniej, tym mniej kont do poprawienia ręcznie |
+| S-31       | planning-horizon           | Limit horyzontu generowania (N tygodni naprzód)                    | yes                   | N do ustalenia w `/10x-plan` (rekomendacja: 8 tygodni)                   |
 
 ## Open Roadmap Questions
 
-1. ~~**Wynik bramy kroku 7**~~ — **zdjęte 2026-10-17 (Janusz).** Walidację niosą testerzy: do 5 osób z zaproszenia, Basic gratis do 31.01.2027, cena założycielska na zawsze. Przy pięciu osobach próg 10 zapisów jest nieosiągalny, a testerzy potrzebują płatności przed końcem prezentu — więc `S-23`…`S-27` są w zakresie bez warunku, z terminem 2027-01-20. Konwersja testerów po prezencie to metryka (PRD §Success Criteria Secondary). Owner: —. Block: nie. **2026-10-18 (Janusz):** testerzy dostali dostęp bezterminowy bez limitu, więc „płatność po prezencie” i konwersja testerów przestają istnieć — podstawa terminu 2027-01-20 i gwiazdy przewodniej `S-25` jest do ponownej decyzji.
+1. ~~**Wynik bramy kroku 7**~~ — **zdjęte 2026-10-17 (Janusz).** Walidację niosą testerzy: do 5 osób z zaproszenia, Basic gratis do 31.01.2027, cena założycielska na zawsze. Przy pięciu osobach próg 10 zapisów jest nieosiągalny, a testerzy potrzebują płatności przed końcem prezentu — więc `S-23`…`S-27` są w zakresie bez warunku, z terminem 2027-01-20. Konwersja testerów po prezencie to metryka (PRD §Success Criteria Secondary). Owner: —. Block: nie. **2026-10-18 (Janusz):** testerzy dostali dostęp bezterminowy bez limitu, więc „płatność po prezencie” i konwersja testerów przestają istnieć — podstawa terminu 2027-01-20 i gwiazdy przewodniej `S-25` jest do ponownej decyzji. **Rozstrzygnięte tego samego dnia:** termin zostaje; konta założone przed startem płatności mają Basic do 31.01.2027, potem cenę założycielską, a od lutego płatności działają (`S-30`). Miarą jest pierwsza płatność od nowego konta.
 2. ~~**Definicja „konta aktywnego”**~~ — **nieaktualne 2026-10-17:** bez bramy zapis niczego nie liczy. Owner: —. Block: nie.
 3. ~~**Próg fair use**~~ — **rozstrzygnięte 2026-10-17 (Janusz): 150 dni-generacji na konto w miesiącu kalendarzowym, w konfiguracji.** Historia: ~150 dni-generacji to szacunek; Guardrail 1 wymaga, żeby typowy miesiąc nigdy go nie dotknął. **2026-10-17:** danych o generowaniach na produkcji nie ma i nie przybędzie (regeneracja nadpisuje wiersz `day_plans`, poprawka nie zostawia śladu) — próg musi być decyzją, nie pomiarem; rekomendacja: hojny, w konfiguracji, kalibrowany na danych z licznika `S-21`. Owner: Janusz. Block: `S-21`.
 4. ~~**Jednostka liczenia poprawki poleceniem**~~ — **rozstrzygnięte 2026-10-17:** poprawka nie zużywa puli planu darmowego (FR-037); podlega fair use. Owner: —. Block: nie.
