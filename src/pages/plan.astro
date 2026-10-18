@@ -2,6 +2,7 @@
 import PlannerLayout from "@/layouts/PlannerLayout.astro";
 import DayPlanEditor from "@/components/plan/DayPlanEditor";
 import { formatPlanDate, resolvePlanDate } from "@/lib/day-plan-dates";
+import { checkGenerationDates, horizonMessage } from "@/lib/planning-horizon";
 import { readDayPlan } from "@/lib/services/day-plan-store";
 import type { DayPlanView } from "@/types";
 
@@ -12,6 +13,12 @@ const { supabase } = Astro.locals;
 // empty form on a day that has one. `?date=` is also what makes a refresh, a
 // bookmark and the back button all mean the same day.
 const planDate = resolvePlanDate(Astro.url.searchParams.get("date"));
+
+// Outside the planning horizon the island shows this sentence instead of the
+// hasło and the generate button, so nobody types a hasło only to hear "no". The
+// same rule the route enforces; this is the courtesy, the route is the lock.
+const refusal = checkGenerationDates([planDate]);
+const horizonNotice = refusal ? horizonMessage(refusal, "day") : null;
 
 // The plan is also what the header's subtitle comes from, and it is rendered as
 // static SSR text rather than passed into the island.
@@ -83,6 +90,7 @@ if (supabase) {
           planDate={planDate}
           initialPlan={initialPlan}
           weekHref={`/plan/week?from=${planDate}`}
+          horizonNotice={horizonNotice}
         />
       )
     }

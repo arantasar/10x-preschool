@@ -355,10 +355,10 @@ Bez migracji i bez `db push`. Plany zapisane wcześniej poza oknem zostają niet
 
 #### Automated
 
-- [x] 2.1 Wszystkie testy jednostkowe przechodzą: `npm test`
-- [x] 2.2 Każda z czterech tras wywołuje `checkGenerationDates(` dokładnie raz (grep zwraca `1` na plik)
-- [x] 2.3 Testy integracyjne z lokalną bazą przechodzą: `npm run test:db:api`
-- [x] 2.4 Lint i build przechodzą: `npm run lint && npm run build`
+- [x] 2.1 Wszystkie testy jednostkowe przechodzą: `npm test` — bbc9f87
+- [x] 2.2 Każda z czterech tras wywołuje `checkGenerationDates(` dokładnie raz (grep zwraca `1` na plik) — bbc9f87
+- [x] 2.3 Testy integracyjne z lokalną bazą przechodzą: `npm run test:db:api` — bbc9f87
+- [x] 2.4 Lint i build przechodzą: `npm run lint && npm run build` — bbc9f87
 
 #### Manual
 
@@ -368,9 +368,9 @@ Bez migracji i bez `db push`. Plany zapisane wcześniej poza oknem zostają niet
 
 #### Automated
 
-- [ ] 3.1 Testy, lint i build przechodzą: `npm test && npm run lint && npm run build`
-- [ ] 3.2 Oba widoki przekazują `horizonNotice={` (grep zwraca `1` na plik)
-- [ ] 3.3 `git diff -w master..HEAD -- context/foundation/roadmap.md` zmienia tylko wiersze `S-31`
+- [x] 3.1 Testy, lint i build przechodzą: `npm test && npm run lint && npm run build`
+- [x] 3.2 Oba widoki przekazują `horizonNotice={` (grep zwraca `1` na plik)
+- [x] 3.3 `git diff -w master..HEAD -- context/foundation/roadmap.md` zmienia tylko wiersze `S-31`
 
 #### Manual
 

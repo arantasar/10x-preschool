@@ -80,7 +80,7 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-26 | one-time-access            | wykupić Basic jednorazowo (miesiąc albo rok szkolny) BLIK-iem albo przelewem, z gwarancją zwrotu         | F-02, S-23, Krok 9, konto operatora              | FR-033, FR-039                 | blocked  |
 | S-27 | free-tier-limit            | na planie darmowym zaplanować pięć dni roboczych w miesiącu, a po wygaśnięciu planu zachować swoje plany | S-21, S-24, S-25                                 | FR-031, FR-037                 | blocked  |
 | S-30 | trial-until-launch         | jako konto założone przed startem płatności mieć pełny Basic do 31.01.2027, a po starcie — przez miesiąc | S-23                                             | FR-030                         | done     |
-| S-31 | planning-horizon           | generować plany najwyżej kilka tygodni naprzód, tak by nikt nie zrobił zapasu na lata w okresie próbnym | S-21                                             | FR-027                         | ready    |
+| S-31 | planning-horizon           | generować plany najwyżej kilka tygodni naprzód, tak by nikt nie zrobił zapasu na lata w okresie próbnym | S-21                                             | FR-027                         | done     |
 
 ## Streams
 
@@ -348,10 +348,10 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Decision (2026-10-18, Janusz):** zapas planów na lata w okresie próbnym blokuje horyzont, nie długość próby — dziś nic nie ogranicza daty generowania, a limit fair use (150 dni-generacji w miesiącu kalendarzowym) pozwala na kilka lat szkolnych w czterech miesiącach.
 - **Unknowns:**
-  - Wartość N (rekomendacja: 8 tygodni) i czy ma być w konfiguracji jak `FAIR_USE_*`. Owner: Janusz + `/10x-plan`. Block: nie.
-  - Wszystkie trasy wołające model (`generate.ts`, `week/day.ts`, `week/outline.ts`, `refine.ts`) muszą sprawdzać horyzont po stronie serwera — UI to tylko wygoda. Owner: `/10x-plan`. Block: nie.
+  - ~~Wartość N (rekomendacja: 8 tygodni) i czy ma być w konfiguracji jak `FAIR_USE_*`. Owner: Janusz + `/10x-plan`. Block: nie.~~ — **rozstrzygnięte (`/10x-plan`, 2026-10-18):** zamiast N tygodni okno kalendarzowe — od początku poprzedniego do końca następnego miesiąca, z obu stron dopełnione do pełnego tygodnia (zawsze obejmuje cały następny miesiąc, tydzień nigdy nie jest przecięty). Stała w kodzie (`src/lib/planning-horizon.ts`), nie konfiguracja.
+  - ~~Wszystkie trasy wołające model (`generate.ts`, `week/day.ts`, `week/outline.ts`, `refine.ts`) muszą sprawdzać horyzont po stronie serwera — UI to tylko wygoda. Owner: `/10x-plan`. Block: nie.~~ — **rozstrzygnięte:** sprawdzają cztery trasy z datą — `generate.ts`, `week/day.ts`, `week/outline.ts` i `week/save.ts` (zamyka zapis partii pod datę spoza okna) — przed bazą i claimem, odpowiedzią 422. `refine.ts` zwolniony: nie niesie daty, to edycja otwartego planu. `fair_use_overrides` okna nie omijają.
 - **Risk:** Za krótki horyzont przeszkadza uczciwej nauczycielce, która planuje miesiąc z góry (ekran `/plan/month`); N musi obejmować cały następny miesiąc. Musi wejść przed falą nowych kont, najlepiej razem z `S-30`.
-- **Status:** ready
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -371,7 +371,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-26       | one-time-access            | Dostęp jednorazowy BLIK-iem albo przelewem                         | no                    | Po Kroku 9 i Kroku 11; cena (#14)                                        |
 | S-27       | free-tier-limit            | Plan darmowy: pięć dni w miesiącu i plany po wygaśnięciu           | no                    | Ostatni — gotowy na 1.02.2027, kiedy konta sprzed płatności bez zakupu przechodzą na plan darmowy |
 | S-30       | trial-until-launch         | Basic do 31.01.2027 dla kont sprzed startu płatności               | yes                   | Mała migracja wyzwalacza; im wcześniej, tym mniej kont do poprawienia ręcznie |
-| S-31       | planning-horizon           | Limit horyzontu generowania (N tygodni naprzód)                    | yes                   | N do ustalenia w `/10x-plan` (rekomendacja: 8 tygodni)                   |
+| S-31       | planning-horizon           | Limit horyzontu generowania (N tygodni naprzód)                    | yes                   | Okno: poprzedni → następny miesiąc, dopełnione do pełnych tygodni        |
 
 ## Open Roadmap Questions
 

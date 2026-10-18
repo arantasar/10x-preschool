@@ -3,6 +3,7 @@ import { CalendarDays, Check, CircleAlert, Pencil, RotateCcw, Sparkles, Trash2, 
 import { FIELD_BASE, FIELD_BORDER, FIELD_BORDER_ERROR, FIELD_ERROR, FIELD_LABEL } from "@/components/plan/field-styles";
 import { useConfirmDialog } from "@/components/hooks/useConfirmDialog";
 import { GenerationProgress } from "@/components/plan/GenerationProgress";
+import { HorizonNotice } from "@/components/plan/HorizonNotice";
 import { ScopeToggle } from "@/components/plan/ScopeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +45,12 @@ interface DayPlanEditorProps {
   readonly initialPlan: DayPlanView | null;
   /** Where the scope toggle's "Cały tydzień" leads: the week this day falls in. */
   readonly weekHref: string;
+  /**
+   * Set when this day is outside the planning horizon (`@/lib/planning-horizon`):
+   * the sentence that stands where the hasło and the generate button would. The
+   * page computes it on the server; the route refuses regardless.
+   */
+  readonly horizonNotice: string | null;
 }
 
 type Busy = "idle" | "generating" | "saving" | "deleting" | "refining";
@@ -62,7 +69,7 @@ interface Draft {
   readonly description: string;
 }
 
-export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPlanEditorProps) {
+export default function DayPlanEditor({ planDate, initialPlan, weekHref, horizonNotice }: DayPlanEditorProps) {
   const [plan, setPlanState] = useState<DayPlanView | null>(initialPlan);
   const [prompt, setPrompt] = useState(initialPlan?.plan.prompt ?? "");
   const [promptError, setPromptError] = useState<string | undefined>(undefined);
@@ -558,7 +565,9 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
-            void generate();
+            if (horizonNotice === null) {
+              void generate();
+            }
           }}
         >
           <h2 className="font-display text-display-sm text-las">Nowe propozycje</h2>
@@ -587,54 +596,64 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
             </div>
           </div>
 
-          <div>
-            <label htmlFor="prompt" className={FIELD_LABEL}>
-              Hasło dnia
-            </label>
-            <textarea
-              id="prompt"
-              name="prompt"
-              rows={3}
-              value={prompt}
-              disabled={isBusy}
-              maxLength={PROMPT_MAX}
-              placeholder="np. Andrzejki"
-              onChange={(event) => {
-                setPrompt(event.target.value);
-                setPromptError(undefined);
-              }}
-              className={cn(FIELD_BASE, "resize-y", promptError ? FIELD_BORDER_ERROR : FIELD_BORDER)}
-            />
-            <div className="mt-1.5 flex items-start justify-between gap-2">
-              <FieldError message={promptError} />
-              {/* Same bound as the route's zod schema, read from the same module,
+          {horizonNotice !== null ? (
+            <HorizonNotice message={horizonNotice} />
+          ) : (
+            <div>
+              <label htmlFor="prompt" className={FIELD_LABEL}>
+                Hasło dnia
+              </label>
+              <textarea
+                id="prompt"
+                name="prompt"
+                rows={3}
+                value={prompt}
+                disabled={isBusy}
+                maxLength={PROMPT_MAX}
+                placeholder="np. Andrzejki"
+                onChange={(event) => {
+                  setPrompt(event.target.value);
+                  setPromptError(undefined);
+                }}
+                className={cn(FIELD_BASE, "resize-y", promptError ? FIELD_BORDER_ERROR : FIELD_BORDER)}
+              />
+              <div className="mt-1.5 flex items-start justify-between gap-2">
+                <FieldError message={promptError} />
+                {/* Same bound as the route's zod schema, read from the same module,
                   so the counter cannot promise what the server then rejects. */}
-              <span
-                className={cn(
-                  "ml-auto text-sm tabular-nums",
-                  remaining < 100 ? "text-ostrzezenie font-bold" : "text-las-szary",
-                )}
-              >
-                {prompt.length} / {PROMPT_MAX}
-              </span>
+                <span
+                  className={cn(
+                    "ml-auto text-sm tabular-nums",
+                    remaining < 100 ? "text-ostrzezenie font-bold" : "text-las-szary",
+                  )}
+                >
+                  {prompt.length} / {PROMPT_MAX}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           <ScopeToggle active="day" dayHref={`/plan?date=${planDate}`} weekHref={weekHref} />
 
-          <Button type="submit" variant="primary" size="pill" disabled={isBusy} className="w-full cursor-pointer">
-            {hasActivities ? <RotateCcw className="size-4" /> : <Sparkles className="size-4" />}
-            {busy === "generating" ? "Generuję…" : hasActivities ? "Generuj ponownie" : "Generuj"}
-          </Button>
-          <p className="text-las-szary text-sm">{AI_PROPOSALS_NOTICE}</p>
+          {horizonNotice === null && (
+            <>
+              <Button type="submit" variant="primary" size="pill" disabled={isBusy} className="w-full cursor-pointer">
+                {hasActivities ? <RotateCcw className="size-4" /> : <Sparkles className="size-4" />}
+                {busy === "generating" ? "Generuję…" : hasActivities ? "Generuj ponownie" : "Generuj"}
+              </Button>
+              <p className="text-las-szary text-sm">{AI_PROPOSALS_NOTICE}</p>
+            </>
+          )}
         </form>
 
         {busy === "generating" && <GenerationProgress />}
 
-        <p className="text-las-szary text-sm">
-          Wpisz hasło — na przykład „Andrzejki”, „Jesień” albo „Dzień Pluszowego Misia” — i wygeneruj trzy propozycje
-          zajęć dla dzieci w wieku 3–6 lat. Możesz je poprawić i zatwierdzić; wszystko zostaje zapisane.
-        </p>
+        {horizonNotice === null && (
+          <p className="text-las-szary text-sm">
+            Wpisz hasło — na przykład „Andrzejki”, „Jesień” albo „Dzień Pluszowego Misia” — i wygeneruj trzy propozycje
+            zajęć dla dzieci w wieku 3–6 lat. Możesz je poprawić i zatwierdzić; wszystko zostaje zapisane.
+          </p>
+        )}
       </div>
 
       <div className="min-w-0 space-y-4">
@@ -673,7 +692,7 @@ export default function DayPlanEditor({ planDate, initialPlan, weekHref }: DayPl
           </div>
         )}
 
-        {!hasActivities && busy !== "generating" && (
+        {!hasActivities && busy !== "generating" && horizonNotice === null && (
           <div className="bg-puste text-las-szary rounded-row p-8 text-center">
             <p className="font-display text-las text-title">Ten dzień czeka na pomysły.</p>
             <p className="mt-2 text-base">

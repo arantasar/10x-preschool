@@ -3,6 +3,7 @@ import PlannerLayout from "@/layouts/PlannerLayout.astro";
 import WeekPlanBoard from "@/components/plan/WeekPlanBoard";
 import { addDays, formatWeekRange, resolveWeekStart, todayIsoDate, workingDaysOf } from "@/lib/day-plan-dates";
 import { normalizePendingTopic, PENDING_TOPIC_COOKIE } from "@/lib/pending-topic";
+import { checkGenerationDates, horizonMessage } from "@/lib/planning-horizon";
 import { readWeekPlans } from "@/lib/services/day-plan-store";
 import type { DayPlanView, WeekPlanView } from "@/types";
 
@@ -14,6 +15,11 @@ const { supabase } = Astro.locals;
 // lets the month grid link a whole row to one URL.
 const weekStart = resolveWeekStart(Astro.url.searchParams.get("from"));
 const days = workingDaysOf(weekStart);
+
+// The working week is wholly inside the planning horizon or wholly outside it
+// (the window is padded to whole weeks), so one sentence covers the board.
+const refusal = checkGenerationDates(days);
+const horizonNotice = refusal ? horizonMessage(refusal, "week") : null;
 
 // "No plan" and "could not read the plan" must not render the same way. S-02
 // learned this the expensive way: collapsing them showed the generate
@@ -116,7 +122,13 @@ const stepLink =
           </a>
         </div>
       ) : (
-        <WeekPlanBoard client:load week={week} initialPrompt={pendingTopic ?? undefined} dayHref={dayHref} />
+        <WeekPlanBoard
+          client:load
+          week={week}
+          initialPrompt={pendingTopic ?? undefined}
+          dayHref={dayHref}
+          horizonNotice={horizonNotice}
+        />
       )
     }
   </main>
