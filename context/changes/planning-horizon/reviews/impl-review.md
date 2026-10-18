@@ -54,7 +54,7 @@ Automated at review time: `npm test` 877/877, `npm run test:db:api` 12/12, lint,
 - **Location**: context/changes/planning-horizon/plan.md:352-382
 - **Detail**: Eight manual rows still `[ ]`; none rubber-stamped. Merge to `master` deploys immediately.
 - **Fix**: Walk them in `npm run dev` before merging.
-- **Decision**: PENDING — needs the owner in a browser. 3.6 now partly covered by `planning-horizon.spec.ts` (day view: plan, hasło, notice, no form).
+- **Decision**: FIXED — owner walked all eight manual checks (2026-10-18). Earlier note: needs the owner in a browser. 3.6 now partly covered by `planning-horizon.spec.ts` (day view: plan, hasło, notice, no form).
 
 ### F4 — week/save refuses `too_old` at month rollover, losing a paid batch
 
