@@ -450,10 +450,10 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 
 #### Automated
 
-- [x] 4.1 Tests: `npm test`
-- [x] 4.2 Numbering of cited points 2.6/2.7 untouched, new point 2.8 present
-- [x] 4.3 Build: `npm run build`
-- [x] 4.4 Policy E2E: `npx playwright test tests/e2e/legal-pages.spec.ts`
+- [x] 4.1 Tests: `npm test` — 21fea93
+- [x] 4.2 Numbering of cited points 2.6/2.7 untouched, new point 2.8 present — 21fea93
+- [x] 4.3 Build: `npm run build` — 21fea93
+- [x] 4.4 Policy E2E: `npx playwright test tests/e2e/legal-pages.spec.ts` — 21fea93
 
 #### Manual
 
@@ -464,8 +464,8 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 
 #### Automated
 
-- [ ] 5.1 The spec passes three times in a row: `npx playwright test tests/e2e/founder-price.spec.ts --repeat-each=3`
-- [ ] 5.2 The whole E2E suite green before merging: `npm run test:e2e`
+- [x] 5.1 The spec passes three times in a row: `npx playwright test tests/e2e/founder-price.spec.ts --repeat-each=3`
+- [x] 5.2 The whole E2E suite green before merging: `npm run test:e2e`
 
 #### Manual
 
