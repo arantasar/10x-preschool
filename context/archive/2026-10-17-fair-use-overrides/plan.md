@@ -278,7 +278,7 @@ Jeden odczyt po kluczu głównym w transakcji, która już trzyma blokadę konta
 
 #### Manual
 
-- [ ] 2.5 `/polityka-prywatnosci` pokazuje 1.2 i nowe zdanie w pkt 2.7
-- [ ] 2.6 Po scaleniu `db push` wykonany i wpis bez sufitu dla konta właściciela
-- [ ] 2.7 Po rejestracji testerki wpis bez sufitu dla jej konta
-- [ ] 2.8 Na produkcji konto właściciela przechodzi ponad limit, a księga zapisuje wywołania
+- [x] 2.5 `/polityka-prywatnosci` pokazuje 1.2 i nowe zdanie w pkt 2.7 — potwierdzone po scaleniu (de6280f)
+- [x] 2.6 Po scaleniu `db push` wykonany i wpis bez sufitu dla konta właściciela — potwierdzone po scaleniu (de6280f)
+- [ ] 2.7 Po rejestracji testerki wpis bez sufitu dla jej konta — czeka na rejestrację testerki (wpis w SQL Editorze, jak 2.6)
+- [x] 2.8 Na produkcji konto właściciela przechodzi ponad limit, a księga zapisuje wywołania — potwierdzone po scaleniu (de6280f)

@@ -242,3 +242,18 @@ export interface AcceptedDayConsent {
   readonly plan_date: string;
   readonly accepted_at: string;
 }
+
+/**
+ * What an account is entitled to: a plan, with access up to a date (S-23).
+ * `public.account_entitlements`, read through the teacher's own client.
+ *
+ * No row is not a free plan: until S-24 it means an account created before
+ * payments. `S-25`/`S-26` will add sources; `S-27` will read the plan in the
+ * fair-use limit.
+ */
+export interface AccountEntitlement {
+  readonly plan: "basic";
+  /** Last day of access, inclusive, `YYYY-MM-DD` in Europe/Warsaw. */
+  readonly accessUntil: string;
+  readonly source: "trial" | "owner";
+}

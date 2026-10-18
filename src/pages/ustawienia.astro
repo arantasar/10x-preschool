@@ -9,11 +9,17 @@ import {
   PASSWORD_CHANGED_COOKIE,
   PASSWORD_CHANGED_COOKIE_OPTIONS,
 } from "@/lib/account-settings";
+import { accessCard, readAccountEntitlement } from "@/lib/account-entitlement";
 import { authErrorMessage } from "@/lib/auth-error-messages";
+import { todayIsoDate } from "@/lib/day-plan-dates";
 import { PRIVACY_PATH, TERMS_PATH } from "@/lib/legal";
 
 // Protected by the middleware (`PROTECTED_ROUTES`), so a user is always here.
-const { user } = Astro.locals;
+const { user, supabase } = Astro.locals;
+
+// Shown only while full access lasts. No row (an account from before payments),
+// a past date or a failed read all mean no card - the read logs its own failure.
+const access = accessCard(supabase ? await readAccountEntitlement(supabase) : null, todayIsoDate());
 
 // One-shot: set by `/api/auth/change-password`, consumed by the first render
 // that shows it, so a reload removes the notice by construction.
@@ -50,6 +56,19 @@ const card = "bg-mleko rounded-card flex flex-col px-5 py-6 min-[901px]:px-9 min
             Na ten adres wysyłamy linki do aktywacji i resetu hasła.
           </p>
         </div>
+        {
+          access && (
+            <div class="bg-owies flex flex-col gap-2 rounded-2xl px-5 py-4 min-[600px]:flex-row min-[600px]:items-center min-[600px]:justify-between min-[600px]:gap-6">
+              <div class="flex min-w-0 flex-col gap-0.5">
+                <p class="text-mech text-sm font-extrabold">Dostęp</p>
+                <p class="text-las text-lg font-bold">Pełny dostęp — do {access.untilLabel}</p>
+              </div>
+              <p class="text-las-szary max-w-[320px] text-sm min-[600px]:text-right">
+                Wszystkie funkcje Temio są dziś bezpłatne.
+              </p>
+            </div>
+          )
+        }
         {/* A signed-in teacher never sees the public footer, so the documents are linked here. */}
         <nav aria-label="Dokumenty" class="flex flex-wrap gap-x-5 gap-y-1">
           <a

@@ -70,9 +70,9 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | —                                                | FR-025                         | done     |
 | S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | done     |
 | S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic z tabelą porównania planów i zapisać się na cenę założycielską z uczciwym potwierdzeniem | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
-| S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | in progress |
+| S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | done     |
 | S-29 | print-redesign             | drukować plan tygodnia i miesiąca w układzie i barwach aplikacji, nie w czerni i bieli                   | —                                                | —                              | ready    |
-| S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21, S-28                                       | FR-030                         | blocked  |
+| S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21, S-28                                       | FR-030                         | ready    |
 | S-24 | existing-accounts-gift     | jako konto sprzed płatności (także testerka) dowiedzieć się o nowych zasadach i dostać prezent, zanim limit mnie dotknie | S-23                                | FR-036                         | blocked  |
 | S-25 | basic-subscription         | wykupić Basic jako subskrypcję kartą, zarządzać nią, anulować ją i w 14 dni dostać zwrot                 | F-02, S-18, S-22, S-23, Krok 9, konto operatora  | FR-032, FR-034, FR-035, FR-039, FR-024 | blocked  |
 | S-26 | one-time-access            | wykupić Basic jednorazowo (miesiąc albo rok szkolny) BLIK-iem albo przelewem, z gwarancją zwrotu         | F-02, S-23, Krok 9, konto operatora              | FR-033, FR-039                 | blocked  |
@@ -233,7 +233,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Kształt danych: osobna tabela nadpisań per konto (limit dni, limit poprawek; `null` = bez sufitu) czy kolumny przy przyszłym stanie planu z `S-23`. Rekomendacja z 2026-10-17: jedna funkcja „jaki limit ma to konto” z kolejnością źródeł nadpisanie konta → plan konta (`S-23`, `S-27`) → domyślny z konfiguracji, żeby `S-23` dokładał źródło, a nie przerabiał funkcję. Owner: `/10x-plan`. Block: nie. **Rozstrzygnięte (plan, 2026-10-17):** osobna tabela `public.fair_use_overrides` (`null` = bez sufitu, `valid_until`, cron `fair-use-overrides-expiry`), czytana przez `claim_generation` po blokadzie konta, z kolejnością źródeł zapisaną w migracji.
   - Słowo „unlimited” istnieje tylko w bazie i w rozmowie z właścicielem — cennik i komunikaty nigdy nie mówią „bez limitu” (`context/foundation/design/design/README.md`, `/cennik`). Owner: `/10x-plan`. Block: nie. **Rozstrzygnięte:** S-28 nie dodaje żadnego tekstu w produkcie — wpisy powstają wyłącznie w SQL Editorze.
 - **Risk:** Nadpisanie jest odczytywane przez `claim_generation`, która musi zostać `security invoker` (niezmiennik: jedyny definer to `delete_own_account`) — więc nauczycielka może czytać własny wiersz nadpisania, ale nie może go wstawić ani zmienić; pgTAP musi to dowieść. Nowe dane per konto: jedno zdanie w Polityce prywatności pkt 2.7 i w sekcji „Fair use” CLAUDE.md. Do czasu tej pozycji właściciel zeruje własne zużycie, kasując swoje wiersze `generation_ledger` w SQL Editorze.
-- **Status:** in progress
+- **Status:** done
 
 ### S-29: Wydruki w barwach aplikacji
 
@@ -258,9 +258,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-22
 - **Blockers:** —
 - **Unknowns:**
-  - Testerzy (do 5 osób, Basic do 31.01.2027) — właściciel ustawia im stan planu ręcznie, poza aplikacją; model danych musi to umożliwiać bez panelu operatora. Owner: `/10x-plan`. Block: nie.
+  - Testerzy (do 5 osób, Basic do 31.01.2027) — właściciel ustawia im stan planu ręcznie, poza aplikacją; model danych musi to umożliwiać bez panelu operatora. Owner: `/10x-plan`. Block: nie. **Rozstrzygnięte (`trial-entitlement`):** wiersz `public.account_entitlements` z `access_until = '2027-01-31'`, `source = 'owner'`, wpisany w SQL Editorze po rejestracji każdej testerki.
 - **Risk:** Wprowadza jedyny model uprawnienia, na którym stoją `S-24`…`S-27` — błąd tutaj powiela się w każdej płatności. Stan planu zapisuje wyłącznie system albo właściciel ręcznie poza aplikacją; użytkownik nie ma żadnej ścieżki podniesienia planu inaczej niż płacąc. Ryzyko zakładania kont na nowo co miesiąc przyjęte świadomie (FR-030; Open Roadmap Questions #7). Sama pozycja nie pobiera pieniędzy i niczego nie odbiera, więc może wejść na produkcję samodzielnie.
-- **Status:** blocked
+- **Status:** ready
 
 ### S-24: Prezent dla kont sprzed płatności (krok 7)
 
@@ -403,3 +403,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-18: Nauczycielka usuwa swoje konto po potwierdzeniu, które mówi wprost, że zniknie konto i wszystkie plany; po usunięciu nie da się zalogować, a jej plany nie istnieją.** — Archived 2026-10-15 → `context/archive/2026-10-15-account-deletion/`. Lesson: —.
 - **S-20: Odwiedzający bez konta czyta regulamin i politykę prywatności, a polityka obejmuje przechowywanie e-maili osób, które nie mają konta (formularz kontaktowy, zapis na cenę).** — Archived 2026-10-17 → `context/archive/2026-10-17-legal-pages/`. Lesson: —.
 - **S-21: Nauczycielka generuje, edytuje, zatwierdza, usuwa i drukuje plany jak dziś; dopiero nadużycie zatrzymuje generowanie komunikatem, który mówi, kiedy generowanie znów będzie możliwe, i wskazuje kontakt na wypadek pomyłki.** — Archived 2026-10-17 → `context/archive/2026-10-17-fair-use-limit/`. Lesson: —.
+- **S-28: Właściciel wpisuje w dashboardzie Supabase, że wybrane konto (np. własne albo testerki) ma limit generowania bez sufitu albo podwyższony — zmiana działa od następnego wywołania, bez deployu i bez kasowania wierszy księgi. Nauczycielka nie ma żadnej drogi, żeby nadać to sobie sama.** — Archived 2026-10-17 → `context/archive/2026-10-17-fair-use-overrides/`. Otwarte: wpis bez sufitu dla testerki po jej ponownej rejestracji (plan 2.7; właściciel, SQL Editor). Lesson: —.

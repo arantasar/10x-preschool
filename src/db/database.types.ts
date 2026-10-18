@@ -34,6 +34,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_entitlements: {
+        Row: {
+          access_until: string
+          created_at: string
+          plan: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_until: string
+          created_at?: string
+          plan: string
+          source: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_until?: string
+          created_at?: string
+          plan?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       activities: {
         Row: {
           created_at: string

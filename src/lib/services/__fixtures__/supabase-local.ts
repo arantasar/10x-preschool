@@ -154,11 +154,7 @@ async function ensureUser(email: string): Promise<string> {
   return data.user.id;
 }
 
-/** A client signed in as teacher a or b, creating the account the first time. */
-export async function teacherClient(which: TeacherKey): Promise<Teacher> {
-  const email = TEACHERS[which];
-  const userId = await ensureUser(email);
-
+async function signedInClient(email: string): Promise<DayPlanClient> {
   const client = createClient<Database>(stack.apiUrl, stack.publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -166,7 +162,42 @@ export async function teacherClient(which: TeacherKey): Promise<Teacher> {
   if (error) {
     throw new Error(`Nie udało się zalogować jako ${email}: ${error.message}`);
   }
-  return { client, userId };
+  return client;
+}
+
+/** A client signed in as teacher a or b, creating the account the first time. */
+export async function teacherClient(which: TeacherKey): Promise<Teacher> {
+  const email = TEACHERS[which];
+  const userId = await ensureUser(email);
+  return { client: await signedInClient(email), userId };
+}
+
+/**
+ * A brand-new account at `email`, created the way gotrue creates every account
+ * (`auth.admin.createUser`, so as `supabase_auth_admin`), and a client signed
+ * in as it. For tests about what sign-up itself does; the caller owns the
+ * account and removes it with {@link deleteAccount}.
+ */
+export async function newTeacher(email: string): Promise<Teacher> {
+  const { data, error } = await service.auth.admin.createUser({ email, password: PASSWORD, email_confirm: true });
+  if (error) {
+    throw new Error(`Nie udało się założyć konta ${email}: ${error.message}`);
+  }
+  try {
+    return { client: await signedInClient(email), userId: data.user.id };
+  } catch (signInError) {
+    // The caller never learns the id, so it could not clean up after us.
+    await service.auth.admin.deleteUser(data.user.id);
+    throw signInError;
+  }
+}
+
+/** Deletes an account created by {@link newTeacher}; its rows go by cascade. */
+export async function deleteAccount(userId: string): Promise<void> {
+  const { error } = await service.auth.admin.deleteUser(userId);
+  if (error) {
+    throw new Error(`Nie udało się usunąć konta: ${error.message}`);
+  }
 }
 
 export interface SeedDayOptions {
