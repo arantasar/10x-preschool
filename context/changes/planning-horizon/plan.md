@@ -349,7 +349,7 @@ Bez migracji i bez `db push`. Plany zapisane wcześniej poza oknem zostają niet
 
 #### Manual
 
-- [ ] 1.3 Zdania z `horizonMessage` brzmią jak polski (data w dopełniaczu)
+- [x] 1.3 Zdania z `horizonMessage` brzmią jak polski (data w dopełniaczu)
 
 ### Phase 2: Egzekwowanie po stronie serwera
 
@@ -362,7 +362,7 @@ Bez migracji i bez `db push`. Plany zapisane wcześniej poza oknem zostają niet
 
 #### Manual
 
-- [ ] 2.5 Bezpośredni `POST /api/day-plan/generate` ze styczniem 2027 → 422 z polskim zdaniem, brak wiersza w `generation_ledger`
+- [x] 2.5 Bezpośredni `POST /api/day-plan/generate` ze styczniem 2027 → 422 z polskim zdaniem, brak wiersza w `generation_ledger`
 
 ### Phase 3: UI i treść
 
@@ -374,9 +374,9 @@ Bez migracji i bez `db push`. Plany zapisane wcześniej poza oknem zostają niet
 
 #### Manual
 
-- [ ] 3.4 `/plan?date=2027-01-12`: notka zamiast formularza
-- [ ] 3.5 `/plan/week?from=2027-01-11`: notka zamiast formularza, nawigacja działa
-- [ ] 3.6 Zapisany plan poza oknem: edycja, refine, zatwierdzanie, usuwanie i PDF działają; brak „Wygeneruj ponownie”
-- [ ] 3.7 Tydzień dopełnienia (`2026-11-30`) i `2026-12-04`: formularz jest
-- [ ] 3.8 `/pomoc`: nowe pytanie zgodne z zachowaniem
-- [ ] 3.9 Telefon (≈375 px): notka nie rozpycha układu
+- [x] 3.4 `/plan?date=2027-01-12`: notka zamiast formularza
+- [x] 3.5 `/plan/week?from=2027-01-11`: notka zamiast formularza, nawigacja działa
+- [x] 3.6 Zapisany plan poza oknem: edycja, refine, zatwierdzanie, usuwanie i PDF działają; brak „Wygeneruj ponownie”
+- [x] 3.7 Tydzień dopełnienia (`2026-11-30`) i `2026-12-04`: formularz jest
+- [x] 3.8 `/pomoc`: nowe pytanie zgodne z zachowaniem
+- [x] 3.9 Telefon (≈375 px): notka nie rozpycha układu
