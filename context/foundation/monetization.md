@@ -35,6 +35,7 @@ się z tą listą rozjeżdżają, **wiąże ta lista**.
 | 11 | Cena założycielska (2026-10-17) | **119 zł/rok albo 14,99 zł/mies., na zawsze, dopóki subskrypcja trwa bez przerwy** — dotyczy subskrypcji, nie dostępu jednorazowego |
 | 12 | Zwrot (2026-10-17) | **Gwarancja 14 dni bez podawania przyczyny** (PRD v3 FR-039), dla subskrypcji i dostępu jednorazowego |
 | 13 | Fair use (2026-10-17) | **150 dni-generacji na konto w miesiącu kalendarzowym**, w konfiguracji — decyzja zamiast pomiaru, bo historii generowań na produkcji nie ma; kalibracja na danych z licznika `S-21` |
+| 14 | Dostęp jednorazowy (2026-10-18) | **Tyle samo co subskrypcja: 19,99 zł za miesiąc, 159 zł za rok szkolny**, bez ceny założycielskiej (FR-035) |
 
 **Ad 3 — dlaczego oba, a nie jeden.** Sam reverse trial odbiera wszystko po pierwszym miesiącu: kto
 nie zapłaci od razu, odchodzi i nie wraca, a znika też stopka na wydruku, czyli jedyny darmowy kanał

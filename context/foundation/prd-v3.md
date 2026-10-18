@@ -523,7 +523,6 @@ Wybrane przez użytkownika 2026-10-01:
    Właściciel: Janusz. Blokuje: nie. **Aktualizacja 2026-10-17:** kamień ma termin
    (`hard_deadline: 2027-01-20`) wymuszony końcem prezentu testerów; `delivery_weeks` zostaje
    puste.
-10. **Cena dostępu jednorazowego** (FR-033) — cennik podaje ceny subskrypcji; czy miesiąc i rok
-    szkolny jednorazowo kosztują tyle samo (19,99 zł / 159 zł), czy więcej? Cena założycielska go
-    nie obejmuje (FR-035, 2026-10-17). Właściciel: Janusz. Blokuje: slice dostępu jednorazowego
-    i treść cennika.
+10. ~~**Cena dostępu jednorazowego**~~ (FR-033) — **rozstrzygnięte 2026-10-18 (Janusz):** miesiąc
+    i rok szkolny jednorazowo kosztują tyle samo co subskrypcja, 19,99 zł / 159 zł. Cena
+    założycielska go nie obejmuje (FR-035). Właściciel: —. Blokuje: nie.

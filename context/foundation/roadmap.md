@@ -71,7 +71,7 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-19 | help-and-contact           | przeczytać FAQ i napisać do właściciela przez formularz, z kontem lub bez                                | —                                                | FR-025, FR-026                 | done     |
 | S-20 | legal-pages                | przeczytać regulamin i politykę prywatności bez konta                                                     | —                                                | FR-025                         | done     |
 | S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | done     |
-| S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic z tabelą porównania planów i zapisać się na cenę założycielską z uczciwym potwierdzeniem | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
+| S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic z tabelą porównania planów i zapisać się na cenę założycielską z uczciwym potwierdzeniem | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | ready    |
 | S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | done     |
 | S-29 | print-redesign             | drukować plan tygodnia i miesiąca w układzie i barwach aplikacji, nie w czerni i bieli                   | —                                                | —                              | ready    |
 | S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21, S-28                                       | FR-030                         | done     |
@@ -219,11 +219,11 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** — (przechodnio: treść prawna przez `S-20`)
 - **Unknowns:**
   - ~~Definicja „konta aktywnego”~~ i ~~okno 4 tygodni~~ — **nieaktualne 2026-10-17:** brama zdjęta, zapis niczego nie liczy (Open Roadmap Questions #1, #2).
-  - Cena dostępu jednorazowego na cenniku (Open Roadmap Questions #14). Owner: Janusz. Block: tak dla treści cennika.
+  - ~~Cena dostępu jednorazowego na cenniku~~ — **rozstrzygnięte 2026-10-18 (Janusz):** jak subskrypcja, 19,99 zł / 159 zł, bez ceny założycielskiej (Open Roadmap Questions #14).
   - Treść cennika: tabela Darmowy/Basic w PRD v3 §Business Logic Changes „Plany — co widzi nauczycielka na cenniku". Cennik publikowany przed `S-25` mówi wprost, że płatności ruszą wkrótce, i nie może obiecywać niczego, czego `S-23`…`S-27` nie dowiozą.
   - **Tabela porównania planów idzie z cennikiem (decyzja 2026-10-17, Janusz)**, żeby było wiadomo, za co nauczycielka płaci. Wzór z pakietu `context/foundation/design/`: `src/components/billing/PlanComparison` (Darmowy vs Basic z przypisami), `PricingCard`, `BillingToggle`; `design/screens/07-cennik.png`, `07b-cennik-miesiecznie.png`. Przypis o limicie rozsądnego użycia opisuje `S-21`; cennik nigdy nie mówi „bez limitu”. Teksty w [NAWIASACH] uzupełnia właściciel. Owner: Janusz (treść), `/10x-plan` (komponent). Block: tak dla treści tabeli.
 - **Risk:** _(2026-10-17: przestaje być gwiazdą przewodnią i bramą — zostaje cennikiem i listą „daj znać, gdy ruszy” dla obcych osób; zapisani dostają cenę założycielską, FR-035.)_ Pierwotnie: gwiazda przewodnia stoi ostatnia w rdzeniu z wyboru, nie z grafu — ryzyko polega na tym, że zablokowany prawnikiem `S-20` przesuwa pomiar o tyle samo, ile trwa zależność zewnętrzna. Zapis anonimowy jest dostępny, ale do progu się nie wlicza (FR-029, runda Sokratejska: „zapis jest tani, zapłata droga"). Żadna płatność nie jest symulowana. Cennik nie pokazuje Pro (FR-028). Zapis to zgoda na kontakt e-mailowy — polityka prywatności musi go obejmować (`S-20`).
-- **Status:** blocked
+- **Status:** ready
 
 ### S-28: Indywidualne limity fair use dla wybranych kont
 
@@ -305,7 +305,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** Konto operatora płatności z BLIK-iem i przelewem online — Krok 11 `next-actions.md`.
 - **Unknowns:**
   - ~~Czy cena założycielska obejmuje dostęp jednorazowy~~ — **rozstrzygnięte 2026-10-17:** nie, tylko subskrypcję (FR-035).
-  - Cena dostępu jednorazowego — tyle samo co subskrypcja (19,99 zł / 159 zł) czy więcej? Owner: Janusz. Block: tak (Open Roadmap Questions #14).
+  - ~~Cena dostępu jednorazowego~~ — **rozstrzygnięte 2026-10-18 (Janusz):** tyle samo co subskrypcja, 19,99 zł za miesiąc / 159 zł za rok szkolny, bez ceny założycielskiej (Open Roadmap Questions #14).
   - Zwrot (FR-039) przy dostępie jednorazowym — ta sama gwarancja 14 dni. Owner: `/10x-plan`. Block: nie.
 - **Risk:** Drugie źródło płatności przesuwające tę samą datę — runda Sokratejska przyjęła je pod warunkiem jednego modelu uprawnienia (FR-033). Ryzykiem jest rozjazd: dwa źródła liczące datę każde po swojemu. Bez odnowienia nie ma czego zarządzać, więc Guardrail 3 sprowadza się tu do zwrotu i wygaśnięcia.
 - **Status:** blocked
@@ -364,7 +364,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-19       | help-and-contact           | FAQ i formularz kontaktowy chroniony przed automatami              | yes                   | Ochrona przed automatami do ponownego użycia w `S-22`                    |
 | S-20       | legal-pages                | Regulamin i polityka prywatności                                   | yes                   | Wydane w wersji bez prawnika (decyzja 2026-10-17)                        |
 | S-21       | fair-use-limit             | Limit fair use z komunikatem o terminie powrotu                    | yes                   | Próg 150 dni-generacji/mies. w konfiguracji (2026-10-17); `/10x-plan fair-use-limit` |
-| S-22       | founder-price-signup       | Cennik i zapis na cenę założycielską                               | no                    | Bez roli bramy (2026-10-17); czeka na rdzeń i cenę dostępu jednorazowego (#14) |
+| S-22       | founder-price-signup       | Cennik i zapis na cenę założycielską                               | no                    | Bez roli bramy (2026-10-17); rdzeń gotowy, cena dostępu jednorazowego rozstrzygnięta 2026-10-18 (#14) |
 | S-23       | trial-entitlement          | Okres próbny i stan planu konta                                    | no                    | Po `S-21`; testerzy ustawiani ręcznie                                    |
 | S-24       | existing-accounts-gift     | Prezent i uprzedzenie dla kont sprzed płatności                    | no                    | Po decyzji 2026-10-18 głównie uprzedzenie; prezentem jest Basic do 31.01.2027 (`S-30`) |
 | S-25       | basic-subscription         | Subskrypcja Basic kartą z zarządzaniem i zwrotem                   | no                    | Gwiazda przewodnia; po Kroku 9 i Kroku 11; termin 2027-01-20            |
@@ -388,7 +388,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 11. **Zbieranie e-maili przed polityką prywatności** — `S-19` (formularz) jest `ready`, a `S-20` czeka na prawnika. Czy formularz może wejść na produkcję przed publikacją polityki, czy jego wydanie czeka na `S-20`? Owner: Janusz + doradca. Block: wydanie `S-19` (nie planowanie). **Rozstrzygnięte 2026-10-09 (Janusz, `/10x-plan help-and-contact`):** formularz wychodzi przed `S-20` z jednozdaniową informacją o celu i okresie przechowywania (12 miesięcy, egzekwowane przez pg_cron); `S-20` dokłada link do polityki i musi objąć te dane.
 12. ~~**Zwrot pieniędzy**~~ — **rozstrzygnięte 2026-10-17:** gwarancja 14 dni bez podawania przyczyny, nowy FR-039 w PRD v3. Owner: —. Block: nie.
 13. **Generator nie dostarcza tekstów, od których zależy aktywność** (piosenki, wierszyki) — przechodzi do `M-04` jako pierwsza funkcja Pro (`monetization.md` §Decyzje #6). Owner: Janusz. Block: nie.
-14. **Cena dostępu jednorazowego** (FR-033) — miesiąc i rok szkolny jednorazowo za 19,99 zł / 159 zł jak subskrypcja, czy drożej? Cena założycielska go nie obejmuje (FR-035, 2026-10-17). Owner: Janusz. Block: `S-22` (treść cennika), `S-26`.
+14. ~~**Cena dostępu jednorazowego**~~ (FR-033) — **rozstrzygnięte 2026-10-18 (Janusz):** tyle samo co subskrypcja — 19,99 zł za miesiąc, 159 zł za rok szkolny; cena założycielska go nie obejmuje (FR-035). Owner: —. Block: nie.
 15. **Termin 2027-01-20 przy zależności zewnętrznej** — JDG, konto Stripe z BLIK-iem i Przelewy24, narzędzie do faktur i konsultacja z księgowym (Krok 11) muszą być gotowe przed `S-25`/`S-26`, a przegląd regulaminu przez prawnika i jego przepisanie pod płatności — przed ich wydaniem. Owner: Janusz. Block: `S-25`, `S-26`.
 
 ## Parked
