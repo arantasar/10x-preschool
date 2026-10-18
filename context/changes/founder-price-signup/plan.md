@@ -407,10 +407,10 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly from scratch: `npx supabase db reset`
-- [x] 1.2 pgTAP passes, including the new file: `npm run test:db`
-- [x] 1.3 API tests pass: `npm run test:db:api`
-- [x] 1.4 The `authenticated` policy is proven able to fail (case "someone else's address" red without the `email = …` condition)
+- [x] 1.1 Migration applies cleanly from scratch: `npx supabase db reset` — 2a21165
+- [x] 1.2 pgTAP passes, including the new file: `npm run test:db` — 2a21165
+- [x] 1.3 API tests pass: `npm run test:db:api` — 2a21165
+- [x] 1.4 The `authenticated` policy is proven able to fail (case "someone else's address" red without the `email = …` condition) — 2a21165
 
 #### Manual
 
@@ -420,10 +420,10 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 
 #### Automated
 
-- [ ] 2.1 Unit and route tests pass: `npm test`
-- [ ] 2.2 Lint and types: `npm run lint`
-- [ ] 2.3 Build: `npm run build`
-- [ ] 2.4 The contact form works as before: `npx playwright test tests/e2e/help-and-contact.spec.ts`
+- [x] 2.1 Unit and route tests pass: `npm test`
+- [x] 2.2 Lint and types: `npm run lint`
+- [x] 2.3 Build: `npm run build`
+- [x] 2.4 The contact form works as before: `npx playwright test tests/e2e/help-and-contact.spec.ts`
 
 #### Manual
 

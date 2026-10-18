@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { CircleAlert } from "lucide-react";
 import { FormField, inputBase } from "@/components/auth/FormField";
+import { useTurnstile } from "@/components/hooks/useTurnstile";
 import { ServerError } from "@/components/auth/ServerError";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,65 +17,6 @@ import {
 import { emailError } from "@/lib/email-check";
 import { PRIVACY_PATH } from "@/lib/legal";
 import { cn } from "@/lib/utils";
-
-/** The slice of Turnstile's explicit-render API this form uses. */
-interface TurnstileApi {
-  render(
-    container: HTMLElement,
-    options: {
-      sitekey: string;
-      action: string;
-      appearance: "always" | "execute" | "interaction-only";
-      language: string;
-      theme: "auto" | "light" | "dark";
-      size: "normal" | "flexible" | "compact";
-      callback: (token: string) => void;
-      "expired-callback": () => void;
-      "error-callback": () => void;
-    },
-  ): string;
-  reset(widgetId: string): void;
-}
-
-declare global {
-  interface Window {
-    turnstile?: TurnstileApi;
-  }
-}
-
-const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-
-/**
- * One script tag per page, however often the island mounts: the load is
- * memoised, so a second mount waits on the same promise instead of attaching
- * listeners to a script that has already fired. A failed load is forgotten, so
- * a later mount may try again.
- */
-let turnstileLoad: Promise<TurnstileApi> | null = null;
-
-function loadTurnstile(): Promise<TurnstileApi> {
-  if (window.turnstile) return Promise.resolve(window.turnstile);
-  turnstileLoad ??= new Promise<TurnstileApi>((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = TURNSTILE_SRC;
-    script.async = true;
-    script.addEventListener("load", () => {
-      if (window.turnstile) resolve(window.turnstile);
-      else reject(new Error("turnstile missing after load"));
-    });
-    script.addEventListener("error", () => {
-      reject(new Error("turnstile failed to load"));
-    });
-    document.head.appendChild(script);
-  }).catch((error: unknown) => {
-    turnstileLoad = null;
-    throw error;
-  });
-  return turnstileLoad;
-}
-
-/** How long a submit waits for Turnstile's token before sending without one. */
-const TOKEN_WAIT_MS = 10_000;
 
 /** The counter appears only near the limit, where it helps. */
 const COUNTER_FROM = CONTACT_MESSAGE_MAX - 500;
@@ -102,73 +44,7 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
   const [pending, setPending] = useState(false);
   // Turnstile cannot run here at all: the form cannot succeed, so it stops
   // offering to send and points to the mailbox (`CONTACT_WIDGET_FAILED_MESSAGE`).
-  const [widgetFailed, setWidgetFailed] = useState(false);
-
-  const widgetContainer = useRef<HTMLDivElement>(null);
-  const widgetId = useRef<string | null>(null);
-  const token = useRef<string | null>(null);
-  // Submits waiting for a token that has not arrived yet (see `tokenFor`).
-  const tokenWaiters = useRef<((value: string) => void)[]>([]);
-
-  useEffect(() => {
-    if (!siteKey || !widgetContainer.current || widgetId.current) return;
-    const container = widgetContainer.current;
-    loadTurnstile()
-      .then((turnstile) => {
-        widgetId.current = turnstile.render(container, {
-          sitekey: siteKey,
-          action: "contact",
-          // Invisible unless Cloudflare is unsure about this visitor: then the
-          // widget appears and a person can click through instead of being
-          // refused. For that rare case it speaks Polish, stays light like
-          // the page, and takes the form's width.
-          appearance: "interaction-only",
-          language: "pl",
-          theme: "light",
-          size: "flexible",
-          callback: (value) => {
-            token.current = value;
-            for (const resolve of tokenWaiters.current.splice(0)) resolve(value);
-          },
-          "expired-callback": () => {
-            token.current = null;
-          },
-          "error-callback": () => {
-            token.current = null;
-            // Release any submit already waiting: it goes out without a token,
-            // is refused, and the reset after the refusal starts a new attempt.
-            for (const resolve of tokenWaiters.current.splice(0)) resolve("");
-          },
-        });
-      })
-      .catch(() => {
-        setWidgetFailed(true);
-      });
-  }, [siteKey]);
-
-  // Turnstile tokens are single-use: after any refusal the next attempt needs a
-  // fresh one, or the retry fails the same way.
-  function resetWidget() {
-    token.current = null;
-    if (widgetId.current && window.turnstile) window.turnstile.reset(widgetId.current);
-  }
-
-  // The widget earns its token a moment after it renders. A quick submit waits
-  // for it - up to a bound - instead of sending none and being refused.
-  function tokenFor(): Promise<string> {
-    if (token.current) return Promise.resolve(token.current);
-    return new Promise((resolve) => {
-      const timer = window.setTimeout(() => {
-        tokenWaiters.current = tokenWaiters.current.filter((waiter) => waiter !== done);
-        resolve("");
-      }, TOKEN_WAIT_MS);
-      const done = (value: string) => {
-        window.clearTimeout(timer);
-        resolve(value);
-      };
-      tokenWaiters.current.push(done);
-    });
-  }
+  const { containerRef, tokenFor, reset: resetWidget, widgetFailed } = useTurnstile({ siteKey, action: "contact" });
 
   function validate(): boolean {
     const next: FieldErrors = { email: emailError(email) };
@@ -301,7 +177,7 @@ export default function ContactForm({ siteKey, defaultEmail = "" }: Props) {
         />
       </div>
 
-      {siteKey && <div ref={widgetContainer} />}
+      {siteKey && <div ref={containerRef} />}
 
       <p className="text-las-szary text-[15px] leading-normal">
         Twoje imię, adres e-mail i wiadomość zapisujemy, żeby odpowiedzieć; usuwamy je po 12 miesiącach.{" "}
