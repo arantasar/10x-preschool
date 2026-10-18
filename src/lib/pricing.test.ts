@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { formatLegalDate } from "@/lib/legal";
@@ -39,6 +41,12 @@ describe("pricing — dates", () => {
 
   it("keeps the list until the date in the retention job", () => {
     expect(FOUNDER_LIST_RETENTION_UNTIL).toBe("2027-08-31");
+  });
+
+  it("gives the privacy policy's point 2.8 the same retention date - Markdown cannot import it", () => {
+    const policy = readFileSync("src/content/legal/polityka-prywatnosci.md", "utf8");
+    const point = policy.slice(policy.indexOf("### 2.8. Zapis na cenę założycielską"), policy.indexOf("### 2.9."));
+    expect(point).toContain(`najdłużej do ${formatLegalDate(FOUNDER_LIST_RETENTION_UNTIL)}`);
   });
 });
 

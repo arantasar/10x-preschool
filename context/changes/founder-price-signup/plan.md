@@ -433,10 +433,10 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 
 #### Automated
 
-- [x] 3.1 Unit tests (including `pricing.test.ts`): `npm test`
-- [x] 3.2 Lint and build: `npm run lint && npm run build`
-- [x] 3.3 No "bez limitu" on the page or in the components (gate checked red)
-- [x] 3.4 Specs from the inventory pass
+- [x] 3.1 Unit tests (including `pricing.test.ts`): `npm test` — 0251637
+- [x] 3.2 Lint and build: `npm run lint && npm run build` — 0251637
+- [x] 3.3 No "bez limitu" on the page or in the components (gate checked red) — 0251637
+- [x] 3.4 Specs from the inventory pass — 0251637
 
 #### Manual
 
@@ -450,10 +450,10 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 
 #### Automated
 
-- [ ] 4.1 Tests: `npm test`
-- [ ] 4.2 Numbering of cited points 2.6/2.7 untouched, new point 2.8 present
-- [ ] 4.3 Build: `npm run build`
-- [ ] 4.4 Policy E2E: `npx playwright test tests/e2e/legal-pages.spec.ts`
+- [x] 4.1 Tests: `npm test`
+- [x] 4.2 Numbering of cited points 2.6/2.7 untouched, new point 2.8 present
+- [x] 4.3 Build: `npm run build`
+- [x] 4.4 Policy E2E: `npx playwright test tests/e2e/legal-pages.spec.ts`
 
 #### Manual
 

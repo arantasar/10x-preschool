@@ -5,6 +5,7 @@
 > - Temat i treści aktywności przekazujemy dostawcy modelu językowego, który przygotowuje propozycje. Nie dostaje on Twojego adresu e-mail. Nie wpisuj danych dzieci.
 > - Twoich planów nie przeglądamy, nikomu ich nie sprzedajemy i nie trenujemy na nich modeli.
 > - Usuwając konto, usuwasz od razu swoje plany. Wiadomości z formularza kontaktowego kasujemy po 12 miesiącach.
+> - Jeśli zapiszesz się na cenę założycielską, trzymamy Twój adres na liście do startu płatności i nie dłużej niż do 31 sierpnia 2027.
 
 ## 1. Kto jest administratorem Twoich danych
 
@@ -46,7 +47,7 @@ Te treści nie powinny zawierać danych osobowych — Regulamin (§ 7 ust. 2) za
 - **Podstawa prawna:** wykonanie umowy (art. 6 ust. 1 lit. b RODO).
 - **Jak długo:** adres e-mail przechowujemy razem z Kontem (pkt 2.1). Dostawca wysyłki (Resend, pkt 3) przechowuje wysłaną wiadomość przez 30 dni; link w niej jest ważny znacznie krócej.
 
-Nie wysyłamy newslettera ani wiadomości reklamowych.
+Nie wysyłamy newslettera ani wiadomości reklamowych — poza wiadomością o starcie płatności do osób zapisanych na cenę założycielską (pkt 2.8).
 
 ### 2.5. Formularz kontaktowy
 
@@ -59,7 +60,7 @@ Formularz chroni Cloudflare Turnstile, który sprawdza, czy wiadomość wysyła 
 
 ### 2.6. Bezpieczeństwo i ochrona przed nadużyciami
 
-- **Dane:** adres IP, data i godzina, adres odwiedzanej strony, informacje o przeglądarce i urządzeniu, identyfikator Konta, kody błędów; w formularzu kontaktowym — sygnały techniczne przeglądarki analizowane przez Cloudflare Turnstile; historia zdarzeń logowania (np. logowanie, zmiana hasła) z adresem IP; techniczne zapisy obsługi linków z e-maili (identyfikator Konta, rodzaj i czas operacji — bez adresu e-mail i adresu IP).
+- **Dane:** adres IP, data i godzina, adres odwiedzanej strony, informacje o przeglądarce i urządzeniu, identyfikator Konta, kody błędów; w formularzu kontaktowym i w zapisie na cenę założycielską — sygnały techniczne przeglądarki analizowane przez Cloudflare Turnstile; historia zdarzeń logowania (np. logowanie, zmiana hasła) z adresem IP; techniczne zapisy obsługi linków z e-maili (identyfikator Konta, rodzaj i czas operacji — bez adresu e-mail i adresu IP).
 - **Cel:** zapewnienie bezpieczeństwa Serwisu, wykrywanie i usuwanie błędów, ochrona przed automatami i nadużyciami.
 - **Podstawa prawna:** nasz prawnie uzasadniony interes, czyli bezpieczeństwo i poprawne działanie Serwisu (art. 6 ust. 1 lit. f RODO).
 - **Jak długo:** nie dłużej niż 7 dni — dotyczy to logów serwera, bazy danych, historii zdarzeń logowania i zapisów obsługi linków z e-maili.
@@ -71,7 +72,17 @@ Formularz chroni Cloudflare Turnstile, który sprawdza, czy wiadomość wysyła 
 - **Podstawa prawna:** nasz prawnie uzasadniony interes, czyli ochrona Serwisu przed nadużyciami (art. 6 ust. 1 lit. f RODO).
 - **Jak długo:** 13 miesięcy od generowania — usuwamy je automatycznie. Indywidualny limit — do końca jego obowiązywania. Jeśli usuniesz Konto, znikają od razu razem z nim.
 
-### 2.8. Ustalenie, dochodzenie i obrona roszczeń
+### 2.8. Zapis na cenę założycielską
+
+- **Dane:** adres e-mail, wybrany na cenniku okres rozliczenia (rok albo miesiąc — to informacja, nie zobowiązanie), data zapisu, a jeśli zapisujesz się zalogowany — powiązanie zapisu z Kontem.
+- **Cel:** wysłanie wiadomości, gdy ruszą płatności, i przyznanie ceny założycielskiej.
+- **Podstawa prawna:** Twoja zgoda (art. 6 ust. 1 lit. a RODO), wyrażona kliknięciem przycisku zapisu na stronie [Cennik](/cennik).
+- **Wycofanie zgody:** w każdej chwili — napisz przez [formularz kontaktowy](/kontakt) albo na kontakt@temio.pl, a usuniemy zapis. Wycofanie zgody nie wpływa na zgodność z prawem tego, co zrobiliśmy przed nim.
+- **Jak długo:** do wycofania zgody, najdłużej do 31 sierpnia 2027 — wtedy usuwamy całą listę automatycznie. Jeśli usuniesz Konto, zapis zostaje do tego czasu, ale traci powiązanie z Kontem.
+
+Zapis chroni Cloudflare Turnstile, który sprawdza, czy zapisuje się człowiek (pkt 2.6).
+
+### 2.9. Ustalenie, dochodzenie i obrona roszczeń
 
 Jeśli dojdzie do sporu, możemy przechowywać dane potrzebne do jego rozstrzygnięcia — do czasu jego zakończenia lub przedawnienia roszczeń. Podstawą jest nasz prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).
 
@@ -117,7 +128,7 @@ Aby skorzystać z praw, napisz na kontakt@temio.pl albo przez formularz kontakto
 
 ## 6. Czy musisz podać dane
 
-Podanie danych jest dobrowolne, ale bez adresu e-mail i hasła nie założysz Konta, a bez adresu e-mail w formularzu kontaktowym nie będziemy mogli Ci odpowiedzieć.
+Podanie danych jest dobrowolne, ale bez adresu e-mail i hasła nie założysz Konta, bez adresu e-mail w formularzu kontaktowym nie będziemy mogli Ci odpowiedzieć, a bez adresu e-mail nie zapiszesz się na cenę założycielską.
 
 Nie podejmujemy wobec Ciebie decyzji opartych wyłącznie na zautomatyzowanym przetwarzaniu, które wywoływałyby skutki prawne lub w podobny sposób istotnie na Ciebie wpływały, i nie profilujemy Cię.
 
@@ -133,7 +144,7 @@ Używamy wyłącznie plików cookies niezbędnych do działania Serwisu. Nie sto
 | `reset_email`                                                | wyświetlenie adresu, na który wysłaliśmy link do nowego hasła                     | 15 minut                                         |
 | `password_changed`, `password_reset_done`, `account_deleted` | jednorazowy komunikat po zmianie hasła, ustawieniu nowego hasła i usunięciu Konta | 1 minuta                                         |
 
-Na stronie formularza kontaktowego działa Cloudflare Turnstile, który może zapisać w przeglądarce dane techniczne niezbędne do odróżnienia człowieka od automatu. Zasady Cloudflare: https://www.cloudflare.com/turnstile-privacy-policy/.
+Na stronie formularza kontaktowego i na stronie cennika działa Cloudflare Turnstile, który może zapisać w przeglądarce dane techniczne niezbędne do odróżnienia człowieka od automatu. Zasady Cloudflare: https://www.cloudflare.com/turnstile-privacy-policy/.
 
 Cookies możesz usunąć lub zablokować w ustawieniach przeglądarki — wtedy logowanie do Konta nie będzie działać.
 
@@ -142,6 +153,7 @@ Cookies możesz usunąć lub zablokować w ustawieniach przeglądarki — wtedy 
 Usunięcie Konta od razu i nieodwracalnie kasuje Konto, wszystkie Plany i sesje logowania. Przez ograniczony czas mogą zostać:
 
 - wiadomości wysłane przez formularz kontaktowy — bez powiązania z Kontem, najdłużej 12 miesięcy od wysłania (pkt 2.5);
+- zapis na cenę założycielską — bez powiązania z Kontem, do wycofania zgody, najdłużej do 31 sierpnia 2027 (pkt 2.8);
 - logi techniczne, historia zdarzeń logowania i zapisy obsługi linków z e-maili — najdłużej 7 dni (pkt 2.6);
 - techniczne kopie bazy danych, jeśli prowadzi je dostawca infrastruktury na wypadek awarii — do ich nadpisania, zgodnie z jego zasadami.
 
