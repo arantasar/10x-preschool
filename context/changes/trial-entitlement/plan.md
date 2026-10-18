@@ -375,13 +375,13 @@ merge'em a `db push` nie mają wiersza — uzupełnić w SQL Editorze z ich `cre
 
 #### Automated
 
-- [x] 1.1 Migracja stosuje się na czysto
-- [x] 1.2 Testy pgTAP przechodzą (nowy plik i wszystkie dotychczasowe)
-- [x] 1.3 Bramka roli umie nie przejść
-- [x] 1.4 Test przez GoTrue przechodzi
-- [x] 1.5 Typy się regenerują i pokazują zmianę
-- [x] 1.6 `claim_generation` nietknięta
-- [x] 1.7 Lint i build
+- [x] 1.1 Migracja stosuje się na czysto — 9785ae9
+- [x] 1.2 Testy pgTAP przechodzą (nowy plik i wszystkie dotychczasowe) — 9785ae9
+- [x] 1.3 Bramka roli umie nie przejść — 9785ae9
+- [x] 1.4 Test przez GoTrue przechodzi — 9785ae9
+- [x] 1.5 Typy się regenerują i pokazują zmianę — 9785ae9
+- [x] 1.6 `claim_generation` nietknięta — 9785ae9
+- [x] 1.7 Lint i build — 9785ae9
 
 #### Manual
 
@@ -391,9 +391,9 @@ merge'em a `db push` nie mają wiersza — uzupełnić w SQL Editorze z ich `cre
 
 #### Automated
 
-- [ ] 2.1 Testy jednostkowe przechodzą
-- [ ] 2.2 Słownik zakazany nie trafił do produktu
-- [ ] 2.3 Lint i build
+- [x] 2.1 Testy jednostkowe przechodzą
+- [x] 2.2 Słownik zakazany nie trafił do produktu
+- [x] 2.3 Lint i build
 
 #### Manual
 
