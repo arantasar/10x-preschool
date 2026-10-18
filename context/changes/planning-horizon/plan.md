@@ -344,8 +344,8 @@ Bez migracji i bez `db push`. Plany zapisane wcześniej poza oknem zostają niet
 
 #### Automated
 
-- [x] 1.1 Testy reguły przechodzą: `npx vitest run src/lib/planning-horizon.test.ts`
-- [x] 1.2 Lint przechodzi: `npm run lint`
+- [x] 1.1 Testy reguły przechodzą: `npx vitest run src/lib/planning-horizon.test.ts` — 66ca57b
+- [x] 1.2 Lint przechodzi: `npm run lint` — 66ca57b
 
 #### Manual
 
@@ -355,10 +355,10 @@ Bez migracji i bez `db push`. Plany zapisane wcześniej poza oknem zostają niet
 
 #### Automated
 
-- [ ] 2.1 Wszystkie testy jednostkowe przechodzą: `npm test`
-- [ ] 2.2 Każda z czterech tras wywołuje `checkGenerationDates(` dokładnie raz (grep zwraca `1` na plik)
-- [ ] 2.3 Testy integracyjne z lokalną bazą przechodzą: `npm run test:db:api`
-- [ ] 2.4 Lint i build przechodzą: `npm run lint && npm run build`
+- [x] 2.1 Wszystkie testy jednostkowe przechodzą: `npm test`
+- [x] 2.2 Każda z czterech tras wywołuje `checkGenerationDates(` dokładnie raz (grep zwraca `1` na plik)
+- [x] 2.3 Testy integracyjne z lokalną bazą przechodzą: `npm run test:db:api`
+- [x] 2.4 Lint i build przechodzą: `npm run lint && npm run build`
 
 #### Manual
 

@@ -1,7 +1,15 @@
 import type { APIRoute } from "astro";
 import { saveWeekPlanRequestSchema } from "@/lib/services/day-plan-contract";
 import { readWeekPlans, saveWeekGeneration } from "@/lib/services/day-plan-store";
-import { badRequest, json, storeFailure, unauthorized, unconfigured } from "@/lib/services/day-plan-http";
+import {
+  badRequest,
+  json,
+  outsideHorizon,
+  storeFailure,
+  unauthorized,
+  unconfigured,
+} from "@/lib/services/day-plan-http";
+import { checkGenerationDates } from "@/lib/planning-horizon";
 import type { DayPlanView } from "@/types";
 
 export const prerender = false;
@@ -38,6 +46,10 @@ export const prerender = false;
  * The island's `accepted_at` can be stale; the writer's `for update` cannot,
  * so the comparison lives there and the route only checks that the list is
  * well-formed and names days it is writing.
+ *
+ * **The planning horizon applies here too** (`planning-horizon.ts`): without it
+ * a batch generated for a day inside the window could be saved under a date
+ * outside it. One such day refuses the whole set, before the database.
  */
 
 /**
@@ -67,6 +79,11 @@ export const POST: APIRoute = async (context) => {
   const parsed = saveWeekPlanRequestSchema.safeParse(payload);
   if (!parsed.success) {
     return badRequest("Nieprawidłowy zestaw dni do zapisania.");
+  }
+
+  const refusal = checkGenerationDates(parsed.data.days.map((day) => day.plan_date));
+  if (refusal) {
+    return outsideHorizon(refusal, "week");
   }
 
   const supabase = context.locals.supabase;

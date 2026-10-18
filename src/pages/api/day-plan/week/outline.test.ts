@@ -67,9 +67,14 @@ async function call(context: { request: Request; locals: unknown }): Promise<Res
   return await settled;
 }
 
+// Pinned so DATES stay inside the planning horizon however long this test
+// lives: from 2026-09-15 the window is 2026-07-27 … 2026-11-01.
+const NOW = new Date("2026-09-15T10:00:00+02:00");
+
 beforeEach(() => {
   env.apiKey = "test-key";
   vi.useFakeTimers();
+  vi.setSystemTime(NOW);
   vi.spyOn(console, "info").mockImplementation(() => undefined);
   vi.spyOn(console, "error").mockImplementation(() => undefined);
 });
@@ -142,6 +147,44 @@ describe("POST /api/day-plan/week/outline — fair use", () => {
     });
 
     expect(response.status).toBe(400);
+    expect(supabase.claim).not.toHaveBeenCalled();
+  });
+});
+
+// The planning horizon (S-31): one day outside refuses the whole outline,
+// before the claim and the model.
+describe("POST /api/day-plan/week/outline — planning horizon", () => {
+  it("refuses a set with one day too far ahead, as a week, touching nothing", async () => {
+    const supabase = supabaseStub();
+    const fetchStub = stubFetch(() => proposalResponse(validOutline()));
+
+    const response = await call({
+      request: request({ prompt: "jesień w lesie", dates: ["2026-10-30", "2026-11-02"] }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+    const body = (await response.json()) as { error: string; retryable: boolean; horizon: { opens_on: string } };
+
+    expect(response.status).toBe(422);
+    expect(body.retryable).toBe(false);
+    expect(body.horizon).toEqual({ opens_on: "2026-10-01" });
+    expect(body.error).toBe("Ten tydzień będzie można zaplanować od 1 października 2026.");
+    expect(fetchStub).not.toHaveBeenCalled();
+    expect(supabase.claim).not.toHaveBeenCalled();
+  });
+
+  it("refuses a week before the window with no opening day", async () => {
+    const supabase = supabaseStub();
+    const fetchStub = stubFetch(() => proposalResponse(validOutline()));
+
+    const response = await call({
+      request: request({ prompt: "jesień w lesie", dates: ["2026-07-20", "2026-07-21"] }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+    const body = (await response.json()) as { horizon: { opens_on: string | null } };
+
+    expect(response.status).toBe(422);
+    expect(body.horizon).toEqual({ opens_on: null });
+    expect(fetchStub).not.toHaveBeenCalled();
     expect(supabase.claim).not.toHaveBeenCalled();
   });
 });

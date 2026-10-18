@@ -68,9 +68,14 @@ async function call(context: { request: Request; locals: unknown }): Promise<Res
   return await settled;
 }
 
+// Pinned so PLAN_DATE stays inside the planning horizon however long this test
+// lives: from 2026-09-15 the window is 2026-07-27 … 2026-11-01.
+const NOW = new Date("2026-09-15T10:00:00+02:00");
+
 beforeEach(() => {
   env.apiKey = "test-key";
   vi.useFakeTimers();
+  vi.setSystemTime(NOW);
   vi.spyOn(console, "info").mockImplementation(() => undefined);
   vi.spyOn(console, "error").mockImplementation(() => undefined);
 });
@@ -426,5 +431,74 @@ describe("POST /api/day-plan/generate — fair use", () => {
 
     expect(response.status).toBe(409);
     expect(supabase.claim).not.toHaveBeenCalled();
+  });
+});
+
+// The planning horizon (S-31), seen from the route: the refusal comes before
+// the database, the ledger and the model, so it costs the teacher nothing.
+describe("POST /api/day-plan/generate — planning horizon", () => {
+  it("refuses a day too far ahead with 422 and the opening day, touching nothing", async () => {
+    const supabase = supabaseStub();
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({
+      request: request({ plan_date: "2026-11-02", prompt: "jesień w lesie" }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+    const body = (await response.json()) as { error: string; retryable: boolean; horizon: { opens_on: string } };
+
+    expect(response.status).toBe(422);
+    expect(body.retryable).toBe(false);
+    expect(body.horizon).toEqual({ opens_on: "2026-10-01" });
+    expect(body.error).toBe("Ten dzień będzie można zaplanować od 1 października 2026.");
+    expect(fetchStub).not.toHaveBeenCalled();
+    expect(supabase.claim).not.toHaveBeenCalled();
+    expect(supabase.rpc).not.toHaveBeenCalled();
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("refuses a day before the window with 422 and no opening day", async () => {
+    const supabase = supabaseStub();
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({
+      request: request({ plan_date: "2026-07-26", prompt: "jesień w lesie" }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+    const body = (await response.json()) as { error: string; horizon: { opens_on: string | null } };
+
+    expect(response.status).toBe(422);
+    expect(body.horizon).toEqual({ opens_on: null });
+    expect(body.error).toContain("Plany można generować od 27 lipca 2026");
+    expect(fetchStub).not.toHaveBeenCalled();
+    expect(supabase.claim).not.toHaveBeenCalled();
+  });
+
+  it("refuses a regeneration outside the window too, without reading the saved plan", async () => {
+    const supabase = supabaseStub({ existingPlan: planRow({ plan_date: "2026-07-20" }) });
+    const fetchStub = stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({
+      request: request({ plan_date: "2026-07-20", prompt: "jesień w lesie", confirm_replace: true }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+
+    expect(response.status).toBe(422);
+    expect(supabase.from).not.toHaveBeenCalled();
+    expect(supabase.claim).not.toHaveBeenCalled();
+    expect(fetchStub).not.toHaveBeenCalled();
+  });
+
+  it("generates the last day of the window", async () => {
+    const plan = planRow({ plan_date: "2026-11-01" });
+    const supabase = supabaseStub({ savedPlan: plan, savedActivities: [1, 2, 3].map((n) => activityRow(n, plan)) });
+    stubFetch(() => proposalResponse(validProposal()));
+
+    const response = await call({
+      request: request({ plan_date: "2026-11-01", prompt: "jesień w lesie" }),
+      locals: { user: USER, supabase: supabase.client },
+    });
+
+    expect(response.status).toBe(200);
   });
 });

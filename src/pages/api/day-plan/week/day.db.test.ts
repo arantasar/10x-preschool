@@ -48,7 +48,16 @@ beforeAll(async () => {
   b = await teacherClient("b");
 });
 
+// Pinned so DATES stay inside the planning horizon however long this test
+// lives: from 2026-09-15 the window is 2026-07-27 … 2026-11-01. Only `Date` is
+// faked, and only after sign-in - `fetch` and supabase-js keep real timers, and
+// a clock in the past leaves the session's expiry in the future. The ledger's
+// month is the database's own clock, not this one.
+const NOW = new Date("2026-09-15T10:00:00+02:00");
+
 beforeEach(async () => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(NOW);
   await deleteLedgerRows(a.userId);
   await deleteLedgerRows(b.userId);
 
@@ -67,6 +76,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   await deleteLedgerRows(a.userId);

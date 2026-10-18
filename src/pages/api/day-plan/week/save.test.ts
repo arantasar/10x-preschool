@@ -59,11 +59,19 @@ function writtenWeek() {
   });
 }
 
+// Pinned so DATES stay inside the planning horizon however long this test
+// lives: from 2026-09-15 the window is 2026-07-27 … 2026-11-01. Only `Date` is
+// faked - the store's retries keep their real timers.
+const NOW = new Date("2026-09-15T10:00:00+02:00");
+
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(NOW);
   vi.spyOn(console, "error").mockImplementation(() => undefined);
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -310,5 +318,41 @@ describe("POST /api/day-plan/week/save — refusals and failures", () => {
 
     expect(response.status).toBe(500);
     expect(supabase.rpc).toHaveBeenCalledTimes(2);
+  });
+});
+
+// The planning horizon (S-31): without it a batch generated for a day inside
+// the window could be saved under a date outside it. One such day refuses the
+// whole set, before the database.
+describe("POST /api/day-plan/week/save — planning horizon", () => {
+  it("refuses a set with one day too far ahead, before the writer", async () => {
+    const supabase = writtenWeek();
+
+    const response = await call({
+      request: request(body({ days: [day(DATES[0]), day("2026-11-02")] })),
+      locals: { user: USER, supabase: supabase.client },
+    });
+    const parsed = (await response.json()) as { error: string; retryable: boolean; horizon: { opens_on: string } };
+
+    expect(response.status).toBe(422);
+    expect(parsed.retryable).toBe(false);
+    expect(parsed.horizon).toEqual({ opens_on: "2026-10-01" });
+    expect(parsed.error).toBe("Ten tydzień będzie można zaplanować od 1 października 2026.");
+    expect(supabase.rpc).not.toHaveBeenCalled();
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("refuses a set with one day before the window, before the writer", async () => {
+    const supabase = writtenWeek();
+
+    const response = await call({
+      request: request(body({ days: [day("2026-07-24"), day(DATES[0])] })),
+      locals: { user: USER, supabase: supabase.client },
+    });
+    const parsed = (await response.json()) as { horizon: { opens_on: string | null } };
+
+    expect(response.status).toBe(422);
+    expect(parsed.horizon).toEqual({ opens_on: null });
+    expect(supabase.rpc).not.toHaveBeenCalled();
   });
 });
