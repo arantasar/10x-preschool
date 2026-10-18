@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { deleteSeededPlans, ensureTeacher, seedDayPlan, TEACHER_A } from "./support/supabase-admin";
-import { activitiesFor, uniquePlanDate, uniqueStamp } from "./support/test-data";
+import { activitiesFor, uniqueStamp, weekStartInHorizon } from "./support/test-data";
 
 /**
  * Test wzorcowy. Każdy nowy test w tym katalogu jest modelowany na tym pliku.
@@ -37,10 +37,12 @@ test.describe("Ryzyko #4 — plan jest widoczny dla swojego właściciela", () =
   test("ryzyko #4 (kontrola pozytywna): właściciel widzi swój plan dnia i przeżywa on przeładowanie strony", async ({
     page,
   }) => {
-    // Unikalny dzień i unikalny znacznik w tytułach: bez nich drugi przebieg
+    // Własny dzień i unikalny znacznik w tytułach: bez nich drugi przebieg
     // pod rząd zderzyłby się o `unique (user_id, plan_date)`, a asercja mogłaby
-    // przejść na planie zostawionym przez poprzedni przebieg.
-    const planDate = uniquePlanDate();
+    // przejść na planie zostawionym przez poprzedni przebieg. Dzień w horyzoncie
+    // planowania, bo poza nim strona nie pokazuje pola „Hasło dnia” (slot w
+    // `weekStartInHorizon`).
+    const planDate = weekStartInHorizon(2);
     const stamp = uniqueStamp();
     const teacherAId = await ensureTeacher(TEACHER_A);
 

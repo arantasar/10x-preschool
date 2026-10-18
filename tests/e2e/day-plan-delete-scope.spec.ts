@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { deleteSeededPlans, ensureTeacher, seedDayPlan, TEACHER_A, TEACHER_B } from "./support/supabase-admin";
-import { activitiesFor, plusDays, uniquePlanDate, uniqueStamp } from "./support/test-data";
+import { activitiesFor, plusDays, uniqueStamp, weekStartInHorizon } from "./support/test-data";
 import { waitForIslands } from "./support/hydration";
 
 /**
@@ -40,9 +40,11 @@ test.describe("Ryzyko #7 — zakres operacji kasującej plan dnia", () => {
   test("ryzyko #7: usunięcie planu zdejmuje dokładnie ten jeden dzień — sąsiedni dzień i dzień innego konta zostają nietknięte", async ({
     browser,
   }) => {
-    // `uniquePlanDate()` rezerwuje odstęp na dni sąsiednie, więc `plusDays`
-    // nigdy nie trafi w dzień innego testu.
-    const targetDate = uniquePlanDate();
+    // Czwartek i piątek slotu `2` należą tylko do tego testu, więc dzień
+    // sąsiedni nie trafi w dzień innego testu. W horyzoncie planowania, bo poza
+    // nim pusty dzień po kasowaniu pokazuje notkę zamiast „Ten dzień nie ma
+    // jeszcze planu”.
+    const targetDate = plusDays(weekStartInHorizon(2), 3);
     const neighbourDate = plusDays(targetDate, 1);
     const stamp = uniqueStamp();
 

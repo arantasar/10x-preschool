@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { deleteSeededPlans, ensureTeacher, seedDayPlan, TEACHER_A, TEACHER_B } from "./support/supabase-admin";
-import { activitiesFor, uniquePlanDate, uniqueStamp } from "./support/test-data";
+import { activitiesFor, plusDays, uniqueStamp, weekStartInHorizon } from "./support/test-data";
 
 /**
  * Ryzyko #4 z `context/foundation/test-plan.md`:
@@ -38,7 +38,9 @@ test.describe("Ryzyko #4 — izolacja planu dnia między kontami", () => {
   test("ryzyko #4: plan konta A nie jest czytelny z konta B — ani na stronie dnia, ani przez API", async ({
     browser,
   }) => {
-    const planDate = uniquePlanDate();
+    // W horyzoncie planowania: poza nim pusty dzień pokazuje notkę zamiast
+    // „Ten dzień nie ma jeszcze planu” i pola hasła, na których stoją asercje.
+    const planDate = plusDays(weekStartInHorizon(2), 2);
     const stamp = uniqueStamp();
     const ownerTitle = `Powitanie ${stamp}`;
 
