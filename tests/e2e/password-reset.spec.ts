@@ -135,7 +135,11 @@ test.describe("Ryzyko #15 — reset hasła przez e-mail (US-04)", () => {
     await page.getByLabel("Hasło", { exact: true }).fill(OLD_PASSWORD);
     await page.getByRole("button", { name: "Zaloguj się" }).click();
     await page.waitForURL("**/auth/signin?error=*");
-    await expect(page.getByText("Nieprawidłowy adres e-mail lub hasło.")).toBeVisible();
+    // Zakotwiczone `^`: zdanie przychodzi do wyspy jako prop `serverError`, a w
+    // trybie dev pasek Astro (X-ray) wypisuje propsy wysp w `<code>` — goły
+    // podciąg trafiał też tam i test padał na strict mode, zależnie od tego,
+    // czy pasek zdążył się wczytać.
+    await expect(page.getByText(/^Nieprawidłowy adres e-mail lub hasło\./)).toBeVisible();
 
     await waitForIslands(page);
     await page.getByLabel("Adres e-mail").fill(email);
