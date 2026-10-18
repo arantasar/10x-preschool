@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { checkGenerationDates, generationWindow, horizonMessage } from "@/lib/planning-horizon";
 
 describe("generationWindow", () => {
@@ -75,6 +75,25 @@ describe("checkGenerationDates", () => {
 
   it("returns null for an empty set", () => {
     expect(checkGenerationDates([], today)).toBeNull();
+  });
+
+  describe("with today taken from the clock", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    // 23:30 UTC on 31 October is already 00:30 on 1 November in Warsaw (CET):
+    // the window must move with the teacher's calendar, not with UTC's. 10 Dec
+    // is past October's window (to 6 Dec) and inside November's (to 3 Jan).
+    it("moves the window at midnight in Warsaw, not at midnight UTC", () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+
+      vi.setSystemTime(new Date("2026-10-31T22:30:00Z"));
+      expect(checkGenerationDates(["2026-12-10"])).toEqual({ kind: "too_far", opensOn: "2026-11-01" });
+
+      vi.setSystemTime(new Date("2026-10-31T23:30:00Z"));
+      expect(checkGenerationDates(["2026-12-10"])).toBeNull();
+    });
   });
 });
 
