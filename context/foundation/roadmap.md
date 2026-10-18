@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 3
 status: draft
 created: 2026-10-01
-updated: 2026-10-17
+updated: 2026-10-18
 prd_version: 3
 main_goal: quality
 top_blocker: external
@@ -72,7 +72,7 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic z tabelą porównania planów i zapisać się na cenę założycielską z uczciwym potwierdzeniem | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-029, US-05          | blocked  |
 | S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | done     |
 | S-29 | print-redesign             | drukować plan tygodnia i miesiąca w układzie i barwach aplikacji, nie w czerni i bieli                   | —                                                | —                              | ready    |
-| S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21, S-28                                       | FR-030                         | ready    |
+| S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21, S-28                                       | FR-030                         | done     |
 | S-24 | existing-accounts-gift     | jako konto sprzed płatności (także testerka) dowiedzieć się o nowych zasadach i dostać prezent, zanim limit mnie dotknie | S-23                                | FR-036                         | blocked  |
 | S-25 | basic-subscription         | wykupić Basic jako subskrypcję kartą, zarządzać nią, anulować ją i w 14 dni dostać zwrot                 | F-02, S-18, S-22, S-23, Krok 9, konto operatora  | FR-032, FR-034, FR-035, FR-039, FR-024 | blocked  |
 | S-26 | one-time-access            | wykupić Basic jednorazowo (miesiąc albo rok szkolny) BLIK-iem albo przelewem, z gwarancją zwrotu         | F-02, S-23, Krok 9, konto operatora              | FR-033, FR-039                 | blocked  |
@@ -260,7 +260,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Testerzy (do 5 osób, Basic do 31.01.2027) — właściciel ustawia im stan planu ręcznie, poza aplikacją; model danych musi to umożliwiać bez panelu operatora. Owner: `/10x-plan`. Block: nie. **Rozstrzygnięte (`trial-entitlement`):** model to umożliwia — wiersz `public.account_entitlements` z `access_until = '2027-01-31'`, `source = 'owner'`, wpisany w SQL Editorze. Same wiersze testerek zakłada `S-24` (decyzja 2026-10-18).
 - **Risk:** Wprowadza jedyny model uprawnienia, na którym stoją `S-24`…`S-27` — błąd tutaj powiela się w każdej płatności. Stan planu zapisuje wyłącznie system albo właściciel ręcznie poza aplikacją; użytkownik nie ma żadnej ścieżki podniesienia planu inaczej niż płacąc. Ryzyko zakładania kont na nowo co miesiąc przyjęte świadomie (FR-030; Open Roadmap Questions #7). Sama pozycja nie pobiera pieniędzy i niczego nie odbiera, więc może wejść na produkcję samodzielnie.
-- **Status:** ready
+- **Status:** done
 
 ### S-24: Prezent dla kont sprzed płatności (krok 7)
 
@@ -405,3 +405,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-20: Odwiedzający bez konta czyta regulamin i politykę prywatności, a polityka obejmuje przechowywanie e-maili osób, które nie mają konta (formularz kontaktowy, zapis na cenę).** — Archived 2026-10-17 → `context/archive/2026-10-17-legal-pages/`. Lesson: —.
 - **S-21: Nauczycielka generuje, edytuje, zatwierdza, usuwa i drukuje plany jak dziś; dopiero nadużycie zatrzymuje generowanie komunikatem, który mówi, kiedy generowanie znów będzie możliwe, i wskazuje kontakt na wypadek pomyłki.** — Archived 2026-10-17 → `context/archive/2026-10-17-fair-use-limit/`. Lesson: —.
 - **S-28: Właściciel wpisuje w dashboardzie Supabase, że wybrane konto (np. własne albo testerki) ma limit generowania bez sufitu albo podwyższony — zmiana działa od następnego wywołania, bez deployu i bez kasowania wierszy księgi. Nauczycielka nie ma żadnej drogi, żeby nadać to sobie sama.** — Archived 2026-10-17 → `context/archive/2026-10-17-fair-use-overrides/`. Otwarte: wpis bez sufitu dla testerki po jej ponownej rejestracji (plan 2.7; właściciel, SQL Editor). Lesson: —.
+- **S-23: Nowe konto dostaje pierwszy miesiąc od rejestracji z pełnym zakresem Basic, bez podawania karty, a nauczycielka widzi stan swojego planu i datę, do której trwa — tylko do odczytu.** — Archived 2026-10-18 → `context/archive/2026-10-17-trial-entitlement/`. Lesson: —.
