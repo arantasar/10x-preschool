@@ -6,39 +6,22 @@ import { uniqueStamp } from "./support/test-data";
 /**
  * FR-029 / US-05 — zapis na cenę założycielską działa i mówi prawdę (S-22,
  * `founder-price-signup`). Z nagłówka do `/cennik`, przełącznik okresu, zapis
- * i uczciwe potwierdzenie („płatności jeszcze nie działają”) — anonimowo i jako
- * zalogowana nauczycielka, ze stanem „Jesteś na liście” po przeładowaniu.
+ * i uczciwe potwierdzenie („płatności jeszcze nie działają”) dla odwiedzającego
+ * bez konta. Zalogowana nauczycielka nie widzi formularza: jej konto ma cenę
+ * założycielską z urzędu (FR-036), więc strona mówi jej to zamiast zapisu.
  * Ryzyko przecina granice, których nie łączy żadna niższa warstwa: skrypt
- * przełącznika, hydrację wyspy z widżetem Turnstile, prawdziwą trasę, sesję i
- * RLS tabeli, która zalogowanej pokazuje tylko jej własny adres.
+ * przełącznika, hydrację wyspy z widżetem Turnstile, prawdziwą trasę i render
+ * zależny od sesji.
  *
  * Środowisko: `.dev.vars` ma klucze testowe Turnstile, które zawsze przechodzą.
  * Zestaw niczego tu nie mockuje.
  *
- * **Konto zalogowane jest jednorazowe, a logowanie idzie przez formularz** —
- * świadomy wyjątek od E2E-RULES, jak w `account-deletion.spec.ts`. Bycie na
- * liście to stan konta: na stałym koncie A równoległe i powtarzane przebiegi
- * (`--repeat-each`) widziałyby nawzajem swoje zapisy.
- *
- * **Wiersz anonimowy sprawdzamy kluczem serwisowym**, jak `help-and-contact`:
- * `anon` nie czyta tej tabeli wcale, więc ten odczyt mówi „zapis doszedł do
- * bazy, raz, z okresem z przełącznika”, a nie nic o izolacji kont. To, co widzi
- * zalogowana, idzie przez przeglądarkę.
+ * **Wiersz sprawdzamy kluczem serwisowym**, jak `help-and-contact`: ani `anon`,
+ * ani zalogowana nie czytają tej tabeli wcale, więc ten odczyt mówi „zapis
+ * doszedł do bazy, raz, z okresem z przełącznika”.
  */
 
-test.use({ storageState: { cookies: [], origins: [] } });
-
-const PASSWORD = "haslo-cennik-e2e";
 const LISTED_NOTE = "Płatności jeszcze nie działają, więc nic dziś nie płacisz.";
-
-async function signIn(page: Page, email: string): Promise<void> {
-  await page.goto("/auth/signin");
-  await waitForIslands(page);
-  await page.getByLabel("Adres e-mail").fill(email);
-  await page.getByLabel("Hasło", { exact: true }).fill(PASSWORD);
-  await page.getByRole("button", { name: "Zaloguj się" }).click();
-  await page.waitForURL("**/plan/month");
-}
 
 /** Wysyła formularz zapisu i czeka na odpowiedź trasy. */
 async function reserve(page: Page): Promise<number> {
@@ -49,19 +32,16 @@ async function reserve(page: Page): Promise<number> {
   return (await answered).status();
 }
 
-test.describe("FR-029 — zapis na cenę założycielską", () => {
+test.describe("FR-029 — zapis na cenę założycielską bez konta", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   const emails: string[] = [];
-  const userIds: string[] = [];
 
   test.afterEach(async () => {
     // Po adresie: tożsamość tabeli to adres, a zapis anonimowy nie zwraca id.
     if (emails.length > 0) {
       const { error } = await admin().from("founder_price_signups").delete().in("email", emails.splice(0));
       if (error) throw new Error(`Sprzątanie zapisów nie powiodło się: ${error.message}`);
-    }
-    for (const id of userIds.splice(0)) {
-      const { error } = await admin().auth.admin.deleteUser(id);
-      if (error) throw new Error(`Nie udało się usunąć konta testowego: ${error.message}`);
     }
   });
 
@@ -90,41 +70,26 @@ test.describe("FR-029 — zapis na cenę założycielską", () => {
     await expect(confirmation).toContainText(`Gotowe — ${email} jest na liście.`);
     await expect(confirmation).toContainText(LISTED_NOTE);
 
-    const { data, error } = await admin()
-      .from("founder_price_signups")
-      .select("email, period, user_id")
-      .eq("email", email);
+    const { data, error } = await admin().from("founder_price_signups").select("email, period").eq("email", email);
     expect(error).toBeNull();
-    expect(data).toEqual([{ email, period: "monthly", user_id: null }]);
+    expect(data).toEqual([{ email, period: "monthly" }]);
   });
+});
 
-  test("FR-029: zalogowana nauczycielka zapisuje się jednym kliknięciem, a po przeładowaniu widzi „Jesteś na liście”", async ({
+test.describe("FR-036 — konto ma cenę założycielską bez zapisu", () => {
+  // Konto A z `storageState` projektu: ta ścieżka niczego nie zapisuje, więc
+  // równoległe i powtarzane przebiegi nie widzą nawzajem swoich śladów.
+  test("FR-036: zalogowana nauczycielka widzi, że jej konto ma cenę założycielską, i nie dostaje formularza zapisu", async ({
     page,
   }) => {
-    const email = `e2e-cennik-konto-${uniqueStamp()}@example.test`;
-    const { data: created, error: createError } = await admin().auth.admin.createUser({
-      email,
-      password: PASSWORD,
-      email_confirm: true,
-    });
-    if (createError) throw new Error(`Nie udało się założyć konta ${email}: ${createError.message}`);
-    userIds.push(created.user.id);
-    emails.push(email);
-
-    await signIn(page, email);
     await page.goto("/cennik");
-    await waitForIslands(page);
 
-    const form = page.getByRole("region", { name: "Zarezerwuj cenę założycielską" });
-    await expect(form.getByLabel("E-mail")).toHaveCount(0);
-    await expect(form).toContainText(email);
-    expect(await reserve(page)).toBe(200);
-    await expect(page.getByRole("status")).toContainText(`Gotowe — ${email} jest na liście.`);
-
-    await page.reload();
-    const listed = page.getByRole("status");
-    await expect(listed).toContainText("Jesteś na liście");
-    await expect(listed).toContainText(LISTED_NOTE);
+    const section = page.getByRole("region", { name: "Twoje konto ma cenę założycielską" });
+    await expect(section).toContainText("Konto założone przed startem płatności dostaje ją bez zapisu");
+    await expect(page.getByLabel("E-mail")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Zarezerwuj cenę założycielską" })).toHaveCount(0);
+
+    await page.getByRole("link", { name: "Twoja cena założycielska" }).click();
+    await expect(section).toBeInViewport();
   });
 });

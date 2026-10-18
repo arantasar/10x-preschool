@@ -347,18 +347,12 @@ export async function deleteLedgerRows(userId: string): Promise<void> {
 /**
  * Founder-price sign-ups with this exact address, read as the service client.
  *
- * The same reasoned exception as {@link contactMessagesContaining}: anon can
- * read nothing in `founder_price_signups` and a teacher only her own address,
- * so whether an anonymous write landed - and that it landed once - is visible
- * only from here. Assertions about who can *see* a row read through a teacher.
+ * The same reasoned exception as {@link contactMessagesContaining}: neither
+ * anon nor a teacher can read anything in `founder_price_signups`, so whether a
+ * write landed - and that it landed once - is visible only from here.
  */
-export async function founderPriceSignupsFor(
-  email: string,
-): Promise<{ id: string; user_id: string | null; email: string; period: string }[]> {
-  const { data, error } = await service
-    .from("founder_price_signups")
-    .select("id, user_id, email, period")
-    .eq("email", email);
+export async function founderPriceSignupsFor(email: string): Promise<{ id: string; email: string; period: string }[]> {
+  const { data, error } = await service.from("founder_price_signups").select("id, email, period").eq("email", email);
   if (error) {
     throw new Error(`Nie udało się odczytać zapisów: ${error.message}`);
   }
@@ -379,9 +373,4 @@ export async function deleteFounderPriceSignups(emails: readonly string[]): Prom
   if (error) {
     throw new Error(`Sprzątanie zapisów nie powiodło się: ${error.message}`);
   }
-}
-
-/** The address teacher a or b signs in with, as the jwt carries it. */
-export function teacherEmail(which: TeacherKey): string {
-  return TEACHERS[which];
 }

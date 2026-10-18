@@ -399,6 +399,17 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 - Similar implementation: `src/pages/api/contact.ts:31`, `src/lib/contact-form.ts`, `supabase/migrations/20261009120000_contact_messages.sql`
 - Design: `context/foundation/design/src/components/billing/*`, `design/screens/07-cennik.png`, `design/README.md:146`
 
+## Addendum 2026-10-18 — lista tylko dla osób bez konta
+
+Decyzja właściciela po impl-review: konto założone przed startem płatności ma cenę założycielską z urzędu (FR-036), więc zapis po zalogowaniu sugerował warunek, którego nie ma. Zmiana względem planu:
+
+- Migracja (jeszcze niewypchnięta na produkcję, poprawiona w miejscu): bez kolumny `user_id`, bez polityk i grantów dla `authenticated`; `anon` ma wyłącznie insert.
+- Trasa odpowiada sesji `signed_in` (409) zaraz po honeypocie; adres jest wymagany w schemacie.
+- `/cennik` zalogowanej nauczycielce pokazuje „Twoje konto ma cenę założycielską” zamiast formularza; nowe pytanie „Mam już konto — czy muszę się zapisać?”. Stan „Jesteś na liście” i odczyt listy w stronie usunięte.
+- Polityka 2.8 i pkt 8: zapis nie jest powiązany z Kontem.
+- E2E (b): konto A (stały `storageState`) widzi informację, nie formularz — bez jednorazowego konta.
+- Kryteria 3.8 (klik → „Jesteś na liście”) i część planu o polityce `authenticated` są nieaktualne; ręczna kontrola 3.8 brzmi teraz: zalogowana nauczycielka widzi informację o cenie, bez pola i przycisku.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.

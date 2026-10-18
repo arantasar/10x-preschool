@@ -44,22 +44,9 @@ import {
 // Read at runtime and handed over as a prop, not a `PUBLIC_` variable: see the
 // comment on TURNSTILE_SITE_KEY in `astro.config.mjs`.
 const siteKey = TURNSTILE_SITE_KEY;
-const { user, supabase } = Astro.locals;
-
-// A signed-in teacher already on the list sees „Jesteś na liście”. The select
-// policy narrows the table to the row with her own address, so no filter is
-// needed here. The page never breaks because of the list: an error reads as
-// „not listed” and is logged.
-let alreadyListed = false;
-if (user && supabase) {
-  const { data, error } = await supabase.from("founder_price_signups").select("id").limit(1).maybeSingle();
-  if (error) {
-    /* eslint-disable-next-line no-console */
-    console.error("founder_price.read_failed", { code: error.code, message: error.message });
-  } else {
-    alreadyListed = data !== null;
-  }
-}
+// The list is for people without an account. A signed-in teacher's account
+// has the founder price by right (FR-036), so she sees that instead of the form.
+const { user } = Astro.locals;
 
 const questions: FaqEntry[] = [
   {
@@ -71,6 +58,12 @@ const questions: FaqEntry[] = [
   {
     question: "Co daje zapis na cenę założycielską?",
     answer: [`Cenę ${FOUNDER_TERMS}`, "Gdy ruszą płatności, wyślemy jedną wiadomość na podany adres."],
+  },
+  {
+    question: "Mam już konto — czy muszę się zapisać?",
+    answer: [
+      "Nie. Konto założone przed startem płatności ma cenę założycielską bez zapisu. Zanim zmienią się zasady, napiszemy na adres konta. Formularz jest dla osób, które konta jeszcze nie mają.",
+    ],
   },
   {
     question: "Czy cena założycielska obejmuje BLIK i przelew?",
@@ -131,7 +124,7 @@ const questions: FaqEntry[] = [
             features={BASIC_PLAN.features}
             founder={FOUNDER_PRICE}
             founderNote={FOUNDER_NOTE}
-            cta={{ label: "Zarezerwuj cenę założycielską", href: "#zapis" }}
+            cta={{ label: user ? "Twoja cena założycielska" : "Zarezerwuj cenę założycielską", href: "#zapis" }}
             variant="featured"
           />
         </div>
@@ -146,16 +139,33 @@ const questions: FaqEntry[] = [
         class="bg-mleko shadow-panel rounded-card mx-auto grid w-full max-w-[1000px] scroll-mt-8 gap-8 p-6 sm:p-11 lg:grid-cols-2 lg:gap-12"
         aria-labelledby="zapis-heading"
       >
-        <div class="flex flex-col gap-3">
-          <p class="eyebrow">Cena założycielska</p>
-          <h2 id="zapis-heading" class="font-display text-display-md text-las font-normal">
-            Zarezerwuj cenę założycielską
-          </h2>
-          <p class="text-las-szary text-[17px] leading-relaxed">
-            {FOUNDER_TERMS} Dziś nic nie płacisz: zapisujemy adres i piszemy, gdy ruszą płatności.
-          </p>
-        </div>
-        <FounderPriceForm siteKey={siteKey} accountEmail={user?.email} alreadyListed={alreadyListed} client:load />
+        {
+          user ? (
+            <div class="flex flex-col gap-3 lg:col-span-2">
+              <p class="eyebrow">Cena założycielska</p>
+              <h2 id="zapis-heading" class="font-display text-display-md text-las font-normal">
+                Twoje konto ma cenę założycielską
+              </h2>
+              <p class="text-las-szary text-[17px] leading-relaxed">
+                Konto założone przed startem płatności dostaje ją bez zapisu: {FOUNDER_TERMS} Zanim zmienią się zasady,
+                napiszemy na adres Twojego konta.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div class="flex flex-col gap-3">
+                <p class="eyebrow">Cena założycielska</p>
+                <h2 id="zapis-heading" class="font-display text-display-md text-las font-normal">
+                  Zarezerwuj cenę założycielską
+                </h2>
+                <p class="text-las-szary text-[17px] leading-relaxed">
+                  {FOUNDER_TERMS} Dziś nic nie płacisz: zapisujemy adres i piszemy, gdy ruszą płatności.
+                </p>
+              </div>
+              <FounderPriceForm siteKey={siteKey} client:load />
+            </>
+          )
+        }
       </section>
 
       <section class="mx-auto flex w-full max-w-[1000px] flex-col gap-3" aria-labelledby="pytania-heading">

@@ -74,11 +74,11 @@ Formularz chroni Cloudflare Turnstile, który sprawdza, czy wiadomość wysyła 
 
 ### 2.8. Zapis na cenę założycielską
 
-- **Dane:** adres e-mail, wybrany na cenniku okres rozliczenia (rok albo miesiąc — to informacja, nie zobowiązanie), data zapisu, a jeśli zapisujesz się zalogowany — powiązanie zapisu z Kontem.
+- **Dane:** adres e-mail, wybrany na cenniku okres rozliczenia (rok albo miesiąc — to informacja, nie zobowiązanie), data zapisu. Zapis jest dla osób bez Konta i nie łączymy go z Kontem, także jeśli założysz je później.
 - **Cel:** wysłanie wiadomości, gdy ruszą płatności, i przyznanie ceny założycielskiej.
 - **Podstawa prawna:** Twoja zgoda (art. 6 ust. 1 lit. a RODO), wyrażona kliknięciem przycisku zapisu na stronie [Cennik](/cennik).
 - **Wycofanie zgody:** w każdej chwili — napisz przez [formularz kontaktowy](/kontakt) albo na kontakt@temio.pl, a usuniemy zapis. Wycofanie zgody nie wpływa na zgodność z prawem tego, co zrobiliśmy przed nim.
-- **Jak długo:** do wycofania zgody, najdłużej do 31 sierpnia 2027 — wtedy usuwamy całą listę automatycznie. Jeśli usuniesz Konto, zapis zostaje do tego czasu, ale traci powiązanie z Kontem.
+- **Jak długo:** do wycofania zgody, najdłużej do 31 sierpnia 2027 — wtedy usuwamy całą listę automatycznie. Usunięcie Konta nie usuwa zapisu, bo nie jest z nim powiązany.
 
 Zapis chroni Cloudflare Turnstile, który sprawdza, czy zapisuje się człowiek (pkt 2.6).
 
@@ -153,7 +153,7 @@ Cookies możesz usunąć lub zablokować w ustawieniach przeglądarki — wtedy 
 Usunięcie Konta od razu i nieodwracalnie kasuje Konto, wszystkie Plany i sesje logowania. Przez ograniczony czas mogą zostać:
 
 - wiadomości wysłane przez formularz kontaktowy — bez powiązania z Kontem, najdłużej 12 miesięcy od wysłania (pkt 2.5);
-- zapis na cenę założycielską — bez powiązania z Kontem, do wycofania zgody, najdłużej do 31 sierpnia 2027 (pkt 2.8);
+- zapis na cenę założycielską z adresem Konta, jeśli powstał przed jego założeniem — nie jest z Kontem powiązany, zostaje do wycofania zgody, najdłużej do 31 sierpnia 2027 (pkt 2.8);
 - logi techniczne, historia zdarzeń logowania i zapisy obsługi linków z e-maili — najdłużej 7 dni (pkt 2.6);
 - techniczne kopie bazy danych, jeśli prowadzi je dostawca infrastruktury na wypadek awarii — do ich nadpisania, zgodnie z jego zasadami.
 

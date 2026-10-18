@@ -25,12 +25,9 @@ export type FounderPricePeriod = (typeof FOUNDER_PRICE_PERIODS)[number];
 export const FOUNDER_PRICE_BOT_ACTION = "founder_price";
 
 export const founderPricePayloadSchema = z.object({
-  // Optional here: a signed-in teacher sends none, because the route takes her
-  // session's address. Without a session the route requires it.
   // Lowercased before the database, which refuses anything else: one address,
-  // one person, and the select policy compares against the jwt's lowercase
-  // address.
-  email: z.string().trim().toLowerCase().max(FOUNDER_PRICE_EMAIL_MAX).pipe(z.email()).optional(),
+  // one person.
+  email: z.string().trim().toLowerCase().max(FOUNDER_PRICE_EMAIL_MAX).pipe(z.email()),
   period: z.enum(FOUNDER_PRICE_PERIODS),
   // The honeypot. The route reads it before this schema runs; it is here so the
   // shape of the payload is written down in one place.
@@ -43,6 +40,7 @@ export type FounderPricePayload = z.infer<typeof founderPricePayloadSchema>;
 /** What `POST /api/founder-price` answers with instead of a sentence. */
 export type FounderPriceErrorCode =
   | "validation_failed"
+  | "signed_in"
   | "bot_check_failed"
   | "bot_check_unavailable"
   | "config_missing"
@@ -50,6 +48,9 @@ export type FounderPriceErrorCode =
 
 const MESSAGES: Record<FounderPriceErrorCode, string> = {
   validation_failed: "Sprawdź adres e-mail — wygląda na niepełny.",
+  // The page shows a signed-in teacher no form; this reaches only a session
+  // that started in another tab after the page loaded.
+  signed_in: "Twoje konto ma już cenę założycielską — zapis nie jest potrzebny. Odśwież stronę.",
   bot_check_failed: "Nie udało się potwierdzić, że nie jesteś automatem. Spróbuj zapisać się jeszcze raz.",
   bot_check_unavailable: "Nie udało się sprawdzić formularza. Spróbuj ponownie za chwilę.",
   config_missing: `Zapis jest chwilowo niedostępny. Napisz do nas: ${SUPPORT_EMAIL}.`,
@@ -79,6 +80,6 @@ export function founderPriceErrorMessage(code: string): string {
  */
 export const FOUNDER_PRICE_PRIVACY_HREF = `${PRIVACY_PATH}#28-zapis-na-cenę-założycielską`;
 
-/** Said once the address is on the list - after a sign-up, or on entry when it already is. */
+/** Said once the address is on the list. */
 export const FOUNDER_PRICE_LISTED_NOTE =
   "Płatności jeszcze nie działają, więc nic dziś nie płacisz. Napiszemy, gdy ruszą — cena założycielska będzie na Ciebie czekać.";

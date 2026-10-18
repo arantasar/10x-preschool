@@ -5,7 +5,6 @@ import {
   deleteFounderPriceSignups,
   founderPriceSignupsFor,
   teacherClient,
-  teacherEmail,
   uniqueStamp,
   type Teacher,
 } from "@/lib/services/__fixtures__/supabase-local";
@@ -16,16 +15,15 @@ import {
 //     `.select()` it would be `insert ... returning`, which anon cannot do;
 //   * a repeat comes back as error code `23505`, the code the route turns into
 //     success, so the address stays one row;
-//   * a signed-in teacher reads the row with her own address - the
-//     "Jesteś na liście" state - and not someone else's.
+//   * a signed-in session can neither write nor read the list - the list is
+//     for people without an account (FR-036), and the route's `signed_in`
+//     refusal is not the only wall.
 
-let teacherA: Teacher;
-let teacherB: Teacher;
+let teacher: Teacher;
 let listed: string[] = [];
 
 beforeAll(async () => {
-  teacherA = await teacherClient("a");
-  teacherB = await teacherClient("b");
+  teacher = await teacherClient("a");
 });
 
 afterEach(async () => {
@@ -46,7 +44,7 @@ describe("founder_price_signups — through supabase-js", () => {
     expect(repeat.error?.code).toBe("23505");
     const rows = await founderPriceSignupsFor(email);
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ user_id: null, period: "yearly" });
+    expect(rows[0]).toMatchObject({ period: "yearly" });
   });
 
   it("refuses an insert read back with .select() for a visitor", async () => {
@@ -58,36 +56,18 @@ describe("founder_price_signups — through supabase-js", () => {
     expect(error).not.toBeNull();
   });
 
-  it("lets a signed-in teacher list her own address and read back only that row", async () => {
-    const email = teacherEmail("a");
+  it("refuses a signed-in teacher both writing and reading the list", async () => {
+    const email = `api-founder-${uniqueStamp()}@example.test`;
     listed.push(email);
-    // Someone else's row, which teacher a must not see.
-    const other = `api-founder-${uniqueStamp()}@example.test`;
-    listed.push(other);
-    expect(
-      (await anonClient().from("founder_price_signups").insert({ email: other, period: "yearly" })).error,
-    ).toBeNull();
+    expect((await anonClient().from("founder_price_signups").insert({ email, period: "yearly" })).error).toBeNull();
+    const own = `api-founder-${uniqueStamp()}-teacher@example.test`;
+    listed.push(own);
 
-    const insert = await teacherA.client
-      .from("founder_price_signups")
-      .insert({ email, user_id: teacherA.userId, period: "monthly" });
-    const own = await teacherA.client.from("founder_price_signups").select("email, user_id");
+    const insert = await teacher.client.from("founder_price_signups").insert({ email: own, period: "yearly" });
+    const read = await teacher.client.from("founder_price_signups").select("id");
 
-    expect(insert.error).toBeNull();
-    expect(own.error).toBeNull();
-    expect(own.data).toEqual([{ email, user_id: teacherA.userId }]);
-  });
-
-  it("does not show a teacher anyone's row but the one with her address", async () => {
-    listed.push(teacherEmail("a"));
-    const { error } = await teacherA.client
-      .from("founder_price_signups")
-      .insert({ email: teacherEmail("a"), user_id: teacherA.userId, period: "yearly" });
-    expect(error).toBeNull();
-
-    const seenByB = await teacherB.client.from("founder_price_signups").select("id").limit(1).maybeSingle();
-
-    expect(seenByB.error).toBeNull();
-    expect(seenByB.data).toBeNull();
+    expect(insert.error?.code).toBe("42501");
+    expect(read.error?.code).toBe("42501");
+    expect(await founderPriceSignupsFor(own)).toHaveLength(0);
   });
 });

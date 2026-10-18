@@ -15,15 +15,16 @@ describe("founderPricePayloadSchema", () => {
     expect(parsed.email).toBe("test+ania@example.com");
   });
 
-  it("accepts a payload without an address - the route decides whether it needs one", () => {
-    expect(founderPricePayloadSchema.parse({ period: "monthly" }).email).toBeUndefined();
+  it("requires an address - the list is for people without an account", () => {
+    expect(founderPricePayloadSchema.safeParse({ period: "monthly" }).success).toBe(false);
   });
 
   it("accepts only the two billing periods the toggle offers", () => {
-    expect(founderPricePayloadSchema.safeParse({ period: "yearly" }).success).toBe(true);
-    expect(founderPricePayloadSchema.safeParse({ period: "monthly" }).success).toBe(true);
-    expect(founderPricePayloadSchema.safeParse({ period: "weekly" }).success).toBe(false);
-    expect(founderPricePayloadSchema.safeParse({}).success).toBe(false);
+    const email = "ania@example.test";
+    expect(founderPricePayloadSchema.safeParse({ email, period: "yearly" }).success).toBe(true);
+    expect(founderPricePayloadSchema.safeParse({ email, period: "monthly" }).success).toBe(true);
+    expect(founderPricePayloadSchema.safeParse({ email, period: "weekly" }).success).toBe(false);
+    expect(founderPricePayloadSchema.safeParse({ email }).success).toBe(false);
   });
 
   it("refuses a malformed address and one over the database bound", () => {
@@ -35,7 +36,7 @@ describe("founderPricePayloadSchema", () => {
 
 describe("founderPriceErrorMessage", () => {
   it("translates every code the route answers with", () => {
-    for (const code of ["validation_failed", "bot_check_failed", "bot_check_unavailable", "save_failed"]) {
+    for (const code of ["validation_failed", "signed_in", "bot_check_failed", "bot_check_unavailable", "save_failed"]) {
       expect(founderPriceErrorMessage(code)).not.toBe(founderPriceErrorMessage("unknown"));
     }
     expect(founderPriceErrorMessage("config_missing")).toContain(SUPPORT_EMAIL);

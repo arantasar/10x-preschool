@@ -18,10 +18,12 @@ function json(body: { ok: true } | { error: FounderPriceErrorCode }, status = 20
 
 /**
  * The founder-price sign-up (S-22). One pipeline, in a fixed order: parse →
- * honeypot → validate → address → configuration → bot check → store → answer.
+ * honeypot → session → validate → configuration → bot check → store → answer.
  *
- * The address of a signed-in teacher comes from her session, never from the
- * body: otherwise she could put any address on the list under her account.
+ * The list is for people without an account: an account created before
+ * payments has the founder price by right (FR-036), and `/cennik` shows a
+ * signed-in teacher that instead of the form. A session is refused
+ * (`signed_in`) - it reaches here only from a tab opened before signing in.
  * A repeat of an address already listed is a unique violation, answered as
  * success - the visitor cannot tell who is on the list, and the row stays one.
  * No e-mail is sent (the launch e-mail is S-25), and no log line carries the
@@ -58,19 +60,17 @@ export const POST: APIRoute = async (context) => {
     return json({ ok: true });
   }
 
+  const { supabase, user } = context.locals;
+  // authenticated has no grant on the table either; this answers in words.
+  if (user) {
+    return json({ error: "signed_in" }, 409);
+  }
+
   const parsed = founderPricePayloadSchema.safeParse(raw);
   if (!parsed.success) {
     return json({ error: "validation_failed" }, 400);
   }
   const payload = parsed.data;
-
-  const { supabase, user } = context.locals;
-  // Signed in: her session's address and account, whatever the body says. The
-  // insert policy for authenticated refuses anything else anyway.
-  const email = user ? user.email?.trim().toLowerCase() : payload.email;
-  if (!email) {
-    return json({ error: "validation_failed" }, 400);
-  }
 
   if (!supabase || !TURNSTILE_SECRET_KEY) {
     return json({ error: "config_missing" }, 503);
@@ -102,15 +102,14 @@ export const POST: APIRoute = async (context) => {
   // upsert either: a plain insert keeps the table insert-only for writes
   // (`20261019120000_founder_price_signups.sql`).
   const { error } = await supabase.from("founder_price_signups").insert({
-    email,
-    user_id: user?.id ?? null,
+    email: payload.email,
     period: payload.period,
   });
   if (error) {
     // Already on the list: the same success, nothing changes.
     if (error.code === "23505") {
       /* eslint-disable-next-line no-console */
-      console.error("founder_price.duplicate", { signedIn: Boolean(user) });
+      console.error("founder_price.duplicate");
       return json({ ok: true });
     }
     /* eslint-disable-next-line no-console */

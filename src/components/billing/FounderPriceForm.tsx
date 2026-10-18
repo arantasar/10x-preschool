@@ -15,13 +15,14 @@ import {
 } from "@/lib/founder-price";
 import { BILLING_INPUT_NAME } from "@/lib/pricing";
 
+/**
+ * The founder-price sign-up for a visitor without an account. A signed-in
+ * teacher never sees it: her account has the founder price by right (FR-036),
+ * and `/cennik` says so instead.
+ */
 interface Props {
   /** `undefined` when the deployment has no Turnstile key: the form says it is unavailable. */
   siteKey?: string;
-  /** A signed-in teacher's address: no field, the route takes it from her session. */
-  accountEmail?: string;
-  /** The server found her address on the list already: „Jesteś na liście”, no button. */
-  alreadyListed: boolean;
 }
 
 /** The period the page's `BillingToggle` shows right now; yearly by default. */
@@ -30,7 +31,7 @@ function currentPeriod(): FounderPricePeriod {
   return checked?.value === "monthly" ? "monthly" : "yearly";
 }
 
-export default function FounderPriceForm({ siteKey, accountEmail, alreadyListed }: Props) {
+export default function FounderPriceForm({ siteKey }: Props) {
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
   const [fieldError, setFieldError] = useState<string | undefined>();
@@ -57,20 +58,6 @@ export default function FounderPriceForm({ siteKey, accountEmail, alreadyListed 
     if (listedAs) confirmation.current?.focus();
   }, [listedAs]);
 
-  if (alreadyListed && !listedAs) {
-    return (
-      <div role="status" className="flex flex-col gap-2">
-        <p className="font-display text-las text-[26px] leading-tight">Jesteś na liście</p>
-        {accountEmail && (
-          <p className="text-las-szary text-[17px] leading-relaxed">
-            Adres <strong className="text-las">{accountEmail}</strong> ma zarezerwowaną cenę założycielską.
-          </p>
-        )}
-        <p className="text-las-szary text-[17px] leading-relaxed">{FOUNDER_PRICE_LISTED_NOTE}</p>
-      </div>
-    );
-  }
-
   if (listedAs) {
     return (
       <div ref={confirmation} role="status" tabIndex={-1} className="flex flex-col gap-2 outline-none">
@@ -85,11 +72,9 @@ export default function FounderPriceForm({ siteKey, accountEmail, alreadyListed 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (pending || !siteKey || widgetFailed) return;
-    if (!accountEmail) {
-      const error = emailError(email);
-      setFieldError(error);
-      if (error) return;
-    }
+    const error = emailError(email);
+    setFieldError(error);
+    if (error) return;
 
     setPending(true);
     setServerError(null);
@@ -100,7 +85,7 @@ export default function FounderPriceForm({ siteKey, accountEmail, alreadyListed 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...(accountEmail ? {} : { email }),
+          email,
           period: currentPeriod(),
           website,
           turnstileToken,
@@ -110,7 +95,7 @@ export default function FounderPriceForm({ siteKey, accountEmail, alreadyListed 
       if (response.ok && body.ok) {
         // The confirmation replaces the form, container and all.
         removeWidget();
-        setListedAs(accountEmail ?? email.trim().toLowerCase());
+        setListedAs(email.trim().toLowerCase());
         setPending(false);
         return;
       }
@@ -126,27 +111,21 @@ export default function FounderPriceForm({ siteKey, accountEmail, alreadyListed 
 
   return (
     <form className="flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
-      {accountEmail ? (
-        <p className="text-las-szary text-[17px] leading-relaxed">
-          Zapiszemy adres Twojego konta: <strong className="text-las break-all">{accountEmail}</strong>.
-        </p>
-      ) : (
-        <FormField
-          id="founder-email"
-          name="email"
-          type="email"
-          label="E-mail"
-          value={email}
-          onChange={(value) => {
-            setEmail(value);
-            if (fieldError) setFieldError(undefined);
-          }}
-          placeholder="imie@przedszkole.pl"
-          maxLength={FOUNDER_PRICE_EMAIL_MAX}
-          autoComplete="email"
-          error={fieldError}
-        />
-      )}
+      <FormField
+        id="founder-email"
+        name="email"
+        type="email"
+        label="E-mail"
+        value={email}
+        onChange={(value) => {
+          setEmail(value);
+          if (fieldError) setFieldError(undefined);
+        }}
+        placeholder="imie@przedszkole.pl"
+        maxLength={FOUNDER_PRICE_EMAIL_MAX}
+        autoComplete="email"
+        error={fieldError}
+      />
 
       {/* The honeypot: invisible and unreachable for people, filled by naive bots. */}
       <div className="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">

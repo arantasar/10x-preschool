@@ -94,27 +94,7 @@ describe("POST /api/founder-price — success", () => {
       hostname: "example.test",
     });
     expect(from).toHaveBeenCalledWith("founder_price_signups");
-    expect(insert).toHaveBeenCalledWith({ email: ADDRESS, user_id: null, period: "monthly" });
-  });
-
-  it("takes a signed-in teacher's address from her session, not from the body", async () => {
-    const { response, insert } = call(
-      { ...valid, email: "ktos-inny@example.test" },
-      { user: { id: "u-1", email: "Nauczycielka@Przedszkole.pl" } },
-    );
-
-    expect(await answer(response)).toEqual({ status: 200, body: { ok: true } });
-    expect(insert).toHaveBeenCalledWith({ email: "nauczycielka@przedszkole.pl", user_id: "u-1", period: "yearly" });
-  });
-
-  it("needs no address in the body for a signed-in teacher", async () => {
-    const { response, insert } = call(
-      { period: "yearly", website: "", turnstileToken: "token" },
-      { user: { id: "u-1", email: "nauczycielka@przedszkole.pl" } },
-    );
-
-    expect(await answer(response)).toEqual({ status: 200, body: { ok: true } });
-    expect(insert).toHaveBeenCalledOnce();
+    expect(insert).toHaveBeenCalledWith({ email: ADDRESS, period: "monthly" });
   });
 
   it("answers a repeat (a unique violation) with the same success, without the address in the log", async () => {
@@ -122,7 +102,7 @@ describe("POST /api/founder-price — success", () => {
 
     expect(await answer(response)).toEqual({ status: 200, body: { ok: true } });
     expect(insert).toHaveBeenCalledOnce();
-    expect(logged).toHaveBeenCalledWith("founder_price.duplicate", { signedIn: false });
+    expect(logged).toHaveBeenCalledWith("founder_price.duplicate");
     expect(everythingLogged()).not.toContain(ADDRESS);
   });
 });
@@ -152,7 +132,14 @@ describe("POST /api/founder-price — refusals before anything is stored", () =>
     expect(insert).not.toHaveBeenCalled();
   });
 
-  it("answers validation_failed to a visitor without a session who sent no address", async () => {
+  it("answers signed_in to a session - an account has the founder price by right - without asking Turnstile", async () => {
+    const { response, insert } = call(valid, { user: { id: "u-1", email: "nauczycielka@przedszkole.pl" } });
+    expect(await answer(response)).toEqual({ status: 409, body: { error: "signed_in" } });
+    expect(verifyHumanToken).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("answers validation_failed to a payload without an address", async () => {
     const { response, insert } = call({ period: "yearly", website: "", turnstileToken: "token" });
     expect(await answer(response)).toEqual({ status: 400, body: { error: "validation_failed" } });
     expect(verifyHumanToken).not.toHaveBeenCalled();
