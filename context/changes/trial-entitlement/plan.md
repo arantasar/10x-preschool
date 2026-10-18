@@ -406,9 +406,9 @@ merge'em a `db push` nie mają wiersza — uzupełnić w SQL Editorze z ich `cre
 
 #### Automated
 
-- [x] 3.1 `PRIVACY_VERSION` = 1.3
-- [x] 3.2 Dopisek w pkt 2.1 polityki
-- [x] 3.3 Lint i build
+- [x] 3.1 `PRIVACY_VERSION` = 1.3 — e52aba3
+- [x] 3.2 Dopisek w pkt 2.1 polityki — e52aba3
+- [x] 3.3 Lint i build — e52aba3
 
 #### Manual
 
