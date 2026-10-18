@@ -258,7 +258,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-22
 - **Blockers:** —
 - **Unknowns:**
-  - Testerzy (do 5 osób, Basic do 31.01.2027) — właściciel ustawia im stan planu ręcznie, poza aplikacją; model danych musi to umożliwiać bez panelu operatora. Owner: `/10x-plan`. Block: nie. **Rozstrzygnięte (`trial-entitlement`):** wiersz `public.account_entitlements` z `access_until = '2027-01-31'`, `source = 'owner'`, wpisany w SQL Editorze po rejestracji każdej testerki.
+  - Testerzy (do 5 osób, Basic do 31.01.2027) — właściciel ustawia im stan planu ręcznie, poza aplikacją; model danych musi to umożliwiać bez panelu operatora. Owner: `/10x-plan`. Block: nie. **Rozstrzygnięte (`trial-entitlement`):** model to umożliwia — wiersz `public.account_entitlements` z `access_until = '2027-01-31'`, `source = 'owner'`, wpisany w SQL Editorze. Same wiersze testerek zakłada `S-24` (decyzja 2026-10-18).
 - **Risk:** Wprowadza jedyny model uprawnienia, na którym stoją `S-24`…`S-27` — błąd tutaj powiela się w każdej płatności. Stan planu zapisuje wyłącznie system albo właściciel ręcznie poza aplikacją; użytkownik nie ma żadnej ścieżki podniesienia planu inaczej niż płacąc. Ryzyko zakładania kont na nowo co miesiąc przyjęte świadomie (FR-030; Open Roadmap Questions #7). Sama pozycja nie pobiera pieniędzy i niczego nie odbiera, więc może wejść na produkcję samodzielnie.
 - **Status:** ready
 
@@ -272,6 +272,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:**
   - Długość okresu Basic gratis dla kont sprzed płatności spoza grupy testerów — `monetization.md` §4.4: „np. 3 miesiące". Owner: Janusz. Block: tak (Open Roadmap Questions #5). Testerzy mają datę ustaloną: 31.01.2027.
+  - Testerzy — wiersze `public.account_entitlements` (`access_until = '2027-01-31'`, `source = 'owner'`, SQL Editor) przeniesione tu z `S-23` (decyzja 2026-10-18); do tego czasu limit niesie im `fair_use_overrides`, a karty w `/ustawienia` nie widzą. Przy okazji: `valid_until` ich nadpisań nie może wykraczać poza 31.01.2027, bo nadpisanie wygrywa z planem w `claim_generation` i po `S-27` testerka nie wróciłaby na plan darmowy. Owner: `/10x-plan` (S-24). Block: nie, ale przed `S-27`.
 - **Risk:** Sednem jest kolejność, nie prezent: uprzedzenie musi wyprzedzić `S-27`, inaczej obecne nauczycielki poznają nowe zasady przy pierwszym limicie — dokładnie to, co runda Sokratejska uznała za zmianę zasad bez zgody. Kryterium Secondary („żadne aktywne konto nie odchodzi z powodu zmian kamienia") mierzy się właśnie tutaj.
 - **Status:** blocked
 

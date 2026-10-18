@@ -50,7 +50,9 @@ samą datę, `S-24` zakłada wiersze kontom sprzed płatności, `S-27` wpina sta
   `access_until` ≥ dziś (Warszawa). Bez wiersza, po dacie albo przy błędzie odczytu karta wygląda
   jak dziś.
 - Konta sprzed wdrożenia nie mają wiersza i nie widzą zmiany. Testerki dostają wiersz ręcznie
-  (`access_until = 2027-01-31`, `source = 'owner'`) w SQL Editorze.
+  (`access_until = 2027-01-31`, `source = 'owner'`) w SQL Editorze — **przeniesione do `S-24`
+  (decyzja 2026-10-18)**: dziś wiersz dodałby testerkom tylko kartę, bo limit niesie im
+  `fair_use_overrides`, a `S-24` i tak zakłada wiersze kontom sprzed płatności, testerkom też.
 - `claim_generation`, `fair-use.ts` i trasy są bez zmian.
 - Polityka prywatności 1.3 wymienia datę dostępu w pkt 2.1.
 
@@ -332,7 +334,7 @@ w SQL Editorze); status w bloku i w tabeli zmienia się przy archiwizacji.
 - `npx supabase db push` na hostowany projekt razem z merge'em; w dashboardzie istnieje tabela i wyzwalacz
 - Próbna rejestracja na `https://temio.pl` kończy się sukcesem, wiersz ma poprawną datę; konto próbne usunięte
 - `/polityka-prywatnosci` pokazuje wersję 1.3 i nowy dopisek w pkt 2.1
-- Wiersze testerek w SQL Editorze (`access_until = '2027-01-31'`, `source = 'owner'`) — po rejestracji każdej; karta pokazuje „do 31 stycznia 2027”
+- Wiersze testerek w SQL Editorze (`access_until = '2027-01-31'`, `source = 'owner'`) — po rejestracji każdej; karta pokazuje „do 31 stycznia 2027” — **przeniesione do `S-24`** (decyzja 2026-10-18; patrz Desired End State)
 
 ---
 
@@ -420,7 +422,7 @@ merge'em a `db push` nie mają wiersza — uzupełnić w SQL Editorze z ich `cre
 
 #### Manual
 
-- [ ] 3.4 `db push` na produkcję z merge'em
-- [ ] 3.5 Próbna rejestracja na produkcji
-- [ ] 3.6 `/polityka-prywatnosci` pokazuje 1.3
-- [ ] 3.7 Wiersze testerek w SQL Editorze
+- [x] 3.4 `db push` na produkcję z merge'em — 6529a28
+- [x] 3.5 Próbna rejestracja na produkcji — 6529a28
+- [x] 3.6 `/polityka-prywatnosci` pokazuje 1.3 — 6529a28
+- [x] 3.7 Wiersze testerek w SQL Editorze — nie wykonane w tym slice'ie, przeniesione do `S-24` (decyzja 2026-10-18)
