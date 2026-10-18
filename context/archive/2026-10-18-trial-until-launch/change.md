@@ -1,10 +1,10 @@
 ---
 change_id: trial-until-launch
 title: Trial until launch
-status: impl_reviewed
+status: archived
 created: 2026-10-18
 updated: 2026-10-18
-archived_at: null
+archived_at: 2026-10-18T10:40:43Z
 ---
 
 ## Notes
