@@ -185,6 +185,8 @@ Numeracja kontynuuje v2 (US-01…US-03).
 - **When** klika „Zarezerwuj cenę założycielską” i podaje e-mail
 - **Then** widzi potwierdzenie: płatności jeszcze nie działają, jest zapisana, dostanie wiadomość
 
+> **Aktualizacja 2026-10-18 (Janusz):** zapisu na cenę założycielską nie ma. Cenę ma każde konto założone przed startem płatności (FR-036), bez limitu ~100 osób; USP to sama aplikacja, a długi darmowy dostęp daje już rejestracja (S-30). US-05 brzmi teraz: odwiedzający widzi na cenniku, że cenę założycielską daje konto założone przed 1 lutego 2027, i ma drogę do rejestracji; zalogowana nauczycielka widzi, że jej konto tę cenę ma.
+
 **Co było inaczej przedtem:** nie było ani cennika, ani sposobu wyrażenia chęci zapłaty.
 
 #### Acceptance Criteria
@@ -245,7 +247,8 @@ zwykłymi must-have z terminem 2027-01-20.
   > Socrates: Kontrargument uznany za trafny i **FR zawężony**: „Pro «wkrótce» bez daty i funkcji
   > obiecuje coś, czego kamień nie dowozi”. Cennik pokazuje tylko Darmowy i Basic; Pro pojawi się,
   > gdy będzie miał własne funkcje (`M-04`).
-- [new] FR-029: Odwiedzający może zapisać się na cenę założycielską i dostaje potwierdzenie, że płatności jeszcze nie działają. Priority: must-have
+- [withdrawn] FR-029: Odwiedzający może zapisać się na cenę założycielską i dostaje potwierdzenie, że płatności jeszcze nie działają. Priority: must-have
+  > **Aktualizacja 2026-10-18 (Janusz):** zapisu na cenę założycielską nie ma. Cenę ma każde konto założone przed startem płatności (FR-036), bez limitu ~100 osób; USP to sama aplikacja, a długi darmowy dostęp daje już rejestracja (S-30).
   > Socrates: Kontrargument uznany za trafny: „zapis jest tani, zapłata droga — 10 zapisów nie dowodzi
   > 10 płacących”. Rozstrzygnięcie: FR utrzymany, ale **zmienia się brama płatności** — liczą się
   > wyłącznie zapisy kont, które faktycznie planowały w aplikacji. Zapis anonimowy zostaje dostępny,
@@ -278,7 +281,8 @@ zwykłymi must-have z terminem 2027-01-20.
   > Socrates: Kontrargument uznany za trafny i **FR doprecyzowany**: „nie wiadomo, czy anulowanie kończy
   > dostęp od razu — zła odpowiedź to reklamacja albo chargeback”. Dostęp trwa do daty, za którą
   > zapłacono — zgodnie z modelem „plan + dostęp do daty”, bez proracji.
-- [new] FR-035: Cenę założycielską Basic dostaje każda osoba zapisana przez fake door (FR-029) oraz kolejni kupujący do łącznie ok. 100 osób; cena jest zachowana, dopóki subskrypcja trwa bez przerwy. Priority: must-have
+- [new] FR-035: Cenę założycielską Basic dostaje każde konto założone przed startem płatności (FR-036); cena jest zachowana, dopóki subskrypcja trwa bez przerwy. Priority: must-have
+  > **Aktualizacja 2026-10-18 (Janusz):** zapisu na cenę założycielską nie ma. Cenę ma każde konto założone przed startem płatności (FR-036), bez limitu ~100 osób; USP to sama aplikacja, a długi darmowy dostęp daje już rejestracja (S-30). Wcześniejsze brzmienie: „każda osoba zapisana przez fake door (FR-029) oraz kolejni kupujący do łącznie ok. 100 osób”.
   > Socrates: Kontrargument uznany za trafny i **FR przepisany**: „ktoś zapisany przez fake door kupuje
   > jako 101. — a zapis obiecywał cenę”. Zapis gwarantuje cenę; limit ~100 dotyczy tylko osób spoza
   > listy zapisanych.
@@ -457,6 +461,8 @@ Odczyt stanu planu podlega tej samej izolacji kont co plany — nikt nie widzi s
 formularz kontaktowy i zapis na cenę założycielską (fake door). Dwie z nich przyjmują dane od osób
 bez konta — formularz kontaktowy i zapis — więc obie muszą być chronione przed spamem, a polityka
 prywatności musi obejmować przechowywanie e-maili osób, które nie mają konta.
+
+> **Aktualizacja 2026-10-18 (Janusz):** zapisu na cenę założycielską nie ma. Cenę ma każde konto założone przed startem płatności (FR-036), bez limitu ~100 osób; USP to sama aplikacja, a długi darmowy dostęp daje już rejestracja (S-30). Z publicznych powierzchni dane od osób bez konta przyjmuje tylko formularz kontaktowy.
 
 **Fake door — co widzi osoba po kliknięciu:** uczciwe potwierdzenie — płatności jeszcze nie
 działają, osoba jest zapisana na cenę założycielską i dostanie wiadomość e-mail. Zapis jest zgodą

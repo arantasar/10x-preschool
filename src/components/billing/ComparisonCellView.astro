@@ -1,0 +1,64 @@
+---
+// One cell of `PlanComparison`: `true` → ✓ („tak”), `null` → — („nie dotyczy”),
+// otherwise a bold lead, text, a footnote mark and an optional smaller line.
+import type { ComparisonCell } from "@/lib/pricing";
+
+interface Props {
+  cell: ComparisonCell;
+}
+
+const { cell } = Astro.props;
+---
+
+{
+  cell === true ? (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      role="img"
+      aria-label="tak"
+      class="text-mech inline align-middle"
+    >
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  ) : cell === null ? (
+    <>
+      <span aria-hidden="true">—</span>
+      <span class="sr-only">nie dotyczy</span>
+    </>
+  ) : (
+    <>
+      <span class:list={[cell.check && "inline-flex items-center gap-2"]}>
+        {cell.check && (
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            role="img"
+            aria-label="tak"
+            class="text-mech shrink-0"
+          >
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+          </svg>
+        )}
+        <span class:list={[cell.check && "text-las-szary text-sm font-semibold"]}>
+          {cell.strong && <strong>{cell.strong}</strong>}
+          {cell.text}
+          {cell.note && <sup class="text-mech text-xs font-extrabold">{cell.note}</sup>}
+        </span>
+      </span>
+      {cell.sub && <div class="text-las-szary text-sm font-semibold">{cell.sub}</div>}
+    </>
+  )
+}

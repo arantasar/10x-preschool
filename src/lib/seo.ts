@@ -24,6 +24,7 @@ export const INDEXABLE_PATHS: readonly string[] = [
   "/",
   "/auth/signin",
   "/auth/signup",
+  "/cennik",
   "/pomoc",
   "/kontakt",
   "/regulamin",

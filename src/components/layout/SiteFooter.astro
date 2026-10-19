@@ -1,7 +1,7 @@
 ---
 // Public footer. The design package puts Cennik / FAQ / Regulamin / Kontakt
-// here; each link arrives with the page it points to - Cennik with S-22. A dead
-// link is worse than none.
+// here; each link arrived with the page it points to. A dead link is worse
+// than none.
 //
 // `relative z-10` and the page background: a page's decorative blob can reach
 // down to the bottom edge (`/kontakt`), and the footer must cover it, as in the
@@ -13,6 +13,7 @@ import { PRIVACY_PATH, TERMS_PATH } from "@/lib/legal";
 const year = new Date().getFullYear();
 
 const links = [
+  { label: "Cennik", href: "/cennik" },
   { label: "Pomoc", href: "/pomoc" },
   { label: "Kontakt", href: "/kontakt" },
   { label: "Regulamin", href: TERMS_PATH },

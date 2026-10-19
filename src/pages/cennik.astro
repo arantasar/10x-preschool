@@ -1,0 +1,183 @@
+---
+// Mock-up 07 (cennik), S-22 (FR-028, FR-036). Public and indexable.
+//
+// Departures from the mock-up, each so that every sentence is true on the day
+// the page goes live (PRD v3 §Business Logic):
+//   * the hero says Temio is free today and the plans apply from
+//     `PAYMENTS_START_ON` - not „Pierwszy miesiąc z pełnym Basic za darmo”,
+//     because an account created before payments has access until at least
+//     31.01.2027 (S-30);
+//   * footnote 2 says a refinement uses up no days (FR-037), not that it counts
+//     against the pool;
+//   * the Basic CTA leads to the founder price (`#cena-zalozycielska`) instead
+//     of a checkout that does not exist. There is no sign-up list: every
+//     account created before payments start has the founder price (FR-036), so
+//     a visitor is invited to create an account and a signed-in teacher is told
+//     hers has it.
+// Every price and date comes from `src/lib/pricing.ts`.
+import BillingToggle from "@/components/billing/BillingToggle.astro";
+import PlanComparison from "@/components/billing/PlanComparison.astro";
+import PricingCard from "@/components/billing/PricingCard.astro";
+import Blob from "@/components/brand/Blob.astro";
+import MarketingHeader from "@/components/layout/MarketingHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import FaqItem from "@/components/marketing/FaqItem.astro";
+import { buttonVariants } from "@/components/ui/button";
+import Layout from "@/layouts/Layout.astro";
+import type { FaqItem as FaqEntry } from "@/lib/faq";
+import { formatLegalDate } from "@/lib/legal";
+import {
+  BASIC_NOTE,
+  BASIC_PERIOD,
+  BASIC_PLAN,
+  BASIC_PRICE,
+  BEFORE_PAYMENTS_ACCESS_UNTIL,
+  FOUNDER_CARD_NOTE,
+  FOUNDER_PRICE,
+  FOUNDER_TERMS,
+  FREE_NOTE,
+  FREE_PERIOD,
+  FREE_PLAN,
+  FREE_PRICE,
+  PAYMENTS_START_LABEL,
+  PRICING_DESCRIPTION,
+} from "@/lib/pricing";
+import { cn } from "@/lib/utils";
+
+// The founder price needs no sign-up: every account created before payments
+// start has it (FR-036). A visitor is invited to create one; a signed-in
+// teacher is told hers already has it.
+const { user } = Astro.locals;
+
+const questions: FaqEntry[] = [
+  {
+    question: "Czy dziś coś płacę?",
+    answer: [
+      `Nie. Temio jest bezpłatne do startu płatności, ${PAYMENTS_START_LABEL}. Założenie konta niczego nie kosztuje i do niczego nie zobowiązuje.`,
+    ],
+  },
+  {
+    question: "Kto dostaje cenę założycielską?",
+    answer: [
+      `Każde konto założone przed ${PAYMENTS_START_LABEL}, bez żadnego zapisu. Cena to ${FOUNDER_TERMS}`,
+      "Zanim zmienią się zasady, napiszemy na adres konta.",
+    ],
+  },
+  {
+    question: "Czy cena założycielska obejmuje BLIK i przelew?",
+    answer: [
+      "Nie. Cena założycielska dotyczy subskrypcji kartą. Dostęp opłacany z góry BLIK-iem albo przelewem kosztuje tyle, ile w cenniku.",
+    ],
+  },
+];
+---
+
+<Layout title="Cennik" description={PRICING_DESCRIPTION}>
+  <div class="relative flex min-h-screen flex-col overflow-hidden">
+    <Blob shape="a" color="sage" class="-top-40 -left-36 h-[300px] w-[340px] sm:h-[420px] sm:w-[480px]" />
+    <Blob
+      shape="circle"
+      color="apricot-soft"
+      class="top-[230px] -right-24 hidden h-[240px] w-[240px] md:block lg:h-[300px] lg:w-[300px]"
+    />
+
+    <MarketingHeader active="cennik" />
+
+    <main class="sm:px-gutter relative z-10 flex flex-col gap-20 px-5 pt-8 pb-20 sm:pt-16 md:gap-[100px] md:pb-[100px]">
+      <section
+        class="mx-auto flex max-w-[1000px] flex-col items-center gap-[18px] text-center"
+        aria-labelledby="cennik-heading"
+      >
+        <p class="eyebrow">Cennik</p>
+        <h1 id="cennik-heading" class="font-display text-display-xl text-las font-normal">
+          Dziś Temio jest <em class="text-mech">bezpłatne.</em>
+        </h1>
+        <p class="text-las-szary sm:text-lead max-w-[640px] text-lg leading-relaxed">
+          Płatności ruszą {PAYMENTS_START_LABEL}. Od tego dnia wybierzesz plan Darmowy albo Basic. Konto założone
+          wcześniej ma pełny dostęp co najmniej do {formatLegalDate(BEFORE_PAYMENTS_ACCESS_UNTIL)} i cenę założycielską Basic.
+        </p>
+      </section>
+
+      <section class="mx-auto flex w-full max-w-[1000px] flex-col items-center gap-8" aria-labelledby="plany-heading">
+        <h2 id="plany-heading" class="font-display text-display-md text-las text-center font-normal">
+          Plany od {PAYMENTS_START_LABEL}
+        </h2>
+        <BillingToggle />
+        <div class="grid w-full items-stretch gap-6 md:grid-cols-2">
+          <PricingCard
+            name={FREE_PLAN.name}
+            subtitle={FREE_PLAN.subtitle}
+            price={FREE_PRICE}
+            period={FREE_PERIOD}
+            note={FREE_NOTE}
+            features={FREE_PLAN.features}
+            cta={user ? undefined : { label: "Załóż konto", href: "/auth/signup" }}
+          />
+          <PricingCard
+            name={BASIC_PLAN.name}
+            subtitle={BASIC_PLAN.subtitle}
+            price={BASIC_PRICE}
+            period={BASIC_PERIOD}
+            note={BASIC_NOTE}
+            features={BASIC_PLAN.features}
+            founder={FOUNDER_PRICE}
+            founderNote={FOUNDER_CARD_NOTE}
+            cta={{
+              label: user ? "Twoja cena założycielska" : "Jak dostać cenę założycielską",
+              href: "#cena-zalozycielska",
+            }}
+            variant="featured"
+          />
+        </div>
+      </section>
+
+      <div class="mx-auto w-full max-w-[1000px]">
+        <PlanComparison />
+      </div>
+
+      <section
+        id="cena-zalozycielska"
+        class="bg-mleko shadow-panel rounded-card mx-auto flex w-full max-w-[1000px] scroll-mt-8 flex-col gap-3 p-6 sm:p-11"
+        aria-labelledby="cena-zalozycielska-heading"
+      >
+        <p class="eyebrow">Cena założycielska</p>
+        {
+          user ? (
+            <>
+              <h2 id="cena-zalozycielska-heading" class="font-display text-display-md text-las font-normal">
+                Twoje konto ma cenę założycielską
+              </h2>
+              <p class="text-las-szary max-w-[720px] text-[17px] leading-relaxed">
+                Konto założone przed startem płatności ma ją bez żadnego zapisu: {FOUNDER_TERMS} Zanim zmienią się
+                zasady, napiszemy na adres Twojego konta.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 id="cena-zalozycielska-heading" class="font-display text-display-md text-las font-normal">
+                Załóż konto przed {PAYMENTS_START_LABEL}
+              </h2>
+              <p class="text-las-szary max-w-[720px] text-[17px] leading-relaxed">
+                Każde konto założone przed startem płatności dostaje cenę założycielską Basic: {FOUNDER_TERMS} Do tego
+                dnia korzystasz z Temio bez opłat.
+              </p>
+              <a
+                href="/auth/signup"
+                class:list={cn(buttonVariants({ variant: "primary", size: "pillLg" }), "mt-3 self-start")}
+              >
+                Załóż konto
+              </a>
+            </>
+          )
+        }
+      </section>
+
+      <section class="mx-auto flex w-full max-w-[1000px] flex-col gap-3" aria-labelledby="pytania-heading">
+        <h2 id="pytania-heading" class="font-display text-display-md text-las mb-2 font-normal">Pytania o cennik</h2>
+        {questions.map((item, index) => <FaqItem item={item} open={index === 0} />)}
+      </section>
+    </main>
+
+    <SiteFooter />
+  </div>
+</Layout>

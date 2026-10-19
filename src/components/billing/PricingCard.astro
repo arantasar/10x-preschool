@@ -1,0 +1,116 @@
+---
+// Pricing plan card from the design package (`billing/PricingCard.astro`).
+//   variant="default"  light card, outlined CTA (plan „Darmowy”)
+//   variant="featured" dark forest card, light CTA (plan „Basic”)
+// A `Swap` value reacts to `BillingToggle`: rendered yearly (the default), with
+// both texts in `data-price-*` for the toggle's script. `cta` is optional - a
+// signed-in teacher has no „Załóż konto” on the Darmowy card.
+import Blob from "@/components/brand/Blob.astro";
+import { buttonVariants } from "@/components/ui/button";
+import type { Swap } from "@/lib/pricing";
+import { cn } from "@/lib/utils";
+
+type Value = string | Swap;
+
+interface Props {
+  name: string;
+  subtitle?: string;
+  price: Value;
+  period: Value;
+  note?: Value;
+  features: readonly string[];
+  cta?: { label: string; href: string };
+  variant?: "default" | "featured";
+  founder?: Value;
+  founderNote?: string;
+}
+
+const { name, subtitle, price, period, note, features, cta, variant = "default", founder, founderNote } = Astro.props;
+
+const featured = variant === "featured";
+const attrs = (value?: Value) =>
+  value === undefined || typeof value === "string"
+    ? {}
+    : { "data-price-yearly": value.yearly, "data-price-monthly": value.monthly };
+const text = (value?: Value) => (value === undefined ? "" : typeof value === "string" ? value : value.yearly);
+---
+
+<article
+  class:list={cn(
+    "relative flex flex-col gap-[22px] overflow-hidden rounded-[28px] p-7 sm:rounded-[32px] sm:p-11",
+    featured ? "bg-las text-owies" : "bg-mleko text-las shadow-panel",
+  )}
+>
+  {featured && <Blob shape="a" color="forest" class="-top-[90px] -right-20 h-[230px] w-[260px]" />}
+  <div class="relative z-10">
+    <h3 class="font-body text-title font-extrabold">{name}</h3>
+    {subtitle && <p class:list={cn("mt-1.5 text-base", featured ? "text-szalwia" : "text-las-szary")}>{subtitle}</p>}
+  </div>
+  <div class="relative z-10">
+    <p class="flex flex-wrap items-baseline gap-2.5">
+      <span class="font-display text-[clamp(48px,5vw,64px)] leading-none" {...attrs(price)}>{text(price)}</span>
+      <span class:list={cn("text-[17px] font-bold", featured ? "text-szalwia" : "text-mech")} {...attrs(period)}>
+        {text(period)}
+      </span>
+    </p>
+    {
+      note && (
+        <p class:list={cn("mt-1.5 text-[15px]", featured ? "text-szalwia" : "text-las-szary")} {...attrs(note)}>
+          {text(note)}
+        </p>
+      )
+    }
+  </div>
+  {
+    founder ? (
+      <p class="bg-las-2 relative z-10 m-0 flex flex-col items-start gap-2 rounded-[18px] px-4 py-3.5 text-[15px] leading-snug sm:flex-row sm:flex-wrap sm:gap-x-3">
+        <span class="bg-morela text-las shrink-0 rounded-full px-2.5 py-1 text-xs font-extrabold tracking-[1px] uppercase">
+          Cena założycielska
+        </span>
+        <span>
+          <strong {...attrs(founder)}>{text(founder)}</strong>
+          {founderNote && <> — {founderNote}</>}
+        </span>
+      </p>
+    ) : (
+      <hr class:list={cn("relative z-10 m-0 h-[1.5px] border-0", featured ? "bg-las-2" : "bg-linia")} />
+    )
+  }
+  <ul class="relative z-10 m-0 flex list-none flex-col gap-3.5 p-0">
+    {
+      features.map((feature) => (
+        <li class="flex gap-3 text-[17px] leading-snug">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            class:list={cn("shrink-0", featured ? "text-szalwia" : "text-mech")}
+          >
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+          </svg>
+          {feature}
+        </li>
+      ))
+    }
+  </ul>
+  {
+    cta && (
+      <a
+        href={cta.href}
+        class:list={cn(
+          buttonVariants({ variant: featured ? "inverse" : "outlinePill", size: "pillLg" }),
+          "relative z-10 mt-auto w-full",
+          !featured && "border-las",
+        )}
+      >
+        {cta.label}
+      </a>
+    )
+  }
+</article>
