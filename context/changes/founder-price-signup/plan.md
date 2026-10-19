@@ -425,7 +425,7 @@ Względem planu:
 
 #### Manual
 
-- [ ] 1.5 The migration's header comment reads as a contract and contains no real address
+- [x] 1.5 The migration's header comment reads as a contract and contains no real address — nie dotyczy (bez listy, addendum 2026-10-18)
 
 ### Phase 2: Trasa zapisu
 
@@ -438,7 +438,7 @@ Względem planu:
 
 #### Manual
 
-- [ ] 2.5 Locally the contact form still sends a message and shows the post-send state
+- [x] 2.5 Locally the contact form still sends a message and shows the post-send state — sprawdzone przez właściciela 2026-10-19
 
 ### Phase 3: Strona cennika
 
@@ -451,11 +451,11 @@ Względem planu:
 
 #### Manual
 
-- [ ] 3.5 The owner approves the page's Polish copy
-- [ ] 3.6 `/cennik` at 390, 768 and 1440 px matches the mockup with the truth corrections
-- [ ] 3.7 Anonymous signup and a repeat with the same address → one row
-- [ ] 3.8 Signed-in teacher: one click → confirmation; reload → "Jesteś na liście"
-- [ ] 3.9 Keyboard and screen-reader announcement of the confirmation
+- [x] 3.5 The owner approves the page's Polish copy — sprawdzone przez właściciela 2026-10-19
+- [x] 3.6 `/cennik` at 390, 768 and 1440 px matches the mockup with the truth corrections — sprawdzone przez właściciela 2026-10-19
+- [x] 3.7 Anonymous signup and a repeat with the same address → one row — nie dotyczy (bez listy, addendum 2026-10-18)
+- [x] 3.8 Signed-in teacher: one click → confirmation; reload → "Jesteś na liście" — nie dotyczy (bez listy, addendum 2026-10-18)
+- [x] 3.9 Keyboard and screen-reader announcement of the confirmation — sprawdzone przez właściciela 2026-10-19
 
 ### Phase 4: Polityka prywatności i dokumentacja
 
@@ -468,8 +468,8 @@ Względem planu:
 
 #### Manual
 
-- [ ] 4.5 The owner reads the new point 2.8 and the changed sentences in the context of the whole policy
-- [ ] 4.6 The link from the consent sentence leads to the right point of the policy
+- [x] 4.5 The owner reads the new point 2.8 and the changed sentences in the context of the whole policy — nie dotyczy (bez listy, addendum 2026-10-18)
+- [x] 4.6 The link from the consent sentence leads to the right point of the policy — nie dotyczy (bez listy, addendum 2026-10-18)
 
 ### Phase 5: E2E
 
@@ -480,4 +480,4 @@ Względem planu:
 
 #### Manual
 
-- [ ] 5.3 After merging: `db push`, one signup on `https://temio.pl/cennik`, the row checked and deleted
+- [x] 5.3 After merging: `db push`, one signup on `https://temio.pl/cennik`, the row checked and deleted — nie dotyczy (bez listy, addendum 2026-10-18)
