@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 3
 status: draft
 created: 2026-10-01
-updated: 2026-10-18
+updated: 2026-10-19
 prd_version: 3
 main_goal: quality
 top_blocker: external
@@ -447,3 +447,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-23: Nowe konto dostaje pierwszy miesiąc od rejestracji z pełnym zakresem Basic, bez podawania karty, a nauczycielka widzi stan swojego planu i datę, do której trwa — tylko do odczytu.** — Archived 2026-10-18 → `context/archive/2026-10-17-trial-entitlement/`. Lesson: —.
 - **S-30: Konto założone przed startem płatności dostaje pełny Basic do 31.01.2027 włącznie, a nie tylko na miesiąc; konto założone po starcie płatności — na miesiąc, jak dziś. Karta w `/ustawienia` od pierwszego dnia pokazuje prawdziwą datę.** — Archived 2026-10-18 → `context/archive/2026-10-18-trial-until-launch/`. Lesson: —.
 - **S-31: Nauczycielka generuje plany najwyżej N tygodni naprzód od dziś; próba wygenerowania dalszego dnia mówi po polsku, od kiedy będzie to możliwe. Plany już zapisane zostają bez zmian, a edycja, zatwierdzanie, usuwanie i druk nie podlegają limitowi.** — Archived 2026-10-18 → `context/archive/2026-10-18-planning-horizon/`. Lesson: „Zmiana renderu strony wymaga inwentarza specs E2E”.
+- **S-22: Odwiedzający albo zalogowana nauczycielka widzi cennik planów Darmowy i Basic z cenami, klika „Zarezerwuj cenę założycielską", podaje e-mail i dostaje potwierdzenie: płatności jeszcze nie działają, jest zapisana, dostanie wiadomość; zapisy kont aktywnych są policzalne osobno od anonimowych.** — Archived 2026-10-19 → `context/archive/2026-10-18-founder-price-signup/`. Zmiana zakresu 2026-10-18: bez listy zapisów — cenę założycielską ma każde konto założone przed 1 lutego 2027 (FR-029 wycofany, FR-035 przepisany). Lesson: —.

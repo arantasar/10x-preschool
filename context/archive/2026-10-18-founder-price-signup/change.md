@@ -1,10 +1,10 @@
 ---
 change_id: founder-price-signup
 title: Founder price signup
-status: impl_reviewed
+status: archived
 created: 2026-10-18
-updated: 2026-10-18
-archived_at: null
+updated: 2026-10-19
+archived_at: 2026-10-19T17:17:42Z
 ---
 
 ## Notes
