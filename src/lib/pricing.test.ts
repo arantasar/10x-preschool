@@ -9,7 +9,8 @@ import {
   BASIC_PLAN,
   BASIC_PRICE_HEADER,
   BEFORE_PAYMENTS_ACCESS_UNTIL,
-  FOUNDER_LIST_RETENTION_UNTIL,
+  FOUNDER_CARD_NOTE,
+  FOUNDER_ELIGIBILITY,
   FOUNDER_TERMS,
   FREE_NOTE,
   FREE_PLAN,
@@ -30,6 +31,7 @@ function everyText(): string[] {
     BASIC_NOTE.yearly,
     BASIC_NOTE.monthly,
     FOUNDER_TERMS,
+    FOUNDER_CARD_NOTE,
     BASIC_PRICE_HEADER,
     PRICING_DESCRIPTION,
   ];
@@ -45,14 +47,8 @@ describe("pricing — dates", () => {
     expect(BEFORE_PAYMENTS_ACCESS_UNTIL).toBe("2027-01-31");
   });
 
-  it("keeps the list until the date in the retention job", () => {
-    expect(FOUNDER_LIST_RETENTION_UNTIL).toBe("2027-08-31");
-  });
-
-  it("gives the privacy policy's point 2.8 the same retention date - Markdown cannot import it", () => {
-    const policy = readFileSync("src/content/legal/polityka-prywatnosci.md", "utf8");
-    const point = policy.slice(policy.indexOf("### 2.8. Zapis na cenę założycielską"), policy.indexOf("### 2.9."));
-    expect(point).toContain(`najdłużej do ${formatLegalDate(FOUNDER_LIST_RETENTION_UNTIL)}`);
+  it("gives the founder price to accounts created before payments start (FR-036)", () => {
+    expect(FOUNDER_ELIGIBILITY).toBe("dla kont założonych przed 1 lutego 2027");
   });
 });
 

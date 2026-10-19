@@ -399,16 +399,16 @@ None beyond the norm: the page is SSR with one tiny query (only for a signed-in 
 - Similar implementation: `src/pages/api/contact.ts:31`, `src/lib/contact-form.ts`, `supabase/migrations/20261009120000_contact_messages.sql`
 - Design: `context/foundation/design/src/components/billing/*`, `design/screens/07-cennik.png`, `design/README.md:146`
 
-## Addendum 2026-10-18 — lista tylko dla osób bez konta
+## Addendum 2026-10-18 — bez listy zapisów
 
-Decyzja właściciela po impl-review: konto założone przed startem płatności ma cenę założycielską z urzędu (FR-036), więc zapis po zalogowaniu sugerował warunek, którego nie ma. Zmiana względem planu:
+Decyzja właściciela po impl-review (dwa kroki tego samego dnia): najpierw lista tylko dla osób bez konta, potem **usunięta w całości**. Cenę założycielską ma każde konto założone przed `PAYMENTS_START_ON` (FR-036), bez limitu ~100 osób; USP to sama aplikacja, a długi darmowy dostęp daje rejestracja (S-30). PRD: FR-029 wycofany, FR-035 przepisany, US-05 z adnotacją.
 
-- Migracja (jeszcze niewypchnięta na produkcję, poprawiona w miejscu): bez kolumny `user_id`, bez polityk i grantów dla `authenticated`; `anon` ma wyłącznie insert.
-- Trasa odpowiada sesji `signed_in` (409) zaraz po honeypocie; adres jest wymagany w schemacie.
-- `/cennik` zalogowanej nauczycielce pokazuje „Twoje konto ma cenę założycielską” zamiast formularza; nowe pytanie „Mam już konto — czy muszę się zapisać?”. Stan „Jesteś na liście” i odczyt listy w stronie usunięte.
-- Polityka 2.8 i pkt 8: zapis nie jest powiązany z Kontem.
-- E2E (b): konto A (stały `storageState`) widzi informację, nie formularz — bez jednorazowego konta.
-- Kryteria 3.8 (klik → „Jesteś na liście”) i część planu o polityce `authenticated` są nieaktualne; ręczna kontrola 3.8 brzmi teraz: zalogowana nauczycielka widzi informację o cenie, bez pola i przycisku.
+Względem planu:
+
+- **Usunięte:** faza 1 w całości (migracja, pgTAP, testy API), z fazy 2 kontrakt `founder-price.ts`, trasa `POST /api/founder-price` i ich testy, z fazy 3 wyspa `FounderPriceForm`, z fazy 4 polityka prywatności 1.4 (wraca 1.3 — nie ma nowych danych do opisania). Nie trzeba `db push`.
+- **Zostaje:** `/cennik` z kartami, przełącznikiem, tabelą i pytaniami; `pricing.ts`; hook `useTurnstile` (używa go formularz kontaktowy); linki „Cennik” w nagłówku i stopce.
+- **Nowe:** sekcja `#cena-zalozycielska` — odwiedzający: „Załóż konto przed 1 lutego 2027” z linkiem do rejestracji; zalogowana: „Twoje konto ma cenę założycielską”. `FOUNDER_ELIGIBILITY` w `pricing.ts` (karta Basic i wiersz tabeli). E2E: przejście z nagłówka, przełącznik, droga do rejestracji; konto A widzi informację.
+- **Nieaktualne kryteria:** 1.x, 3.7, 3.8, 4.x, 5.3 (zapis, lista, polityka, `db push`). Ręczne do zrobienia przed merge'em: 3.5 (teksty, w tym nowa sekcja i pytanie „Kto dostaje cenę założycielską?”), 3.6 (widoki), 3.9 (klawiatura), plus: zalogowana widzi informację zamiast zaproszenia.
 
 ## Progress
 

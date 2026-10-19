@@ -343,34 +343,3 @@ export async function deleteLedgerRows(userId: string): Promise<void> {
     throw new Error(`Sprzątanie księgi nie powiodło się: ${error.message}`);
   }
 }
-
-/**
- * Founder-price sign-ups with this exact address, read as the service client.
- *
- * The same reasoned exception as {@link contactMessagesContaining}: neither
- * anon nor a teacher can read anything in `founder_price_signups`, so whether a
- * write landed - and that it landed once - is visible only from here.
- */
-export async function founderPriceSignupsFor(email: string): Promise<{ id: string; email: string; period: string }[]> {
-  const { data, error } = await service.from("founder_price_signups").select("id, email, period").eq("email", email);
-  if (error) {
-    throw new Error(`Nie udało się odczytać zapisów: ${error.message}`);
-  }
-  return data;
-}
-
-/**
- * Deletes founder-price sign-ups by address. By address rather than id: the
- * address is the table's identity (`unique`), and an anonymous insert hands no
- * id back.
- */
-export async function deleteFounderPriceSignups(emails: readonly string[]): Promise<void> {
-  if (emails.length === 0) return;
-  const { error } = await service
-    .from("founder_price_signups")
-    .delete()
-    .in("email", [...emails]);
-  if (error) {
-    throw new Error(`Sprzątanie zapisów nie powiodło się: ${error.message}`);
-  }
-}

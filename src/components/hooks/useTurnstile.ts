@@ -88,7 +88,7 @@ export interface Turnstile {
 }
 
 /**
- * The invisible Turnstile widget of a public form (contact, founder price):
+ * The invisible Turnstile widget of a public form (today: contact):
  * script loading, explicit render, waiting for the token, reset after a
  * refusal, and the "cannot run here" state.
  */

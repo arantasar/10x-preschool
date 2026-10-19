@@ -2,9 +2,8 @@
  * The server-side half of Cloudflare Turnstile: is the token a browser handed
  * us one a human earned? Knows nothing about any form - every public surface
  * that takes data from people without an account calls this with its own
- * `action` (the contact form: `"contact"`; the founding-price sign-up in S-22
- * will pass its own). PRD v3 §Warunki jakościowe: bot messages never reach the
- * owner, on either surface.
+ * `action` (today only the contact form: `"contact"`). PRD v3 §Warunki
+ * jakościowe: bot messages never reach the owner.
  *
  * Never throws. A network failure or a timeout is `unavailable`, which the
  * caller turns into "try again" - fail closed, because a check that cannot run

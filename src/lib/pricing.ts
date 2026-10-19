@@ -15,31 +15,17 @@ import { addDays, formatLegalDate } from "@/lib/legal";
 /**
  * The day payments start. Equals the constant in `start_trial_entitlement`
  * (`supabase/migrations/20261018160000_trial_until_launch.sql`, 2027-01-31)
- * plus one day. Payments delayed means a new migration moving that constant
- * and the retention date below, and this file, in one pr.
+ * plus one day. It is also the founder-price cut-off: an account created
+ * before it gets the founder price (FR-036). Payments delayed means a new
+ * migration moving that constant, and this file, in one pr.
  */
 export const PAYMENTS_START_ON = "2027-02-01";
 
 /** The last day of full access for an account created before payments (S-30). */
 export const BEFORE_PAYMENTS_ACCESS_UNTIL = addDays(PAYMENTS_START_ON, -1);
 
-/**
- * After this day pg_cron deletes the founder-price list. Equals the date in the
- * `founder-price-signups-retention` job
- * (`supabase/migrations/20261019120000_founder_price_signups.sql`) and in
- * Polityka prywatności pkt 2.8.
- */
-export const FOUNDER_LIST_RETENTION_UNTIL = "2027-08-31";
-
 /** „1 lutego 2027” - how the page names the start of payments. */
 export const PAYMENTS_START_LABEL = formatLegalDate(PAYMENTS_START_ON);
-
-/**
- * The radio group of `BillingToggle`. `FounderPriceForm` reads the checked one
- * when it sends, so both take the name from here: a renamed group would
- * otherwise record every sign-up as yearly without a sound.
- */
-export const BILLING_INPUT_NAME = "billing";
 
 /** A value the billing toggle swaps; yearly is the default (FR-028). */
 export interface Swap {
@@ -64,14 +50,23 @@ export const BASIC_NOTE: Swap = {
 export const FOUNDER_PRICE: Swap = { yearly: `${FOUNDER_YEARLY} / rok`, monthly: `${FOUNDER_MONTHLY} / miesiąc` };
 export const FOUNDER_NOTE = "na zawsze, dopóki subskrypcja trwa bez przerwy.";
 
-/** The founder price in one sentence - the `#zapis` lead and the FAQ answer. */
+/**
+ * Who gets the founder price: every account created before payments start
+ * (FR-036). No list and no sign-up - the account is the reservation.
+ */
+export const FOUNDER_ELIGIBILITY = `dla kont założonych przed ${PAYMENTS_START_LABEL}`;
+
+/** The note under the founder price on the Basic card. */
+export const FOUNDER_CARD_NOTE = `${FOUNDER_ELIGIBILITY}, ${FOUNDER_NOTE}`;
+
+/** The founder price in one sentence - the founder-price section and the FAQ answer. */
 export const FOUNDER_TERMS = `${FOUNDER_YEARLY} za rok albo ${FOUNDER_MONTHLY} miesięcznie przy subskrypcji — ${FOUNDER_NOTE}`;
 
 /** The Basic column heading of the comparison table. */
 export const BASIC_PRICE_HEADER = `${BASIC_YEARLY} / rok · ${BASIC_MONTHLY} / mies.`;
 
 /** The page's meta description. */
-export const PRICING_DESCRIPTION = `Temio jest dziś bezpłatne. Od ${PAYMENTS_START_LABEL}: plan Darmowy albo Basic za ${BASIC_YEARLY} za rok. Zarezerwuj cenę założycielską.`;
+export const PRICING_DESCRIPTION = `Temio jest dziś bezpłatne. Od ${PAYMENTS_START_LABEL}: plan Darmowy albo Basic za ${BASIC_YEARLY} za rok, a konta założone wcześniej mają cenę założycielską.`;
 
 export interface PlanCardData {
   readonly name: string;
@@ -137,6 +132,7 @@ export const PLAN_COMPARISON: { groups: readonly ComparisonGroup[]; notes: reado
           basic: {
             strong: `${FOUNDER_YEARLY} za rok`,
             text: ` albo ${FOUNDER_MONTHLY} miesięcznie, ${FOUNDER_NOTE.replace(/\.$/, "")}`,
+            sub: FOUNDER_ELIGIBILITY,
           },
         },
         { label: "Pierwszy miesiąc od rejestracji", free: { text: "pełny Basic, bez karty" }, basic: null },

@@ -7,6 +7,8 @@
 - **Verdict**: NEEDS ATTENTION
 - **Findings**: 0 critical, 4 warnings, 5 observations
 
+> **Update 2026-10-18 (after triage):** the owner removed the founder-price list altogether (plan.md, Addendum). Findings about the list — F3 (form after payments), F6, F7's in-place swap, F8, F9 — no longer apply to any code; F1 and F5 went with the reverted privacy policy (back to 1.3). F2's price constants and F7's `remove()` in `useTurnstile` stay.
+
 Automated at review time: `npm test` 913/913, `npm run lint` ✓, `npm run build` ✓, `npm run test:db` 289 ✓ (incl. `founder_price_signups.test.sql`), `npm run test:db:api` 16 ✓, `npm run test:e2e` 45/45 ✓, grep gates („bez limitu”, 2.6/2.7/2.8 numbering) ✓. After the triage fixes: `npm test` 914/914, lint ✓, build ✓, `founder-price` + `help-and-contact` + `legal-pages` specs 10/10 ✓.
 
 ## Verdicts
