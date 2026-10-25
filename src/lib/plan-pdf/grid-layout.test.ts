@@ -14,19 +14,20 @@ import {
 } from "./model";
 import type { DayPlanView } from "@/types";
 
-// The same deterministic stand-in as `layout.test.ts`: every character half an
-// em wide, bold a tenth wider.
-const measure: Measure = (text, size, weight) => text.length * size * 0.5 * (weight === "bold" ? 1.1 : 1);
+// The same deterministic stand-in as `layout.test.ts`.
+const measure: Measure = (text, size, face, tracking = 0) =>
+  text.length * size * (face === "serif" ? 0.55 : 0.5) * (face === "regular" ? 1 : 1.1) +
+  tracking * Math.max(0, text.length - 1);
 
 type TextItem = Extract<LayoutItem, { kind: "text" }>;
-type BoxItem = Extract<LayoutItem, { kind: "dashed-box" }>;
+type BoxItem = Extract<LayoutItem, { kind: "box" }>;
 
 function texts(page: LayoutPage): TextItem[] {
   return page.items.filter((item): item is TextItem => item.kind === "text");
 }
 
 function boxes(page: LayoutPage): BoxItem[] {
-  return page.items.filter((item): item is BoxItem => item.kind === "dashed-box");
+  return page.items.filter((item): item is BoxItem => item.kind === "box" && item.dashed);
 }
 
 function inside(item: TextItem, cell: GridCell): boolean {
@@ -65,12 +66,12 @@ function expectEverythingInPlace(doc: PrintDocument, layout: PdfLayout): void {
   const cells = monthGridCells(doc, measure);
   for (const item of texts(page)) {
     expect(item.x).toBeGreaterThanOrEqual(margin);
-    expect(item.x + measure(item.text, item.size, item.weight)).toBeLessThanOrEqual(width - margin + 1e-6);
+    expect(item.x + measure(item.text, item.size, item.face, item.tracking)).toBeLessThanOrEqual(width - margin + 1e-6);
     expect(item.y + item.size).toBeLessThanOrEqual(height - margin + 1e-6);
     expect(item.y - 0.3 * item.size).toBeGreaterThanOrEqual(margin - 1e-6);
     const cell = cells.find((candidate) => inside(item, candidate));
     if (cell) {
-      expect(item.x + measure(item.text, item.size, item.weight)).toBeLessThanOrEqual(
+      expect(item.x + measure(item.text, item.size, item.face, item.tracking)).toBeLessThanOrEqual(
         cell.x + cell.width - GRID_CELL_PADDING + 1e-6,
       );
       expect(item.y - 0.3 * item.size).toBeGreaterThanOrEqual(cell.y - 1e-6);
@@ -141,7 +142,19 @@ describe("layoutMonthGrid — cells", () => {
     const [page] = layout.pages;
     const cell = cellFor(doc, "2026-09-14");
 
-    expect(boxes(page)).toEqual([{ kind: "dashed-box", x: cell.x, y: cell.y, width: cell.width, height: cell.height }]);
+    expect(boxes(page)).toEqual([
+      {
+        kind: "box",
+        x: cell.x,
+        y: cell.y,
+        width: cell.width,
+        height: cell.height,
+        radius: 0,
+        stroke: "draft",
+        strokeWidth: 1,
+        dashed: true,
+      },
+    ]);
     expect(cellTexts(page, cell).map((item) => item.text)).toContain(DRAFT_TAG);
   });
 
@@ -199,7 +212,9 @@ describe("layoutMonthGrid — cells", () => {
     const last = lines[lines.length - 1];
 
     expect(last.text.endsWith(TRUNCATION_MARK)).toBe(true);
-    expect(measure(last.text, last.size, last.weight)).toBeLessThanOrEqual(cell.width - 2 * GRID_CELL_PADDING);
+    expect(measure(last.text, last.size, last.face, last.tracking)).toBeLessThanOrEqual(
+      cell.width - 2 * GRID_CELL_PADDING,
+    );
     expect(lines.slice(0, -1).some((line) => line.text.endsWith(TRUNCATION_MARK))).toBe(false);
   });
 

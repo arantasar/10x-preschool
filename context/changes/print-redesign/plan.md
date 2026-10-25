@@ -431,9 +431,9 @@ Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera �
 
 #### Automated
 
-- [x] 1.1 Testy modelu przechodzą
-- [x] 1.2 Typy i lint
-- [x] 1.3 Znacznik „Zatwierdzono …” przy dniu zniknął z modelu
+- [x] 1.1 Testy modelu przechodzą — bc285f1
+- [x] 1.2 Typy i lint — bc285f1
+- [x] 1.3 Znacznik „Zatwierdzono …” przy dniu zniknął z modelu — bc285f1
 
 #### Manual
 
@@ -443,11 +443,11 @@ Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera �
 
 #### Automated
 
-- [ ] 2.1 Wszystkie testy
-- [ ] 2.2 Typy i lint
-- [ ] 2.3 Build
-- [ ] 2.4 Próbki powstają
-- [ ] 2.5 Renderer nie czyta już Noto
+- [x] 2.1 Wszystkie testy
+- [x] 2.2 Typy i lint
+- [x] 2.3 Build
+- [x] 2.4 Próbki powstają
+- [x] 2.5 Renderer nie czyta już Noto
 
 #### Manual
 

@@ -26,10 +26,21 @@ import {
  * baseline - so the renderer draws without converting anything.
  */
 
-export type FontWeight = "regular" | "bold";
+/** Which of the four embedded faces a text is set in: Young Serif, or Nunito Sans in three styles. */
+export type FontFace = "serif" | "regular" | "bold" | "boldItalic";
 
-/** Width of `text` in points at `size`. */
-export type Measure = (text: string, size: number, weight: FontWeight) => number;
+/**
+ * Width of `text` in points at `size`, `tracking` points of letter spacing
+ * included - between characters, not after the last one.
+ */
+export type Measure = (text: string, size: number, face: FontFace, tracking?: number) => number;
+
+/**
+ * A colour, by name. The RGB values live in `render.ts`, the one module that
+ * draws, so a layout test can say "the draft frame is the draft colour" without
+ * knowing what that colour is. Taken from the design package's `print.css`.
+ */
+export type InkToken = "ink" | "muted" | "accent" | "faint" | "chip" | "frame" | "draft" | "divider" | "soft" | "hatch";
 
 export interface PageSpec {
   readonly width: number;
@@ -43,21 +54,59 @@ export interface PageSpec {
 export const A4_PORTRAIT: PageSpec = { width: 595.28, height: 841.89, margin: 56.69 };
 export const A4_LANDSCAPE: PageSpec = { width: 841.89, height: 595.28, margin: 24 };
 
+/**
+ * Everything a sheet is drawn from. Outlines only - nothing here fills an area,
+ * so a sheet never depends on the printer drawing backgrounds, and the paper
+ * stays white.
+ */
 export type LayoutItem =
   | {
       readonly kind: "text";
       readonly x: number;
+      /** The baseline. */
       readonly y: number;
       readonly text: string;
       readonly size: number;
-      readonly weight: FontWeight;
+      readonly face: FontFace;
+      readonly color: InkToken;
+      /** Letter spacing in points, for the spaced-out capitals of labels. */
+      readonly tracking?: number;
     }
   | {
-      readonly kind: "dashed-box";
+      /** A rectangle's outline, corners rounded by `radius`; `y` is its bottom edge. */
+      readonly kind: "box";
       readonly x: number;
       readonly y: number;
       readonly width: number;
       readonly height: number;
+      readonly radius: number;
+      readonly stroke: InkToken;
+      readonly strokeWidth: number;
+      readonly dashed: boolean;
+    }
+  | {
+      readonly kind: "rule";
+      readonly x1: number;
+      readonly y1: number;
+      readonly x2: number;
+      readonly y2: number;
+      readonly color: InkToken;
+      readonly width: number;
+    }
+  | {
+      /** A rectangle filled with thin diagonal lines - a day of the neighbouring month. */
+      readonly kind: "hatch";
+      readonly x: number;
+      readonly y: number;
+      readonly width: number;
+      readonly height: number;
+    }
+  | {
+      /** The temio sign, `size` points square; `x`, `y` is its top-left corner. */
+      readonly kind: "mark";
+      readonly x: number;
+      readonly y: number;
+      readonly size: number;
     };
 
 export interface LayoutPage {
@@ -108,11 +157,11 @@ export function normalizeText(text: string, hasGlyph: (char: string) => boolean 
   return Array.from(unified, (char) => (char === "\n" || hasGlyph(char) ? char : "?")).join("");
 }
 
-function breakLongWord(word: string, maxWidth: number, size: number, weight: FontWeight, measure: Measure): string[] {
+function breakLongWord(word: string, maxWidth: number, size: number, face: FontFace, measure: Measure): string[] {
   const pieces: string[] = [];
   let current = "";
   for (const char of Array.from(word)) {
-    if (current !== "" && measure(current + char, size, weight) > maxWidth) {
+    if (current !== "" && measure(current + char, size, face) > maxWidth) {
       pieces.push(current);
       current = char;
     } else {
@@ -131,7 +180,7 @@ function breakLongWord(word: string, maxWidth: number, size: number, weight: Fon
  * Breaks at spaces; `\n` is a hard break (a blank line survives as `""`); a word
  * wider than the column is broken between characters. Empty text is no lines.
  */
-export function wrapText(text: string, maxWidth: number, size: number, weight: FontWeight, measure: Measure): string[] {
+export function wrapText(text: string, maxWidth: number, size: number, face: FontFace, measure: Measure): string[] {
   const trimmed = normalizeText(text).trim();
   if (trimmed === "") {
     return [];
@@ -142,7 +191,7 @@ export function wrapText(text: string, maxWidth: number, size: number, weight: F
     let current = "";
     for (const word of words) {
       const candidate = current === "" ? word : `${current} ${word}`;
-      if (measure(candidate, size, weight) <= maxWidth) {
+      if (measure(candidate, size, face) <= maxWidth) {
         current = candidate;
         continue;
       }
@@ -150,10 +199,10 @@ export function wrapText(text: string, maxWidth: number, size: number, weight: F
         lines.push(current);
         current = "";
       }
-      if (measure(word, size, weight) <= maxWidth) {
+      if (measure(word, size, face) <= maxWidth) {
         current = word;
       } else {
-        const pieces = breakLongWord(word, maxWidth, size, weight, measure);
+        const pieces = breakLongWord(word, maxWidth, size, face, measure);
         lines.push(...pieces.slice(0, -1));
         current = pieces[pieces.length - 1] ?? "";
       }
@@ -170,7 +219,7 @@ export function wrapText(text: string, maxWidth: number, size: number, weight: F
 export interface FlowLine {
   readonly text: string;
   readonly size: number;
-  readonly weight: FontWeight;
+  readonly face: FontFace;
   /** Extra space above this line, on top of its line box. */
   readonly spaceBefore: number;
 }
@@ -187,14 +236,14 @@ export function flowText(
   text: string,
   width: number,
   size: number,
-  weight: FontWeight,
+  face: FontFace,
   measure: Measure,
   spaceBefore = 0,
 ): FlowLine[] {
-  return wrapText(text, width, size, weight, measure).map((line, index) => ({
+  return wrapText(text, width, size, face, measure).map((line, index) => ({
     text: line,
     size,
-    weight,
+    face,
     spaceBefore: index === 0 ? spaceBefore : 0,
   }));
 }
@@ -272,11 +321,24 @@ export function placeLines(lines: readonly FlowLine[], x: number, top: number): 
     if (line.text !== "") {
       // Baseline one em below the top of the line box leaves the rest of the
       // box for descenders.
-      items.push({ kind: "text", x, y: cursor - line.size, text: line.text, size: line.size, weight: line.weight });
+      items.push({
+        kind: "text",
+        x,
+        y: cursor - line.size,
+        text: line.text,
+        size: line.size,
+        face: line.face,
+        color: "ink",
+      });
     }
     cursor -= line.size * LINE_HEIGHT;
   }
   return items;
+}
+
+/** The dashed outline of a draft - square-cornered, as the layouts have drawn it since `S-13`. */
+export function draftBox(x: number, y: number, width: number, height: number): LayoutItem {
+  return { kind: "box", x, y, width, height, radius: 0, stroke: "draft", strokeWidth: 1, dashed: true };
 }
 
 /** A day segment inside its frame area: text inset by `padding`, dashed frame when the day is a draft. */
@@ -291,7 +353,7 @@ function placeDaySegment(
   const items = placeLines(lines, x + padding, top - padding);
   if (day.status === "draft") {
     const height = totalHeight(lines) + 2 * padding;
-    items.push({ kind: "dashed-box", x, y: top - height, width, height });
+    items.push(draftBox(x, top - height, width, height));
   }
   return items;
 }

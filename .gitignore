@@ -33,3 +33,6 @@ blob-report/
 
 # jetbrains setting folder
 .idea/
+
+# print samples (src/lib/plan-pdf/samples.test.ts)
+print-samples/

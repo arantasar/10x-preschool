@@ -17,9 +17,12 @@ import { buildPrintMonth, buildPrintWeek, CONTINUED_MARK, DRAFT_TAG, EMPTY_DAY_N
 import type { DayPlanView } from "@/types";
 
 // Deterministic stand-in for a real font: every character half an em wide,
-// bold a tenth wider. Close enough to Noto Sans that the thresholds below
-// describe realistic weeks.
-const measure: Measure = (text, size, weight) => text.length * size * 0.5 * (weight === "bold" ? 1.1 : 1);
+// bold and bold italic a tenth wider, the serif wider still; tracking between
+// characters. Close enough to Nunito Sans that the thresholds below describe
+// realistic weeks.
+const measure: Measure = (text, size, face, tracking = 0) =>
+  text.length * size * (face === "serif" ? 0.55 : 0.5) * (face === "regular" ? 1 : 1.1) +
+  tracking * Math.max(0, text.length - 1);
 
 type TextItem = Extract<LayoutItem, { kind: "text" }>;
 
@@ -34,7 +37,7 @@ function pageText(page: LayoutPage): string {
 }
 
 function hasDashedBox(page: LayoutPage): boolean {
-  return page.items.some((item) => item.kind === "dashed-box");
+  return page.items.some((item) => item.kind === "box" && item.dashed);
 }
 
 function layout(plans: Record<string, DayPlanView>, kind: PdfLayout["kind"]): PdfLayout {
@@ -46,12 +49,14 @@ function expectInsideMargins(result: PdfLayout): void {
     const { width, height, margin } = page.spec;
     for (const item of texts(page)) {
       expect(item.x).toBeGreaterThanOrEqual(margin);
-      expect(item.x + measure(item.text, item.size, item.weight)).toBeLessThanOrEqual(width - margin + 1e-6);
+      expect(item.x + measure(item.text, item.size, item.face, item.tracking)).toBeLessThanOrEqual(
+        width - margin + 1e-6,
+      );
       expect(item.y + item.size).toBeLessThanOrEqual(height - margin + 1e-6);
       expect(item.y - 0.3 * item.size).toBeGreaterThanOrEqual(margin - 1e-6);
     }
     for (const item of page.items) {
-      if (item.kind !== "dashed-box") continue;
+      if (item.kind !== "box") continue;
       expect(item.x).toBeGreaterThanOrEqual(margin - 1e-6);
       expect(item.y).toBeGreaterThanOrEqual(margin - 1e-6);
       expect(item.x + item.width).toBeLessThanOrEqual(width - margin + 1e-6);
@@ -230,7 +235,7 @@ describe("layoutDocument — week per page", () => {
     for (const day of printDays(week)) {
       expect(text).toContain(day.heading.split(",")[0]);
     }
-    expect(page.items.filter((item) => item.kind === "dashed-box")).toHaveLength(1);
+    expect(page.items.filter((item) => item.kind === "box" && item.dashed)).toHaveLength(1);
     expect(text.split(EMPTY_DAY_NOTE)).toHaveLength(4);
     expect(text).toContain(DRAFT_TAG);
   });

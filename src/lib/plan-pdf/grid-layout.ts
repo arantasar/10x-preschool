@@ -1,13 +1,14 @@
 import { WEEK_DAYS } from "@/lib/day-plan-limits";
 import {
   A4_LANDSCAPE,
+  draftBox,
   flowText,
   lineHeight,
   LINE_HEIGHT,
   placeLines,
   totalHeight,
   type FlowLine,
-  type FontWeight,
+  type FontFace,
   type LayoutItem,
   type Measure,
   type PdfLayout,
@@ -132,8 +133,8 @@ function cellLines(day: PrintDay, width: number, size: number, measure: Measure)
  * `text` shortened until it and the mark fit `width`: whole words first, then -
  * for a line that is one long word - characters.
  */
-function withTruncationMark(text: string, width: number, size: number, weight: FontWeight, measure: Measure): string {
-  const fits = (candidate: string) => measure(candidate + TRUNCATION_MARK, size, weight) <= width;
+function withTruncationMark(text: string, width: number, size: number, face: FontFace, measure: Measure): string {
+  const fits = (candidate: string) => measure(candidate + TRUNCATION_MARK, size, face) <= width;
   const words = text.split(" ").filter((word) => word !== "");
   while (words.length > 1 && !fits(words.join(" "))) {
     words.pop();
@@ -159,7 +160,7 @@ function truncateLines(lines: readonly FlowLine[], available: number, width: num
   }
   if (kept.length < lines.length) {
     const last = kept[kept.length - 1];
-    kept[kept.length - 1] = { ...last, text: withTruncationMark(last.text, width, last.size, last.weight, measure) };
+    kept[kept.length - 1] = { ...last, text: withTruncationMark(last.text, width, last.size, last.face, measure) };
   }
   return kept;
 }
@@ -202,7 +203,7 @@ export function layoutMonthGrid(doc: PrintDocument, measure: Measure): PdfLayout
     if (cell.day.status === "draft") {
       // The whole cell, not the height of its text: the grid stays a grid of
       // equal rectangles, and a frame is recognisable at a glance.
-      items.push({ kind: "dashed-box", x: cell.x, y: cell.y, width: cell.width, height: cell.height });
+      items.push(draftBox(cell.x, cell.y, cell.width, cell.height));
     }
   });
   items.push(...placeLines(legendLines, spec.margin, legendTop));

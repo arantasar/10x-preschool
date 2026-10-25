@@ -115,15 +115,17 @@ export default function PdfDownloadControls({
       // `then` turns a synchronous throw into a rejection the finally still sees.
       const documentLoad = Promise.resolve().then(loadDocument);
       try {
-        const [{ renderPlanPdf }, regular, bold, printDocument] = await Promise.all([
+        const [{ renderPlanPdf }, serif, regular, bold, boldItalic, printDocument] = await Promise.all([
           import("@/lib/plan-pdf/render").catch((error: unknown) => {
             throw new RendererUnavailableError("PDF renderer failed to load", { cause: error });
           }),
-          fetchFont("/fonts/NotoSans-Regular.ttf"),
-          fetchFont("/fonts/NotoSans-Bold.ttf"),
+          fetchFont("/fonts/YoungSerif-Regular.ttf"),
+          fetchFont("/fonts/NunitoSans-Regular.ttf"),
+          fetchFont("/fonts/NunitoSans-Bold.ttf"),
+          fetchFont("/fonts/NunitoSans-BoldItalic.ttf"),
           documentLoad,
         ]);
-        const bytes = await renderPlanPdf(printDocument, kind, { regular, bold });
+        const bytes = await renderPlanPdf(printDocument, kind, { serif, regular, bold, boldItalic });
         saveFile(bytes, fileName(kind));
       } catch (error) {
         // When the read and the renderer both fail, the read's message wins
