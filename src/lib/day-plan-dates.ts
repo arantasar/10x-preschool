@@ -246,3 +246,19 @@ export function formatAcceptedAt(acceptedAt: string): string {
     timeZone: "Europe/Warsaw",
   }).format(new Date(acceptedAt));
 }
+
+/**
+ * The day a plan was accepted, as `1 października 2026` - the printed week's
+ * footer, where the hour says nothing to a teacher holding the paper.
+ *
+ * Pinned to Europe/Warsaw like {@link formatAcceptedAt}: a plan accepted at
+ * 00:30 on 1 October is still 30 September in UTC.
+ */
+export function formatAcceptedDay(acceptedAt: string): string {
+  return new Intl.DateTimeFormat("pl-PL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Europe/Warsaw",
+  }).format(new Date(acceptedAt));
+}

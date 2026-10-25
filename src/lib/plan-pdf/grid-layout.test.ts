@@ -6,10 +6,9 @@ import { GRID_CELL_PADDING, layoutMonthGrid, monthGridCells, type GridCell } fro
 import { A4_LANDSCAPE, type LayoutItem, type LayoutPage, type Measure, type PdfLayout } from "./layout";
 import {
   buildPrintMonth,
-  DRAFT_LABEL,
-  DRAFT_SHORT_LABEL,
+  DRAFT_TAG,
   EMPTY_DAY_NOTE,
-  GRID_LEGEND,
+  GRID_LEGEND_ITEMS,
   TRUNCATION_MARK,
   type PrintDocument,
 } from "./model";
@@ -110,7 +109,13 @@ describe("layoutMonthGrid — one sheet", () => {
   it("carries the legend", () => {
     const { layout } = grid(MONTH, {});
 
-    expect(texts(layout.pages[0]).map((item) => item.text)).toContain(GRID_LEGEND);
+    const text = texts(layout.pages[0])
+      .map((item) => item.text)
+      .join("\n");
+
+    for (const { label } of GRID_LEGEND_ITEMS) {
+      expect(text).toContain(label);
+    }
   });
 
   it("keeps every line inside the page margins and inside its own cell", () => {
@@ -137,7 +142,7 @@ describe("layoutMonthGrid — cells", () => {
     const cell = cellFor(doc, "2026-09-14");
 
     expect(boxes(page)).toEqual([{ kind: "dashed-box", x: cell.x, y: cell.y, width: cell.width, height: cell.height }]);
-    expect(cellTexts(page, cell).map((item) => item.text)).toContain(DRAFT_SHORT_LABEL);
+    expect(cellTexts(page, cell).map((item) => item.text)).toContain(DRAFT_TAG);
   });
 
   it("neither frames nor labels an accepted cell", () => {
@@ -147,8 +152,7 @@ describe("layoutMonthGrid — cells", () => {
     const text = cellTexts(page, cell).map((item) => item.text);
 
     expect(boxes(page).some((box) => box.x === cell.x && box.y === cell.y)).toBe(false);
-    expect(text).not.toContain(DRAFT_SHORT_LABEL);
-    expect(text.join("\n")).not.toContain(DRAFT_LABEL);
+    expect(text).not.toContain(DRAFT_TAG);
   });
 
   it("shows the hasło and the theme, but no activity - neither title nor description", () => {

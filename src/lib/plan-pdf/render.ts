@@ -38,7 +38,8 @@ export function normalizeDocument(doc: PrintDocument, hasGlyph: (char: string) =
   const day = (printDay: PrintDay): PrintDay => ({
     ...printDay,
     heading: clean(printDay.heading),
-    statusLabel: cleanOrNull(printDay.statusLabel),
+    dayNumber: clean(printDay.dayNumber),
+    weekday: clean(printDay.weekday),
     prompt: cleanOrNull(printDay.prompt),
     theme: cleanOrNull(printDay.theme),
     emptyNote: cleanOrNull(printDay.emptyNote),
@@ -49,9 +50,13 @@ export function normalizeDocument(doc: PrintDocument, hasGlyph: (char: string) =
   });
   return {
     title: clean(doc.title),
+    eyebrow: clean(doc.eyebrow),
+    sheetTitle: clean(doc.sheetTitle),
     rows: doc.rows.map((row) => ({
       ...row,
       heading: clean(row.heading),
+      eyebrow: clean(row.eyebrow),
+      note: cleanOrNull(row.note),
       slots: row.slots.map((slot) => (slot === null ? null : day(slot))),
     })),
   };

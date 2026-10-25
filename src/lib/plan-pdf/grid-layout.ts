@@ -13,8 +13,8 @@ import {
   type PdfLayout,
 } from "@/lib/plan-pdf/layout";
 import {
-  DRAFT_SHORT_LABEL,
-  GRID_LEGEND,
+  DRAFT_TAG,
+  GRID_LEGEND_ITEMS,
   GRID_WEEKDAYS,
   gridDayHeading,
   PROMPT_PREFIX,
@@ -82,7 +82,8 @@ function gridFrame(doc: PrintDocument, measure: Measure): GridFrame {
   const headersTop = top - totalHeight(titleLines) - GRID_SECTION_GAP;
   const gridTop = headersTop - GRID_WEEKDAY_SIZE * LINE_HEIGHT - GRID_ROW_GAP;
 
-  const legendLines = flowText(GRID_LEGEND, contentWidth, GRID_LEGEND_SIZE, "regular", measure);
+  const legend = GRID_LEGEND_ITEMS.map((item) => item.label).join(" · ");
+  const legendLines = flowText(legend, contentWidth, GRID_LEGEND_SIZE, "regular", measure);
   // Lifted by a padding so the legend's descenders stay inside the margin.
   const legendTop = spec.margin + GRID_CELL_PADDING + totalHeight(legendLines);
   const gridBottom = legendTop + GRID_SECTION_GAP;
@@ -113,7 +114,7 @@ export function monthGridCells(doc: PrintDocument, measure: Measure): GridCell[]
 function cellLines(day: PrintDay, width: number, size: number, measure: Measure): FlowLine[] {
   const lines = flowText(gridDayHeading(day.date), width, size, "bold", measure);
   if (day.status === "draft") {
-    lines.push(...flowText(DRAFT_SHORT_LABEL, width, size, "bold", measure));
+    lines.push(...flowText(DRAFT_TAG, width, size, "bold", measure));
   }
   if (day.emptyNote !== null) {
     lines.push(...flowText(day.emptyNote, width, size, "regular", measure));

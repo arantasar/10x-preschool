@@ -1,24 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  formatAcceptedAt,
-  formatMonth,
-  formatPlanDate,
-  formatWeekRange,
-  weeksOfMonth,
-  workingDaysOfMonth,
-} from "@/lib/day-plan-dates";
+import { formatMonth, formatPlanDate, formatWeekRange, weeksOfMonth, workingDaysOfMonth } from "@/lib/day-plan-dates";
 
 import { fullMonth, MONTH, MONTH_DAYS_ISO } from "./__fixtures__/month";
 import { planView, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
 import {
   buildPrintMonth,
   buildPrintWeek,
-  DRAFT_LABEL,
+  DRAFT_TAG,
   EMPTY_DAY_NOTE,
+  GRID_LEGEND_ITEMS,
+  MONTH_EYEBROW,
   monthPdfFileName,
   pdfFileName,
   printDays,
+  WEEK_EYEBROW,
 } from "./model";
 
 const ACCEPTED_AT = "2026-09-23T09:31:00Z";
@@ -41,12 +37,35 @@ describe("buildPrintWeek", () => {
     expect(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, {}).title).toBe(`Plan tygodnia — ${formatWeekRange(WEEK_START)}`);
   });
 
+  it("heads the sheet with the range alone, under the week's eyebrow", () => {
+    const week = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, {});
+    const [row] = week.rows;
+
+    expect(week.eyebrow).toBe(WEEK_EYEBROW);
+    expect(week.sheetTitle).toBe(formatWeekRange(WEEK_START));
+    expect(row.heading).toBe(formatWeekRange(WEEK_START));
+    expect(row.eyebrow).toBe("PLAN TYGODNIA");
+  });
+
+  it("gives every day its number and its weekday", () => {
+    const days = printDays(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, {}));
+
+    expect(days.map((day) => day.dayNumber)).toEqual(["14", "15", "16", "17", "18"]);
+    expect(days.map((day) => day.weekday)).toEqual(["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek"]);
+  });
+
+  it("drops the leading zero of a day number", () => {
+    const [day] = printDays(buildPrintWeek("2026-10-05", ["2026-10-05"], {}));
+
+    expect(day.dayNumber).toBe("5");
+  });
+
   it("says an unplanned day has no plan, and gives it nothing else", () => {
     const [day] = printDays(buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, {}));
 
     expect(day.status).toBe("empty");
     expect(day.emptyNote).toBe(EMPTY_DAY_NOTE);
-    expect(day.statusLabel).toBeNull();
+    expect(day.acceptedAt).toBeNull();
     expect(day.prompt).toBeNull();
     expect(day.activities).toEqual([]);
   });
@@ -57,18 +76,17 @@ describe("buildPrintWeek", () => {
     const day = printDays(doc)[2];
 
     expect(day.status).toBe("draft");
-    expect(day.statusLabel).toBe(DRAFT_LABEL);
+    expect(day.acceptedAt).toBeNull();
     expect(day.emptyNote).toBeNull();
   });
 
-  it("labels an accepted plan with when it was accepted, and never as a draft", () => {
+  it("carries when an accepted plan was accepted, and never calls it a draft", () => {
     const date = WEEK_DAYS_ISO[0];
     const doc = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, { [date]: planView(date, { acceptedAt: ACCEPTED_AT }) });
     const day = printDays(doc)[0];
 
     expect(day.status).toBe("accepted");
-    expect(day.statusLabel).toBe(`Zatwierdzono ${formatAcceptedAt(ACCEPTED_AT)}`);
-    expect(day.statusLabel).not.toContain("SZKIC");
+    expect(day.acceptedAt).toBe(ACCEPTED_AT);
   });
 
   it("carries the hasło, and leaves a missing theme missing", () => {
@@ -95,6 +113,61 @@ describe("buildPrintWeek", () => {
   });
 });
 
+describe("the week's footer note", () => {
+  function note(plans: Record<string, ReturnType<typeof planView>>): string | null {
+    return buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, plans).rows[0].note;
+  }
+
+  const [monday, tuesday, wednesday, thursday, friday] = WEEK_DAYS_ISO;
+
+  it("says nothing about a week with no plan at all", () => {
+    expect(note({})).toBeNull();
+  });
+
+  it("says the drafts wait for acceptance when any day is one", () => {
+    expect(
+      note({
+        [monday]: planView(monday, { acceptedAt: ACCEPTED_AT }),
+        [tuesday]: planView(tuesday, { acceptedAt: null }),
+      }),
+    ).toBe(`Dni oznaczone „${DRAFT_TAG}” czekają na zatwierdzenie`);
+  });
+
+  it("says every day is accepted, and when last, when the whole week is", () => {
+    expect(
+      note({
+        [monday]: planView(monday, { acceptedAt: "2026-09-20T08:00:00Z" }),
+        [tuesday]: planView(tuesday, { acceptedAt: ACCEPTED_AT }),
+        [wednesday]: planView(wednesday, { acceptedAt: "2026-09-21T08:00:00Z" }),
+        [thursday]: planView(thursday, { acceptedAt: "2026-09-22T08:00:00Z" }),
+        [friday]: planView(friday, { acceptedAt: "2026-09-19T08:00:00Z" }),
+      }),
+    ).toBe("Wszystkie dni zatwierdzone — ostatnio 23 września 2026");
+  });
+
+  it("speaks only of the planned days when some have no plan", () => {
+    expect(note({ [monday]: planView(monday, { acceptedAt: ACCEPTED_AT }) })).toBe(
+      "Zaplanowane dni zatwierdzone — ostatnio 23 września 2026",
+    );
+  });
+
+  it("dates the last acceptance in Warsaw, not in UTC", () => {
+    // 22:30 UTC on 30 September is 00:30 CEST on 1 October.
+    expect(note({ [monday]: planView(monday, { acceptedAt: "2026-09-30T22:30:00Z" }) })).toBe(
+      "Zaplanowane dni zatwierdzone — ostatnio 1 października 2026",
+    );
+  });
+
+  it("picks the latest acceptance as an instant, whatever the offset it is written in", () => {
+    expect(
+      note({
+        [monday]: planView(monday, { acceptedAt: "2026-09-24T01:00:00+02:00" }),
+        [tuesday]: planView(tuesday, { acceptedAt: "2026-09-23T22:30:00Z" }),
+      }),
+    ).toBe("Zaplanowane dni zatwierdzone — ostatnio 24 września 2026");
+  });
+});
+
 describe("pdfFileName", () => {
   it("names the day-per-page file after the Monday", () => {
     expect(pdfFileName(WEEK_START, "day-per-page")).toBe("plan-tygodnia-2026-09-14-dzien-na-strone.pdf");
@@ -115,14 +188,56 @@ describe("buildPrintMonth", () => {
     for (const row of doc.rows) {
       expect(row.slots).toHaveLength(5);
     }
-    expect(doc.rows[2].heading).toBe(`${doc.title} · ${formatWeekRange(doc.rows[2].weekStart)}`);
+    expect(doc.rows[2].heading).toBe(formatWeekRange(doc.rows[2].weekStart));
+  });
+
+  it("titles the grid sheet with the month, capitalised, under the month's eyebrow", () => {
+    const doc = buildPrintMonth(MONTH, {});
+
+    expect(doc.eyebrow).toBe(MONTH_EYEBROW);
+    expect(doc.sheetTitle).toBe("Wrzesień 2026");
+  });
+
+  it("names the month in every week sheet's eyebrow", () => {
+    for (const row of buildPrintMonth(MONTH, {}).rows) {
+      expect(row.eyebrow).toBe("PLAN MIESIĄCA · WRZESIEŃ 2026");
+    }
   });
 
   it("heads a partial week with the month's own days, not the neighbours' left blank", () => {
-    const { title, rows } = buildPrintMonth(MONTH, {});
+    const { rows } = buildPrintMonth(MONTH, {});
 
-    expect(rows[0].heading).toBe(`${title} · 1 – 4 września 2026`);
-    expect(rows[4].heading).toBe(`${title} · 28 – 30 września 2026`);
+    expect(rows[0].heading).toBe("1 – 4 września 2026");
+    expect(rows[4].heading).toBe("28 – 30 września 2026");
+  });
+
+  it("gives each week its own footer note", () => {
+    const { rows } = buildPrintMonth(MONTH, {
+      "2026-09-08": planView("2026-09-08", { acceptedAt: null }),
+      "2026-09-15": planView("2026-09-15", { acceptedAt: ACCEPTED_AT }),
+    });
+
+    expect(rows.map((row) => row.note)).toEqual([
+      null,
+      `Dni oznaczone „${DRAFT_TAG}” czekają na zatwierdzenie`,
+      "Zaplanowane dni zatwierdzone — ostatnio 23 września 2026",
+      null,
+      null,
+    ]);
+  });
+
+  it("leaves the neighbouring months' days out of a week's note", () => {
+    // 1-2 October sit in September's last row; a draft there must not turn
+    // the row's note into "czekają na zatwierdzenie", nor its slots into days.
+    const { rows } = buildPrintMonth(MONTH, {
+      "2026-09-28": planView("2026-09-28", { acceptedAt: ACCEPTED_AT }),
+      "2026-09-29": planView("2026-09-29", { acceptedAt: ACCEPTED_AT }),
+      "2026-09-30": planView("2026-09-30", { acceptedAt: ACCEPTED_AT }),
+      "2026-10-01": planView("2026-10-01", { acceptedAt: null }),
+    });
+
+    expect(rows[4].slots[3]).toBeNull();
+    expect(rows[4].note).toBe("Wszystkie dni zatwierdzone — ostatnio 23 września 2026");
   });
 
   it("drops the week a weekend-start month borrows from the previous month", () => {
@@ -188,6 +303,13 @@ describe("buildPrintMonth", () => {
 
     expect(days.find((day) => day.date === "2026-09-14")?.status).toBe("draft");
     expect(days.find((day) => day.date === "2026-09-15")?.status).toBe("accepted");
+  });
+});
+
+describe("GRID_LEGEND_ITEMS", () => {
+  it("explains each of the three states once, the draft by its tag", () => {
+    expect(GRID_LEGEND_ITEMS.map((item) => item.status)).toEqual(["accepted", "draft", "empty"]);
+    expect(GRID_LEGEND_ITEMS[1].label).toContain(DRAFT_TAG);
   });
 });
 

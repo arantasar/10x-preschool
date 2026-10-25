@@ -13,7 +13,7 @@ import {
   type Measure,
   type PdfLayout,
 } from "./layout";
-import { buildPrintMonth, buildPrintWeek, CONTINUED_MARK, DRAFT_LABEL, EMPTY_DAY_NOTE, printDays } from "./model";
+import { buildPrintMonth, buildPrintWeek, CONTINUED_MARK, DRAFT_TAG, EMPTY_DAY_NOTE, printDays } from "./model";
 import type { DayPlanView } from "@/types";
 
 // Deterministic stand-in for a real font: every character half an em wide,
@@ -150,7 +150,7 @@ describe("layoutDocument — day per page", () => {
     expect(draftPages.length).toBeGreaterThan(1);
     for (const page of draftPages) {
       expect(hasDashedBox(page)).toBe(true);
-      expect(pageText(page)).toContain(DRAFT_LABEL);
+      expect(pageText(page)).toContain(DRAFT_TAG);
     }
   });
 
@@ -159,7 +159,7 @@ describe("layoutDocument — day per page", () => {
     const result = layout({ [date]: planView(date, { acceptedAt: "2026-09-23T09:31:00Z" }) }, "day-per-page");
 
     expect(hasDashedBox(result.pages[0])).toBe(false);
-    expect(pageText(result.pages[0])).not.toContain(DRAFT_LABEL);
+    expect(pageText(result.pages[0])).not.toContain(DRAFT_TAG);
   });
 
   it("gives an empty week five pages, each saying the day has no plan", () => {
@@ -232,7 +232,7 @@ describe("layoutDocument — week per page", () => {
     }
     expect(page.items.filter((item) => item.kind === "dashed-box")).toHaveLength(1);
     expect(text.split(EMPTY_DAY_NOTE)).toHaveLength(4);
-    expect(text).toContain(DRAFT_LABEL);
+    expect(text).toContain(DRAFT_TAG);
   });
 
   it("keeps every line inside the margins, at every size", () => {

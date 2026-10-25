@@ -2,6 +2,7 @@ import { WEEK_DAYS } from "@/lib/day-plan-limits";
 import { layoutMonthGrid } from "@/lib/plan-pdf/grid-layout";
 import {
   CONTINUED_MARK,
+  DRAFT_TAG,
   printDays,
   PROMPT_PREFIX,
   THEME_PREFIX,
@@ -208,8 +209,8 @@ interface DayStyle {
 function dayHeader(day: PrintDay, style: DayStyle, measure: Measure, continued: boolean): FlowLine[] {
   const heading = continued ? `${day.heading} ${CONTINUED_MARK}` : day.heading;
   const lines = flowText(heading, style.width, style.headingSize, "bold", measure);
-  if (day.statusLabel !== null) {
-    lines.push(...flowText(day.statusLabel, style.width, style.bodySize, "bold", measure, style.bodySize * 0.3));
+  if (day.status === "draft") {
+    lines.push(...flowText(DRAFT_TAG, style.width, style.bodySize, "bold", measure, style.bodySize * 0.3));
   }
   return lines;
 }
