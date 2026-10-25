@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatMonth, formatPlanDate, formatWeekRange, weeksOfMonth, workingDaysOfMonth } from "@/lib/day-plan-dates";
+import { formatMonth, formatWeekRange, weeksOfMonth, workingDaysOfMonth } from "@/lib/day-plan-dates";
 
 import { fullMonth, MONTH, MONTH_DAYS_ISO } from "./__fixtures__/month";
 import { planView, WEEK_DAYS_ISO, WEEK_START } from "./__fixtures__/week";
@@ -24,7 +24,6 @@ describe("buildPrintWeek", () => {
     const week = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, {});
 
     expect(printDays(week).map((day) => day.date)).toEqual(WEEK_DAYS_ISO);
-    expect(printDays(week).map((day) => day.heading)).toEqual(WEEK_DAYS_ISO.map(formatPlanDate));
   });
 
   it("keeps calendar order when the days arrive shuffled", () => {

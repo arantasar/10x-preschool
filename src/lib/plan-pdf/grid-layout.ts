@@ -208,5 +208,9 @@ export function layoutMonthGrid(doc: PrintDocument, measure: Measure): PdfLayout
   });
   items.push(...placeLines(legendLines, spec.margin, legendTop));
 
-  return { kind: "month-grid", bodySize: size, pages: [{ spec, items }] };
+  return {
+    kind: "month-grid",
+    bodySize: size,
+    pages: [{ spec, items, body: { top: spec.height - spec.margin, bottom: spec.margin } }],
+  };
 }

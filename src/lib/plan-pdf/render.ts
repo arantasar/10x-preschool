@@ -77,7 +77,6 @@ export function normalizeDocument(doc: PrintDocument, hasGlyph: (char: string) =
   const cleanOrNull = (text: string | null) => (text === null ? null : clean(text));
   const day = (printDay: PrintDay): PrintDay => ({
     ...printDay,
-    heading: clean(printDay.heading),
     dayNumber: clean(printDay.dayNumber),
     weekday: clean(printDay.weekday),
     prompt: cleanOrNull(printDay.prompt),

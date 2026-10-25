@@ -166,6 +166,7 @@ describe("drawLayout", () => {
       pages: [
         {
           spec: A4_LANDSCAPE,
+          body: { top: 500, bottom: 40 },
           items: [
             { kind: "text", x: 40, y: 500, text: POLISH, size: 24, face: "serif", color: "ink" },
             { kind: "text", x: 40, y: 470, text: POLISH, size: 10, face: "regular", color: "muted" },

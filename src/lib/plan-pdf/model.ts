@@ -2,7 +2,6 @@ import {
   formatAcceptedDay,
   formatDateRange,
   formatMonth,
-  formatPlanDate,
   formatWeekRange,
   weekdayLabel,
   weeksOfMonth,
@@ -106,8 +105,6 @@ export interface PrintActivity {
 
 export interface PrintDay {
   readonly date: string;
-  /** `formatPlanDate(date)`. */
-  readonly heading: string;
   /** `14` - the big serif number a sheet heads the day with. */
   readonly dayNumber: string;
   /** `Poniedziałek`; the layout sets it in capitals. */
@@ -174,13 +171,11 @@ export function rowNote(days: readonly PrintDay[]): string | null {
 }
 
 function printDay(date: string, view: DayPlanView | undefined): PrintDay {
-  const heading = formatPlanDate(date);
   const dayNumber = String(Number(date.slice(8, 10)));
   const weekday = capitalize(weekdayLabel(date));
   if (!view) {
     return {
       date,
-      heading,
       dayNumber,
       weekday,
       status: "empty",
@@ -194,7 +189,6 @@ function printDay(date: string, view: DayPlanView | undefined): PrintDay {
   const acceptedAt = view.plan.accepted_at;
   return {
     date,
-    heading,
     dayNumber,
     weekday,
     status: acceptedAt === null ? "draft" : "accepted",

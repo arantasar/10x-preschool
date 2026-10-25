@@ -443,11 +443,11 @@ Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera �
 
 #### Automated
 
-- [x] 2.1 Wszystkie testy
-- [x] 2.2 Typy i lint
-- [x] 2.3 Build
-- [x] 2.4 Próbki powstają
-- [x] 2.5 Renderer nie czyta już Noto
+- [x] 2.1 Wszystkie testy — 1fcd972
+- [x] 2.2 Typy i lint — 1fcd972
+- [x] 2.3 Build — 1fcd972
+- [x] 2.4 Próbki powstają — 1fcd972
+- [x] 2.5 Renderer nie czyta już Noto — 1fcd972
 
 #### Manual
 
@@ -458,10 +458,10 @@ Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera �
 
 #### Automated
 
-- [ ] 3.1 Wszystkie testy
-- [ ] 3.2 Typy i lint
-- [ ] 3.3 Próbki
-- [ ] 3.4 E2E tygodnia
+- [x] 3.1 Wszystkie testy
+- [x] 3.2 Typy i lint
+- [x] 3.3 Próbki
+- [x] 3.4 E2E tygodnia
 
 #### Manual
 
