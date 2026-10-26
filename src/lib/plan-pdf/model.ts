@@ -40,14 +40,11 @@ export type PrintDayStatus = "accepted" | "draft" | "empty";
  */
 export const DRAFT_TAG = "SZKIC";
 
-/** What an empty day says instead of activities. */
+/** What an empty day says instead of activities on a week's sheets. The grid gives it lines to write on instead. */
 export const EMPTY_DAY_NOTE = "Brak planu na ten dzień";
 
 /** Appended to a heading repeated on the page a day or a week continues onto. */
 export const CONTINUED_MARK = "(cd.)";
-
-export const PROMPT_PREFIX = "Hasło: ";
-export const THEME_PREFIX = "Temat: ";
 
 /** The buttons' visible text, which is also their accessible name. */
 export const PDF_BUTTON_LABELS: Readonly<Record<WeekPdfLayoutKind, string>> = {
@@ -261,13 +258,6 @@ export function buildPrintMonth(month: string, plans: Readonly<Partial<Record<st
     });
   }
   return { title: `Plan miesiąca — ${monthName}`, eyebrow: MONTH_EYEBROW, sheetTitle: capitalize(monthName), rows };
-}
-
-/** `2026-09-14` as `14 września` - a grid cell's heading. */
-export function gridDayHeading(date: string): string {
-  return new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long", timeZone: "UTC" }).format(
-    new Date(`${date}T00:00:00Z`),
-  );
 }
 
 /** `plan-miesiaca-2026-09-siatka.pdf`, `plan-miesiaca-2026-09-tygodniami.pdf`. */

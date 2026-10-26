@@ -458,10 +458,10 @@ Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera �
 
 #### Automated
 
-- [x] 3.1 Wszystkie testy
-- [x] 3.2 Typy i lint
-- [x] 3.3 Próbki
-- [x] 3.4 E2E tygodnia
+- [x] 3.1 Wszystkie testy — d082150
+- [x] 3.2 Typy i lint — d082150
+- [x] 3.3 Próbki — d082150
+- [x] 3.4 E2E tygodnia — d082150
 
 #### Manual
 
@@ -473,10 +473,10 @@ Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera �
 
 #### Automated
 
-- [ ] 4.1 Wszystkie testy
-- [ ] 4.2 Typy i lint
-- [ ] 4.3 Próbki
-- [ ] 4.4 E2E miesiąca
+- [x] 4.1 Wszystkie testy
+- [x] 4.2 Typy i lint
+- [x] 4.3 Próbki
+- [x] 4.4 E2E miesiąca
 
 #### Manual
 

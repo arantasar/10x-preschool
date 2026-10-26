@@ -1,10 +1,8 @@
 import { WEEK_DAYS } from "@/lib/day-plan-limits";
 import {
   A4_LANDSCAPE,
-  draftBox,
   flowText,
   lineHeight,
-  LINE_HEIGHT,
   placeLines,
   totalHeight,
   type FlowLine,
@@ -17,22 +15,27 @@ import {
   DRAFT_TAG,
   GRID_LEGEND_ITEMS,
   GRID_WEEKDAYS,
-  gridDayHeading,
-  PROMPT_PREFIX,
-  THEME_PREFIX,
   TRUNCATION_MARK,
   type PrintDay,
+  type PrintDayStatus,
   type PrintDocument,
 } from "@/lib/plan-pdf/model";
+import { chip, sheetFrame, tag, textItem } from "@/lib/plan-pdf/sheet";
 
 /**
- * The month on one landscape sheet (`S-14`): a row per week, a column per
- * working day, and in each cell only what fits a glance - date, draft label,
- * hasło, theme. No activities, not even their titles: three titles in a cell a
- * fifth of a page wide cut every full day (Janusz, 2026-09-27, after looking at
- * the printed grid). The activities are what the "tygodniami" layout is for.
+ * The month on one landscape sheet (`S-14`, drawn as the design's PNG 20 since
+ * `S-29`): a row per week, a column per working day, and in each cell only what
+ * fits a glance - the date's number, the hasło in a chip, the theme. No
+ * activities, not even their titles: three titles in a cell a fifth of a page
+ * wide cut every full day (Janusz, 2026-09-27, after looking at the printed
+ * grid). The activities are what the "tygodniami" layout is for.
  *
- * Always exactly one page. The text size is the largest candidate at which
+ * A cell says its state by its outline and by text, never by colour alone, so
+ * a b/w printer keeps it: a solid frame is accepted, a dashed one with „SZKIC”
+ * is a draft, a pale one with two writing lines is a day without a plan. A day
+ * of the neighbouring month is hatched and says nothing.
+ *
+ * Always exactly one page. The theme's size is the largest candidate at which
  * every cell fits; at the 7 pt floor a cell that still does not fit is cut, and
  * its last visible line ends with {@link TRUNCATION_MARK}. The cut is measured
  * with the same {@link Measure} the renderer draws with, so the mark never
@@ -43,17 +46,24 @@ import {
  * harmless whichever side loads first.
  */
 
-/** Candidate body sizes, largest first. 7 pt is the legibility floor, as for the week. */
-export const GRID_SIZES: readonly number[] = [10, 9.5, 9, 8.5, 8, 7.5, 7];
+/** Candidate theme sizes, largest first. 7 pt is the legibility floor, as for the week. */
+export const GRID_SIZES: readonly number[] = [9, 8.5, 8, 7.5, 7];
 
-const GRID_TITLE_SIZE = 13;
-const GRID_WEEKDAY_SIZE = 9;
-const GRID_LEGEND_SIZE = 8;
-const GRID_COLUMN_GAP = 8;
+const GRID_WEEKDAY_SIZE = 8.25;
+const GRID_WEEKDAY_TRACKING = 0.9;
+const GRID_COLUMN_GAP = 7.5;
 const GRID_ROW_GAP = 6;
-const GRID_SECTION_GAP = 8;
-/** Room between a cell's edge - and its dashed frame - and its text. */
-export const GRID_CELL_PADDING = 4;
+const GRID_HEADER_GAP = 6;
+const GRID_NUMBER_SIZE = 15;
+const GRID_CHIP_SIZE = 7.5;
+const GRID_TAG_SIZE = 7;
+const GRID_RADIUS = 7.5;
+const GRID_NOTE_LINE_GAP = 6.75;
+const LEGEND_SAMPLE_WIDTH = 13.5;
+const LEGEND_SAMPLE_HEIGHT = 8.25;
+const LEGEND_GAP = 13.5;
+/** Room between a cell's edge and its text. */
+export const GRID_CELL_PADDING = 7;
 
 /** One slot of the grid, as a rectangle in PDF points (origin bottom-left). */
 export interface GridCell {
@@ -67,27 +77,27 @@ export interface GridCell {
 }
 
 interface GridFrame {
-  readonly titleLines: FlowLine[];
-  readonly headersTop: number;
-  readonly legendLines: FlowLine[];
-  readonly legendTop: number;
+  readonly frameItems: LayoutItem[];
+  readonly headersBaseline: number;
+  readonly footerBaseline: number;
+  readonly footerSize: number;
+  readonly bodyTop: number;
+  readonly bodyBottom: number;
   readonly cells: GridCell[];
 }
 
 function gridFrame(doc: PrintDocument, measure: Measure): GridFrame {
   const spec = A4_LANDSCAPE;
   const contentWidth = spec.width - 2 * spec.margin;
-  const top = spec.height - spec.margin;
+  const frame = sheetFrame(
+    spec,
+    { eyebrow: doc.eyebrow, title: doc.sheetTitle, note: null, continued: false, stacked: true, footerRule: false },
+    measure,
+  );
 
-  const titleLines = flowText(doc.title, contentWidth, GRID_TITLE_SIZE, "bold", measure);
-  const headersTop = top - totalHeight(titleLines) - GRID_SECTION_GAP;
-  const gridTop = headersTop - GRID_WEEKDAY_SIZE * LINE_HEIGHT - GRID_ROW_GAP;
-
-  const legend = GRID_LEGEND_ITEMS.map((item) => item.label).join(" · ");
-  const legendLines = flowText(legend, contentWidth, GRID_LEGEND_SIZE, "regular", measure);
-  // Lifted by a padding so the legend's descenders stay inside the margin.
-  const legendTop = spec.margin + GRID_CELL_PADDING + totalHeight(legendLines);
-  const gridBottom = legendTop + GRID_SECTION_GAP;
+  const headersBaseline = frame.contentTop - GRID_WEEKDAY_SIZE;
+  const gridTop = headersBaseline - GRID_WEEKDAY_SIZE * 0.3 - GRID_HEADER_GAP;
+  const gridBottom = frame.contentBottom;
 
   const rowCount = Math.max(1, doc.rows.length);
   const width = (contentWidth - (WEEK_DAYS - 1) * GRID_COLUMN_GAP) / WEEK_DAYS;
@@ -104,7 +114,15 @@ function gridFrame(doc: PrintDocument, measure: Measure): GridFrame {
       day,
     })),
   );
-  return { titleLines, headersTop, legendLines, legendTop, cells };
+  return {
+    frameItems: frame.items,
+    headersBaseline,
+    footerBaseline: frame.footerBaseline,
+    footerSize: frame.footerSize,
+    bodyTop: frame.contentTop,
+    bodyBottom: frame.contentBottom,
+    cells,
+  };
 }
 
 /** Every slot's rectangle - the layout's own geometry, exported so a test can check what lands inside it. */
@@ -112,21 +130,52 @@ export function monthGridCells(doc: PrintDocument, measure: Measure): GridCell[]
   return gridFrame(doc, measure).cells;
 }
 
-function cellLines(day: PrintDay, width: number, size: number, measure: Measure): FlowLine[] {
-  const lines = flowText(gridDayHeading(day.date), width, size, "bold", measure);
+/** The outline that says a cell's state. */
+function cellOutline(status: PrintDayStatus, x: number, y: number, width: number, height: number, radius: number) {
+  const outline: LayoutItem = {
+    kind: "box",
+    x,
+    y,
+    width,
+    height,
+    radius,
+    stroke: status === "accepted" ? "frame" : status === "draft" ? "draft" : "soft",
+    strokeWidth: status === "draft" ? 0.9 : 0.75,
+    dashed: status === "draft",
+  };
+  return outline;
+}
+
+/** The cell's top row: the number, then the chip, and the draft tag at the right edge. */
+function cellTopRow(day: PrintDay, cell: GridCell, measure: Measure): LayoutItem[] {
+  const left = cell.x + GRID_CELL_PADDING;
+  const right = cell.x + cell.width - GRID_CELL_PADDING;
+  const baseline = cell.y + cell.height - GRID_CELL_PADDING - GRID_NUMBER_SIZE;
+  const gap = 4.5;
+  const items: LayoutItem[] = [
+    textItem(left, baseline, day.dayNumber, GRID_NUMBER_SIZE, "serif", day.status === "empty" ? "faint" : "ink"),
+  ];
+  let chipRight = right;
   if (day.status === "draft") {
-    lines.push(...flowText(DRAFT_TAG, width, size, "bold", measure));
-  }
-  if (day.emptyNote !== null) {
-    lines.push(...flowText(day.emptyNote, width, size, "regular", measure));
+    const draft = tag(DRAFT_TAG, GRID_TAG_SIZE, measure);
+    items.push(...draft.draw(right - draft.width, baseline - GRID_TAG_SIZE * 0.4));
+    chipRight = right - draft.width - gap;
   }
   if (day.prompt !== null) {
-    lines.push(...flowText(`${PROMPT_PREFIX}${day.prompt}`, width, size, "regular", measure, size * 0.3));
+    const chipLeft = left + measure(day.dayNumber, GRID_NUMBER_SIZE, "serif") + gap;
+    const pill = chip(day.prompt, chipRight - chipLeft, GRID_CHIP_SIZE, measure);
+    if (pill !== null) {
+      items.push(...pill.draw(chipLeft, baseline - GRID_CHIP_SIZE * 0.42));
+    }
   }
-  if (day.theme !== null) {
-    lines.push(...flowText(`${THEME_PREFIX}${day.theme}`, width, size, "regular", measure));
-  }
-  return lines;
+  return items;
+}
+
+/** Height of a cell's top row, from the cell's top edge to where the theme may start. */
+const TOP_ROW = GRID_CELL_PADDING + GRID_NUMBER_SIZE * 1.3;
+
+function themeLines(day: PrintDay, width: number, size: number, measure: Measure): FlowLine[] {
+  return day.theme === null ? [] : flowText(day.theme, width, size, "regular", measure);
 }
 
 /**
@@ -151,28 +200,51 @@ function truncateLines(lines: readonly FlowLine[], available: number, width: num
   const kept: FlowLine[] = [];
   let height = 0;
   for (const line of lines) {
-    // At least one line, so an absurdly short cell still says whose day it is.
-    if (kept.length > 0 && height + lineHeight(line) > available) {
+    if (height + lineHeight(line) > available) {
       break;
     }
     kept.push(line);
     height += lineHeight(line);
   }
-  if (kept.length < lines.length) {
+  if (kept.length < lines.length && kept.length > 0) {
     const last = kept[kept.length - 1];
     kept[kept.length - 1] = { ...last, text: withTruncationMark(last.text, width, last.size, last.face, measure) };
   }
   return kept;
 }
 
+/** Two pale lines at the bottom of an empty day's cell, to write on. */
+function noteLines(cell: GridCell): LayoutItem[] {
+  const x1 = cell.x + GRID_CELL_PADDING;
+  const x2 = cell.x + cell.width - GRID_CELL_PADDING;
+  return [0, 1].map((index) => {
+    const y = cell.y + GRID_CELL_PADDING + index * GRID_NOTE_LINE_GAP;
+    return { kind: "rule", x1, y1: y, x2, y2: y, color: "soft", width: 0.75 } satisfies LayoutItem;
+  });
+}
+
+function legend(frame: GridFrame, measure: Measure): LayoutItem[] {
+  const items: LayoutItem[] = [];
+  const size = frame.footerSize;
+  let x = A4_LANDSCAPE.margin;
+  for (const { status, label } of GRID_LEGEND_ITEMS) {
+    items.push(cellOutline(status, x, frame.footerBaseline - 1, LEGEND_SAMPLE_WIDTH, LEGEND_SAMPLE_HEIGHT, 2.25));
+    x += LEGEND_SAMPLE_WIDTH + 4.5;
+    items.push(textItem(x, frame.footerBaseline, label, size, "regular", "muted"));
+    x += measure(label, size, "regular") + LEGEND_GAP;
+  }
+  return items;
+}
+
 export function layoutMonthGrid(doc: PrintDocument, measure: Measure): PdfLayout {
   const spec = A4_LANDSCAPE;
-  const { titleLines, headersTop, legendLines, legendTop, cells } = gridFrame(doc, measure);
+  const frame = gridFrame(doc, measure);
+  const { cells } = frame;
   const textWidth = (cell: GridCell) => cell.width - 2 * GRID_CELL_PADDING;
-  const available = (cell: GridCell) => cell.height - 2 * GRID_CELL_PADDING;
+  const available = (cell: GridCell) => cell.height - TOP_ROW - GRID_CELL_PADDING;
 
   const linesAt = (size: number) =>
-    cells.map((cell) => (cell.day === null ? [] : cellLines(cell.day, textWidth(cell), size, measure)));
+    cells.map((cell) => (cell.day === null ? [] : themeLines(cell.day, textWidth(cell), size, measure)));
   const fitsAt = (lines: FlowLine[][]) =>
     lines.every((cellText, index) => totalHeight(cellText) <= available(cells[index]));
 
@@ -188,29 +260,42 @@ export function layoutMonthGrid(doc: PrintDocument, measure: Measure): PdfLayout
     }
   }
 
-  const items: LayoutItem[] = [...placeLines(titleLines, spec.margin, spec.height - spec.margin)];
+  const items: LayoutItem[] = [...frame.frameItems];
   // The first row's cells give the columns; every row has all five slots.
   cells.slice(0, WEEK_DAYS).forEach((cell, column) => {
-    const weekday = flowText(GRID_WEEKDAYS[column], textWidth(cell), GRID_WEEKDAY_SIZE, "bold", measure);
-    items.push(...placeLines(weekday, cell.x + GRID_CELL_PADDING, headersTop));
+    const weekday = GRID_WEEKDAYS[column].toLocaleUpperCase("pl-PL");
+    items.push(
+      textItem(
+        cell.x + GRID_CELL_PADDING,
+        frame.headersBaseline,
+        weekday,
+        GRID_WEEKDAY_SIZE,
+        "bold",
+        "muted",
+        GRID_WEEKDAY_TRACKING,
+      ),
+    );
   });
   cells.forEach((cell, index) => {
-    if (cell.day === null) {
+    const { day } = cell;
+    if (day === null) {
+      items.push({ kind: "hatch", x: cell.x, y: cell.y, width: cell.width, height: cell.height });
+      return;
+    }
+    items.push(cellOutline(day.status, cell.x, cell.y, cell.width, cell.height, GRID_RADIUS));
+    items.push(...cellTopRow(day, cell, measure));
+    if (day.status === "empty") {
+      items.push(...noteLines(cell));
       return;
     }
     const cellText = truncateLines(lines[index], available(cell), textWidth(cell), measure);
-    items.push(...placeLines(cellText, cell.x + GRID_CELL_PADDING, cell.y + cell.height - GRID_CELL_PADDING));
-    if (cell.day.status === "draft") {
-      // The whole cell, not the height of its text: the grid stays a grid of
-      // equal rectangles, and a frame is recognisable at a glance.
-      items.push(draftBox(cell.x, cell.y, cell.width, cell.height));
-    }
+    items.push(...placeLines(cellText, cell.x + GRID_CELL_PADDING, cell.y + cell.height - TOP_ROW));
   });
-  items.push(...placeLines(legendLines, spec.margin, legendTop));
+  items.push(...legend(frame, measure));
 
   return {
     kind: "month-grid",
     bodySize: size,
-    pages: [{ spec, items, body: { top: spec.height - spec.margin, bottom: spec.margin } }],
+    pages: [{ spec, items, body: { top: frame.bodyTop, bottom: frame.bodyBottom } }],
   };
 }

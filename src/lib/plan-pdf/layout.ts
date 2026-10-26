@@ -491,11 +491,6 @@ export function placeLines(lines: readonly FlowLine[], x: number, top: number): 
   return items;
 }
 
-/** The dashed outline of a draft - square-cornered, as the layouts have drawn it since `S-13`. */
-export function draftBox(x: number, y: number, width: number, height: number): LayoutItem {
-  return { kind: "box", x, y, width, height, radius: 0, stroke: "draft", strokeWidth: 1, dashed: true };
-}
-
 // ---------------------------------------------------------------------------
 // The sheets
 // ---------------------------------------------------------------------------
