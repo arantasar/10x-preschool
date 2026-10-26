@@ -487,10 +487,10 @@ Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera �
 
 #### Automated
 
-- [x] 5.1 Wszystkie testy
-- [x] 5.2 Lint i build
-- [x] 5.3 E2E druku
-- [x] 5.4 Noto zniknęło z repo
+- [x] 5.1 Wszystkie testy — 43164f3
+- [x] 5.2 Lint i build — 43164f3
+- [x] 5.3 E2E druku — 43164f3
+- [x] 5.4 Noto zniknęło z repo — 43164f3
 
 #### Manual
 
