@@ -473,10 +473,10 @@ Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera �
 
 #### Automated
 
-- [x] 4.1 Wszystkie testy
-- [x] 4.2 Typy i lint
-- [x] 4.3 Próbki
-- [x] 4.4 E2E miesiąca
+- [x] 4.1 Wszystkie testy — 1dd7694
+- [x] 4.2 Typy i lint — 1dd7694
+- [x] 4.3 Próbki — 1dd7694
+- [x] 4.4 E2E miesiąca — 1dd7694
 
 #### Manual
 
@@ -487,10 +487,10 @@ Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera �
 
 #### Automated
 
-- [ ] 5.1 Wszystkie testy
-- [ ] 5.2 Lint i build
-- [ ] 5.3 E2E druku
-- [ ] 5.4 Noto zniknęło z repo
+- [x] 5.1 Wszystkie testy
+- [x] 5.2 Lint i build
+- [x] 5.3 E2E druku
+- [x] 5.4 Noto zniknęło z repo
 
 #### Manual
 
