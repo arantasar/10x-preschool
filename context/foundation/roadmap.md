@@ -3,7 +3,7 @@ project: 10xPreschool
 version: 3
 status: draft
 created: 2026-10-01
-updated: 2026-10-19
+updated: 2026-10-28
 prd_version: 3
 main_goal: quality
 top_blocker: external
@@ -73,7 +73,7 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-21 | fair-use-limit             | generować jak dziś, a przy nadużyciu dostać komunikat z terminem powrotu i kontaktem                     | S-19                                             | FR-027, FR-038                 | done     |
 | S-22 | founder-price-signup       | zobaczyć cennik Darmowy/Basic z tabelą porównania planów i dowiedzieć się, że cenę założycielską daje konto założone przed 1 lutego 2027 | F-02, S-16, S-17, S-18, S-19, S-20, S-21         | FR-028, FR-036, US-05          | done     |
 | S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | done     |
-| S-29 | print-redesign             | drukować plan tygodnia i miesiąca w układzie i barwach aplikacji, nie w czerni i bieli                   | —                                                | —                              | ready    |
+| S-29 | print-redesign             | drukować plan tygodnia i miesiąca w układzie i barwach aplikacji, nie w czerni i bieli                   | —                                                | —                              | done     |
 | S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21, S-28                                       | FR-030                         | done     |
 | S-24 | existing-accounts-gift     | jako konto sprzed płatności (także testerka) dowiedzieć się o nowych zasadach i dostać prezent, zanim limit mnie dotknie | S-23                                | FR-036                         | blocked  |
 | S-25 | basic-subscription         | wykupić Basic jako subskrypcję kartą, zarządzać nią, anulować ją i w 14 dni dostać zwrot                 | F-02, S-18, S-22, S-23, Krok 9, konto operatora  | FR-032, FR-034, FR-035, FR-039, FR-024 | blocked  |
@@ -251,7 +251,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Pakiet dizajnu obejmuje dużo więcej (zmiana nazwy na Temio, nowe ekrany, `PaywallDialog` „od drugiego tygodnia”, który trzeba zestawić z regułą planu darmowego z `S-27`). Ta pozycja bierze wyłącznie wydruki; tabela porównania jest w `S-22`, a reszty pakietu nie ma jeszcze w roadmapie. Owner: Janusz. Block: nie.
 - **Risk:** Wydruk w kolorze musi pozostać czytelny na drukarce czarno-białej (przedszkola drukują głównie w szarości) i mieścić się na A4 poziomo jak dziś — zmiana wyglądu nie może zgubić treści aktywności ani dat. Obecne wydruki PDF mają swoje testy i e2e; nowe komponenty zastępują je, a nie stoją obok.
-- **Status:** ready
+- **Status:** done
 
 ### S-23: Okres próbny i stan planu konta (krok 7)
 
@@ -448,3 +448,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-30: Konto założone przed startem płatności dostaje pełny Basic do 31.01.2027 włącznie, a nie tylko na miesiąc; konto założone po starcie płatności — na miesiąc, jak dziś. Karta w `/ustawienia` od pierwszego dnia pokazuje prawdziwą datę.** — Archived 2026-10-18 → `context/archive/2026-10-18-trial-until-launch/`. Lesson: —.
 - **S-31: Nauczycielka generuje plany najwyżej N tygodni naprzód od dziś; próba wygenerowania dalszego dnia mówi po polsku, od kiedy będzie to możliwe. Plany już zapisane zostają bez zmian, a edycja, zatwierdzanie, usuwanie i druk nie podlegają limitowi.** — Archived 2026-10-18 → `context/archive/2026-10-18-planning-horizon/`. Lesson: „Zmiana renderu strony wymaga inwentarza specs E2E”.
 - **S-22: Odwiedzający albo zalogowana nauczycielka widzi cennik planów Darmowy i Basic z cenami, klika „Zarezerwuj cenę założycielską", podaje e-mail i dostaje potwierdzenie: płatności jeszcze nie działają, jest zapisana, dostanie wiadomość; zapisy kont aktywnych są policzalne osobno od anonimowych.** — Archived 2026-10-19 → `context/archive/2026-10-18-founder-price-signup/`. Zmiana zakresu 2026-10-18: bez listy zapisów — cenę założycielską ma każde konto założone przed 1 lutego 2027 (FR-029 wycofany, FR-035 przepisany). Lesson: —.
+- **S-29: Nauczycielka drukuje plan tygodnia i miesiąca w układzie i kolorystyce aplikacji — nie w czerni i bieli — z tą samą treścią co dziś: daty, tematy i aktywności.** — Archived 2026-10-28 → `context/archive/2026-10-25-print-redesign/`. Lesson: —.
