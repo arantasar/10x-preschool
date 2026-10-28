@@ -97,4 +97,4 @@ Automated checks re-run during the review: `npm test` (915), `npm run lint`, `np
 - **Location**: plan.md Progress 1.4, 2.6–2.7, 3.5–3.7, 4.5–4.6, 5.5–5.7
 - **Detail**: No manual row is ticked. The footer wording (1.4) and the black-and-white print (5.5) matter most. The hatch `#F4F1E8` and the empty-day outline `#E2DBC8` are very pale.
 - **Fix**: Do 1.4 and 5.5 before the merge.
-- **Decision**: PENDING (human action; cannot be done by the agent)
+- **Decision**: FIXED — Janusz ran the manual checks and confirmed them on 2026-10-28

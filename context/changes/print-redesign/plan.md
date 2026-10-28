@@ -447,7 +447,7 @@ Decyzje podjęte przy implementacji, których plan nie opisywał:
 
 #### Manual
 
-- [ ] 1.4 Brzmienie czterech wariantów stopki zaakceptowane
+- [x] 1.4 Brzmienie czterech wariantów stopki zaakceptowane — potwierdzone przez Janusza 2026-10-28
 
 ### Phase 2: Fonty marki i słownik rysowania
 
@@ -461,8 +461,8 @@ Decyzje podjęte przy implementacji, których plan nie opisywał:
 
 #### Manual
 
-- [ ] 2.6 Polskie znaki, obrysy i znak temio poprawne w próbce
-- [ ] 2.7 Przycisk PDF nadal pobiera plik
+- [x] 2.6 Polskie znaki, obrysy i znak temio poprawne w próbce — potwierdzone przez Janusza 2026-10-28
+- [x] 2.7 Przycisk PDF nadal pobiera plik — potwierdzone przez Janusza 2026-10-28
 
 ### Phase 3: Kartki tygodniowe
 
@@ -475,9 +475,9 @@ Decyzje podjęte przy implementacji, których plan nie opisywał:
 
 #### Manual
 
-- [ ] 3.5 Tydzień na stronie zgodny z PNG 21
-- [ ] 3.6 Przepełnienie: nic nie zginęło
-- [ ] 3.7 Dzień na stronę i miesiąc tygodniami spójne
+- [x] 3.5 Tydzień na stronie zgodny z PNG 21 — potwierdzone przez Janusza 2026-10-28
+- [x] 3.6 Przepełnienie: nic nie zginęło — potwierdzone przez Janusza 2026-10-28
+- [x] 3.7 Dzień na stronę i miesiąc tygodniami spójne — potwierdzone przez Janusza 2026-10-28
 
 ### Phase 4: Siatka miesiąca
 
@@ -490,8 +490,8 @@ Decyzje podjęte przy implementacji, których plan nie opisywał:
 
 #### Manual
 
-- [ ] 4.5 Siatka zgodna z PNG 20
-- [ ] 4.6 Najdłuższy miesiąc na jednej kartce
+- [x] 4.5 Siatka zgodna z PNG 20 — potwierdzone przez Janusza 2026-10-28
+- [x] 4.6 Najdłuższy miesiąc na jednej kartce — potwierdzone przez Janusza 2026-10-28
 
 ### Phase 5: Domknięcie i papier
 
@@ -504,6 +504,6 @@ Decyzje podjęte przy implementacji, których plan nie opisywał:
 
 #### Manual
 
-- [ ] 5.5 Wydruk na drukarce czarno-białej
-- [ ] 5.6 Wygląd identyczny w Chrome, Safari i Podglądzie
-- [ ] 5.7 Rozmiar pierwszego pobrania w normie
+- [x] 5.5 Wydruk na drukarce czarno-białej — potwierdzone przez Janusza 2026-10-28
+- [x] 5.6 Wygląd identyczny w Chrome, Safari i Podglądzie — potwierdzone przez Janusza 2026-10-28
+- [x] 5.7 Rozmiar pierwszego pobrania w normie — potwierdzone przez Janusza 2026-10-28
