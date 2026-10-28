@@ -1,9 +1,9 @@
 import {
-  formatAcceptedAt,
+  formatAcceptedDay,
   formatDateRange,
   formatMonth,
-  formatPlanDate,
   formatWeekRange,
+  weekdayLabel,
   weeksOfMonth,
   workingDaysOf,
   workingDaysOfMonth,
@@ -33,17 +33,18 @@ export type PdfLayoutKind = "day-per-page" | "week-per-page" | "month-grid";
 
 export type PrintDayStatus = "accepted" | "draft" | "empty";
 
-/** The label beside a day that has a plan but no acceptance. Text, not colour - it has to survive a b/w printer. */
-export const DRAFT_LABEL = "SZKIC — niezatwierdzony";
+/**
+ * The tag beside a day that has a plan but no acceptance, in every layout. Text,
+ * not colour - it has to survive a b/w printer. What it means is said once per
+ * sheet: in a week's footer note, in the grid's legend.
+ */
+export const DRAFT_TAG = "SZKIC";
 
-/** What an empty day says instead of activities. */
+/** What an empty day says instead of activities on a week's sheets. The grid gives it lines to write on instead. */
 export const EMPTY_DAY_NOTE = "Brak planu na ten dzień";
 
 /** Appended to a heading repeated on the page a day or a week continues onto. */
 export const CONTINUED_MARK = "(cd.)";
-
-export const PROMPT_PREFIX = "Hasło: ";
-export const THEME_PREFIX = "Temat: ";
 
 /** The buttons' visible text, which is also their accessible name. */
 export const PDF_BUTTON_LABELS: Readonly<Record<WeekPdfLayoutKind, string>> = {
@@ -72,11 +73,21 @@ const MONTH_FILE_SUFFIXES: Readonly<Record<MonthPdfLayoutKind, string>> = {
   "week-per-page": "tygodniami",
 };
 
-/** A grid cell's draft label - {@link DRAFT_LABEL} does not fit a fifth of a page. The legend explains it. */
-export const DRAFT_SHORT_LABEL = "SZKIC";
+/** The month grid's legend: one sample frame per state, with what it means. */
+export const GRID_LEGEND_ITEMS: readonly { readonly status: PrintDayStatus; readonly label: string }[] = [
+  { status: "accepted", label: "zatwierdzony" },
+  { status: "draft", label: `${DRAFT_TAG} — plan niezatwierdzony` },
+  { status: "empty", label: "bez planu — miejsce na notatki" },
+];
 
-/** The one line under the month grid that says what a dashed frame means. */
-export const GRID_LEGEND = "Przerywana ramka i „SZKIC” — plan niezatwierdzony";
+/** Above a week sheet's title, beside it on the week sheet. */
+export const WEEK_EYEBROW = "PLAN TYGODNIA";
+export const MONTH_EYEBROW = "PLAN MIESIĄCA";
+
+/** Followed by a blank line to write the group's name on - the app does not know it. */
+export const GROUP_LABEL = "Grupa:";
+export const BRAND_NAME = "temio";
+export const BRAND_URL = "temio.pl";
 
 /** Ends the last visible line of a grid cell whose text did not fit. */
 export const TRUNCATION_MARK = "…";
@@ -91,11 +102,13 @@ export interface PrintActivity {
 
 export interface PrintDay {
   readonly date: string;
-  /** `formatPlanDate(date)`. */
-  readonly heading: string;
+  /** `14` - the big serif number a sheet heads the day with. */
+  readonly dayNumber: string;
+  /** `Poniedziałek`; the layout sets it in capitals. */
+  readonly weekday: string;
   readonly status: PrintDayStatus;
-  /** {@link DRAFT_LABEL}, `Zatwierdzono …`, or `null` for an empty day. */
-  readonly statusLabel: string | null;
+  /** When the plan was accepted - the footer note's "ostatnio"; `null` for a draft or an empty day. */
+  readonly acceptedAt: string | null;
   /** The hasło. */
   readonly prompt: string | null;
   /** `null` is a valid state - a day planned on its own has no theme - and prints as nothing. */
@@ -107,31 +120,63 @@ export interface PrintDay {
 
 export interface PrintWeekRow {
   readonly weekStart: string;
-  /** Page heading in the week-per-page layout; for a printed week it is {@link PrintDocument.title}. */
+  /** The sheet title of the row's pages: its own days' range, `14 – 18 września 2026`. */
   readonly heading: string;
+  /** {@link WEEK_EYEBROW}, or `PLAN MIESIĄCA · WRZESIEŃ 2026` for a week of a month. */
+  readonly eyebrow: string;
+  /** The row's footer: whether what is on paper is final ({@link rowNote}). */
+  readonly note: string | null;
   /** `WEEK_DAYS` slots in calendar order; `null` is a day outside the document - no heading, no label, no frame. */
   readonly slots: readonly (PrintDay | null)[];
 }
 
 export interface PrintDocument {
-  /** `Plan tygodnia — 14–18 września 2026`. */
+  /** `Plan tygodnia — 14–18 września 2026` - the PDF's metadata title. */
   readonly title: string;
+  /** {@link WEEK_EYEBROW} / {@link MONTH_EYEBROW}. */
+  readonly eyebrow: string;
+  /** What the sheet itself is titled: `14 – 18 września 2026`, `Wrzesień 2026`. */
+  readonly sheetTitle: string;
   readonly rows: readonly PrintWeekRow[];
 }
 
-/** `Zatwierdzono 23 września, 11:31`. */
-export function acceptedLabel(acceptedAt: string): string {
-  return `Zatwierdzono ${formatAcceptedAt(acceptedAt)}`;
+function capitalize(text: string): string {
+  return text.charAt(0).toLocaleUpperCase("pl-PL") + text.slice(1);
+}
+
+/**
+ * The footer of a week's sheet: whether what is on paper is final.
+ *
+ * Said once for the row rather than as a timestamp beside every day - on paper
+ * what matters is "can I use this", not the hour it was accepted. `null` when no
+ * day of the row has a plan: there is nothing to be final about.
+ */
+export function rowNote(days: readonly PrintDay[]): string | null {
+  const planned = days.filter((day) => day.status !== "empty");
+  if (planned.length === 0) {
+    return null;
+  }
+  if (planned.some((day) => day.status === "draft")) {
+    return `Dni oznaczone „${DRAFT_TAG}” czekają na zatwierdzenie`;
+  }
+  const latest = planned
+    .map((day) => day.acceptedAt)
+    .filter((acceptedAt): acceptedAt is string => acceptedAt !== null)
+    .reduce((a, b) => (Date.parse(b) > Date.parse(a) ? b : a));
+  const subject = planned.length === days.length ? "Wszystkie dni" : "Zaplanowane dni";
+  return `${subject} zatwierdzone — ostatnio ${formatAcceptedDay(latest)}`;
 }
 
 function printDay(date: string, view: DayPlanView | undefined): PrintDay {
-  const heading = formatPlanDate(date);
+  const dayNumber = String(Number(date.slice(8, 10)));
+  const weekday = capitalize(weekdayLabel(date));
   if (!view) {
     return {
       date,
-      heading,
+      dayNumber,
+      weekday,
       status: "empty",
-      statusLabel: null,
+      acceptedAt: null,
       prompt: null,
       theme: null,
       activities: [],
@@ -141,9 +186,10 @@ function printDay(date: string, view: DayPlanView | undefined): PrintDay {
   const acceptedAt = view.plan.accepted_at;
   return {
     date,
-    heading,
+    dayNumber,
+    weekday,
     status: acceptedAt === null ? "draft" : "accepted",
-    statusLabel: acceptedAt === null ? DRAFT_LABEL : acceptedLabel(acceptedAt),
+    acceptedAt,
     prompt: view.plan.prompt,
     theme: view.plan.theme,
     activities: view.activities.map(({ title, description }) => ({ title, description })),
@@ -164,10 +210,13 @@ export function buildPrintWeek(
   days: readonly string[],
   plans: Readonly<Partial<Record<string, DayPlanView>>>,
 ): PrintDocument {
-  const title = `Plan tygodnia — ${formatWeekRange(weekStart)}`;
+  const range = formatWeekRange(weekStart);
+  const slots = [...days].sort().map((date) => printDay(date, plans[date]));
   return {
-    title,
-    rows: [{ weekStart, heading: title, slots: [...days].sort().map((date) => printDay(date, plans[date])) }],
+    title: `Plan tygodnia — ${range}`,
+    eyebrow: WEEK_EYEBROW,
+    sheetTitle: range,
+    rows: [{ weekStart, heading: range, eyebrow: WEEK_EYEBROW, note: rowNote(slots), slots }],
   };
 }
 
@@ -184,7 +233,7 @@ export function printDays(doc: PrintDocument): PrintDay[] {
  * are `null`, not empty days: they print as nothing, because saying "Brak planu"
  * about 31 August on September's plan would be a claim about the wrong month.
  * Keys of `plans` outside the month are ignored for the same reason, and a row's
- * heading names only the month's own days in it.
+ * heading and note speak only of the month's own days in it.
  *
  * Rows come from {@link weeksOfMonth} minus the ones with no slot at all: a month
  * that starts on a Saturday or Sunday opens with the previous month's last week,
@@ -192,26 +241,23 @@ export function printDays(doc: PrintDocument): PrintDay[] {
  * grid row) on.
  */
 export function buildPrintMonth(month: string, plans: Readonly<Partial<Record<string, DayPlanView>>>): PrintDocument {
-  const title = `Plan miesiąca — ${formatMonth(month)}`;
+  const monthName = formatMonth(month);
+  const rowEyebrow = `${MONTH_EYEBROW} · ${monthName.toLocaleUpperCase("pl-PL")}`;
   const inMonth = new Set(workingDaysOfMonth(month));
   const rows: PrintWeekRow[] = [];
   for (const weekStart of weeksOfMonth(month)) {
     const own = workingDaysOf(weekStart).filter((date) => inMonth.has(date));
     if (own.length === 0) continue;
+    const slots = workingDaysOf(weekStart).map((date) => (inMonth.has(date) ? printDay(date, plans[date]) : null));
     rows.push({
       weekStart,
-      heading: `${title} · ${formatDateRange(own[0], own[own.length - 1])}`,
-      slots: workingDaysOf(weekStart).map((date) => (inMonth.has(date) ? printDay(date, plans[date]) : null)),
+      heading: formatDateRange(own[0], own[own.length - 1]),
+      eyebrow: rowEyebrow,
+      note: rowNote(slots.filter((slot): slot is PrintDay => slot !== null)),
+      slots,
     });
   }
-  return { title, rows };
-}
-
-/** `2026-09-14` as `14 września` - a grid cell's heading. */
-export function gridDayHeading(date: string): string {
-  return new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long", timeZone: "UTC" }).format(
-    new Date(`${date}T00:00:00Z`),
-  );
+  return { title: `Plan miesiąca — ${monthName}`, eyebrow: MONTH_EYEBROW, sheetTitle: capitalize(monthName), rows };
 }
 
 /** `plan-miesiaca-2026-09-siatka.pdf`, `plan-miesiaca-2026-09-tygodniami.pdf`. */

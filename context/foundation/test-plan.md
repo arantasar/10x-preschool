@@ -679,6 +679,14 @@ respektują je, dopóki nie zmieni się założenie leżące u podstaw.
   tekst osadzony własnym fontem jest w PDF-ie zakodowany identyfikatorami glifów i nie
   da się go grepować — a struktura pliku (liczba i orientacja stron, nazwa) w e2e pod
   ryzykiem #11. Wygląd kartki ocenia człowiek na papierze._
+  _Rozpatrzone 2026-10 przy `S-29` (`print-redesign`): wydruki mają wygląd marki (Young
+  Serif + Nunito Sans, obrysy zamiast wypełnień), ale wykluczenie zostaje. Stan dnia
+  (ryzyka #11/#12) niesie znacznik „SZKIC" + rodzaj obrysu (przerywany przy szkicu) +
+  zdanie w stopce kartki tygodnia, nigdy sam kolor — i to jest asertowane na elementach
+  układu (`layout.test.ts`, `grid-layout.test.ts`: przerywany `box` + tekst `SZKIC`,
+  `hatch` bez tekstu dla dnia spoza miesiąca). Wygląd nadal ocenia człowiek: próbki
+  pisze `PRINT_SAMPLES=1 npx vitest run src/lib/plan-pdf/samples.test.ts` do
+  `print-samples/`, do porównania z wzorami 20/21 pakietu dizajnu._
 - **Jakość kreatywna propozycji** — czy „Dinozaury" dały *dobrą* aktywność, ocenia
   człowiek; PRD mierzy to metryką akceptacji ≥ 75%, nie bramką CI. To **nie
   obejmuje** bezpieczeństwa treści, które jest ryzykiem #1 i ma własną fazę.
