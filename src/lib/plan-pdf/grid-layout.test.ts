@@ -122,7 +122,8 @@ describe("layoutMonthGrid — one sheet", () => {
     expect(layout.pages[0].spec).toBe(A4_LANDSCAPE);
   });
 
-  it("keeps even the fullest possible month - six rows - on one page, at 7 pt", () => {
+  // A sixth row cannot occur: a week with no working day of the month is not a row.
+  it("keeps even the fullest possible month - five rows, every day overflowing - on one page, at 7 pt", () => {
     const { doc, layout } = grid(LONGEST_MONTH, overflowingMonth());
 
     expect(doc.rows.length).toBeGreaterThanOrEqual(5);

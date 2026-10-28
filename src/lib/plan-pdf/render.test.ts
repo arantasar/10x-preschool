@@ -100,6 +100,20 @@ describe("renderPlanPdf", () => {
     expect(day.activities[0]).toEqual({ title: "Liście ?", description: "Kasztany ? i ??" });
   });
 
+  // Young Serif has no Cyrillic, but it never sets the teacher's text; a
+  // Ukrainian song in a description printed before S-29 and must still print.
+  it("keeps Cyrillic, which every face but the serif has", async () => {
+    const { hasGlyph } = await embedPlanFonts(await PDFDocument.create(), fonts);
+    const date = WEEK_DAYS_ISO[0];
+    const week = buildPrintWeek(WEEK_START, WEEK_DAYS_ISO, {
+      [date]: planView(date, { activities: [{ title: "Piosenka", description: "Пісенька «Привіт»" }] }),
+    });
+
+    const [day] = printDays(normalizeDocument(week, hasGlyph));
+
+    expect(day.activities[0].description).toBe("Пісенька «Привіт»");
+  });
+
   // The test above proves the filter works; this one that the renderer's path
   // runs it. Without it the layout would carry the emoji the font cannot draw.
   it("lays out the filtered text, not the raw one", async () => {
@@ -123,8 +137,9 @@ describe("renderPlanPdf", () => {
     expect(await pages(await render({}, "day-per-page"))).toHaveLength(5);
   });
 
-  // `hasGlyph` is the intersection of the faces, so a letter one face lacked
-  // would come out as `?` in all of them. This says none of them lacks one.
+  // `hasGlyph` is the intersection of the text faces, so a letter one lacked
+  // would come out as `?` in all of them; the serif sets Polish month names.
+  // This says none of the four lacks one.
   it("has every Polish letter in each of the four faces", async () => {
     const pdf = await PDFDocument.create();
     const { fonts: embedded } = await embedPlanFonts(pdf, fonts);

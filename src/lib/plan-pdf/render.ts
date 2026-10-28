@@ -62,6 +62,8 @@ const MARK_PATH = "M32 2C48.6 2 62 15.4 62 32S48.6 62 32 62H12C6.5 62 2 57.5 2 5
 const MARK_VIEWBOX = 64;
 
 const FACES: readonly FontFace[] = ["serif", "regular", "bold", "boldItalic"];
+/** The faces the teacher's own text is ever set in - every face but the serif. */
+const TEXT_FACES: readonly FontFace[] = ["regular", "bold", "boldItalic"];
 
 /**
  * Every string in the document, with characters the fonts cannot draw replaced.
@@ -103,7 +105,7 @@ export function normalizeDocument(doc: PrintDocument, hasGlyph: (char: string) =
 
 export interface EmbeddedPlanFonts {
   readonly fonts: Readonly<Record<FontFace, PDFFont>>;
-  /** Whether every face can draw `char`. */
+  /** Whether every face that sets the teacher's text can draw `char`. */
   readonly hasGlyph: (char: string) => boolean;
   /** Width as the embedded fonts will draw it - the measure `layoutDocument` is given. */
   readonly measure: Measure;
@@ -121,9 +123,12 @@ export async function embedPlanFonts(doc: PDFDocument, fonts: PdfFonts): Promise
     embedded[face] = await doc.embedFont(fonts[face]);
   }
 
-  // A character counts as drawable only if every face has it, because the same
-  // string - a theme, a title - is set in different faces by different layouts.
-  const sets = FACES.map((face) => new Set(embedded[face].getCharacterSet()));
+  // A character counts as drawable only if every face that sets the teacher's
+  // text has it, because the same string - a theme, a title - is set in
+  // different faces by different layouts. The serif is left out: it sets only
+  // what we write (day numbers, ordinals, dates, the brand), and it has no
+  // Cyrillic, which Nunito Sans - and Noto Sans before it - prints.
+  const sets = TEXT_FACES.map((face) => new Set(embedded[face].getCharacterSet()));
   const hasGlyph = (char: string) => {
     const code = char.codePointAt(0) ?? 0;
     return sets.every((set) => set.has(code));
@@ -135,7 +140,7 @@ export async function embedPlanFonts(doc: PDFDocument, fonts: PdfFonts): Promise
  * `widthOfTextAtSize`, remembered per word at 1 pt.
  *
  * Every call runs fontkit's shaping, and wrapping measures each growing
- * candidate line - across up to nine sizes for the week-on-one-page search.
+ * candidate line - across up to six sizes for the week-on-one-page search.
  * Uncached, a week of 4000-character descriptions took over twelve seconds.
  * Width is linear in size, and `wrapText` only ever joins words with single
  * spaces, so a line is the sum of its words plus its spaces; the words repeat

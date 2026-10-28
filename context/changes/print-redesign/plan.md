@@ -333,7 +333,7 @@ Siatka jak PNG 20: rama z etykietą nad tytułem, nagłówki dni tygodnia, zaokr
 #### Manual Verification:
 
 - Próbka siatki obok PNG 20: komórki, chipy, kreskowanie, linie na notatki, legenda zgodne z wzorem
-- Najdłuższy miesiąc (6 wierszy) mieści się na jednej kartce i jest czytelny
+- Najdłuższy miesiąc (5 wierszy — szóstego nie ma, bo tydzień bez dnia roboczego miesiąca nie jest wierszem) mieści się na jednej kartce i jest czytelny
 
 **Implementation Note**: Po fazie zatrzymaj się na ręczne potwierdzenie.
 
@@ -414,6 +414,16 @@ Pierwsze kliknięcie pobiera dziś renderer + 2 × Noto (~1 MB łącznie, brief 
 ## Migration Notes
 
 Brak danych i migracji. Strona otwarta przed deployem ma stary chunk renderera — istniejący komunikat „Odśwież stronę” to obsługuje; stare pliki Noto znikają w tym samym deployu co nowy renderer, który ich nie czyta.
+
+## Addendum (impl-review 2026-10-28)
+
+Decyzje podjęte przy implementacji, których plan nie opisywał:
+
+- **Nagłówek kartki tygodnia** — etykieta i tytuł stoją w jednej linii bazowej tylko wtedy, gdy się mieszczą; inaczej (A4 pionowo, długi tytuł z „(cd.)”) etykieta przechodzi nad tytuł jak w siatce. Tytuł zmniejsza się do 12 pt, dopiero potem jest ucinany „…”. Znacznik „SZKIC” może zejść do osobnego wiersza, gdy nie mieści się w wierszu daty.
+- **Marginesy** — A4 poziomo 28 pt; A4 pionowo zostaje 2 cm (nie wartości z `print.css`).
+- **Hasło ucięte do jednego wiersza we wszystkich układach, także w „dniu na stronę”** — świadomy wyjątek od zasady „nic nie ginie”: przed `S-29` oba układy tygodnia drukowały „Hasło: …” w całości. Zostaje jak w dizajnie (PNG 21); jeśli nauczycielki zgłoszą, że brakuje im pełnego hasła, pierwszym kandydatem jest pełne hasło jako tekst pod nagłówkiem strony dnia.
+- **`hasGlyph` bez kroju serif** — Young Serif nie ma cyrylicy, a składa tylko to, co piszemy sami (numery, daty, „temio”); przecięcie obejmuje trzy kroje Nunito Sans, więc ukraiński tekst w opisie drukuje się jak przed `S-29`.
+- **Ucinanie „…” przez połowienie** (`withTruncationMark` w `sheet.ts`, wspólne dla chipa i siatki) — 2000 znaków hasła bez spacji mierzone znak po znaku trwało sekundy na chip.
 
 ## References
 

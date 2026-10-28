@@ -1,9 +1,9 @@
 ---
 change_id: print-redesign
 title: Print redesign
-status: implemented
+status: impl_reviewed
 created: 2026-10-25
-updated: 2026-10-26
+updated: 2026-10-28
 archived_at: null
 ---
 

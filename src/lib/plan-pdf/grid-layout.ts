@@ -6,7 +6,6 @@ import {
   placeLines,
   totalHeight,
   type FlowLine,
-  type FontFace,
   type LayoutItem,
   type Measure,
   type PdfLayout,
@@ -15,12 +14,11 @@ import {
   DRAFT_TAG,
   GRID_LEGEND_ITEMS,
   GRID_WEEKDAYS,
-  TRUNCATION_MARK,
   type PrintDay,
   type PrintDayStatus,
   type PrintDocument,
 } from "@/lib/plan-pdf/model";
-import { chip, sheetFrame, tag, textItem } from "@/lib/plan-pdf/sheet";
+import { chip, sheetFrame, tag, textItem, withTruncationMark } from "@/lib/plan-pdf/sheet";
 
 /**
  * The month on one landscape sheet (`S-14`, drawn as the design's PNG 20 since
@@ -37,7 +35,7 @@ import { chip, sheetFrame, tag, textItem } from "@/lib/plan-pdf/sheet";
  *
  * Always exactly one page. The theme's size is the largest candidate at which
  * every cell fits; at the 7 pt floor a cell that still does not fit is cut, and
- * its last visible line ends with {@link TRUNCATION_MARK}. The cut is measured
+ * its last visible line ends with „…” ({@link withTruncationMark}). The cut is measured
  * with the same {@link Measure} the renderer draws with, so the mark never
  * pushes a line past the cell's edge.
  *
@@ -176,23 +174,6 @@ const TOP_ROW = GRID_CELL_PADDING + GRID_NUMBER_SIZE * 1.3;
 
 function themeLines(day: PrintDay, width: number, size: number, measure: Measure): FlowLine[] {
   return day.theme === null ? [] : flowText(day.theme, width, size, "regular", measure);
-}
-
-/**
- * `text` shortened until it and the mark fit `width`: whole words first, then -
- * for a line that is one long word - characters.
- */
-function withTruncationMark(text: string, width: number, size: number, face: FontFace, measure: Measure): string {
-  const fits = (candidate: string) => measure(candidate + TRUNCATION_MARK, size, face) <= width;
-  const words = text.split(" ").filter((word) => word !== "");
-  while (words.length > 1 && !fits(words.join(" "))) {
-    words.pop();
-  }
-  const chars = Array.from(words.join(" "));
-  while (chars.length > 0 && !fits(chars.join(""))) {
-    chars.pop();
-  }
-  return chars.join("").trimEnd() + TRUNCATION_MARK;
 }
 
 /** As many of `lines` as fit `available`; if any were left out, the last one kept ends with the mark. */

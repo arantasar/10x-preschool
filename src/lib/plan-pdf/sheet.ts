@@ -90,16 +90,47 @@ export function fitOneLine(
   if (measure(flat, size, face, tracking) <= width) {
     return flat;
   }
+  return withTruncationMark(flat, width, size, face, measure, tracking);
+}
+
+/**
+ * `text` shortened until it and {@link TRUNCATION_MARK} fit `width` - whole
+ * words first, then, for a line that is one long word, characters - and always
+ * ending with the mark.
+ *
+ * Both searches halve rather than drop one piece at a time: a hasło may be
+ * 2000 characters with no space, and every prefix is a new string the measure
+ * cannot have cached - one at a time, that was seconds per chip.
+ */
+export function withTruncationMark(
+  text: string,
+  width: number,
+  size: number,
+  face: FontFace,
+  measure: Measure,
+  tracking = 0,
+): string {
   const fits = (candidate: string) => measure(candidate + TRUNCATION_MARK, size, face, tracking) <= width;
-  const words = flat.split(" ");
-  while (words.length > 1 && !fits(words.join(" "))) {
-    words.pop();
+  const words = text.split(" ").filter((word) => word !== "");
+  const keptWords = longestFitting(words.length, (count) => fits(words.slice(0, count).join(" ")));
+  const chars = Array.from(words.slice(0, Math.max(1, keptWords)).join(" "));
+  const keptChars = longestFitting(chars.length, (count) => fits(chars.slice(0, count).join("")));
+  return chars.slice(0, keptChars).join("").trimEnd() + TRUNCATION_MARK;
+}
+
+/** The largest `count` in 0…`total` for which `fits(count)` holds, `fits` growing false with `count`. */
+function longestFitting(total: number, fits: (count: number) => boolean): number {
+  let low = 0;
+  let high = total;
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    if (fits(middle)) {
+      low = middle;
+    } else {
+      high = middle - 1;
+    }
   }
-  const chars = Array.from(words.join(" "));
-  while (chars.length > 0 && !fits(chars.join(""))) {
-    chars.pop();
-  }
-  return chars.join("").trimEnd() + TRUNCATION_MARK;
+  return low;
 }
 
 /** The hasło as a pill: one line, its outline in the chip colour. */
@@ -113,8 +144,10 @@ export interface Chip {
 
 export function chip(text: string, maxWidth: number, size: number, measure: Measure): Chip | null {
   const padding = size * 0.75;
-  const fitted = fitOneLine(text, maxWidth - 2 * padding, size, "bold", measure);
-  if (fitted === "" || fitted === TRUNCATION_MARK) {
+  const room = maxWidth - 2 * padding;
+  const fitted = fitOneLine(text, room, size, "bold", measure);
+  // A bare „…” still says there was a hasło; only no room even for that drops the chip.
+  if (fitted === "" || measure(fitted, size, "bold") > room) {
     return null;
   }
   const width = measure(fitted, size, "bold") + 2 * padding;

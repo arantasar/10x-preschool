@@ -28,6 +28,7 @@ import {
   TRUNCATION_MARK,
   WEEK_EYEBROW,
 } from "./model";
+import { withTruncationMark } from "./sheet";
 import type { DayPlanView } from "@/types";
 
 // Deterministic stand-in for a real font: every character half an em wide,
@@ -71,7 +72,7 @@ function footerTexts(page: LayoutPage): TextItem[] {
   return texts(page).filter((item) => item.y <= page.spec.margin + 10);
 }
 
-function columnOf(item: TextItem): number {
+function columnOf(item: { readonly x: number }): number {
   return Math.floor((item.x - A4_LANDSCAPE.margin + 1e-6) / (WEEK_COLUMN_WIDTH + WEEK_COLUMN_GAP));
 }
 
@@ -94,10 +95,27 @@ function expectInsideMargins(result: PdfLayout): void {
   }
 }
 
-/** Every day's text between the header and the footer - and, in a week, inside its own column. */
+/** The frame's header sets exactly four texts: eyebrow, title, „Grupa:”, „temio”. */
+const HEADER_TEXTS = 4;
+
+/**
+ * Every day's text between the header and the footer - and, in a week, inside
+ * its own column, chip and tag outlines included. A day's text that overflowed
+ * upward would sit with the header, so the header's count is checked too.
+ */
 function expectInsideBody(result: PdfLayout): void {
   expectInsideMargins(result);
   for (const page of result.pages) {
+    expect(texts(page).filter((item) => item.y >= page.body.top)).toHaveLength(HEADER_TEXTS);
+    if (result.kind === "week-per-page") {
+      for (const item of page.items) {
+        if (item.kind !== "box") continue;
+        const column = columnOf(item);
+        expect(item.x).toBeGreaterThanOrEqual(weekColumnX(column) - 1e-6);
+        expect(item.x + item.width).toBeLessThanOrEqual(weekColumnX(column) + WEEK_COLUMN_WIDTH + 1e-6);
+        expect(item.y + item.height).toBeLessThanOrEqual(page.body.top + 1e-6);
+      }
+    }
     for (const item of bodyTexts(page)) {
       expect(item.y + item.size).toBeLessThanOrEqual(page.body.top + 1e-6);
       expect(item.y - 0.3 * item.size).toBeGreaterThanOrEqual(page.body.bottom - 1e-6);
@@ -109,6 +127,28 @@ function expectInsideBody(result: PdfLayout): void {
     }
   }
 }
+
+describe("withTruncationMark", () => {
+  it("keeps whole words when they fit, then the mark", () => {
+    // 10 pt → 5 pt per character; 50 pt fits nine characters and the mark.
+    expect(withTruncationMark("ala ma kota i psa", 50, 10, "regular", measure)).toBe(`ala ma${TRUNCATION_MARK}`);
+  });
+
+  // A hasło may be 2000 characters with no space. Dropping one character at a
+  // time measured ~2000 uncached prefixes - seconds per chip in the browser.
+  it("cuts a 2000-character word with a handful of measurements", () => {
+    let calls = 0;
+    const counting: Measure = (...args) => {
+      calls += 1;
+      return measure(...args);
+    };
+
+    const cut = withTruncationMark("a".repeat(2000), 50, 10, "regular", counting);
+
+    expect(cut).toBe(`${"a".repeat(9)}${TRUNCATION_MARK}`);
+    expect(calls).toBeLessThan(30);
+  });
+});
 
 describe("wrapText", () => {
   it("breaks at spaces", () => {
