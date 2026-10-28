@@ -75,10 +75,10 @@ prerekwizytach z tabeli (Krok 9, konto operatora płatności).
 | S-28 | fair-use-overrides         | (właściciel) dać wybranym kontom limit generowania bez sufitu albo podwyższony, bez deployu              | S-21                                             | FR-027, FR-038                 | done     |
 | S-29 | print-redesign             | drukować plan tygodnia i miesiąca w układzie i barwach aplikacji, nie w czerni i bieli                   | —                                                | —                              | done     |
 | S-23 | trial-entitlement          | jako nowe konto dostać pierwszy miesiąc pełnego Basic bez karty i widzieć stan swojego planu             | S-21, S-28                                       | FR-030                         | done     |
-| S-24 | existing-accounts-gift     | jako konto sprzed płatności (także testerka) dowiedzieć się o nowych zasadach i dostać prezent, zanim limit mnie dotknie | S-23                                | FR-036                         | blocked  |
+| S-24 | existing-accounts-gift     | jako konto sprzed płatności (także testerka) dowiedzieć się o nowych zasadach i dostać prezent, zanim limit mnie dotknie | S-23                                | FR-036                         | done     |
 | S-25 | basic-subscription         | wykupić Basic jako subskrypcję kartą, zarządzać nią, anulować ją i w 14 dni dostać zwrot                 | F-02, S-18, S-22, S-23, Krok 9, konto operatora  | FR-032, FR-034, FR-035, FR-039, FR-024 | blocked  |
 | S-26 | one-time-access            | wykupić Basic jednorazowo (miesiąc albo rok szkolny) BLIK-iem albo przelewem, z gwarancją zwrotu         | F-02, S-23, Krok 9, konto operatora              | FR-033, FR-039                 | blocked  |
-| S-27 | free-tier-limit            | na planie darmowym zaplanować pięć dni roboczych w miesiącu, a po wygaśnięciu planu zachować swoje plany | S-21, S-24, S-25                                 | FR-031, FR-037                 | blocked  |
+| S-27 | free-tier-limit            | na planie darmowym zaplanować pięć dni roboczych w miesiącu, a po wygaśnięciu planu zachować swoje plany | S-21, S-25                                       | FR-031, FR-037                 | blocked  |
 | S-30 | trial-until-launch         | jako konto założone przed startem płatności mieć pełny Basic do 31.01.2027, a po starcie — przez miesiąc | S-23                                             | FR-030                         | done     |
 | S-31 | planning-horizon           | generować plany najwyżej kilka tygodni naprzód, tak by nikt nie zrobił zapasu na lata w okresie próbnym | S-21                                             | FR-027                         | done     |
 
@@ -91,7 +91,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | A      | Bezpieczeństwo treści              | `F-02`                                                       | Pierwszy przy celu `quality` — dług `S-15` i warunek sprzedaży. Dołącza do strumienia D w `S-22`, `S-25`, `S-26`.                           |
 | B      | Konto                              | `S-16` / `S-17` / `S-18` (równolegle)                        | Trzy niezależne pozycje bez prerekwizytów; `S-18` wraca w strumieniu D jako prerekwizyt `S-25` (usunięcie konta kończy subskrypcję).       |
 | C      | Informacja, kontakt i limit        | `S-19` → `S-21`; `S-20` równolegle                           | `S-19` stawia ochronę przed automatami, z której korzysta `S-22`; `S-20` czeka na zewnętrzną treść prawną — główne ryzyko kamienia.        |
-| D      | Cennik i płatności                 | `S-21` → `S-28` → `S-23` → `S-30` → `S-24` / `S-25` / `S-26` → `S-27`; `S-22` przed `S-25`; `S-31` (horyzont) przed `S-30` albo razem z nim; `S-29` (wydruki) niezależnie | Od 2026-10-17 bez bramy, termin 2027-01-20. Ścieżka krytyczna: Krok 11 (formalności, poza kodem) i Krok 9 (e2e w CI) → `S-25`. Płatności kompletem (Guardrail 3). |
+| D      | Cennik i płatności                 | `S-21` → `S-28` → `S-23` → `S-30` → `S-25` (z uprzedzeniem dawnego `S-24`) / `S-26` → `S-27`; `S-22` przed `S-25`; `S-31` (horyzont) przed `S-30` albo razem z nim; `S-29` (wydruki) niezależnie | Od 2026-10-17 bez bramy, termin 2027-01-20. Ścieżka krytyczna: Krok 11 (formalności, poza kodem) i Krok 9 (e2e w CI) → `S-25`. Płatności kompletem (Guardrail 3). |
 
 ## Baseline
 
@@ -279,7 +279,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - ~~Testerzy~~ — **rozstrzygnięte 2026-10-18 (Janusz):** testerzy mają te same uprawnienia co właściciel — wiersz `account_entitlements` z `access_until = '2099-12-31'`, `source = 'owner'`, i nadpisanie `fair_use_overrides` bez sufitu i bez daty końca, wpisane w SQL Editorze. Nie wracają na plan darmowy po `S-27`, więc uprzedzenie i prezent ich nie dotyczą. Owner: —. Block: nie.
   - **Zakres po decyzji 2026-10-18 (Janusz):** prezentem dla kont sprzed płatności jest sam Basic do 31.01.2027 (`S-30`), a cena założycielska przychodzi z `S-22`/`S-25`. Zostaje uprzedzenie: każde takie konto dowiaduje się przed 31.01.2027, co stanie się 1.02 (płatności, plan darmowy z `S-27`). Owner: `/10x-plan`. Block: nie.
 - **Risk:** Sednem jest kolejność, nie prezent: uprzedzenie musi wyprzedzić `S-27`, inaczej obecne nauczycielki poznają nowe zasady przy pierwszym limicie — dokładnie to, co runda Sokratejska uznała za zmianę zasad bez zgody. Kryterium Secondary („żadne aktywne konto nie odchodzi z powodu zmian kamienia") mierzy się właśnie tutaj.
-- **Status:** blocked
+- **Decision (2026-10-28, Janusz):** wchłonięty przez `S-25`, bez własnego change-id i archiwum. Prezentu nie ma komu dawać — konta sprzed płatności to właściciel i testerzy z dostępem bezterminowym, a każde inne konto ma Basic do 31.01.2027 z `S-23`/`S-30`. Zostało samo uprzedzenie, a tę wiadomość wysyła już `S-25` (Unknowns: cena założycielska) i może ją wysłać dopiero, gdy data płatności jest pewna — wcześniej opóźnienie płatności (nowa migracja stałej `S-30`) uczyniłoby ją nieprawdziwą. Do sprawdzenia na produkcji przez właściciela: żadne konto bez wiersza `account_entitlements` (CLAUDE.md §Plan state).
+- **Status:** done
 
 ### S-25: Subskrypcja Basic kartą (krok 7)
 
@@ -287,13 +288,14 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Change ID:** basic-subscription
 - **PRD refs:** FR-032, FR-034, FR-035, FR-024 (warunek subskrypcji); Guardrail 3
 - **Prerequisites:** F-02, S-18, S-22 (cennik), S-23, Krok 9 `next-actions.md` (e2e w CI), konto operatora płatności
-- **Parallel with:** S-24, S-26
+- **Parallel with:** S-26
 - **Blockers:** Konto operatora płatności i formalności (JDG, księgowy, faktury) — Krok 11 `next-actions.md`; PRD §Constraints „Zależności zewnętrzne".
 - **Unknowns:**
   - ~~Zwrot~~ — **rozstrzygnięte 2026-10-17:** gwarancja 14 dni bez podawania przyczyny (FR-039); zwrot cofa datę dostępu o okres opłacony zwracaną płatnością. Ścieżkę (samoobsługa czy prośba przez formularz) rozstrzyga `/10x-plan`.
   - Termin 2027-01-20 przy zależności zewnętrznej (Krok 11: JDG, Stripe, faktury, księgowa). Owner: Janusz. Block: tak — formalności nie zależą od kodu i są ścieżką krytyczną.
   - **Cennik z `S-22` przestaje być prawdziwy 2027-02-01** (`PAYMENTS_START_ON`): „Płatności ruszą 1 lutego 2027”, „Załóż konto przed 1 lutego 2027” i „Zanim zmienią się zasady, napiszemy” nie mają bramki daty. Przed tą datą `S-25` przepisuje `/cennik`; jeśli płatności się opóźnią — nowa migracja przesuwa stałą `S-30` razem z `pricing.ts` (CLAUDE.md §Pricing page). Owner: Janusz. Block: nie (impl-review S-22, F3).
   - **Cena założycielska = konto założone przed `PAYMENTS_START_ON` (FR-035, FR-036), bez listy i bez limitu ~100 osób** (decyzja 2026-10-18). `S-25` przyznaje ją każdemu takiemu kontu i wysyła mu wiadomość o nowych zasadach, zanim limit planu darmowego go dotknie — `/cennik` już to obiecuje. Owner: Janusz. Block: nie.
+  - **Uprzedzenie kont sprzed płatności — zakres dawnego `S-24` (2026-10-28):** każde konto z Basic do 31.01.2027 dowiaduje się przed tą datą, co stanie się 1.02 (płatności, plan darmowy z `S-27`). Wiadomość musi wyjść przed wydaniem `S-27`, inaczej nauczycielka pozna nowe zasady przy pierwszym limicie; kanał (e-mail, komunikat w aplikacji) rozstrzyga `/10x-plan`. Owner: `/10x-plan`. Block: nie.
 - **Risk:** Guardrail 3 — „płatności kompletem albo wcale": zakup, zarządzanie, anulowanie, wygaśnięcie i zwrot wychodzą jednym wydaniem, bo połowa integracji dotyczy cudzych pieniędzy. Dostęp przyznaje wyłącznie potwierdzenie od operatora — ryzyka do mapy testów z Kroku 9: potwierdzenie przyznające dostęp cudzemu kontu, dostęp, który nie wygasa. Regulamin z `S-20` do przepisania przed wydaniem.
 - **Status:** blocked
 
@@ -303,7 +305,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Change ID:** one-time-access
 - **PRD refs:** FR-033; §Business Logic Changes „Druga reguła"
 - **Prerequisites:** F-02, S-23, Krok 9 `next-actions.md` (e2e w CI), konto operatora płatności
-- **Parallel with:** S-24, S-25
+- **Parallel with:** S-25
 - **Blockers:** Konto operatora płatności z BLIK-iem i przelewem online — Krok 11 `next-actions.md`.
 - **Unknowns:**
   - ~~Czy cena założycielska obejmuje dostęp jednorazowy~~ — **rozstrzygnięte 2026-10-17:** nie, tylko subskrypcję (FR-035).
@@ -317,12 +319,12 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Outcome:** Nauczycielka na planie darmowym planuje pięć dni roboczych w miesiącu kalendarzowym (komunikowane jako „tydzień"); próba zaplanowania kolejnego pokazuje cennik zamiast generowania; po wygaśnięciu planu zachowuje odczyt, ręczną edycję i druk tygodnia wszystkich zaplanowanych dni.
 - **Change ID:** free-tier-limit
 - **PRD refs:** FR-031, FR-037; §Business Logic Changes „Pula … po wejściu płatności"
-- **Prerequisites:** S-21 (pula dni i licznik), S-24 (obecne konta uprzedzone przed limitem), S-25 (cennik prowadzi do zakupu, który działa)
+- **Prerequisites:** S-21 (pula dni i licznik), S-25 (cennik prowadzi do zakupu, który działa, a obecne konta są uprzedzone przed limitem — zakres dawnego `S-24`)
 - **Parallel with:** S-26
 - **Blockers:** —
 - **Unknowns:**
   - ~~Jednostka liczenia poprawki poleceniem~~ — **rozstrzygnięte 2026-10-17:** poprawka nie zużywa puli planu darmowego (FR-037). Przez interfejs nie da się nią dodać dnia; furtka przez API (`refine.ts` bezstanowy + `week/save.ts` przyjmujący partie od klienta) wymaga skryptów — ryzyko przyjęte, koszt ma sufit fair use z `S-21`.
-- **Risk:** Ostatnia, bo jako jedyna **odbiera** coś użytkownikowi — przed nią musi istnieć uprzedzenie (`S-24`) i działający zakup (`S-25`), inaczej cennik w miejscu generowania jest ścianą bez drzwi. Reguła „to, co zaplanowane, nigdy nie jest odbierane" wiąże: tydzień przecinający dwa miesiące liczy dni do ich miesięcy (FR-031), a zatwierdzanie, usuwanie i druk tygodnia nie podlegają limitowi.
+- **Risk:** Ostatnia, bo jako jedyna **odbiera** coś użytkownikowi — przed nią musi istnieć uprzedzenie i działający zakup (oba w `S-25`), inaczej cennik w miejscu generowania jest ścianą bez drzwi. Reguła „to, co zaplanowane, nigdy nie jest odbierane" wiąże: tydzień przecinający dwa miesiące liczy dni do ich miesięcy (FR-031), a zatwierdzanie, usuwanie i druk tygodnia nie podlegają limitowi.
 - **Status:** blocked
 
 ### S-30: Basic do 31.01.2027 dla kont sprzed startu płatności (krok 7)
@@ -368,7 +370,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-21       | fair-use-limit             | Limit fair use z komunikatem o terminie powrotu                    | yes                   | Próg 150 dni-generacji/mies. w konfiguracji (2026-10-17); `/10x-plan fair-use-limit` |
 | S-22       | founder-price-signup       | Cennik (cena założycielska dla kont sprzed płatności)              | no                    | Bez roli bramy (2026-10-17); rdzeń gotowy, cena dostępu jednorazowego rozstrzygnięta 2026-10-18 (#14) |
 | S-23       | trial-entitlement          | Okres próbny i stan planu konta                                    | no                    | Po `S-21`; testerzy ustawiani ręcznie                                    |
-| S-24       | existing-accounts-gift     | Prezent i uprzedzenie dla kont sprzed płatności                    | no                    | Po decyzji 2026-10-18 głównie uprzedzenie; prezentem jest Basic do 31.01.2027 (`S-30`) |
+| S-24       | existing-accounts-gift     | Prezent i uprzedzenie dla kont sprzed płatności                    | no                    | Wchłonięty przez `S-25` (2026-10-28): prezentem jest Basic do 31.01.2027 (`S-30`), uprzedzenie wysyła `S-25` |
 | S-25       | basic-subscription         | Subskrypcja Basic kartą z zarządzaniem i zwrotem                   | no                    | Gwiazda przewodnia; po Kroku 9 i Kroku 11; termin 2027-01-20            |
 | S-26       | one-time-access            | Dostęp jednorazowy BLIK-iem albo przelewem                         | no                    | Po Kroku 9 i Kroku 11; cena (#14)                                        |
 | S-27       | free-tier-limit            | Plan darmowy: pięć dni w miesiącu i plany po wygaśnięciu           | no                    | Ostatni — gotowy na 1.02.2027, kiedy konta sprzed płatności bez zakupu przechodzą na plan darmowy |
@@ -449,3 +451,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-31: Nauczycielka generuje plany najwyżej N tygodni naprzód od dziś; próba wygenerowania dalszego dnia mówi po polsku, od kiedy będzie to możliwe. Plany już zapisane zostają bez zmian, a edycja, zatwierdzanie, usuwanie i druk nie podlegają limitowi.** — Archived 2026-10-18 → `context/archive/2026-10-18-planning-horizon/`. Lesson: „Zmiana renderu strony wymaga inwentarza specs E2E”.
 - **S-22: Odwiedzający albo zalogowana nauczycielka widzi cennik planów Darmowy i Basic z cenami, klika „Zarezerwuj cenę założycielską", podaje e-mail i dostaje potwierdzenie: płatności jeszcze nie działają, jest zapisana, dostanie wiadomość; zapisy kont aktywnych są policzalne osobno od anonimowych.** — Archived 2026-10-19 → `context/archive/2026-10-18-founder-price-signup/`. Zmiana zakresu 2026-10-18: bez listy zapisów — cenę założycielską ma każde konto założone przed 1 lutego 2027 (FR-029 wycofany, FR-035 przepisany). Lesson: —.
 - **S-29: Nauczycielka drukuje plan tygodnia i miesiąca w układzie i kolorystyce aplikacji — nie w czerni i bieli — z tą samą treścią co dziś: daty, tematy i aktywności.** — Archived 2026-10-28 → `context/archive/2026-10-25-print-redesign/`. Lesson: —.
+- **S-24: Konto założone przed wejściem płatności dostaje cenę założycielską i okres Basic gratis, a nauczycielka dowiaduje się o nowych zasadach i prezencie, zanim limit planu darmowego ją dotknie.** — Wchłonięty 2026-10-28 przez `S-25`: prezentem jest Basic do 31.01.2027 (`S-30`), cena założycielska przychodzi z `S-22`/`S-25`, uprzedzenie wysyła `S-25`; bez własnego change-id i bez archiwum. Lesson: —.
