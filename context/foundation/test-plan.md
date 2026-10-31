@@ -692,7 +692,7 @@ Trzy rzeczy, które wyszły dopiero na runnerze:
   hipotezach, więc zostaje.
 - **Cache z PR-a nie działa na innym PR-ze.** GitHub ogranicza wpis do jego refa.
   Dopóki `master` nie ma własnego wpisu, każdy nowy PR pobiera obrazy i może paść na
-  `toomanyrequests` (PR #62 padł trzy razy z rzędu). Wpis powstaje przy pierwszym
+  `toomanyrequests` (PR #62 padł dwa razy z rzędu). Wpis powstaje przy pierwszym
   zielonym `db` na `master`.
 
 Dowód stabilności: run 41241708302, próby 1–5, commit `26434dd`: `db` i `e2e` zielone,
