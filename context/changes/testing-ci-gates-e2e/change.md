@@ -1,7 +1,7 @@
 ---
 change_id: testing-ci-gates-e2e
 title: Test rollout Phase 4 — CI quality gates and critical-path e2e
-status: implementing
+status: impl_reviewed
 created: 2026-10-28
 updated: 2026-10-31
 archived_at: null

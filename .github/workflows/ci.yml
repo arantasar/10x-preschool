@@ -56,7 +56,10 @@ jobs:
         uses: ./.github/actions/supabase-stack
       - run: npm run test:db
       - run: npm run test:db:api
+      # Tests are done by now: a failed save only costs a cache miss next time, so
+      # it must not paint a passing database suite red.
       - if: steps.stack.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: ./.github/actions/supabase-stack/save
         with:
           cache-key: ${{ steps.stack.outputs.cache-key }}

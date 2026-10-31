@@ -362,7 +362,7 @@ Przy zapisie odczytać, czy zwykły `git push` administratora na `master` nadal 
 
 #### 3. Dokumenty
 
-**File**: `context/foundation/test-plan.md`, `CLAUDE.md`, `context/foundation/lessons.md`, `context/foundation/next-actions.md`, `tests/e2e/E2E-RULES.md`
+**File**: `context/foundation/test-plan.md`, `CLAUDE.md`, `context/foundation/lessons.md`, `context/foundation/next-actions.md`, `tests/e2e/E2E-RULES.md`, `.github/workflows/ci.yml`, `playwright.config.ts`
 
 **Intent**: Stan zapisany ma być stanem prawdziwym.
 
@@ -370,6 +370,7 @@ Przy zapisie odczytać, czy zwykły `git push` administratora na `master` nadal 
 
 - `test-plan.md`: §3 status, §4 wiersz e2e, §5 akapit o ochronie i tabela bramek (także hook jako istniejący), §6.6 (`dev:e2e`, atrapa, sprzątanie), §6.7 notatka fazy;
 - `CLAUDE.md` §CI: lista jobów, ochrona `master`, brak sekretów `SUPABASE_*`, §Commands `dev:e2e`, `test:e2e`;
+- `ci.yml`: komentarze nad `db` i `content-safety-gate` przestają mówić „doradczy” i „ochrona niedostępna”; `playwright.config.ts`: zdanie „ten check blokuje merge” zostaje, bo od włączenia ochrony jest prawdziwe;
 - `lessons.md:58`: dopisek „od Fazy 4 e2e stoi w CI”, reszta reguły zostaje;
 - `next-actions.md`: stan fazy, wiersze `:564-566`, `:576` i `:587` zamknięte, `:586` i `:326-328` z nowym właścicielem i warunkiem. Wpis z właścicielem dla cache obrazów (po wygaśnięciu) i dla ponownej oceny limitu ECR.
 
@@ -378,8 +379,8 @@ Przy zapisie odczytać, czy zwykły `git push` administratora na `master` nadal 
 #### Automated Verification:
 
 - `gh api repos/{owner}/{repo}/branches/master/protection --jq '.required_status_checks.contexts'` zwraca cztery nazwy
-- Tymczasowy PR z czerwonym `e2e`: `gh pr view <nr> --json mergeStateStatus` zwraca `BLOCKED`; PR zamknięty bez merge'a
-- Ten sam PR po naprawie zwraca `CLEAN`, potem zamknięty
+- Tymczasowy PR z czerwonym `e2e`: `gh pr view <nr> --json mergeStateStatus` zwraca `BLOCKED`, a czerwień pochodzi z kroku `npm run test:e2e`; PR zamknięty bez merge'a. Dopóki `master` nie ma wpisu cache, PR pobiera obrazy: czerwień z `toomanyrequests` nie jest dowodem, tylko powodem do ponowienia
+- Ten sam PR po naprawie zwraca `CLEAN`, potem zamknięty (ta sama zasada: porażka pobierania to ponowienie, nie wynik)
 - `grep -n "403 Upgrade to GitHub Pro" context/foundation/test-plan.md` występuje wyłącznie w opisie historycznym albo wcale
 - `npm run lint`, `npm test`, `npm run build` przechodzą
 
@@ -392,6 +393,17 @@ Przy zapisie odczytać, czy zwykły `git push` administratora na `master` nadal 
 **Implementation Note**: Po automatycznej weryfikacji poczekaj na potwierdzenie człowieka.
 
 ---
+
+## Addendum po przeglądzie implementacji (2026-10-31)
+
+Odstępstwa od tekstu faz 1–4, zachowaniowo równoważne albo uzasadnione w `test-plan.md` §6.7:
+
+- **Faza 1:** zamiast wejścia `save-images` akcja ma wyjścia `cache-hit` i `cache-key`, a zapis robi druga akcja `supabase-stack/save`. Zapis ma `continue-on-error`.
+- **Faza 3:** ścieżka krytyczna wchodzi przez `/plan/week` → „Jeden dzień”, bo pusty tydzień nie ma w miesiącu kafli dni. Link z miesiąca pilnuje `tests/e2e/month-empty-day-link.spec.ts` na własnym tygodniu.
+- **Faza 3:** `llmStubCalls` żyje w `support/llm-stub-client.ts`, bo `test-data.ts` nie może importować `env.ts` (`supabase-local.ts:9-11`).
+- **Faza 3:** `e2eEnv.supabaseUrl` odmawia hosta innego niż lokalny, jak `supabase-local.ts`.
+- **Faza 4:** F9 wymagał też `vite.ssr.optimizeDeps.include`. Doszły `auth.setup.ts` (wczytanie stron z Markdownu) i `stdout: "pipe"` w CI.
+- **Liczba testów:** Playwright raportuje 50: 48 z planu, wczytanie stron i test linku z miesiąca.
 
 ## Testing Strategy
 

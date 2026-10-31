@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { deleteTeacherDay, ensureTeacher, TEACHER_A } from "./support/supabase-admin";
-import { llmStubCalls, plusDays, uniqueStamp, weekStartInHorizon } from "./support/test-data";
+import { llmStubCalls } from "./support/llm-stub-client";
+import { plusDays, uniqueStamp, weekStartInHorizon } from "./support/test-data";
 import { waitForIslands } from "./support/hydration";
 
 /**

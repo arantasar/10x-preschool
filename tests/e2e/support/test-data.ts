@@ -1,5 +1,4 @@
 import type { SeedActivity } from "./supabase-admin";
-import { LLM_STUB_URL } from "./env";
 
 /**
  * Unikalne dane testowe — warunek tego, zeby zestaw dalo sie uruchomic dwa razy
@@ -132,16 +131,6 @@ export function weekStartInHorizon(slot: 0 | 1 | 2 | 3): string {
  */
 export function uniqueStamp(): string {
   return `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-}
-
-/**
- * Ile razy atrapa dostawcy dostala to haslo. Po hasle, nie w sumie: testy leca
- * rownolegle, wiec licznik calkowity nie dowodzilby niczego.
- */
-export async function llmStubCalls(keyword: string): Promise<number> {
-  const response = await fetch(`${LLM_STUB_URL}/__calls?haslo=${encodeURIComponent(keyword)}`);
-  const { calls } = (await response.json()) as { calls: number };
-  return calls;
 }
 
 /** Trzy propozycje w ksztalcie, ktory produkuje generowanie: tytul + opis. */

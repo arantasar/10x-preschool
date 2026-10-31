@@ -30,6 +30,8 @@ Wzorzec, na którym modelujesz każdy nowy test: [`seed.spec.ts`](seed.spec.ts).
   to tańsza warstwa i tam jest jego miejsce (`test-plan.md` §1 zasada 1).
 - **Nazwa testu nazywa ryzyko**, z jego numerem: `ryzyko #4 — …`, nigdy
   `test 1`. Numer jest jedynym łącznikiem między tym katalogiem a mapą ryzyk.
+  Wyjątek: `ścieżka krytyczna — …`, bo jest przekrojowa (`test-plan.md` §3, faza 4)
+  i nie ma wiersza w mapie.
 - **Asercja musi paść, gdy ryzyko się zmaterializuje.** Pytanie kontrolne do
   każdej asercji: _czy ta asercja padnie, jeśli ryzyko naprawdę wystąpi?_ Jeśli
   nie — jest dekoracją. Sprawdza się to celowym psuciem kodu produkcyjnego,

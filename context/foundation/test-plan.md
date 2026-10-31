@@ -94,7 +94,7 @@ poniżej; orkiestrator aktualizuje Status, gdy artefakty pojawiają się na dysk
 | 1 | Runner + granica model→kontrakt→zapis | Udowodnić, że odpowiedź spoza kontraktu i awaria dostawcy kończą się uczciwą porażką, a nie cichym pustym planem | #2, #5 | unit + integration | complete | context/archive/2026-08-29-testing-generation-contract-boundary/ |
 | 2 | Powtarzalna bramka bezpieczeństwa treści | Wyjąć jedyną kontrolę guardrailu z jednorazowego skryptu i objąć nią każdy dopuszczony model oraz każdą zmianę promptu | #1, #6 | contract + AI-native judge | complete | context/archive/2026-08-31-testing-content-safety-gate/ |
 | 3 | Ochrona zapisu i własności | Zatwierdzony dzień ginie tylko po zgodzie nazywającej ten dzień; trasa adresowana id odmawia cudzego zasobu 404, trasa adresowana datą nie dotyka wiersza drugiego konta; odmowa pustej partii (`U0003`) ma asercje pgTAP | #3, #4, #7 | integration + pgTAP | complete | context/archive/2026-09-30-testing-write-ownership/ |
-| 4 | Bramki jakości w CI + e2e ścieżki krytycznej | Zamknąć podłogę przed merge'em do `master`, który deployuje wprost na produkcję | przekrojowe | gates + e2e | change opened | context/changes/testing-ci-gates-e2e/ |
+| 4 | Bramki jakości w CI + e2e ścieżki krytycznej | Zamknąć podłogę przed merge'em do `master`, który deployuje wprost na produkcję | przekrojowe | gates + e2e | implementing | context/changes/testing-ci-gates-e2e/ |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` →
 `researched` → `planned` → `implementing` → `complete`.
@@ -677,7 +677,7 @@ Job `e2e` na zimnym runnerze: cały job 3,7–4,4 min, sam zestaw 43–60 s. `db
 trafieniu w cache 2,9–3,2 min. Start stosu z cache (116 s) nie jest szybszy niż po
 pobraniu (96 s): cache chroni przed limitem ECR, nie oszczędza czasu.
 
-Trzy rzeczy, które wyszły dopiero na runnerze:
+Trzy rzeczy, które wyszły dopiero na zimnym starcie albo na runnerze:
 
 - **F9 żył po stronie serwera.** `vite.optimizeDeps` nie sięga środowiska `ssr`, a
   późno odkrywane były `@supabase/ssr` i `astro/env/runtime`. Pierwszy lokalny
