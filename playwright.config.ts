@@ -71,6 +71,8 @@ export default defineConfig({
       command: "npm run dev:e2e",
       url: `${BASE_URL}/__e2e-stub`,
       reuseExistingServer: !process.env.CI,
+      // W CI log serwera to jedyny slad po tym, co trasa zrobila na runnerze.
+      stdout: process.env.CI ? "pipe" : "ignore",
       // Pierwszy start Astro z adapterem Cloudflare potrafi trwac.
       timeout: 120_000,
     },
