@@ -483,11 +483,11 @@ Brak migracji bazy. Wycofanie ochrony: `DELETE /repos/{owner}/{repo}/branches/ma
 
 #### Automated
 
-- [ ] 4.1 Job `e2e` zielony na PR-ze
-- [ ] 4.2 Log przebiegu potwierdza wywołanie atrapy
-- [ ] 4.3 Psucie daje czerwony `e2e`, artefakt i adnotację
-- [ ] 4.4 Test niestabilny daje czerwony przebieg
-- [ ] 4.5 `ci`, `db`, `e2e` raportują się osobno
+- [x] 4.1 Job `e2e` zielony na PR-ze — 2208926
+- [x] 4.2 Log przebiegu potwierdza wywołanie atrapy — 2208926
+- [x] 4.3 Psucie daje czerwony `e2e`, artefakt i adnotację — 2208926
+- [x] 4.4 Test niestabilny daje czerwony przebieg — 2208926
+- [x] 4.5 `ci`, `db`, `e2e` raportują się osobno — 2208926
 
 #### Manual
 
