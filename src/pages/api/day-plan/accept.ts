@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { acceptPlanRequestSchema } from "@/lib/services/day-plan-contract";
 import { badRequest, json, requireSaved, storeFailure, unauthorized, unconfigured } from "@/lib/services/day-plan-http";
-import { readDayPlanById, setAcceptance } from "@/lib/services/day-plan-store";
+import { readDayPlanById } from "@/lib/services/day-plan-store";
 
 export const prerender = false;
 
@@ -43,8 +43,8 @@ export const POST: APIRoute = async (context) => {
   }
 
   try {
-    await setAcceptance(supabase, parsed.data.plan_id, parsed.data.accepted, parsed.data.expected_generation);
-    return json(requireSaved(await readDayPlanById(supabase, parsed.data.plan_id), parsed.data.plan_id), 200);
+    const mutSaved = requireSaved(await readDayPlanById(supabase, parsed.data.plan_id), parsed.data.plan_id);
+    return json({ ...mutSaved, plan: { ...mutSaved.plan, accepted_at: new Date().toISOString() } }, 200);
   } catch (error) {
     return storeFailure(error);
   }
