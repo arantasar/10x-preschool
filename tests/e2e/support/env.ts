@@ -46,7 +46,14 @@ function required(name: string): string {
 
 export const e2eEnv = {
   get supabaseUrl(): string {
-    return required("E2E_SUPABASE_URL");
+    const url = required("E2E_SUPABASE_URL");
+    // Testy zakladaja konta i kasuja dni. Ten sam warunek co `supabase-local.ts`:
+    // na nazwie hosta, nie na zaufaniu do tego, kto ustawil zmienna.
+    const { hostname } = new URL(url);
+    if (hostname !== "127.0.0.1" && hostname !== "localhost") {
+      throw new Error(`E2E_SUPABASE_URL wskazuje na ${hostname}, nie na lokalny stos. E2E dziala wylacznie lokalnie.`);
+    }
+    return url;
   },
   get supabaseSecretKey(): string {
     return required("E2E_SUPABASE_SECRET_KEY");
@@ -68,3 +75,6 @@ export const e2eEnv = {
  * dzialajacego serwera.
  */
 export const BASE_URL = process.env.E2E_BASE_URL ?? fileEnv.E2E_BASE_URL ?? "http://localhost:4321";
+
+/** Atrapa dostawcy LLM (`llm-stub.mjs`). Port zna tez `astro.config.e2e.mjs`. */
+export const LLM_STUB_URL = "http://127.0.0.1:4398";

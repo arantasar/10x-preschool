@@ -1,0 +1,63 @@
+name: Supabase stack
+description: >-
+  Start the local Supabase stack from cached images and export its URL and keys.
+  The one place for the Postgres pin, the `-x` list and the image cache, shared
+  by every job that needs a real stack. Run it after `npm ci`.
+
+outputs:
+  cache-hit:
+    description: "'true' when the images came from the cache; `save` is then a no-op to skip"
+    value: ${{ steps.restore.outputs.cache-hit }}
+  cache-key:
+    description: The key `save` writes under
+    value: ${{ steps.key.outputs.key }}
+
+runs:
+  using: composite
+  steps:
+    # The CLI picks the Postgres image from supabase/.temp/postgres-version,
+    # which `supabase link` writes locally with production's version and
+    # .gitignore keeps out of the repo. Without it CI gets the CLI's own
+    # default (17.6.1.106 on CLI 2.98.2), and that image crashed the server
+    # ("server closed the connection unexpectedly") on day_plan_write's anon
+    # call in this job's first run, while production's 17.6.1.127 passes.
+    # Pinned to production's version so CI tests the Postgres that ships;
+    # bump it when the linked project is upgraded.
+    - name: Pin Postgres to the production version
+      shell: bash
+      run: mkdir -p supabase/.temp && echo "17.6.1.127" > supabase/.temp/postgres-version
+    # 7 of 40 runs died on `toomanyrequests: Data limit exceeded` from
+    # public.ecr.aws while pulling these images (next-actions.md:587), and a
+    # retry does not lower that quota. The CLI version and the Postgres pin
+    # decide which images a run needs, so they are the key. No `restore-keys`:
+    # a near miss would load someone else's set and pull the rest anyway.
+    - name: Compute the image cache key
+      id: key
+      shell: bash
+      run: echo "key=supabase-images-$RUNNER_OS-$(node -p "require('./node_modules/supabase/package.json').version")-$(cat supabase/.temp/postgres-version)" >> "$GITHUB_OUTPUT"
+    - name: Restore the stack's images
+      id: restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/.supabase-images
+        key: ${{ steps.key.outputs.key }}
+    - name: Load the stack's images
+      if: steps.restore.outputs.cache-hit == 'true'
+      shell: bash
+      run: docker load -i ~/.supabase-images/stack.tar
+    # `-x` leaves Postgres, GoTrue, PostgREST, Kong and Mailpit: what the database
+    # tiers use, plus the mailbox `password-reset.spec.ts` reads. One list for
+    # every job, so all of them share one set of cached images.
+    # `supabase/seed.sql` does not exist; `db.seed` is enabled in config.toml and
+    # the CLI skips a missing seed file.
+    - name: Start the local Supabase stack
+      shell: bash
+      run: npx supabase start -x studio,imgproxy,realtime,storage-api,edge-runtime,logflare,vector,supavisor,postgres-meta
+    # After `start`, before the tests. `-o env` prints KEY="value"; $GITHUB_ENV
+    # would keep the quotes as part of the value, so they are stripped here.
+    # Only the three variables `supabase-local.ts` reads: every exported value
+    # is printed in later step headers, and the rest (JWT_SECRET, DB_URL, …)
+    # has no reader.
+    - name: Export the stack's URL and keys
+      shell: bash
+      run: npx supabase status -o env | grep -E '^(API_URL|PUBLISHABLE_KEY|SECRET_KEY)=' | sed -E 's/^([A-Z0-9_]+)="(.*)"$/\1=\2/' >> "$GITHUB_ENV"

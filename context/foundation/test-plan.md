@@ -94,7 +94,7 @@ poniżej; orkiestrator aktualizuje Status, gdy artefakty pojawiają się na dysk
 | 1 | Runner + granica model→kontrakt→zapis | Udowodnić, że odpowiedź spoza kontraktu i awaria dostawcy kończą się uczciwą porażką, a nie cichym pustym planem | #2, #5 | unit + integration | complete | context/archive/2026-08-29-testing-generation-contract-boundary/ |
 | 2 | Powtarzalna bramka bezpieczeństwa treści | Wyjąć jedyną kontrolę guardrailu z jednorazowego skryptu i objąć nią każdy dopuszczony model oraz każdą zmianę promptu | #1, #6 | contract + AI-native judge | complete | context/archive/2026-08-31-testing-content-safety-gate/ |
 | 3 | Ochrona zapisu i własności | Zatwierdzony dzień ginie tylko po zgodzie nazywającej ten dzień; trasa adresowana id odmawia cudzego zasobu 404, trasa adresowana datą nie dotyka wiersza drugiego konta; odmowa pustej partii (`U0003`) ma asercje pgTAP | #3, #4, #7 | integration + pgTAP | complete | context/archive/2026-09-30-testing-write-ownership/ |
-| 4 | Bramki jakości w CI + e2e ścieżki krytycznej | Zamknąć podłogę przed merge'em do `master`, który deployuje wprost na produkcję | przekrojowe | gates + e2e | not started | — |
+| 4 | Bramki jakości w CI + e2e ścieżki krytycznej | Zamknąć podłogę przed merge'em do `master`, który deployuje wprost na produkcję | przekrojowe | gates + e2e | implementing | context/changes/testing-ci-gates-e2e/ |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` →
 `researched` → `planned` → `implementing` → `complete`.
@@ -654,6 +654,53 @@ ostrzeżeniem, nie błędem. Trzy niespodzianki przy wpinaniu:
   cache obrazów jest ogonem z właścicielem w `next-actions.md`.
 - `supabase status -o env` wypisuje `KEY="value"`, a `$GITHUB_ENV` zachowałby
   cudzysłowy w wartości — krok eksportu je zdejmuje.
+
+**Faza 4 — bramki w CI + e2e ścieżki krytycznej (2026-10-31).** Atrapa dostawcy
+stoi na granicy sieciowej: `astro.config.e2e.mjs` przepisuje URL w `astro dev`, bo
+wywołanie idzie z workerd i `page.route()` go nie widzi. Pusty tydzień ma w
+miesiącu jeden wiersz zamiast kafli dni, a specy #5 planują dni tego samego
+tygodnia równolegle, więc ścieżka krytyczna wchodzi przez `/plan/week` →
+„Jeden dzień”, a miesiąc sprawdza na końcu.
+
+Rytuał mutacji (każde psucie cofnięte, baseline zielony):
+
+| Psucie | Spec | Czerwień |
+| --- | --- | --- |
+| `generate` nie woła `saveGeneration` | ścieżka krytyczna | status trasy ≠ 200 |
+| `activity/[id]` odpowiada sukcesem z nowym tekstem bez zapisu | ścieżka krytyczna | tytuł po przeładowaniu |
+| `accept` odpowiada sukcesem z `accepted_at` bez zapisu | ścieżka krytyczna | baner po przeładowaniu |
+| atrapa zwraca 2 aktywności | ścieżka krytyczna | status trasy ≠ 200 |
+| wyspa ignoruje błąd generowania | awaria | brak `role="alert"` |
+| `GenerationProgress` się nie renderuje | w toku | brak etapu |
+
+Job `e2e` na zimnym runnerze: cały job 3,7–4,4 min, sam zestaw 43–60 s. `db` przy
+trafieniu w cache 2,9–3,2 min. Start stosu z cache (116 s) nie jest szybszy niż po
+pobraniu (96 s): cache chroni przed limitem ECR, nie oszczędza czasu.
+
+Trzy rzeczy, które wyszły dopiero na zimnym starcie albo na runnerze:
+
+- **F9 żył po stronie serwera.** `vite.optimizeDeps` nie sięga środowiska `ssr`, a
+  późno odkrywane były `@supabase/ssr` i `astro/env/runtime`. Pierwszy lokalny
+  przebieg na pustym cache padał na „Invalid hook call”. Po liście dla obu
+  środowisk (`astro.config.mjs`) zimny start jest czysty.
+- **Pusty `<Content />` w `legal-pages`** (2 z 5 przebiegów, `failOnFlakyTests`
+  zrobił z tego czerwień). `Content` z `.md` importuje runtime Astro wprost, a dwa
+  równoległe pierwsze wczytania na zimnym serwerze dev ścigają się w module runnerze:
+  `maybeRenderHead is not a function`. Błąd ginie w renderze, strona wychodzi bez
+  treści. Dotyczy tylko dev. `auth.setup.ts` wczytuje te strony po jednej przed
+  zestawem. Log serwera w CI (`stdout: "pipe"`) pokazał przyczynę po dwóch błędnych
+  hipotezach, więc zostaje.
+- **Cache z PR-a nie działa na innym PR-ze.** GitHub ogranicza wpis do jego refa.
+  Dopóki `master` nie ma własnego wpisu, każdy nowy PR pobiera obrazy i może paść na
+  `toomanyrequests` (PR #62 padł dwa razy z rzędu). Wpis powstaje przy pierwszym
+  zielonym `db` na `master`.
+
+Dowód stabilności: run 41241708302, próby 1–5, commit `26434dd`: `db` i `e2e` zielone,
+49 passed (48 testów + wczytanie stron), 0 `flaky`, 0 pobrań. Licznik ruszył od nowa po
+poprawce `legal-pages`; wcześniejsze czerwienie to runy 41238033442 i 41239492311
+(próba 3). Psucie `accept` (run 41241239661): 3 failed, artefakt, adnotacja na
+`critical-path.spec.ts:75`. Test zielony przy ponowieniu (run 41239922211): 48 passed,
+1 flaky, przebieg czerwony.
 
 ## 7. What We Deliberately Don't Test
 

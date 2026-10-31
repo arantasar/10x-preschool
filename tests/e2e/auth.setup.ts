@@ -47,3 +47,19 @@ setup("zaloguj konto A i zapisz sesje", async ({ page }) => {
 setup("zaloguj konto B i zapisz sesje", async ({ page }) => {
   await signIn(page, TEACHER_B);
 });
+
+/**
+ * Pierwsze wczytanie strony z Markdownu, po jednej, zanim ruszy rownolegly zestaw.
+ *
+ * Komponent `Content` z `.md` importuje `astro/runtime/server/index.js` wprost.
+ * Na zimnym serwerze dev dwa rownolegle zadania laduja ten modul naraz i jedno
+ * dostaje go niedokonczonego (`maybeRenderHead is not a function`): blad ginie w
+ * renderze, a strona wychodzi z pustym `<Content />`. `legal-pages.spec.ts` trafial
+ * tak dwa razy na piec przebiegow CI. Sciga sie module runner Vite, nie aplikacja:
+ * build produkcyjny ma to w paczce.
+ */
+setup("wczytaj strony z Markdownu przed rownoleglymi testami", async ({ request }) => {
+  for (const path of ["/regulamin", "/polityka-prywatnosci"]) {
+    expect((await request.get(path)).status()).toBe(200);
+  }
+});

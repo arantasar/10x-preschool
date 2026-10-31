@@ -1,0 +1,24 @@
+name: Save Supabase images
+description: >-
+  Cache the images of a stack that has just passed its tests. A separate action
+  because a composite action has no step after the job's own: only after the
+  tests has `supabase test db` pulled `pg_prove`, so only then is the set complete.
+
+inputs:
+  cache-key:
+    description: The `cache-key` output of `supabase-stack`
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Export the stack's images
+      shell: bash
+      run: |
+        mkdir -p ~/.supabase-images
+        docker save -o ~/.supabase-images/stack.tar $(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^public.ecr.aws/supabase/')
+    - name: Save the stack's images
+      uses: actions/cache/save@v4
+      with:
+        path: ~/.supabase-images
+        key: ${{ inputs.cache-key }}
