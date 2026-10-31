@@ -10,6 +10,27 @@ import { canonicalUrl, isIndexable } from "./src/lib/seo.ts";
 
 const site = "https://temio.pl";
 
+// Declared up front because the dev server otherwise finds them mid-request,
+// re-optimizes and reloads, and the same page then mixes two generations of the
+// chunks: "Invalid hook call" on the first run with an empty Vite cache, which
+// is every run in CI (F9). `optimizeDeps` does not reach other environments, so
+// the server side needs its own list. Dev only: `astro build` does not read it.
+const prebundledDeps = [
+  "@pdf-lib/fontkit",
+  "@radix-ui/react-slot",
+  "class-variance-authority",
+  "clsx",
+  "lucide-react",
+  "pdf-lib",
+  "radix-ui",
+  "react",
+  "react-dom",
+  "react/jsx-dev-runtime",
+  "react/jsx-runtime",
+  "tailwind-merge",
+  "zod",
+];
+
 // https://astro.build/config
 export default defineConfig({
   output: "server",
@@ -26,6 +47,10 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    optimizeDeps: { include: [...prebundledDeps, "react-dom/client"] },
+    ssr: {
+      optimizeDeps: { include: [...prebundledDeps, "react-dom/server", "@supabase/ssr", "astro/env/runtime"] },
+    },
   },
   adapter: cloudflare(),
   // On by default in Astro 6, but the signed-in app's state-changing forms -

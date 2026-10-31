@@ -470,10 +470,10 @@ Brak migracji bazy. Wycofanie ochrony: `DELETE /repos/{owner}/{repo}/branches/ma
 
 #### Automated
 
-- [x] 3.1 Trzy nowe specy przechodzą trzy razy pod rząd
-- [x] 3.2 `npm run test:e2e` przechodzi 48/48
-- [x] 3.3 Brak `waitForTimeout` w nowych specach
-- [x] 3.4 Rytuał mutacji wykonany i zapisany w §6.7
+- [x] 3.1 Trzy nowe specy przechodzą trzy razy pod rząd — c860d02
+- [x] 3.2 `npm run test:e2e` przechodzi 48/48 — c860d02
+- [x] 3.3 Brak `waitForTimeout` w nowych specach — c860d02
+- [x] 3.4 Rytuał mutacji wykonany i zapisany w §6.7 — c860d02
 
 #### Manual
 

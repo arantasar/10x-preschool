@@ -29,8 +29,12 @@ export default defineConfig({
   fullyParallel: true,
 
   forbidOnly: !!process.env.CI,
+  // Ponowienia zostaja dla trace'a z `on-first-retry`, nie po to, by przebieg
+  // przechodzil: test zielony za drugim razem jest w CI czerwony. Inaczej
+  // niestabilnosc wygladalaby jak zdrowy zestaw, a ten check blokuje merge.
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? [["html", { open: "never" }], ["list"]] : "list",
+  failOnFlakyTests: !!process.env.CI,
+  reporter: process.env.CI ? [["github"], ["html", { open: "never" }], ["list"]] : "list",
 
   use: {
     baseURL: BASE_URL,
