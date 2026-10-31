@@ -455,12 +455,12 @@ Brak migracji bazy. Wycofanie ochrony: `DELETE /repos/{owner}/{repo}/branches/ma
 
 #### Automated
 
-- [x] 2.1 `npm run lint`, `npm test`, `npm run build` przechodzą
-- [x] 2.2 `npm run test:e2e` przechodzi 45/45
-- [x] 2.3 Diff nie dotyka plików z filtru bramki treści
-- [x] 2.4 Plugin rzuca błąd, gdy nie znajdzie URL-a
-- [x] 2.5 Przy zwykłym `npm run dev` `test:e2e` kończy się błędem startu
-- [x] 2.6 `dist/` nie zawiera adresu atrapy
+- [x] 2.1 `npm run lint`, `npm test`, `npm run build` przechodzą — b47ebe0
+- [x] 2.2 `npm run test:e2e` przechodzi 45/45 — b47ebe0
+- [x] 2.3 Diff nie dotyka plików z filtru bramki treści — b47ebe0
+- [x] 2.4 Plugin rzuca błąd, gdy nie znajdzie URL-a — b47ebe0
+- [x] 2.5 Przy zwykłym `npm run dev` `test:e2e` kończy się błędem startu — b47ebe0
+- [x] 2.6 `dist/` nie zawiera adresu atrapy — b47ebe0
 
 #### Manual
 
@@ -470,10 +470,10 @@ Brak migracji bazy. Wycofanie ochrony: `DELETE /repos/{owner}/{repo}/branches/ma
 
 #### Automated
 
-- [ ] 3.1 Trzy nowe specy przechodzą trzy razy pod rząd
-- [ ] 3.2 `npm run test:e2e` przechodzi 48/48
-- [ ] 3.3 Brak `waitForTimeout` w nowych specach
-- [ ] 3.4 Rytuał mutacji wykonany i zapisany w §6.7
+- [x] 3.1 Trzy nowe specy przechodzą trzy razy pod rząd
+- [x] 3.2 `npm run test:e2e` przechodzi 48/48
+- [x] 3.3 Brak `waitForTimeout` w nowych specach
+- [x] 3.4 Rytuał mutacji wykonany i zapisany w §6.7
 
 #### Manual
 

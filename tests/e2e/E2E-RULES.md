@@ -16,7 +16,8 @@ Wzorzec, na którym modelujesz każdy nowy test: [`seed.spec.ts`](seed.spec.ts).
 - Unikalne dane testowe (`uniquePlanDate()`, `uniqueStamp()` z
   `support/test-data.ts`) — inaczej równoległy przebieg i drugi przebieg pod
   rząd zderzą się o `unique (user_id, plan_date)`.
-- Sprzątaj po sobie w `afterEach`, po `id` zasianych planów.
+- Sprzątaj po sobie w `afterEach`, po `id` zasianych planów. Plan powstały przez
+  UI sprząta `deleteTeacherDay`, po koncie i dacie.
 - Uwierzytelnianie przez `storageState`, nigdy przez formularz logowania w
   pojedynczym teście. Jedyny wyjątek: `auth.setup.ts`.
 
@@ -40,17 +41,23 @@ Wzorzec, na którym modelujesz każdy nowy test: [`seed.spec.ts`](seed.spec.ts).
 
 ## Co w tym projekcie zostaje prawdziwe, a co omijamy
 
-| Granica                      | W teście    | Dlaczego                                                                      |
-| ---------------------------- | ----------- | ----------------------------------------------------------------------------- |
-| Sesja i ciasteczka           | prawdziwa   | ryzyko #4 mieszka dokładnie tu                                                |
-| Routing i middleware         | prawdziwe   | ochrona `/plan` to część tego samego ryzyka                                   |
-| API `/api/day-plan/*`        | prawdziwe   | `readDayPlan` filtruje tylko po dacie — własność stoi na RLS                  |
-| RLS w Postgresie             | prawdziwe   | to **jedyna** warstwa izolacji kont                                           |
-| Generowanie przez OpenRouter | **omijane** | nie należy do ryzyk #4 ani #7, a kosztuje pieniądze i 10–30 s niedeterminizmu |
+| Granica                      | W teście                                                 | Dlaczego                                                                  |
+| ---------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Sesja i ciasteczka           | prawdziwa                                                | ryzyko #4 mieszka dokładnie tu                                            |
+| Routing i middleware         | prawdziwe                                                | ochrona `/plan` to część tego samego ryzyka                               |
+| API `/api/day-plan/*`        | prawdziwe                                                | `readDayPlan` filtruje tylko po dacie — własność stoi na RLS              |
+| RLS w Postgresie             | prawdziwe                                                | to **jedyna** warstwa izolacji kont                                       |
+| Generowanie przez OpenRouter | **atrapa HTTP dla specs generowania, zasiew dla reszty** | kosztuje pieniądze i 10–30 s niedeterminizmu, a wywołanie idzie z workerd |
 
-Plan dnia zasiewamy więc prosto do bazy (`seedDayPlan` w
+Domyślnie plan dnia zasiewamy prosto do bazy (`seedDayPlan` w
 `support/supabase-admin.ts`), a nie klikając „Generuj". Wywołanie modelu idzie z
 serwera, więc `page.route()` i tak by go nie przechwycił.
+
+Wyjątkiem są specs generowania (`critical-path`, `generation-failure`,
+`generation-progress`): idą przez prawdziwą trasę, a `astro.config.e2e.mjs`
+kieruje wywołanie dostawcy na `support/llm-stub.mjs`. Dzieją się na stałym
+dniu slotu `3`, więc sprzątają `deleteTeacherDay` przed testem i po nim. Nowy
+test generowania to świadoma decyzja, nie domyślny wybór.
 
 **Klucz serwisowy służy wyłącznie do zasiewu i sprzątania — nigdy do asercji.**
 Omija RLS, czyli dokładnie ten mechanizm, którego te testy pilnują; asercja
@@ -110,9 +117,8 @@ decyduje, czy płatny przebieg w ogóle rusza.
   zatwierdzony.”, „Tej operacji nie można cofnąć.”) — **przed** kliknięciem, bo
   po odpowiedzi okno znika.
 - **Generowanie za oknem: tylko test odmowy**, z żądaniami generowania uciętymi
-  w `page.route` (`regenerate-confirmation.spec.ts`). Zgoda kończy się
-  wywołaniem modelu, które ten zestaw omija; ucięcie sprawia, że czerwony
-  przebieg nie kosztuje i nie niszczy zasianych danych.
+  w `page.route` (`regenerate-confirmation.spec.ts`). Zgodę pokrywa pgTAP, a
+  ucięcie sprawia, że czerwony przebieg nie niszczy zasianych danych.
 - **Test odmowy i test zgody są nadal obowiązkowe** dla każdej operacji za
   oknem, poza generowaniem (wyżej): odmowa („Zostaw”, „Wróć do edycji”) → żadnego żądania i dane nietknięte
   po przeładowaniu; zgoda → dane zmienione dokładnie w zakresie operacji.

@@ -170,3 +170,28 @@ export async function deleteSeededPlans(planIds: readonly string[]): Promise<voi
     throw new Error(`Sprzatanie nie powiodlo sie: ${error.message}`);
   }
 }
+
+/**
+ * Sprzata dzien, ktory powstal przez UI: takiego planu nikt nie zasial, wiec nie
+ * ma jego `id`. Zawsze konto + data, nigdy sama data (powod przy
+ * `deleteSeededPlans`). Wiersze ksiegi tez: stale konto zuzyloby inaczej limit
+ * 150 dni miesiecznie i lokalnie test dostalby 429 bez zwiazku z kodem.
+ *
+ * Wolane takze przed testem: testy generowania maja stala date, wiec przerwany
+ * przebieg zostawilby plan, o ktory pada kazdy nastepny.
+ */
+export async function deleteTeacherDay(userId: string, planDate: string): Promise<void> {
+  const { error: planError } = await admin().from("day_plans").delete().eq("user_id", userId).eq("plan_date", planDate);
+  if (planError) {
+    throw new Error(`Sprzatanie planu ${planDate} nie powiodlo sie: ${planError.message}`);
+  }
+
+  const { error: ledgerError } = await admin()
+    .from("generation_ledger")
+    .delete()
+    .eq("user_id", userId)
+    .eq("plan_date", planDate);
+  if (ledgerError) {
+    throw new Error(`Sprzatanie ksiegi ${planDate} nie powiodlo sie: ${ledgerError.message}`);
+  }
+}
