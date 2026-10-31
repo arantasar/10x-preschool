@@ -35,9 +35,11 @@ jobs:
   # and a red database suite should carry its own badge instead of hiding
   # behind a red lint.
   #
-  # `-x` leaves Postgres, GoTrue, PostgREST and Kong - what the two tiers use.
-  # `supabase/seed.sql` does not exist; `db.seed` is enabled in config.toml and
-  # the CLI skips a missing seed file.
+  # The stack comes from `.github/actions/supabase-stack` (Postgres pin, `-x`
+  # list, image cache). This is the only job that saves the images: `pg_prove`
+  # is pulled by `npm run test:db`, so only after the tests here is the set
+  # complete. GitHub drops an entry after 7 days unused, and a miss pulls from
+  # public.ecr.aws again: a red pull after a quiet week is fixed by re-running.
   db:
     runs-on: ubuntu-latest
     # A green run takes under 3 min; this caps a hung image pull or `start`.
@@ -50,27 +52,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx astro sync
-      # The CLI picks the Postgres image from supabase/.temp/postgres-version,
-      # which `supabase link` writes locally with production's version and
-      # .gitignore keeps out of the repo. Without it CI gets the CLI's own
-      # default (17.6.1.106 on CLI 2.98.2), and that image crashed the server
-      # ("server closed the connection unexpectedly") on day_plan_write's anon
-      # call in this job's first run, while production's 17.6.1.127 passes.
-      # Pinned to production's version so CI tests the Postgres that ships;
-      # bump it when the linked project is upgraded.
-      - name: Pin Postgres to the production version
-        run: mkdir -p supabase/.temp && echo "17.6.1.127" > supabase/.temp/postgres-version
-      - name: Start the local Supabase stack
-        run: npx supabase start -x studio,imgproxy,realtime,storage-api,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta
-      # After `start`, before the tests. `-o env` prints KEY="value"; $GITHUB_ENV
-      # would keep the quotes as part of the value, so they are stripped here.
-      # Only the three variables `supabase-local.ts` reads: every exported value
-      # is printed in later step headers, and the rest (JWT_SECRET, DB_URL, …)
-      # has no reader.
-      - name: Export the stack's URL and keys
-        run: npx supabase status -o env | grep -E '^(API_URL|PUBLISHABLE_KEY|SECRET_KEY)=' | sed -E 's/^([A-Z0-9_]+)="(.*)"$/\1=\2/' >> "$GITHUB_ENV"
+      - id: stack
+        uses: ./.github/actions/supabase-stack
       - run: npm run test:db
       - run: npm run test:db:api
+      - if: steps.stack.outputs.cache-hit != 'true'
+        uses: ./.github/actions/supabase-stack/save
+        with:
+          cache-key: ${{ steps.stack.outputs.cache-key }}
 
   # Advisory, not blocking — branch protection needs GitHub Pro or a public repo
   # (`gh api …/branches/master/protection` → 403), so this cannot stop a merge.
