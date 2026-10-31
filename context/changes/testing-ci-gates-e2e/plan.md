@@ -441,10 +441,10 @@ Brak migracji bazy. Wycofanie ochrony: `DELETE /repos/{owner}/{repo}/branches/ma
 
 #### Automated
 
-- [x] 1.1 Lint workflow przechodzi
-- [ ] 1.2 Pierwszy przebieg `db` zielony i zapisuje cache
-- [ ] 1.3 Drugi przebieg `db` wczytuje obrazy z cache
-- [ ] 1.4 Zużycie cache nie zbliża się do limitu repozytorium
+- [x] 1.1 Lint workflow przechodzi — 45c3bcb
+- [x] 1.2 Pierwszy przebieg `db` zielony i zapisuje cache — 45c3bcb
+- [x] 1.3 Drugi przebieg `db` wczytuje obrazy z cache — 45c3bcb
+- [x] 1.4 Zużycie cache nie zbliża się do limitu repozytorium — 45c3bcb
 
 #### Manual
 
@@ -455,12 +455,12 @@ Brak migracji bazy. Wycofanie ochrony: `DELETE /repos/{owner}/{repo}/branches/ma
 
 #### Automated
 
-- [ ] 2.1 `npm run lint`, `npm test`, `npm run build` przechodzą
-- [ ] 2.2 `npm run test:e2e` przechodzi 45/45
-- [ ] 2.3 Diff nie dotyka plików z filtru bramki treści
-- [ ] 2.4 Plugin rzuca błąd, gdy nie znajdzie URL-a
-- [ ] 2.5 Przy zwykłym `npm run dev` `test:e2e` kończy się błędem startu
-- [ ] 2.6 `dist/` nie zawiera adresu atrapy
+- [x] 2.1 `npm run lint`, `npm test`, `npm run build` przechodzą
+- [x] 2.2 `npm run test:e2e` przechodzi 45/45
+- [x] 2.3 Diff nie dotyka plików z filtru bramki treści
+- [x] 2.4 Plugin rzuca błąd, gdy nie znajdzie URL-a
+- [x] 2.5 Przy zwykłym `npm run dev` `test:e2e` kończy się błędem startu
+- [x] 2.6 `dist/` nie zawiera adresu atrapy
 
 #### Manual
 

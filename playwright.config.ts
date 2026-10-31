@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { BASE_URL } from "./tests/e2e/support/env";
+import { BASE_URL, LLM_STUB_URL } from "./tests/e2e/support/env";
 import { TEACHER_A } from "./tests/e2e/support/supabase-admin";
 
 /**
@@ -14,6 +14,12 @@ import { TEACHER_A } from "./tests/e2e/support/supabase-admin";
  * celuje w **lokalna** Supabase. To nie jest detal wygody: testy zakladaja konta
  * i kasuja plany dni, wiec wycelowanie ich w projekt produkcyjny skasowaloby
  * prawdziwe dane nauczycieli.
+ *
+ * Serwerem jest `npm run dev:e2e`, nie `npm run dev`: `astro.config.e2e.mjs`
+ * kieruje wywolania dostawcy LLM na atrape (`tests/e2e/support/llm-stub.mjs`).
+ * `url` celuje w `/__e2e-stub`, ktory istnieje tylko na tym serwerze, wiec
+ * zostawiony zwykly `npm run dev` nie zostanie uzyty ponownie: wolalby prawdziwego
+ * dostawce prawdziwym kluczem z `.dev.vars`. Zajety port konczy start bledem.
  */
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -51,11 +57,18 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: "npm run dev",
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    // Pierwszy start Astro z adapterem Cloudflare potrafi trwac.
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: "node tests/e2e/support/llm-stub.mjs",
+      url: `${LLM_STUB_URL}/__calls`,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: "npm run dev:e2e",
+      url: `${BASE_URL}/__e2e-stub`,
+      reuseExistingServer: !process.env.CI,
+      // Pierwszy start Astro z adapterem Cloudflare potrafi trwac.
+      timeout: 120_000,
+    },
+  ],
 });

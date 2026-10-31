@@ -68,3 +68,6 @@ export const e2eEnv = {
  * dzialajacego serwera.
  */
 export const BASE_URL = process.env.E2E_BASE_URL ?? fileEnv.E2E_BASE_URL ?? "http://localhost:4321";
+
+/** Atrapa dostawcy LLM (`llm-stub.mjs`). Port zna tez `astro.config.e2e.mjs`. */
+export const LLM_STUB_URL = "http://127.0.0.1:4398";
